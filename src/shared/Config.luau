@@ -301,6 +301,35 @@ Config.SizeCost = function(tier: number): number
 	return Config.Economy.ObjectValue(tier) * 10 * 1.32 ^ (tier - 1)
 end
 
+-- Free rewards (server/Rewards.luau, client/Rewards.client.luau).
+-- kind "cash": `seconds` worth of your current earning rate (so it grows with you,
+-- never less than MinCash); kind "golden": that many Golden objects in a row.
+Config.Rewards = {
+	MinCash = 25,
+	-- Playtime: unlock after `minutes` in this session (resets when you rejoin).
+	Playtime = {
+		{ minutes = 2, kind = "cash", seconds = 60 },
+		{ minutes = 5, kind = "cash", seconds = 120 },
+		{ minutes = 10, kind = "golden", count = 3 },
+		{ minutes = 15, kind = "cash", seconds = 300 },
+		{ minutes = 25, kind = "cash", seconds = 600 },
+		{ minutes = 40, kind = "golden", count = 5 },
+		{ minutes = 60, kind = "cash", seconds = 1200 },
+		{ minutes = 90, kind = "cash", seconds = 2400 },
+	},
+	-- Daily check-in: one claim per UTC day; missing a day restarts at day 1;
+	-- after day 7 it starts over.
+	Daily = {
+		{ kind = "cash", seconds = 300 },
+		{ kind = "cash", seconds = 600 },
+		{ kind = "golden", count = 3 },
+		{ kind = "cash", seconds = 900 },
+		{ kind = "cash", seconds = 1200 },
+		{ kind = "golden", count = 5 },
+		{ kind = "cash", seconds = 3600 },
+	},
+}
+
 -- Look: the classic Roblox stud pattern on floors, pads and boards.
 Config.Look = {
 	Theme = "Teal", -- see shared/Kit/Style.luau (Teal, Scrap)

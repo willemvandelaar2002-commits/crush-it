@@ -38,3 +38,10 @@ Friends (you + friends in this server), Global (all-time top 50 by cash,
 OrderedDataStore "CashBoard_v1", refreshed every 2 min; empty in Studio).
 4 rows visible, your own row pinned under them when off screen, X collapses it to 🏆.
 Score is current cash (like Destroy a Vault), so it drops when you spend or rebirth.
+
+## Free rewards (server/Rewards.luau + client/Rewards.client.luau)
+REWARDS gift button next to BOOK/SHOP, "!" badge when something can be claimed.
+- Playtime gifts: 8 rewards after 2, 5, 10, 15, 25, 40, 60, 90 minutes in this session (reset on rejoin).
+- Daily check-in: 7 days, one claim per UTC day (`data.daily = { day, streak }`); missing a day restarts at day 1, after day 7 it starts over.
+- Cash rewards are N seconds of your current earning rate (min $25), so they stay useful at every stage; some slots give Golden objects (adds to goldenRush).
+- All numbers in `Config.Rewards`. Server checks time and claims; analytics events PlaytimeReward / DailyReward.
