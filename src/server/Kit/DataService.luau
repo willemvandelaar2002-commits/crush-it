@@ -79,15 +79,19 @@ local function mockStore(): Store
 end
 
 local function resolveStore(name: string): Store
-	local real = DataStoreService:GetDataStore(name)
-	if RunService:IsStudio() then
-		local ok = pcall(function()
+	local real
+	local ok = pcall(function()
+		real = DataStoreService:GetDataStore(name)
+		if RunService:IsStudio() then
 			real:GetAsync("__access_check")
-		end)
-		if not ok then
+		end
+	end)
+	if not ok then
+		if RunService:IsStudio() then
 			warn("[DataService] No DataStore access in Studio (Game Settings > Security > Enable Studio Access to API Services). Using an in-memory store; nothing is saved.")
 			return mockStore()
 		end
+		error("[DataService] DataStore unavailable")
 	end
 	return real :: any
 end
