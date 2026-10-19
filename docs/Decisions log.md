@@ -1,0 +1,4 @@
+# Decisions log
+
+- 2026-10-19: Picked Crush It as the next game (empty niche, simple loop). Start small, upgrade the press so it gets bigger.
+- 2026-10-19: World built by code, Rojo port 34873 next to WarChest.
