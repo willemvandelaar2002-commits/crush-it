@@ -46,3 +46,19 @@ wider than the one before (`Config.pressWidth`). Five stages add parts:
    with two orbiting rings.
 The beam carries a name plate and 13 level lights (one per tier, lit up to
 yours). Spinning parts are Models tagged `PressSpin`; the client turns them.
+
+## Object meshes (19 Oct)
+All 13 objects are AI-generated meshes (Roblox's mesh generator), stored in
+the **place file** under `ReplicatedStorage.ObjectMeshes` (not in Git, not
+managed by Rojo). `Objects.build` uses the Model with the object's name if it
+exists and otherwise falls back to the parts in `Config.Objects`.
+- Each mesh is scaled to fit the object's width/height; the real height is
+  saved as the model attribute `Height` (the ram stops on it).
+- A template's `Yaw` attribute (degrees) turns it so its front faces the
+  player (TV -90, Teddy Bear 135, Fridge 50, Phone -30).
+- Golden/Diamond: texture removed, painted gold / glass. Book silhouettes:
+  painted black.
+- To replace one: put a new Model with the same name in ObjectMeshes and
+  save/publish the place.
+- AI test presses (Rusty, Steel, Titan frames) are parked in
+  `ServerStorage.GeneratedPresses` for later.
