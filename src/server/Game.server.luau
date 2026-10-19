@@ -82,6 +82,12 @@ DataService.start("CrushItPlayer_v1", TEMPLATE, sanitize)
 require(script.Parent.Kit.Build).lighting()
 Plots.create()
 require(script.Parent.Decor).create()
+require(script.Parent.Kit.Leaderboard).start({
+	store = "CashBoard_v1",
+	score = function(player: Player): number
+		return (player:GetAttribute("Cash") :: number?) or 0
+	end,
+})
 
 -- Per-plot object state ------------------------------------------------------
 

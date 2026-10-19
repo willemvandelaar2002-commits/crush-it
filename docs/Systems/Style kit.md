@@ -15,6 +15,13 @@ and require them.
 - `Style.rainbow(gui, speed?)` moving rainbow gradient (client only)
 - `Style.wobble(gui, degrees?, speed?)` gentle tilt back and forth (client only)
 
+## server/Kit/Leaderboard.luau
+- `Leaderboard.start({ store, score = fn(player) -> number, top? = 50, every? = 120 })`
+  writes each player's score to an OrderedDataStore (as log10(score+1)*1e6 so huge
+  numbers fit), reads the top N and publishes it as JSON in
+  `ReplicatedStorage.KitLeaderboard` (Status attribute "ok" / "unavailable").
+  The panel UI is game code (Crush It: `client/Leaderboard.client.luau`).
+
 ## server/Kit/Build.luau
 - `Build.block(parent, name, size, cf, color, studFaces?)`
 - `Build.platform(parent, name, topCf, w, d, h, color, edgeColor, edge?)` raised slab with a lip

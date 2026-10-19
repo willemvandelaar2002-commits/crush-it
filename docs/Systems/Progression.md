@@ -31,3 +31,10 @@ Top centre, Destroy a Vault style: cash / price of the next Bigger Press with
 "Next up: <object>". Full bar pulses and says "Tap to unlock"; tapping buys the
 press. Once rebirth is unlocked it turns gold: "Rebirth ready! Cash xA > xB".
 Cash moved to the bottom-left corner (top centre on phones, because of the thumbstick).
+
+## Leaderboard (Leaderboard.client.luau + Kit/Leaderboard)
+Top right, replaces Roblox's player list. Tabs: Here (this server, live),
+Friends (you + friends in this server), Global (all-time top 50 by cash,
+OrderedDataStore "CashBoard_v1", refreshed every 2 min; empty in Studio).
+4 rows visible, your own row pinned under them when off screen, X collapses it to 🏆.
+Score is current cash (like Destroy a Vault), so it drops when you spend or rebirth.
