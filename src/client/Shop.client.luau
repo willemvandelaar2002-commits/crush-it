@@ -13,6 +13,7 @@ local Store = require(ReplicatedStorage.Shared.Store)
 local Config = require(ReplicatedStorage.Shared.Config)
 local Format = require(ReplicatedStorage.Shared.Format)
 local Net = require(ReplicatedStorage.Shared.Net)
+local Style = require(ReplicatedStorage.Shared.Kit.Style)
 
 local player = Players.LocalPlayer
 local hud = player:WaitForChild("PlayerGui"):WaitForChild("CrushHud")
@@ -134,14 +135,15 @@ player.Idled:Connect(function()
 end)
 
 -- SHOP button + panel -----------------------------------------------------------
-local shopButton = make("TextButton", {
-	Name = "ShopButton", Position = UDim2.fromOffset(130, 8), Size = UDim2.fromOffset(110, 44), BackgroundColor3 = GREEN,
-	Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "SHOP", Parent = gui,
-}, { corner(10), stroke(2), make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6) }) })
+local shopButton, shopBadge = Style.iconButton(gui, {
+	name = "ShopButton", icon = "🛒", label = "SHOP", a = Color3.fromRGB(255, 110, 130), b = Color3.fromRGB(220, 40, 70),
+})
+shopButton.Position = UDim2.fromOffset(104, 8)
+shopBadge.Visible = true -- until the shop has been opened once this session
 
 local panel = make("Frame", {
 	Name = "ShopPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0.82, 0),
-	BackgroundColor3 = DARK, BackgroundTransparency = 0.03, Visible = false, Parent = gui,
+	BackgroundColor3 = DARK, BackgroundTransparency = 0.03, Visible = false, ZIndex = 5, Parent = gui,
 }, { corner(14), stroke(3), make("UISizeConstraint", { MaxSize = Vector2.new(820, 560) }) })
 make("TextLabel", {
 	Position = UDim2.fromOffset(16, 8), Size = UDim2.new(1, -80, 0, 34), BackgroundTransparency = 1, Font = FONT,
@@ -241,6 +243,7 @@ refreshShop()
 
 local function openShop(from: string)
 	refreshShop()
+	shopBadge.Visible = false
 	panel.Visible = true
 	Net.event("ShopOpened"):FireServer(from)
 end
@@ -254,6 +257,131 @@ end)
 closeButton.Activated:Connect(function()
 	panel.Visible = false
 end)
+
+-- Offer buttons (right side) ----------------------------------------------------
+-- Destroy a Vault style: a wobbling rainbow "2X CASH  ONLY R$ x" button and a
+-- featured pass card under it. Each hides once owned; the card moves on to the
+-- next pass you don't have yet.
+local offers = make("Frame", {
+	Name = "Offers", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -14, 0.5, -60), Size = UDim2.fromOffset(200, 0),
+	AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = gui,
+}, { make("UIListLayout", { Padding = UDim.new(0, 14), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Right }) })
+local offersScale = make("UIScale", { Parent = offers })
+local function fitOffers()
+	local h = Workspace.CurrentCamera.ViewportSize.Y
+	offersScale.Scale = math.clamp((h - 150) / 450, 0.55, 1)
+end
+Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitOffers)
+fitOffers()
+
+-- 2X CASH: rainbow tile with a dark outline, big text and "ONLY R$ 249" under it.
+local doublePass = Store.passByPerk("DoubleCash")
+local doubleHolder = make("Frame", { Size = UDim2.fromOffset(200, 96), BackgroundTransparency = 1, LayoutOrder = 1, Parent = offers })
+local doubleButton = make("TextButton", {
+	Name = "DoubleCashOffer", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.42), Size = UDim2.fromOffset(190, 66),
+	BackgroundColor3 = Color3.new(1, 1, 1), Text = "", AutoButtonColor = false, Parent = doubleHolder,
+}, { corner(10), make("UIStroke", { Thickness = 4, Color = Color3.fromRGB(25, 20, 35), ApplyStrokeMode = Enum.ApplyStrokeMode.Border }) })
+Style.rainbow(doubleButton)
+Style.studsImage(doubleButton, 22, 0.7)
+local doubleText = make("TextLabel", {
+	Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, TextScaled = true, Text = "2X Cash", ZIndex = 2, Parent = doubleButton,
+}, { make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) }) })
+Style.text(doubleText, 3.5)
+local doublePrice = make("TextLabel", {
+	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 1, -4), Size = UDim2.new(0.8, 0, 0, 30),
+	BackgroundTransparency = 1, TextScaled = true, Text = "", ZIndex = 3, Parent = doubleButton,
+})
+Style.text(doublePrice, 3)
+doublePrice.TextColor3 = Color3.fromRGB(150, 255, 110)
+Style.wobble(doubleButton, 4, 2.5)
+doubleButton.Activated:Connect(function()
+	Net.event("ShopOpened"):FireServer("DoubleCashOffer")
+	buyPass("DoubleCash")
+end)
+
+-- Featured pass card: gradient panel, "BEST!" ribbon, big icon, name and price.
+local FEATURED = {
+	{ perk = "AutoCrush", icon = "🤖", a = Color3.fromRGB(255, 120, 90), b = Color3.fromRGB(200, 40, 70) },
+	{ perk = "Lucky", icon = "🍀", a = Color3.fromRGB(255, 225, 90), b = Color3.fromRGB(230, 140, 20) },
+	{ perk = "OfflineEarnings", icon = "💤", a = Color3.fromRGB(130, 160, 255), b = Color3.fromRGB(70, 60, 210) },
+}
+local featuredCard = make("TextButton", {
+	Name = "FeaturedOffer", Size = UDim2.fromOffset(170, 170), BackgroundTransparency = 1, Text = "", LayoutOrder = 2, Parent = offers,
+})
+local featuredScale = make("UIScale", { Parent = featuredCard })
+local featuredPanels: { [string]: Frame } = {}
+for _, f in FEATURED do
+	local pass = Store.passByPerk(f.perk)
+	if not pass then
+		continue
+	end
+	local p = make("Frame", { Name = f.perk, Size = UDim2.fromOffset(170, 150), Visible = false, Parent = featuredCard })
+	Style.panel(p, f.a, f.b)
+	local title = make("TextLabel", {
+		Position = UDim2.fromOffset(8, 6), Size = UDim2.new(1, -16, 0, 30), BackgroundTransparency = 1, TextScaled = true,
+		Text = pass.title, ZIndex = 2, Parent = p,
+	})
+	Style.text(title, 3)
+	make("TextLabel", {
+		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 34), Size = UDim2.fromOffset(84, 84),
+		BackgroundTransparency = 1, TextScaled = true, Text = f.icon, ZIndex = 2, Parent = p,
+	})
+	local price = make("TextLabel", {
+		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 1, -16), Size = UDim2.new(0.8, 0, 0, 36),
+		BackgroundTransparency = 1, TextScaled = true, Text = "R$ " .. pass.price, ZIndex = 3, Parent = p,
+	})
+	Style.text(price, 3)
+	price.TextColor3 = Color3.fromRGB(150, 255, 110)
+	local ribbon = make("TextLabel", {
+		AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -14, 0, 4), Size = UDim2.fromOffset(64, 26), Rotation = 14,
+		BackgroundColor3 = Color3.fromRGB(235, 40, 40), TextScaled = true, Text = "BEST!", ZIndex = 4, Parent = p,
+	}, { corner(6), make("UIPadding", { PaddingTop = UDim.new(0, 3), PaddingBottom = UDim.new(0, 3) }) })
+	Style.text(ribbon, 2)
+	featuredPanels[f.perk] = p
+end
+local featuredPerk: string? = nil
+featuredCard.MouseEnter:Connect(function()
+	TweenService:Create(featuredScale, TweenInfo.new(0.15, Enum.EasingStyle.Back), { Scale = 1.06 }):Play()
+end)
+featuredCard.MouseLeave:Connect(function()
+	TweenService:Create(featuredScale, TweenInfo.new(0.15, Enum.EasingStyle.Back), { Scale = 1 }):Play()
+end)
+featuredCard.Activated:Connect(function()
+	if featuredPerk then
+		Net.event("ShopOpened"):FireServer("FeaturedOffer")
+		buyPass(featuredPerk)
+	end
+end)
+
+local function refreshOffers()
+	doubleHolder.Visible = doublePass ~= nil and not Store.hasPass(player, "DoubleCash")
+	if doublePass then
+		doublePrice.Text = "ONLY R$ " .. doublePass.price
+	end
+	featuredPerk = nil
+	for _, f in FEATURED do
+		local p = featuredPanels[f.perk]
+		if p then
+			local show = featuredPerk == nil and not Store.hasPass(player, f.perk)
+			p.Visible = show
+			if show then
+				featuredPerk = f.perk
+			end
+		end
+	end
+	featuredCard.Visible = featuredPerk ~= nil
+end
+for _, pass in Store.Passes do
+	player:GetAttributeChangedSignal(Store.passAttr(pass.perk)):Connect(refreshOffers)
+end
+refreshOffers()
+-- The book lives in the HUD below this ScreenGui: hide the offers while it's open.
+local bookPanel = hud:WaitForChild("Book", 10) :: GuiObject?
+if bookPanel then
+	bookPanel:GetPropertyChangedSignal("Visible"):Connect(function()
+		offers.Visible = not bookPanel.Visible
+	end)
+end
 
 -- Offline earnings card ---------------------------------------------------------
 local function duration(seconds: number): string

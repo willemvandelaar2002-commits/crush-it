@@ -55,21 +55,37 @@ end
 
 local gui = make("ScreenGui", { Name = "CrushHud", ResetOnSpawn = false, IgnoreGuiInset = false, Parent = player:WaitForChild("PlayerGui") })
 
--- Cash (top centre) ----------------------------------------------------------
+-- Cash: big in the bottom-left corner like Destroy a Vault (top centre on
+-- phones, where the thumbstick lives bottom-left). The goal bar is top centre
+-- (Goal.client.luau).
+local TOUCH = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+local CASH_SIZE = if TOUCH then Vector2.new(220, 40) else Vector2.new(320, 64)
 local cashLabel = make("TextLabel", {
-	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 8), Size = UDim2.fromOffset(260, 50),
-	BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextColor3 = GREEN, Text = "$0", Parent = gui,
-}, { stroke(3) })
+	Name = "Cash",
+	AnchorPoint = if TOUCH then Vector2.new(0.5, 0) else Vector2.new(0, 1),
+	Position = if TOUCH then UDim2.new(0.5, 0, 0, 74) else UDim2.new(0, 84, 1, -14),
+	Size = UDim2.fromOffset(CASH_SIZE.X, CASH_SIZE.Y), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
+	TextXAlignment = if TOUCH then Enum.TextXAlignment.Center else Enum.TextXAlignment.Left,
+	TextColor3 = Color3.fromRGB(110, 255, 90), Text = "$0", Parent = gui,
+}, { make("UIStroke", { Thickness = 4, Color = Color3.fromRGB(20, 40, 15) }) })
+if not TOUCH then
+	make("TextLabel", {
+		Name = "CashIcon", AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 12, 1, -12), Size = UDim2.fromOffset(66, 66),
+		BackgroundTransparency = 1, Font = FONT, TextScaled = true, Text = "💵", Rotation = -10, Parent = gui,
+	})
+end
 
 local multLabel = make("TextLabel", {
-	AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(1, 4, 0.5, 0), Size = UDim2.fromOffset(90, 24),
+	AnchorPoint = if TOUCH then Vector2.new(0, 0.5) else Vector2.new(0, 1),
+	Position = if TOUCH then UDim2.new(1, 4, 0.5, 0) else UDim2.new(0, 2, 0, 2),
+	Size = UDim2.fromOffset(110, 24),
 	BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left,
 	TextColor3 = GOLD, Text = "", Parent = cashLabel,
 }, { stroke(2) })
 
 -- Object + HP bar (under the cash) -------------------------------------------
 local objFrame = make("Frame", {
-	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 62), Size = UDim2.fromOffset(260, 44),
+	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, if TOUCH then 118 else 80), Size = UDim2.fromOffset(260, 44),
 	BackgroundTransparency = 1, Parent = gui,
 })
 local objName = make("TextLabel", {
@@ -362,15 +378,15 @@ local lastCash = (player:GetAttribute("Cash") :: number?) or 0
 player:GetAttributeChangedSignal("Cash"):Connect(function()
 	local cash = (player:GetAttribute("Cash") :: number?) or 0
 	if cash > lastCash then
-		cashLabel.Size = UDim2.fromOffset(300, 58)
-		TweenService:Create(cashLabel, TweenInfo.new(0.25, Enum.EasingStyle.Back), { Size = UDim2.fromOffset(260, 50) }):Play()
+		cashLabel.Size = UDim2.fromOffset(CASH_SIZE.X * 1.12, CASH_SIZE.Y * 1.12)
+		TweenService:Create(cashLabel, TweenInfo.new(0.25, Enum.EasingStyle.Back), { Size = UDim2.fromOffset(CASH_SIZE.X, CASH_SIZE.Y) }):Play()
 	end
 	lastCash = cash
 end)
 
 -- Notices -------------------------------------------------------------------
 local noticeLabel = make("TextLabel", {
-	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 112), Size = UDim2.fromOffset(320, 30),
+	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, if TOUCH then 166 else 128), Size = UDim2.fromOffset(320, 30),
 	BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextColor3 = Color3.fromRGB(255, 220, 90), Text = "",
 	TextTransparency = 1, Parent = gui,
 }, { stroke(2) })
@@ -827,18 +843,13 @@ end)
 
 local collection: { [string]: { [string]: number } } = {}
 
-local bookButton = make("TextButton", {
-	Name = "BookButton",
-	Position = UDim2.fromOffset(12, 8), Size = UDim2.fromOffset(110, 44), BackgroundColor3 = Color3.fromRGB(120, 80, 200),
-	Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "BOOK", Parent = gui,
-}, { corner(10), stroke(2), make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6) }) })
-local bookDot = make("Frame", {
-	AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -4, 0, 4), Size = UDim2.fromOffset(16, 16),
-	BackgroundColor3 = RED, Visible = false, Parent = bookButton,
-}, { make("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+local bookButton, bookDot = Style.iconButton(gui, {
+	name = "BookButton", icon = "📖", label = "BOOK", a = Color3.fromRGB(90, 160, 255), b = Color3.fromRGB(60, 70, 220),
+})
+bookButton.Position = UDim2.fromOffset(12, 8)
 
 local book = make("Frame", {
-	AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0.8, 0),
+	Name = "Book", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0.8, 0),
 	BackgroundColor3 = DARK, BackgroundTransparency = 0.05, Visible = false, ZIndex = 10, Parent = gui,
 }, { corner(14), stroke(3), make("UISizeConstraint", { MaxSize = Vector2.new(820, 560) }) })
 local bookTitle = make("TextLabel", {
