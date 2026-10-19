@@ -210,7 +210,7 @@ local function onCrush(player: Player)
 	slot.ready = false -- no double press during the stroke
 	local model = slot.object
 	local tier = slot.tier
-	local height = Config.Objects[tier].height
+	local height = (model:GetAttribute("Height") :: number?) or Config.Objects[tier].height
 	local bed = Plots.bedBase(slot.plot)
 
 	slot.hp -= effect(data, "Power")
