@@ -33,7 +33,7 @@ local function corner(parent: Instance, r: number)
 	make("UICorner", { CornerRadius = UDim.new(0, r) }, parent)
 end
 
-local gui = make("ScreenGui", { Name = "RewardsHud", ResetOnSpawn = false, DisplayOrder = 6 }, player:WaitForChild("PlayerGui"))
+local gui = make("ScreenGui", { Name = "RewardsHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, player:WaitForChild("PlayerGui"))
 
 local button, badge = Style.iconButton(gui, {
 	name = "RewardsButton", icon = "🎁", label = "REWARDS", a = Color3.fromRGB(200, 120, 255), b = Color3.fromRGB(120, 50, 220),

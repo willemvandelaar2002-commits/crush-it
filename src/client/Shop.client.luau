@@ -50,7 +50,7 @@ local function pad(n: number): UIPadding
 	return make("UIPadding", { PaddingTop = UDim.new(0, n), PaddingBottom = UDim.new(0, n), PaddingLeft = UDim.new(0, n), PaddingRight = UDim.new(0, n) })
 end
 
-local gui = make("ScreenGui", { Name = "ShopHud", ResetOnSpawn = false, DisplayOrder = 5, Parent = player.PlayerGui })
+local gui = make("ScreenGui", { Name = "ShopHud", ResetOnSpawn = false, DisplayOrder = 5, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, Parent = player.PlayerGui })
 
 local function notice(text: string)
 	-- A short toast under the HUD notice line.
