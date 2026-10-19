@@ -325,15 +325,112 @@ Net.event("Hit").OnClientEvent:Connect(function(msg)
 	end
 end)
 
+-- Pieces of the object fly off on the final hit (client-only, physics, short-lived).
+local function debris(pos: Vector3, tier: number, count: number)
+	local def = Config.Objects[tier]
+	local unit = math.clamp(def.width / 6, 0.3, 5)
+	for _ = 1, count do
+		local spec = def.parts[math.random(1, #def.parts)]
+		local p = Instance.new("Part")
+		p.Size = Vector3.new(unit * (0.3 + math.random() * 0.5), unit * (0.15 + math.random() * 0.25), unit * (0.3 + math.random() * 0.5))
+		p.Color = spec.color
+		p.Material = spec.material or Enum.Material.SmoothPlastic
+		p.CanCollide = true
+		p.CanQuery = false
+		p.CanTouch = false
+		p.CollisionGroup = "Default"
+		p.CFrame = CFrame.new(pos + Vector3.new((math.random() - 0.5) * def.width * 0.6, unit * 0.3, (math.random() - 0.5) * def.width * 0.6))
+			* CFrame.Angles(math.random() * 6, math.random() * 6, math.random() * 6)
+		p.Parent = fxFolder
+		local dir = Vector3.new(math.random() - 0.5, 0, math.random() - 0.5).Unit
+		p.AssemblyLinearVelocity = dir * (12 + math.random() * 18) * math.sqrt(unit) + Vector3.new(0, 25 + math.random() * 20, 0) * math.sqrt(unit)
+		p.AssemblyAngularVelocity = Vector3.new(math.random() - 0.5, math.random() - 0.5, math.random() - 0.5) * 20
+		task.delay(1.2 + math.random() * 0.4, function()
+			TweenService:Create(p, TweenInfo.new(0.3), { Transparency = 1, Size = p.Size * 0.3 }):Play()
+		end)
+		Debris:AddItem(p, 2)
+	end
+end
+
+-- A flat shockwave ring on the bed.
+local function shockwave(pos: Vector3, radius: number, color: Color3)
+	local ring = Instance.new("Part")
+	ring.Anchored, ring.CanCollide, ring.CanQuery, ring.CanTouch = true, false, false, false
+	ring.Shape = Enum.PartType.Cylinder
+	ring.Material = Enum.Material.Neon
+	ring.Color = color
+	ring.Transparency = 0.2
+	ring.Size = Vector3.new(0.2, 1, 1)
+	ring.CFrame = CFrame.new(pos + Vector3.new(0, 0.2, 0)) * CFrame.Angles(0, 0, math.pi / 2)
+	ring.Parent = fxFolder
+	TweenService:Create(ring, TweenInfo.new(0.45, Enum.EasingStyle.Quad), { Size = Vector3.new(0.2, radius * 2, radius * 2), Transparency = 1 }):Play()
+	Debris:AddItem(ring, 0.5)
+end
+
 Net.event("Crushed").OnClientEvent:Connect(function(msg)
 	local mine = msg.owner == player
 	local def = Config.Objects[msg.tier]
 	local color = def.parts[1].color
 	local scale = math.clamp(Config.pressWidth(msg.tier) / 10, 0.6, 4)
 	burst(msg.position, color, if mine then 30 else 10, 0.5 * scale)
+	debris(msg.position, msg.tier, if mine then 12 else 5)
+	shockwave(msg.position, Config.pressWidth(msg.tier) * 0.9, Color3.fromRGB(255, 230, 160))
+	sound("rbxasset://sounds/collide.wav", msg.position, if mine then 1 else 0.35, 0.45)
 	if mine then
 		sound("rbxasset://sounds/electronicpingshort.wav", msg.position, 0.6, 1)
 		floatText(msg.position, "+" .. Format.cash(msg.value), GREEN)
 		shake = 1
 	end
+end)
+
+-- Bigger press: banner, confetti and a rising whoosh.
+local banner = make("Frame", {
+	AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.3), Size = UDim2.fromOffset(420, 110),
+	BackgroundTransparency = 1, Visible = false, Parent = gui,
+})
+local bannerScale = make("UIScale", { Scale = 1, Parent = banner })
+make("TextLabel", {
+	Size = UDim2.new(1, 0, 0.55, 0), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
+	TextColor3 = Color3.fromRGB(255, 210, 60), Text = "BIGGER PRESS!", Parent = banner,
+}, { stroke(4) })
+local bannerSub = make("TextLabel", {
+	Position = UDim2.fromScale(0, 0.6), Size = UDim2.new(1, 0, 0.35, 0), BackgroundTransparency = 1, Font = FONT,
+	TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "", Parent = banner,
+}, { stroke(3) })
+local bannerToken = 0
+
+Net.event("Upgraded").OnClientEvent:Connect(function(msg)
+	local mine = msg.owner == player
+	local W = Config.pressWidth(msg.tier)
+	sound("rbxasset://sounds/collide.wav", msg.position, if mine then 0.8 else 0.3, 0.3) -- low rumble as it rises
+	task.delay(0.9, function()
+		burst(msg.position + Vector3.new(0, W * 0.8, 0), Color3.fromRGB(255, 80, 80), if mine then 25 else 8, 0.4 * math.clamp(W / 10, 0.6, 4))
+		burst(msg.position + Vector3.new(0, W * 0.8, 0), Color3.fromRGB(80, 200, 255), if mine then 25 else 8, 0.4 * math.clamp(W / 10, 0.6, 4))
+		burst(msg.position + Vector3.new(0, W * 0.8, 0), Color3.fromRGB(255, 220, 60), if mine then 25 else 8, 0.4 * math.clamp(W / 10, 0.6, 4))
+		shockwave(msg.position, W * 1.2, Color3.fromRGB(255, 210, 60))
+		if mine then
+			sound("rbxasset://sounds/electronicpingshort.wav", msg.position, 0.8, 0.8)
+			shake = 0.8
+		end
+	end)
+	if not mine then
+		return
+	end
+	bannerToken += 1
+	local token = bannerToken
+	bannerSub.Text = "Now crushing: " .. Config.Objects[msg.tier].name
+	banner.Visible = true
+	bannerScale.Scale = 0.2
+	TweenService:Create(bannerScale, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	task.delay(2.4, function()
+		if token ~= bannerToken then
+			return
+		end
+		local t = TweenService:Create(bannerScale, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 0 })
+		t:Play()
+		t.Completed:Wait()
+		if token == bannerToken then
+			banner.Visible = false
+		end
+	end)
 end)

@@ -25,6 +25,9 @@ local BuyRemote = Net.event("BuyUpgrade")
 local CrushedRemote = Net.event("Crushed")
 local HitRemote = Net.event("Hit")
 local NoticeRemote = Net.event("Notice")
+local UpgradedRemote = Net.event("Upgraded")
+
+local RISE_SECONDS = 1.1 -- the new press rising out of the floor
 
 local LEVEL_KEYS = { "Power", "Speed", "Value" }
 local UPGRADE_BY_ID: { [string]: any } = {}
@@ -222,8 +225,17 @@ local function onBuy(player: Player, id: unknown)
 			slot.object:Destroy()
 			slot.object = nil
 		end
+		slot.ready = false
 		Plots.buildPress(slot.plot, data.tier)
-		task.spawn(spawnObject, player, slot)
+		Plots.riseIn(slot.plot, RISE_SECONDS)
+		UpgradedRemote:FireAllClients({ plot = slot.plot.index, position = Plots.bedBase(slot.plot).Position, tier = data.tier, owner = player })
+		local tierAtBuy = data.tier
+		task.delay(RISE_SECONDS, function()
+			-- Skip if they bought again (or left) meanwhile; the newer buy spawns it.
+			if slots[player] == slot and slot.tier == tierAtBuy and not slot.object then
+				spawnObject(player, slot)
+			end
+		end)
 		return
 	end
 	local u = UPGRADE_BY_ID[id]

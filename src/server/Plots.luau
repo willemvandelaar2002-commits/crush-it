@@ -9,6 +9,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
 local Config = require(ReplicatedStorage.Shared.Config)
 
 local Plots = {}
@@ -106,6 +107,24 @@ function Plots.buildPress(plot: Plot, tier: number)
 	plot.bedTop = bedTop
 	plot.ramRestY = restBottom
 	plot.tier = tier
+end
+
+-- The freshly built press rises out of the floor (used when buying a bigger press).
+function Plots.riseIn(plot: Plot, duration: number)
+	local press = plot.press
+	if not press then
+		return
+	end
+	local _, size = press:GetBoundingBox()
+	local depth = size.Y + 2
+	for _, p in press:GetDescendants() do
+		if p:IsA("BasePart") and p.Anchored then
+			local target = p.CFrame
+			p.CFrame = target - Vector3.new(0, depth, 0)
+			local delay = if p.Name == "Bed" then 0 else 0.08
+			TweenService:Create(p, TweenInfo.new(duration, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, delay), { CFrame = target }):Play()
+		end
+	end
 end
 
 local plots: { Plot } = {}

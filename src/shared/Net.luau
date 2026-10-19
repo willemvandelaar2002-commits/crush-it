@@ -7,11 +7,12 @@
 --   Crushed     server -> all    : { plot, position, tier, value, owner } — effects only
 --   Hit         server -> all    : { plot, position, tier } — a press stroke landed (effects)
 --   Notice      server -> client : { text } — short message (e.g. not enough cash)
+--   Upgraded    server -> all    : { plot, position, tier, owner } — bought a bigger press (effects)
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local NAMES = { "Crush", "BuyUpgrade", "Crushed", "Hit", "Notice" }
+local NAMES = { "Crush", "BuyUpgrade", "Crushed", "Hit", "Notice", "Upgraded" }
 
 local Net = {}
 

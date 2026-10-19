@@ -8,8 +8,8 @@ players, 19 Oct 2026), the loop is satisfying to watch (clip-friendly), and
 it's small enough to build in days.
 
 ## Milestones
-1. **Core loop** — plots, press, objects, crush, cash, HUD, upgrades, saving. *(in progress)*
-2. **Progression polish** — all 13 tiers looking good, press growth feels great.
+1. **Core loop** — plots, press, objects, crush, cash, HUD, upgrades, saving. *(done 19 Oct)*
+2. **Progression polish** — all 13 tiers looking good, press growth feels great. *(done 19 Oct)*
 3. **Juice** — better sounds, debris, screen effects, crush animations per object.
 4. **Depth** — rebirth (multiplier), golden objects, collection book.
 5. **Release** — shop + passes (port from WarChest: auto-crush, 2x cash, offline earnings),

@@ -14,6 +14,10 @@ type Original = { part: BasePart, size: Vector3, offset: CFrame }
 
 local originals: { [Model]: { Original } } = {}
 
+-- Config draws objects with their front at -Z; the player looks at the press
+-- from the plot's +Z side, so turn every object around.
+local FACING = CFrame.Angles(0, math.pi, 0)
+
 -- `base` = the CFrame of the object's base centre (on the press bed).
 function Objects.build(tier: number, base: CFrame): Model
 	local def = Config.Objects[tier]
@@ -33,7 +37,6 @@ function Objects.build(tier: number, base: CFrame): Model
 			end
 		end
 		part.Name = "P" .. i
-		part.Size = spec.size
 		part.Color = spec.color
 		part.Material = spec.material or Enum.Material.SmoothPlastic
 		part.Anchored = true
@@ -41,10 +44,17 @@ function Objects.build(tier: number, base: CFrame): Model
 		part.CanTouch = false
 		part.CastShadow = true
 		local rot = spec.rot or Vector3.zero
-		local offset = CFrame.new(spec.pos) * CFrame.Angles(math.rad(rot.X), math.rad(rot.Y), math.rad(rot.Z))
+		local offset = FACING * CFrame.new(spec.pos) * CFrame.Angles(math.rad(rot.X), math.rad(rot.Y), math.rad(rot.Z))
+		local size = spec.size
+		if spec.shape == "cylinder" then
+			-- Config cylinders stand along Y; the Cylinder mesh runs along the part's X.
+			offset *= CFrame.Angles(0, 0, math.pi / 2)
+			size = Vector3.new(size.Y, size.X, size.Z)
+		end
+		part.Size = size
 		part.CFrame = base * offset
 		part.Parent = model
-		table.insert(list, { part = part, size = spec.size, offset = offset })
+		table.insert(list, { part = part, size = size, offset = offset })
 	end
 	originals[model] = list
 	model.PrimaryPart = list[1].part

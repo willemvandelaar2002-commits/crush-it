@@ -12,3 +12,11 @@
   ignores anything early.
 - Saving: `Kit/DataService` (session-locked, autosave 60 s), store
   `CrushItPlayer_v1`: cash, tier, levels, rebirths, crushed.
+- Bigger press: the new press rises out of the floor (1.1 s, `RISE_SECONDS`),
+  the owner gets a "BIGGER PRESS! Now crushing: X" banner, confetti and a
+  shockwave; the next object rolls in once the press is up.
+- Final hit: pieces of the object fly off (client-only physics), a shockwave
+  ring on the bed, a heavy low thud, "+$X" and a full camera shake.
+- Objects are drawn in `Config.Objects` with their front at -Z and turned
+  around in `Objects.build` so the player (on the plot's walkway side) sees
+  the front. Cylinders in Config stand along Y.
