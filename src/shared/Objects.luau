@@ -1,5 +1,9 @@
 --!strict
--- Builds a tier's object from Config.Objects and squashes it.
+-- Builds a tier's object and squashes it.
+-- If ReplicatedStorage.ObjectMeshes has a Model named like the object (an AI
+-- or hand-made mesh, saved in the place file, not managed by Rojo), that is
+-- used, scaled to fit the object's width/height. Otherwise the object is
+-- built from the parts in Config.Objects.
 -- Every part is a Block (spheres and cylinders use a SpecialMesh), so the
 -- object can be flattened non-uniformly: setSquash(model, f) scales every
 -- part's height and height position by f (1 = whole, 0.07 = pancake) and
@@ -18,11 +22,94 @@ local originals: { [Model]: { Original } } = {}
 -- from the plot's +Z side, so turn every object around.
 local FACING = CFrame.Angles(0, math.pi, 0)
 
+local function addSparkle(part: BasePart, v: any, width: number)
+	local sparkle = Instance.new("ParticleEmitter")
+	sparkle.Name = "Sparkle"
+	sparkle.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	sparkle.Color = ColorSequence.new(v.text)
+	sparkle.LightEmission = 1
+	sparkle.Size = NumberSequence.new(math.clamp(width * 0.12, 0.3, 3), 0)
+	sparkle.Lifetime = NumberRange.new(0.6, 1.2)
+	sparkle.Rate = math.clamp(width * 2, 6, 40)
+	sparkle.Speed = NumberRange.new(1, 3)
+	sparkle.SpreadAngle = Vector2.new(180, 180)
+	sparkle.Parent = part
+end
+
+local function meshTemplate(name: string): Model?
+	local folder = ReplicatedStorage:FindFirstChild("ObjectMeshes")
+	local t = folder and folder:FindFirstChild(name)
+	return if t and t:IsA("Model") then t else nil
+end
+
+-- From a mesh template: scale it to fit inside the object's width x height,
+-- stand it on `base`, restyle for golden / diamond / silhouette.
+local function buildFromMesh(template: Model, def: any, base: CFrame, v: any, silhouette: boolean?): Model
+	local model = template:Clone()
+	model.Name = def.name
+	local cf, size = model:GetBoundingBox()
+	local scale = math.min(def.height / size.Y, def.width / math.max(size.X, size.Z))
+	local bottom = CFrame.new(cf.Position - Vector3.new(0, size.Y / 2, 0))
+	local list: { Original } = {}
+	for _, d in model:GetDescendants() do
+		if d:IsA("BasePart") then
+			local rel = bottom:ToObjectSpace(d.CFrame)
+			local offset = FACING * (CFrame.new(rel.Position * scale) * (rel - rel.Position))
+			local partSize = d.Size * scale
+			d.Size = partSize
+			d.CFrame = base * offset
+			d.Anchored = true
+			d.CanCollide = false
+			d.CanTouch = false
+			d.CanQuery = false
+			if (v and v.tint) or silhouette then
+				for _, c in d:GetChildren() do
+					if c:IsA("SurfaceAppearance") or c:IsA("Decal") or c:IsA("Texture") then
+						c:Destroy()
+					end
+				end
+				if d:IsA("MeshPart") then
+					d.TextureID = ""
+				end
+				if silhouette then
+					d.Color = Color3.fromRGB(25, 25, 30)
+					d.Material = Enum.Material.SmoothPlastic
+				else
+					d.Color = v.tint
+					d.Material = v.material
+					if v.id == "Diamond" then
+						d.Transparency = 0.15
+						d.Reflectance = 0.35
+					end
+				end
+			end
+			table.insert(list, { part = d, size = partSize, offset = offset })
+		elseif d:IsA("Script") or d:IsA("LocalScript") then
+			d:Destroy()
+		end
+	end
+	originals[model] = list
+	model.PrimaryPart = list[1].part
+	model:SetAttribute("Variant", if v then v.id else "Normal")
+	model:SetAttribute("Height", size.Y * scale) -- real height (the ram stops on it)
+	if v and v.tint and not silhouette then
+		addSparkle(list[1].part, v, def.width)
+	end
+	model.Destroying:Connect(function()
+		originals[model] = nil
+	end)
+	return model
+end
+
 -- `base` = the CFrame of the object's base centre (on the press bed).
 -- `variant` = "Normal" | "Golden" | "Diamond" (Config.Variants); `silhouette` paints it black (book).
 function Objects.build(tier: number, base: CFrame, variant: string?, silhouette: boolean?): Model
 	local def = Config.Objects[tier]
 	local v = Config.VariantById[variant or "Normal"]
+	local template = meshTemplate(def.name)
+	if template then
+		return buildFromMesh(template, def, base, v, silhouette)
+	end
 	local model = Instance.new("Model")
 	model.Name = def.name
 	local list: { Original } = {}
@@ -74,17 +161,7 @@ function Objects.build(tier: number, base: CFrame, variant: string?, silhouette:
 	model.PrimaryPart = list[1].part
 	model:SetAttribute("Variant", if v then v.id else "Normal")
 	if v and v.tint and not silhouette then
-		local sparkle = Instance.new("ParticleEmitter")
-		sparkle.Name = "Sparkle"
-		sparkle.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-		sparkle.Color = ColorSequence.new(v.text)
-		sparkle.LightEmission = 1
-		sparkle.Size = NumberSequence.new(math.clamp(def.width * 0.12, 0.3, 3), 0)
-		sparkle.Lifetime = NumberRange.new(0.6, 1.2)
-		sparkle.Rate = math.clamp(def.width * 2, 6, 40)
-		sparkle.Speed = NumberRange.new(1, 3)
-		sparkle.SpreadAngle = Vector2.new(180, 180)
-		sparkle.Parent = list[1].part
+		addSparkle(list[1].part, v, def.width)
 	end
 	model.Destroying:Connect(function()
 		originals[model] = nil
