@@ -19,8 +19,10 @@ local originals: { [Model]: { Original } } = {}
 local FACING = CFrame.Angles(0, math.pi, 0)
 
 -- `base` = the CFrame of the object's base centre (on the press bed).
-function Objects.build(tier: number, base: CFrame): Model
+-- `variant` = "Normal" | "Golden" | "Diamond" (Config.Variants); `silhouette` paints it black (book).
+function Objects.build(tier: number, base: CFrame, variant: string?, silhouette: boolean?): Model
 	local def = Config.Objects[tier]
+	local v = Config.VariantById[variant or "Normal"]
 	local model = Instance.new("Model")
 	model.Name = def.name
 	local list: { Original } = {}
@@ -39,6 +41,18 @@ function Objects.build(tier: number, base: CFrame): Model
 		part.Name = "P" .. i
 		part.Color = spec.color
 		part.Material = spec.material or Enum.Material.SmoothPlastic
+		if v and v.tint then
+			part.Color = spec.color:Lerp(v.tint, 0.75)
+			part.Material = v.material
+			if v.id == "Diamond" then
+				part.Transparency = 0.15
+				part.Reflectance = 0.35
+			end
+		end
+		if silhouette then
+			part.Color = Color3.fromRGB(25, 25, 30)
+			part.Material = Enum.Material.SmoothPlastic
+		end
 		part.Anchored = true
 		part.CanCollide = false
 		part.CanTouch = false
@@ -58,6 +72,20 @@ function Objects.build(tier: number, base: CFrame): Model
 	end
 	originals[model] = list
 	model.PrimaryPart = list[1].part
+	model:SetAttribute("Variant", if v then v.id else "Normal")
+	if v and v.tint and not silhouette then
+		local sparkle = Instance.new("ParticleEmitter")
+		sparkle.Name = "Sparkle"
+		sparkle.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		sparkle.Color = ColorSequence.new(v.text)
+		sparkle.LightEmission = 1
+		sparkle.Size = NumberSequence.new(math.clamp(def.width * 0.12, 0.3, 3), 0)
+		sparkle.Lifetime = NumberRange.new(0.6, 1.2)
+		sparkle.Rate = math.clamp(def.width * 2, 6, 40)
+		sparkle.Speed = NumberRange.new(1, 3)
+		sparkle.SpreadAngle = Vector2.new(180, 180)
+		sparkle.Parent = list[1].part
+	end
 	model.Destroying:Connect(function()
 		originals[model] = nil
 	end)

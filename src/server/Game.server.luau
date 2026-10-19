@@ -18,7 +18,7 @@ local Format = require(ReplicatedStorage.Shared.Format)
 local Net = require(ReplicatedStorage.Shared.Net)
 local DataService = require(script.Parent.Kit.DataService)
 local Plots = require(script.Parent.Plots)
-local Objects = require(script.Parent.Objects)
+local Objects = require(ReplicatedStorage.Shared.Objects)
 
 local CrushRemote = Net.event("Crush")
 local BuyRemote = Net.event("BuyUpgrade")
@@ -26,6 +26,8 @@ local CrushedRemote = Net.event("Crushed")
 local HitRemote = Net.event("Hit")
 local NoticeRemote = Net.event("Notice")
 local UpgradedRemote = Net.event("Upgraded")
+local RebirthedRemote = Net.event("Rebirthed")
+local CollectionRemote = Net.event("Collection")
 
 local RISE_SECONDS = 1.1 -- the new press rising out of the floor
 
@@ -41,6 +43,7 @@ local TEMPLATE = {
 	levels = { Power = 0, Speed = 0, Value = 0 },
 	rebirths = 0,
 	crushed = 0,
+	collection = {}, -- ["<tier>"] = { Normal = n, Golden = n, Diamond = n }
 }
 
 local function sanitize(d: any): any
@@ -49,6 +52,15 @@ local function sanitize(d: any): any
 	for _, k in LEVEL_KEYS do
 		local u = UPGRADE_BY_ID[k]
 		d.levels[k] = math.clamp(math.floor(tonumber(d.levels[k]) or 0), 0, u.max)
+	end
+	d.rebirths = math.max(0, math.floor(tonumber(d.rebirths) or 0))
+	if typeof(d.collection) ~= "table" then
+		d.collection = {}
+	end
+	for key, entry in d.collection do
+		if typeof(entry) ~= "table" or not tonumber(key) then
+			d.collection[key] = nil
+		end
 	end
 	return d
 end
@@ -64,6 +76,7 @@ type Slot = {
 	hp: number,
 	maxHp: number,
 	tier: number,
+	variant: string,
 	ready: boolean, -- an object is on the bed and can be pressed
 	nextPress: number, -- os.clock() when the next press is allowed
 }
@@ -78,8 +91,15 @@ local function effect(data: any, id: string): number
 	return UPGRADE_BY_ID[id].effect(level(data, id))
 end
 
+-- Everything that multiplies cash besides the Value upgrade and the object's variant.
+local function cashMult(data: any): number
+	return Config.rebirthMult(data.rebirths) * Config.collectionMult(data.collection)
+end
+
 local function syncAttributes(player: Player, data: any)
 	player:SetAttribute("Cash", data.cash)
+	player:SetAttribute("Rebirths", data.rebirths)
+	player:SetAttribute("CashMult", cashMult(data))
 	player:SetAttribute("Tier", data.tier)
 	for _, k in LEVEL_KEYS do
 		player:SetAttribute(k .. "Lv", data.levels[k])
@@ -89,12 +109,17 @@ local function syncAttributes(player: Player, data: any)
 	if cashValue then
 		(cashValue :: StringValue).Value = Format.cash(data.cash)
 	end
+	local rebirthValue = ls and ls:FindFirstChild("Rebirths")
+	if rebirthValue then
+		(rebirthValue :: IntValue).Value = data.rebirths
+	end
 end
 
 local function syncHp(player: Player, slot: Slot)
 	player:SetAttribute("Hp", math.max(0, slot.hp))
 	player:SetAttribute("MaxHp", slot.maxHp)
 	player:SetAttribute("ObjName", Config.Objects[slot.tier].name)
+	player:SetAttribute("ObjVariant", slot.variant)
 end
 
 -- Rolls a fresh object for the slot's tier along the conveyor onto the bed.
@@ -108,7 +133,8 @@ local function spawnObject(player: Player, slot: Slot)
 	local bed = Plots.bedBase(slot.plot)
 	local beltPos = Plots.beltStart(slot.plot).Position
 	local start = CFrame.new(beltPos.X, bed.Position.Y, beltPos.Z) * (bed - bed.Position)
-	local model = Objects.build(tier, start)
+	slot.variant = Config.rollVariant()
+	local model = Objects.build(tier, start, slot.variant)
 	model.Parent = slot.plot.model
 	slot.object = model
 	slot.maxHp = Config.Economy.ObjectHp(tier)
@@ -179,18 +205,37 @@ local function onCrush(player: Player)
 	end
 	Objects.setSquash(model, bed, f)
 	local pos = bed.Position + Vector3.new(0, height * f, 0)
-	HitRemote:FireAllClients({ plot = slot.plot.index, position = pos, tier = tier, owner = player })
+	local variant = slot.variant
+	HitRemote:FireAllClients({ plot = slot.plot.index, position = pos, tier = tier, owner = player, variant = variant })
 
 	if not dead then
 		slot.ready = true
 		return
 	end
 
-	local value = Config.Economy.ObjectValue(tier) * effect(data, "Value")
+	local value = Config.Economy.ObjectValue(tier) * effect(data, "Value") * Config.VariantById[variant].mult * cashMult(data)
 	data.cash += value
 	data.crushed += 1
+	-- Collection book.
+	local key = tostring(tier)
+	local entry = data.collection[key] or {}
+	data.collection[key] = entry
+	local first = (entry[variant] or 0) == 0
+	entry[variant] = (entry[variant] or 0) + 1
 	syncAttributes(player, data)
-	CrushedRemote:FireAllClients({ plot = slot.plot.index, position = pos, tier = tier, value = value, owner = player })
+	CrushedRemote:FireAllClients({ plot = slot.plot.index, position = pos, tier = tier, value = value, owner = player, variant = variant })
+	if first then
+		CollectionRemote:FireClient(player, data.collection)
+		local label = (if variant == "Normal" then "" else variant .. " ") .. Config.Objects[tier].name
+		NoticeRemote:FireClient(player, { text = "New in your book: " .. label .. "!" })
+	end
+	if variant == "Diamond" then
+		for _, other in Players:GetPlayers() do
+			if other ~= player then
+				NoticeRemote:FireClient(other, { text = player.DisplayName .. " crushed a DIAMOND " .. Config.Objects[tier].name .. "!" })
+			end
+		end
+	end
 	task.wait(0.4)
 	if slot.object == model and slots[player] == slot then
 		spawnObject(player, slot)
@@ -221,6 +266,36 @@ local function onBuy(player: Player, id: unknown)
 	local data = DataService.get(player)
 	local slot = slots[player]
 	if not data or not slot or typeof(id) ~= "string" then
+		return
+	end
+	if id == "Rebirth" then
+		local need = Config.Rebirth.RequiredTier(data.rebirths)
+		if data.tier < need then
+			notice(player, "Reach the " .. Config.Objects[need].name .. " press first")
+			return
+		end
+		data.rebirths += 1
+		data.cash = 0
+		data.tier = 1
+		for _, k in LEVEL_KEYS do
+			data.levels[k] = 0
+		end
+		syncAttributes(player, data)
+		slot.tier = 1
+		if slot.object then
+			slot.object:Destroy()
+			slot.object = nil
+		end
+		slot.ready = false
+		Plots.buildPress(slot.plot, 1)
+		Plots.riseIn(slot.plot, RISE_SECONDS)
+		RebirthedRemote:FireAllClients({ plot = slot.plot.index, position = Plots.bedBase(slot.plot).Position, rebirths = data.rebirths, owner = player, mult = cashMult(data) })
+		task.delay(RISE_SECONDS, function()
+			if slots[player] == slot and slot.tier == 1 and not slot.object then
+				spawnObject(player, slot)
+			end
+		end)
+		DataService.saveNow(player)
 		return
 	end
 	if id == "Size" then
@@ -325,6 +400,9 @@ local function onPlayer(player: Player)
 	cash.Name = "Cash"
 	cash.Value = "$0"
 	cash.Parent = ls
+	local rebirths = Instance.new("IntValue")
+	rebirths.Name = "Rebirths"
+	rebirths.Parent = ls
 	ls.Parent = player
 
 	local data = DataService.whenLoaded(player)
@@ -339,9 +417,10 @@ local function onPlayer(player: Player)
 	plot.owner = player
 	plot.sign.Text = player.DisplayName .. "'s Press"
 	player:SetAttribute("Plot", plot.index)
-	local slot: Slot = { plot = plot, object = nil, hp = 1, maxHp = 1, tier = data.tier, ready = false, nextPress = 0 }
+	local slot: Slot = { plot = plot, object = nil, hp = 1, maxHp = 1, tier = data.tier, variant = "Normal", ready = false, nextPress = 0 }
 	slots[player] = slot
 	syncAttributes(player, data)
+	CollectionRemote:FireClient(player, data.collection)
 	Plots.buildPress(plot, data.tier)
 	task.spawn(spawnObject, player, slot)
 

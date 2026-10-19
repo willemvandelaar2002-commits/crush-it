@@ -8,11 +8,14 @@
 --   Hit         server -> all    : { plot, position, tier } — a press stroke landed (effects)
 --   Notice      server -> client : { text } — short message (e.g. not enough cash)
 --   Upgraded    server -> all    : { plot, position, tier, owner } — bought a bigger press (effects)
+--   Rebirthed   server -> all    : { plot, position, rebirths, owner, mult } — someone rebirthed (effects)
+--   Collection  server -> client : collection table — on join and on every new book entry
+--   (Hit / Crushed also carry `variant`: "Normal" | "Golden" | "Diamond"; BuyUpgrade also takes "Rebirth")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local NAMES = { "Crush", "BuyUpgrade", "Crushed", "Hit", "Notice", "Upgraded" }
+local NAMES = { "Crush", "BuyUpgrade", "Crushed", "Hit", "Notice", "Upgraded", "Rebirthed", "Collection" }
 
 local Net = {}
 

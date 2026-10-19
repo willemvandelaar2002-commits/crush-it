@@ -245,6 +245,57 @@ Config.Upgrades = {
 }
 
 -- Bigger press = next object tier. Price of going from `tier` to `tier + 1`.
+-- Rare versions of every object. Rolled when an object spawns (rarest first).
+-- `mult` multiplies the cash it pays; tint/material restyle every part.
+Config.Variants = {
+	{ id = "Normal", chance = 1, mult = 1 },
+	{ id = "Golden", chance = 0.05, mult = 10, tint = C(255, 196, 40), material = Enum.Material.Foil, text = C(255, 210, 60) },
+	{ id = "Diamond", chance = 0.005, mult = 50, tint = C(150, 235, 255), material = Enum.Material.Glass, text = C(140, 230, 255) },
+}
+Config.VariantById = {} :: { [string]: any }
+for _, v in Config.Variants do
+	Config.VariantById[v.id] = v
+end
+
+function Config.rollVariant(): string
+	local r = math.random()
+	local acc = 0
+	for i = #Config.Variants, 2, -1 do
+		acc += Config.Variants[i].chance
+		if r < acc then
+			return Config.Variants[i].id
+		end
+	end
+	return "Normal"
+end
+
+-- Rebirth: reset cash, press and upgrades for a permanent cash multiplier.
+Config.Rebirth = {
+	-- Press tier you need before you can rebirth (Car first, one more each time).
+	RequiredTier = function(rebirths: number): number
+		return math.min(#Config.Objects, 6 + rebirths)
+	end,
+	CashPer = 0.5, -- +50% cash per rebirth
+}
+function Config.rebirthMult(rebirths: number): number
+	return 1 + Config.Rebirth.CashPer * rebirths
+end
+
+-- Collection book: crushing a version of an object for the first time adds a
+-- permanent cash bonus. collection = { ["<tier>"] = { Normal = n, Golden = n, Diamond = n } }
+Config.CollectionBonus = { Normal = 0.01, Golden = 0.03, Diamond = 0.1 }
+function Config.collectionMult(collection: { [string]: { [string]: number } }): number
+	local bonus = 0
+	for _, entry in collection do
+		for id, n in entry do
+			if n > 0 and Config.CollectionBonus[id] then
+				bonus += Config.CollectionBonus[id]
+			end
+		end
+	end
+	return 1 + bonus
+end
+
 Config.SizeCost = function(tier: number): number
 	return Config.Economy.ObjectValue(tier) * 10 * 1.32 ^ (tier - 1)
 end

@@ -15,6 +15,7 @@ local Workspace = game:GetService("Workspace")
 local Config = require(ReplicatedStorage.Shared.Config)
 local Format = require(ReplicatedStorage.Shared.Format)
 local Net = require(ReplicatedStorage.Shared.Net)
+local Objects = require(ReplicatedStorage.Shared.Objects)
 
 local player = Players.LocalPlayer
 local CrushRemote = Net.event("Crush")
@@ -25,6 +26,7 @@ local DARK = Color3.fromRGB(28, 30, 38)
 local GREEN = Color3.fromRGB(80, 200, 110)
 local RED = Color3.fromRGB(230, 80, 70)
 local GREY = Color3.fromRGB(110, 112, 120)
+local GOLD = Color3.fromRGB(255, 200, 50)
 
 local function make(class: string, props: { [string]: any }, children: { Instance }?): any
 	local i = Instance.new(class)
@@ -57,6 +59,12 @@ local cashLabel = make("TextLabel", {
 	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 8), Size = UDim2.fromOffset(260, 50),
 	BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextColor3 = GREEN, Text = "$0", Parent = gui,
 }, { stroke(3) })
+
+local multLabel = make("TextLabel", {
+	AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(1, 4, 0.5, 0), Size = UDim2.fromOffset(90, 24),
+	BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left,
+	TextColor3 = GOLD, Text = "", Parent = cashLabel,
+}, { stroke(2) })
 
 -- Object + HP bar (under the cash) -------------------------------------------
 local objFrame = make("Frame", {
@@ -138,6 +146,13 @@ local panel = make("Frame", {
 	AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(230, 0),
 	AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = gui,
 }, { make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }) })
+local panelScale = make("UIScale", { Parent = panel })
+local function fitPanel()
+	local h = Workspace.CurrentCamera.ViewportSize.Y
+	panelScale.Scale = math.clamp((h - 150) / 400, 0.55, 1)
+end
+Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitPanel)
+fitPanel()
 
 type Card = { frame: Frame, title: TextLabel, info: TextLabel, buy: TextButton, id: string }
 local cards: { Card } = {}
@@ -147,7 +162,24 @@ local function makeCard(id: string, order: number): Card
 	local title = make("TextLabel", { Position = UDim2.fromOffset(10, 4), Size = UDim2.new(1, -110, 0, 26), BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.new(1, 1, 1), Parent = frame })
 	local info = make("TextLabel", { Position = UDim2.fromOffset(10, 34), Size = UDim2.new(1, -110, 0, 28), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(200, 200, 210), Parent = frame })
 	local buy = make("TextButton", { AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -8, 0.5, 0), Size = UDim2.fromOffset(92, 52), BackgroundColor3 = GREEN, Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), AutoButtonColor = true, Parent = frame }, { corner(8), stroke(2), make("UIPadding", { PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6), PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6) }) })
+	local confirmUntil = 0
 	buy.Activated:Connect(function()
+		if id == "Rebirth" then
+			-- Two taps: the first one asks "SURE?".
+			if os.clock() > confirmUntil then
+				confirmUntil = os.clock() + 3
+				buy.Text = "SURE?"
+				task.delay(3, function()
+					if os.clock() >= confirmUntil then
+						buy.Text = ""
+						buy:SetAttribute("Refresh", os.clock())
+					end
+				end)
+				return
+			end
+			confirmUntil = 0
+			buy.Text = ""
+		end
 		BuyRemote:FireServer(id)
 	end)
 	local card = { frame = frame, title = title, info = info, buy = buy, id = id }
@@ -159,6 +191,8 @@ for i, u in Config.Upgrades do
 	makeCard(u.id, i)
 end
 makeCard("Size", #Config.Upgrades + 1)
+local rebirthCard = makeCard("Rebirth", #Config.Upgrades + 2)
+rebirthCard.title.TextColor3 = GOLD
 
 local function fmtEffect(id: string, v: number): string
 	if id == "Power" then
@@ -176,7 +210,24 @@ local function refresh()
 	cashLabel.Text = Format.cash(cash)
 	for _, card in cards do
 		local cost: number?
-		if card.id == "Size" then
+		if card.id == "Rebirth" then
+			local r = (player:GetAttribute("Rebirths") :: number?) or 0
+			local need = Config.Rebirth.RequiredTier(r)
+			card.title.Text = "Rebirth" .. (if r > 0 then "  (" .. r .. ")" else "")
+			if card.buy.Text == "SURE?" then
+				continue
+			end
+			if tier >= need then
+				card.info.Text = string.format("Cash x%.1f → x%.1f", Config.rebirthMult(r), Config.rebirthMult(r + 1))
+				card.buy.Text = "REBIRTH"
+				card.buy.BackgroundColor3 = GOLD
+			else
+				card.info.Text = "Reach the " .. Config.Objects[need].name
+				card.buy.Text = "LOCKED"
+				card.buy.BackgroundColor3 = GREY
+			end
+			continue
+		elseif card.id == "Size" then
 			local maxed = tier >= Config.MaxTier
 			card.title.Text = "Bigger Press"
 			card.info.Text = if maxed then "Biggest press!" else "Next: " .. Config.Objects[tier + 1].name
@@ -211,14 +262,20 @@ local function refresh()
 	end
 	local hp = (player:GetAttribute("Hp") :: number?) or 0
 	local maxHp = (player:GetAttribute("MaxHp") :: number?) or 1
-	objName.Text = ((player:GetAttribute("ObjName") :: string?) or "") .. "  " .. Format.compact(math.ceil(hp)) .. " HP"
+	local variant = (player:GetAttribute("ObjVariant") :: string?) or "Normal"
+	local vdef = Config.VariantById[variant]
+	objName.Text = (if variant ~= "Normal" then string.upper(variant) .. " " else "") .. ((player:GetAttribute("ObjName") :: string?) or "") .. "  " .. Format.compact(math.ceil(hp)) .. " HP"
+	objName.TextColor3 = if vdef and vdef.text then vdef.text else Color3.new(1, 1, 1)
+	local mult = (player:GetAttribute("CashMult") :: number?) or 1
+	multLabel.Text = if mult > 1.001 then string.format("x%.2f", mult) else ""
 	TweenService:Create(hpFill, TweenInfo.new(0.12), { Size = UDim2.fromScale(math.clamp(hp / maxHp, 0, 1), 1) }):Play()
 end
 
-for _, name in { "Cash", "Tier", "PowerLv", "SpeedLv", "ValueLv", "Hp", "MaxHp", "ObjName" } do
+for _, name in { "Cash", "Tier", "PowerLv", "SpeedLv", "ValueLv", "Hp", "MaxHp", "ObjName", "ObjVariant", "Rebirths", "CashMult" } do
 	player:GetAttributeChangedSignal(name):Connect(refresh)
 end
 refresh()
+rebirthCard.buy:GetAttributeChangedSignal("Refresh"):Connect(refresh)
 
 -- Cash pop when it goes up
 local lastCash = (player:GetAttribute("Cash") :: number?) or 0
@@ -585,8 +642,22 @@ Net.event("Crushed").OnClientEvent:Connect(function(msg)
 	shockwave(msg.position, Config.pressWidth(msg.tier) * 0.9, Color3.fromRGB(255, 230, 160))
 	sfx("Thud", msg.position, 0.8 * v, 0.6)
 	sfx(kind.crushSound, msg.position, 0.8 * v, 1)
+	local vdef = Config.VariantById[msg.variant or "Normal"]
+	if vdef and vdef.tint then
+		emit(msg.position, {
+			color = seq(vdef.text, Color3.new(1, 1, 1)), count = if mine then 50 else 15,
+			size = NumberSequence.new(0.6 * scale, 0), lifetime = NumberRange.new(0.6, 1.2),
+			speed = NumberRange.new(15 * scale, 35 * scale), spread = 90, gravity = 25, light = 1, rot = true,
+		})
+		shockwave(msg.position, Config.pressWidth(msg.tier) * 1.4, vdef.text)
+	end
 	if mine then
 		sfx("Coin", msg.position, 0.5, 1)
+		if vdef and vdef.tint then
+			sfx("Coin", msg.position, 0.6, 1.3)
+			sfx("LevelUp", msg.position, 0.5, 1.2)
+			floatText(msg.position + Vector3.new(0, 2, 0), string.upper(vdef.id) .. "!", vdef.text)
+		end
 		floatText(msg.position, "+" .. Format.cash(msg.value), GREEN)
 		shake = 1
 	end
@@ -598,7 +669,7 @@ local banner = make("Frame", {
 	BackgroundTransparency = 1, Visible = false, Parent = gui,
 })
 local bannerScale = make("UIScale", { Scale = 1, Parent = banner })
-make("TextLabel", {
+local bannerTitle = make("TextLabel", {
 	Size = UDim2.new(1, 0, 0.55, 0), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
 	TextColor3 = Color3.fromRGB(255, 210, 60), Text = "BIGGER PRESS!", Parent = banner,
 }, { stroke(4) })
@@ -607,6 +678,28 @@ local bannerSub = make("TextLabel", {
 	TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "", Parent = banner,
 }, { stroke(3) })
 local bannerToken = 0
+
+local function showBanner(title: string, sub: string, color: Color3)
+	bannerToken += 1
+	local token = bannerToken
+	bannerTitle.Text = title
+	bannerTitle.TextColor3 = color
+	bannerSub.Text = sub
+	banner.Visible = true
+	bannerScale.Scale = 0.2
+	TweenService:Create(bannerScale, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	task.delay(2.4, function()
+		if token ~= bannerToken then
+			return
+		end
+		local t = TweenService:Create(bannerScale, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 0 })
+		t:Play()
+		t.Completed:Wait()
+		if token == bannerToken then
+			banner.Visible = false
+		end
+	end)
+end
 
 Net.event("Upgraded").OnClientEvent:Connect(function(msg)
 	local mine = msg.owner == player
@@ -622,24 +715,159 @@ Net.event("Upgraded").OnClientEvent:Connect(function(msg)
 			shake = 0.8
 		end
 	end)
-	if not mine then
-		return
+	if mine then
+		showBanner("BIGGER PRESS!", "Now crushing: " .. Config.Objects[msg.tier].name, GOLD)
 	end
-	bannerToken += 1
-	local token = bannerToken
-	bannerSub.Text = "Now crushing: " .. Config.Objects[msg.tier].name
-	banner.Visible = true
-	bannerScale.Scale = 0.2
-	TweenService:Create(bannerScale, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
-	task.delay(2.4, function()
-		if token ~= bannerToken then
-			return
-		end
-		local t = TweenService:Create(bannerScale, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 0 })
-		t:Play()
-		t.Completed:Wait()
-		if token == bannerToken then
-			banner.Visible = false
+end)
+
+-- Rebirth: banner, gold burst ---------------------------------------------------
+Net.event("Rebirthed").OnClientEvent:Connect(function(msg)
+	local mine = msg.owner == player
+	task.delay(0.9, function()
+		emit(msg.position + Vector3.new(0, 6, 0), {
+			color = seq(GOLD, Color3.new(1, 1, 1)), count = if mine then 80 else 20,
+			size = NumberSequence.new(0.8, 0), lifetime = NumberRange.new(0.8, 1.6),
+			speed = NumberRange.new(20, 45), spread = 180, gravity = 20, light = 1, rot = true,
+		})
+		shockwave(msg.position, 30, GOLD)
+		if mine then
+			sfx("LevelUp", msg.position, 0.8, 0.9)
+			shake = 1
 		end
 	end)
+	if mine then
+		showBanner("REBIRTH " .. msg.rebirths .. "!", string.format("All cash x%.2f forever", msg.mult), GOLD)
+	end
+end)
+
+-- Collection book -----------------------------------------------------------
+-- A grid of every object: a 3D preview (black until you've crushed one), and
+-- how many Normal / Golden / Diamond ones you've crushed. Each first crush of
+-- a version adds a permanent cash bonus (Config.CollectionBonus).
+
+local collection: { [string]: { [string]: number } } = {}
+
+local bookButton = make("TextButton", {
+	Name = "BookButton",
+	Position = UDim2.fromOffset(12, 8), Size = UDim2.fromOffset(110, 44), BackgroundColor3 = Color3.fromRGB(120, 80, 200),
+	Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "BOOK", Parent = gui,
+}, { corner(10), stroke(2), make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6) }) })
+local bookDot = make("Frame", {
+	AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -4, 0, 4), Size = UDim2.fromOffset(16, 16),
+	BackgroundColor3 = RED, Visible = false, Parent = bookButton,
+}, { make("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+
+local book = make("Frame", {
+	AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0.8, 0),
+	BackgroundColor3 = DARK, BackgroundTransparency = 0.05, Visible = false, ZIndex = 10, Parent = gui,
+}, { corner(14), stroke(3), make("UISizeConstraint", { MaxSize = Vector2.new(820, 560) }) })
+local bookTitle = make("TextLabel", {
+	Position = UDim2.fromOffset(16, 8), Size = UDim2.new(1, -80, 0, 34), BackgroundTransparency = 1, Font = FONT,
+	TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.new(1, 1, 1), Text = "Collection", ZIndex = 11, Parent = book,
+})
+local bookSub = make("TextLabel", {
+	Position = UDim2.fromOffset(16, 42), Size = UDim2.new(1, -32, 0, 20), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium,
+	TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(200, 200, 210), ZIndex = 11, Parent = book,
+	Text = string.format("First crush of each version: Normal +%d%%, Golden +%d%%, Diamond +%d%% cash forever",
+		Config.CollectionBonus.Normal * 100, Config.CollectionBonus.Golden * 100, Config.CollectionBonus.Diamond * 100),
+})
+local closeButton = make("TextButton", {
+	AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 10), Size = UDim2.fromOffset(40, 40), BackgroundColor3 = RED,
+	Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "X", ZIndex = 11, Parent = book,
+}, { corner(8), stroke(2) })
+local grid = make("ScrollingFrame", {
+	Position = UDim2.fromOffset(12, 70), Size = UDim2.new(1, -24, 1, -82), BackgroundTransparency = 1, BorderSizePixel = 0,
+	ScrollBarThickness = 6, AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(), ZIndex = 11, Parent = book,
+}, { make("UIGridLayout", { CellSize = UDim2.fromOffset(140, 170), CellPadding = UDim2.fromOffset(10, 10), SortOrder = Enum.SortOrder.LayoutOrder }) })
+
+type BookCell = { frame: Frame, view: ViewportFrame, name: TextLabel, counts: { [string]: TextLabel }, shown: string? }
+local cells: { BookCell } = {}
+
+for tier, def in Config.Objects do
+	local frame = make("Frame", { BackgroundColor3 = Color3.fromRGB(45, 48, 60), LayoutOrder = tier, ZIndex = 12, Parent = grid }, { corner(10) })
+	local view = make("ViewportFrame", {
+		Position = UDim2.fromOffset(6, 6), Size = UDim2.new(1, -12, 0, 100), BackgroundColor3 = Color3.fromRGB(70, 75, 95),
+		Ambient = Color3.fromRGB(170, 170, 180), LightDirection = Vector3.new(-1, -2, -1), ZIndex = 12, Parent = frame,
+	}, { corner(8) })
+	local name = make("TextLabel", {
+		Position = UDim2.fromOffset(6, 108), Size = UDim2.new(1, -12, 0, 24), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
+		TextColor3 = Color3.new(1, 1, 1), Text = "???", ZIndex = 12, Parent = frame,
+	})
+	local counts = {}
+	for i, v in Config.Variants do
+		counts[v.id] = make("TextLabel", {
+			Position = UDim2.new((i - 1) / 3, 4, 0, 136), Size = UDim2.new(1 / 3, -8, 0, 26), BackgroundColor3 = Color3.fromRGB(30, 32, 40),
+			Font = FONT, TextScaled = true, TextColor3 = v.text or Color3.new(1, 1, 1), Text = "0", ZIndex = 12, Parent = frame,
+		}, { corner(6), make("UIPadding", { PaddingTop = UDim.new(0, 3), PaddingBottom = UDim.new(0, 3) }) })
+	end
+	cells[tier] = { frame = frame, view = view, name = name, counts = counts, shown = nil }
+end
+
+-- (Re)builds a cell's 3D preview: best version crushed so far, or a black silhouette.
+local function setPreview(tier: number, mode: string)
+	local cell = cells[tier]
+	if cell.shown == mode then
+		return
+	end
+	cell.shown = mode
+	cell.view:ClearAllChildren()
+	corner(8).Parent = cell.view
+	local def = Config.Objects[tier]
+	local model = Objects.build(tier, CFrame.identity, if mode == "silhouette" then "Normal" else mode, mode == "silhouette")
+	for _, d in model:GetDescendants() do
+		if d:IsA("ParticleEmitter") then
+			d:Destroy()
+		end
+	end
+	model.Parent = cell.view
+	local cam = Instance.new("Camera")
+	local size = math.max(def.width, def.height)
+	local centre = Vector3.new(0, def.height / 2, 0)
+	cam.FieldOfView = 40
+	cam.CFrame = CFrame.lookAt(centre + Vector3.new(size * 0.9, size * 0.6, size * 1.6), centre)
+	cam.Parent = cell.view
+	cell.view.CurrentCamera = cam
+end
+
+local function refreshBook()
+	local found, total = 0, #Config.Objects * #Config.Variants
+	for tier, def in Config.Objects do
+		local entry = collection[tostring(tier)] or {}
+		local cell = cells[tier]
+		local best = "silhouette"
+		for _, v in Config.Variants do
+			local n = entry[v.id] or 0
+			cell.counts[v.id].Text = Format.compact(n)
+			cell.counts[v.id].TextTransparency = if n > 0 then 0 else 0.6
+			if n > 0 then
+				found += 1
+				best = v.id
+			end
+		end
+		cell.name.Text = if best == "silhouette" then "???" else def.name
+		if book.Visible then
+			setPreview(tier, best)
+		end
+	end
+	local mult = Config.collectionMult(collection)
+	bookTitle.Text = string.format("Collection  %d/%d   bonus x%.2f", found, total, mult)
+end
+
+bookButton.Activated:Connect(function()
+	book.Visible = not book.Visible
+	bookDot.Visible = false
+	refreshBook()
+end)
+closeButton.Activated:Connect(function()
+	book.Visible = false
+end)
+
+local gotFirst = false
+Net.event("Collection").OnClientEvent:Connect(function(data)
+	collection = data
+	if gotFirst and not book.Visible then
+		bookDot.Visible = true
+	end
+	gotFirst = true
+	refreshBook()
 end)
