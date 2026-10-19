@@ -31,3 +31,18 @@
   level-up jingle.
 - Buying a bigger press moves you off the bed if the new press would grow
   under you.
+
+## Press looks (PressBuilder.luau, 19 Oct)
+Every tier has a name and paint colour (`Config.Presses`) and is at least 12%
+wider than the one before (`Config.pressWidth`). Five stages add parts:
+1. **Workshop** (Rusty, Workshop): rusty iron, wooden bed, bolts, red hand wheel.
+2. **Steel** (Steel, Hazard, Pro): painted frame with hazard bands, twin side
+   cylinders, pressure gauge, control panel with a red button, striped ram.
+3. **Industrial** (Industrial, Factory, Heavy): I-beam pillars with rivets,
+   orange beacons, steam vents, oil tank with a pipe up to the cylinder.
+4. **Mega** (Mega, Turbo, Hyper): dark steel with neon edges, energy cells,
+   neon bands, glowing ram, spinning ring round the cylinder.
+5. **Titan** (Titan, Cosmic): black and gold, spikes, a glowing energy core
+   with two orbiting rings.
+The beam carries a name plate and 13 level lights (one per tier, lit up to
+yours). Spinning parts are Models tagged `PressSpin`; the client turns them.

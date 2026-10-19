@@ -333,8 +333,16 @@ Config.Presses = {
 }
 
 -- The press's footprint grows with the object it crushes.
+-- Always at least 12% wider than the tier before, so every upgrade is visibly bigger.
+local widths: { number } = {}
 function Config.pressWidth(tier: number): number
-	return math.max(6, Config.Objects[tier].width * 1.35)
+	if widths[tier] then
+		return widths[tier]
+	end
+	local prev = if tier > 1 then Config.pressWidth(tier - 1) * 1.12 else 6
+	local w = math.max(6, Config.Objects[tier].width * 1.35, prev)
+	widths[tier] = w
+	return w
 end
 
 return Config
