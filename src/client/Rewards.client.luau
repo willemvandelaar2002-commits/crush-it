@@ -50,8 +50,8 @@ make("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0), Transparency = 0.
 make("UISizeConstraint", { MaxSize = Vector2.new(720, 520) }, panel)
 local title = make("TextLabel", {
 	Position = UDim2.fromOffset(16, 8), Size = UDim2.new(1, -80, 0, 36), BackgroundTransparency = 1, TextScaled = true,
-	TextXAlignment = Enum.TextXAlignment.Left, Text = "🎁 Free Rewards", Parent = panel,
-})
+	TextXAlignment = Enum.TextXAlignment.Left, Text = "🎁 Free Rewards",
+}, panel)
 Style.text(title, 2.5)
 local close = make("TextButton", {
 	AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 10), Size = UDim2.fromOffset(40, 40), Text = "X", TextScaled = true,
@@ -99,11 +99,11 @@ local function makeCard(parent: Frame, order: number, top: string, reward: any, 
 	}, frame)
 	Style.text(head, 2)
 	local icon = make("TextLabel", {
-		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 24), Size = UDim2.fromOffset(44, 44), BackgroundTransparency = 1,
+		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 24), Size = UDim2.fromOffset(36, 36), BackgroundTransparency = 1,
 		TextScaled = true, Text = if golden then "⭐" else "💵", ZIndex = 2,
 	}, frame)
 	local amount = make("TextLabel", {
-		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 68), Size = UDim2.new(1, -12, 0, 22), BackgroundTransparency = 1,
+		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 60), Size = UDim2.new(1, -12, 0, 22), BackgroundTransparency = 1,
 		TextScaled = true, Text = "", ZIndex = 2,
 	}, frame)
 	Style.text(amount, 2)
@@ -123,7 +123,7 @@ local function makeCard(parent: Frame, order: number, top: string, reward: any, 
 end
 
 heading("⏱️ Playtime gifts", 1)
-local playGrid = grid(2, Vector2.new(150, 130))
+local playGrid = grid(2, Vector2.new(150, 122))
 local playCards: { Card } = {}
 for i, r in Config.Rewards.Playtime do
 	playCards[i] = makeCard(playGrid, i, r.minutes .. " min", r, function()
@@ -132,7 +132,7 @@ for i, r in Config.Rewards.Playtime do
 end
 
 heading("📅 Daily check-in  (come back every day!)", 3)
-local dailyGrid = grid(4, Vector2.new(92, 130))
+local dailyGrid = grid(4, Vector2.new(92, 122))
 local dailyCards: { Card } = {}
 for i, r in Config.Rewards.Daily do
 	dailyCards[i] = makeCard(dailyGrid, i, "Day " .. i, r, function()

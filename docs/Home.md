@@ -20,5 +20,6 @@ upgrade board, /credits, Destroy-a-Vault studded look + reusable style kit.
 Props (trees, bushes, rocks, fences, lamps) added in the kit + Decor.luau.
 HUD: goal bar, icon buttons, rainbow offers, cash bottom-left (20 Oct).
 Leaderboard (Here / Friends / Global) top right (20 Oct).
-Next ideas: playtime/daily rewards, friend boost, in-world Robux signs, tutorial path, Halloween event; create the passes/products and fill Store ids; better
+Free rewards: playtime gifts + 7-day daily check-in (20 Oct).
+Next ideas: friend boost, in-world Robux signs, tutorial path, Halloween event; create the passes/products and fill Store ids; better
 Steel-stage press mesh; proper thumbnail.
