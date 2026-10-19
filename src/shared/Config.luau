@@ -304,9 +304,9 @@ end
 -- World layout: 8 plots in two rows of 4 facing a central walkway.
 Config.Plots = {
 	Count = 8,
-	Spacing = 110, -- along X
-	RowOffset = 75, -- each row's distance from the walkway centre (Z)
-	FloorSize = 90,
+	Spacing = 140, -- along X
+	RowOffset = 95, -- each row's distance from the walkway centre (Z)
+	FloorSize = 120, -- big enough for the widest (Cosmic) press frame
 }
 
 -- Every press tier has its own name and paint; the look changes per stage:
