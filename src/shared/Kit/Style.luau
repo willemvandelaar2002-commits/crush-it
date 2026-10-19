@@ -4,7 +4,8 @@
 -- No game-specific code: copy src/shared/Kit and src/server/Kit to the next game.
 --
 --   Style.studs(part, faces?, perTile?)        stud pattern on a part
---   Style.theme(name) -> palette               world colours (ground, platform, edge, path, dark)
+--   Style.theme(name) -> palette               world colours (ground, platform, edge, path, dark,
+--                                              and leaf, trunk, rock, fence, lamp for props)
 --   Style.lighten(c, f) / Style.darken(c, f)
 --   Style.panel(frame, colorA, colorB?)        gradient + dark outline + white inner border + studs
 --   Style.button(button, color?)               glossy button (default green) with outline + bounce
@@ -26,11 +27,14 @@ Style.Themes = {
 	Teal = {
 		ground = C(214, 206, 60), platform = C(40, 104, 100), edge = C(24, 66, 64), path = C(50, 118, 112),
 		dark = C(18, 48, 47), pad = C(30, 84, 80), light = C(110, 190, 172),
+		-- props (Build.tree/bush/rock/fence/lamp)
+		leaf = C(86, 190, 70), trunk = C(120, 78, 46), rock = C(140, 146, 160), fence = C(235, 235, 240), lamp = C(255, 214, 120),
 	},
 	-- orange/grey scrapyard
 	Scrap = {
 		ground = C(120, 200, 90), platform = C(96, 100, 116), edge = C(60, 62, 74), path = C(130, 134, 150),
 		dark = C(40, 42, 52), pad = C(78, 82, 96), light = C(180, 186, 200),
+		leaf = C(70, 160, 60), trunk = C(100, 70, 50), rock = C(150, 120, 100), fence = C(230, 140, 50), lamp = C(255, 190, 90),
 	},
 }
 

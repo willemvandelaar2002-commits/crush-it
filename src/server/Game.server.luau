@@ -81,6 +81,7 @@ end
 DataService.start("CrushItPlayer_v1", TEMPLATE, sanitize)
 require(script.Parent.Kit.Build).lighting()
 Plots.create()
+require(script.Parent.Decor).create()
 
 -- Per-plot object state ------------------------------------------------------
 

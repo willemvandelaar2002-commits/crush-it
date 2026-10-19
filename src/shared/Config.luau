@@ -304,6 +304,8 @@ end
 -- Look: the classic Roblox stud pattern on floors, pads and boards.
 Config.Look = {
 	Theme = "Teal", -- see shared/Kit/Style.luau (Teal, Scrap)
+	Props = true, -- trees, rocks, fences and lamps round the plots (server/Decor.luau)
+	PropSeed = 7, -- change for a different (but still fixed) layout
 }
 
 -- World layout: 8 plots in two rows of 4 facing a central walkway.

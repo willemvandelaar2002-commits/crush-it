@@ -20,9 +20,22 @@ and require them.
 - `Build.label(part, text, color, offsetY, sizeStuds?)` big floating outlined label
 - `Build.lighting()` bright cartoon lighting (colour correction, bloom, atmosphere)
 
+Props (blocky + studded, colours from the theme's `leaf`, `trunk`, `rock`, `fence`, `lamp`;
+pass a seeded `Random` so every server looks the same):
+- `Build.tree(parent, baseCf, scale, palette, rng?)` square trunk + 2-3 twisted leaf cubes (~5x12 at scale 1; leaves don't collide)
+- `Build.bush(parent, baseCf, scale, palette, rng?)` 2-3 low leaf cubes
+- `Build.rock(parent, baseCf, scale, palette, rng?)` 2-3 tilted, half-sunk stones
+- `Build.fence(parent, fromPos, toPos, color, {height?, spacing?})` posts with caps every 10 studs + two long rails
+- `Build.lamp(parent, baseCf, palette, height?)` dark post with a glowing Neon head and a PointLight
+
 ## In Crush It
 `Config.Look.Theme = "Teal"`: yellow studded ground, raised teal plot
 platforms with dark edges and a coloured trim per plot, framed pad under the
 press, conveyor with yellow rails, chunky studded sign + board, floating
 labels over the press ("Rusty Press") and board ("Upgrades"). Plot floors are
 now at y = 1.6 (raised platforms).
+
+Props in Crush It (`src/server/Decor.luau`, toggle `Config.Look.Props`, layout seed
+`Config.Look.PropSeed`): white fence behind both rows and down both ends (walkway
+open), lamp + bush + tree + rock in every gap between plots, lamps at the walkway
+ends, and a band of trees/bushes/rocks outside the fence (~230 props, ~1,200 parts).

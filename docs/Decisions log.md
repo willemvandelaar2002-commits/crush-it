@@ -13,3 +13,4 @@
 - 2026-10-19: Took Destroy a Vault's style: coloured upgrade rows, in-world upgrade board next to the press, top tutorial banner with pointing hand.
 - 2026-10-19: Stud pattern everywhere (floors, pad, rims, walkway, board, UI rows), bright grass floors, dark pad under the press, coloured plot rims.
 - 2026-10-19: Reusable style kit (shared/Kit/Style, server/Kit/Build) in the Destroy a Vault look; Crush It restyled with the Teal theme (yellow ground, raised teal platforms, chunky signs, floating labels, gradient panel rows).
+- 2026-10-19: Props in the kit (tree, bush, rock, fence, lamp) and Decor.luau placing them round the plots; seeded so the layout is fixed. Can be switched off with Config.Look.Props.

@@ -17,6 +17,6 @@ Done: core loop, 13 objects (AI meshes), 13 presses (AI mesh frames per stage
 + code ram), effects + sounds, rebirth, golden/diamond, collection book,
 Robux shop (ids still 0), offline earnings, onboarding banner, analytics,
 upgrade board, /credits, Destroy-a-Vault studded look + reusable style kit.
-Next ideas: props/decoration (trees, rocks, fences, lamps) in the kit; a
-"Next up" goal bar; create the passes/products and fill Store ids; better
+Props (trees, bushes, rocks, fences, lamps) added in the kit + Decor.luau.
+Next ideas: a "Next up" goal bar; create the passes/products and fill Store ids; better
 Steel-stage press mesh; proper thumbnail.
