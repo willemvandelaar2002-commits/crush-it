@@ -10,12 +10,16 @@
 --   Upgraded    server -> all    : { plot, position, tier, owner } — bought a bigger press (effects)
 --   Rebirthed   server -> all    : { plot, position, rebirths, owner, mult } — someone rebirthed (effects)
 --   Collection  server -> client : collection table — on join and on every new book entry
+--   SetAuto     client -> server : boolean — Auto Crush on/off (pass owners)
+--   ShopNotice  server -> client : { kind = "offline", owned, seconds, cash } — offline earnings card
+--   Purchased   server -> client : { id, text } — a Robux purchase went through (celebrate)
+--   ShopOpened  client -> server : tab name — analytics only
 --   (Hit / Crushed also carry `variant`: "Normal" | "Golden" | "Diamond"; BuyUpgrade also takes "Rebirth")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local NAMES = { "Crush", "BuyUpgrade", "Crushed", "Hit", "Notice", "Upgraded", "Rebirthed", "Collection" }
+local NAMES = { "Crush", "BuyUpgrade", "Crushed", "Hit", "Notice", "Upgraded", "Rebirthed", "Collection", "SetAuto", "ShopNotice", "Purchased", "ShopOpened" }
 
 local Net = {}
 

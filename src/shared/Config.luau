@@ -257,11 +257,12 @@ for _, v in Config.Variants do
 	Config.VariantById[v.id] = v
 end
 
-function Config.rollVariant(): string
+-- `luck` multiplies the rare chances (Lucky pass = 2).
+function Config.rollVariant(luck: number?): string
 	local r = math.random()
 	local acc = 0
 	for i = #Config.Variants, 2, -1 do
-		acc += Config.Variants[i].chance
+		acc += Config.Variants[i].chance * (luck or 1)
 		if r < acc then
 			return Config.Variants[i].id
 		end

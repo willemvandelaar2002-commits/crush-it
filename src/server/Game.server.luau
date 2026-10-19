@@ -19,6 +19,9 @@ local Net = require(ReplicatedStorage.Shared.Net)
 local DataService = require(script.Parent.Kit.DataService)
 local Plots = require(script.Parent.Plots)
 local Objects = require(ReplicatedStorage.Shared.Objects)
+local Store = require(ReplicatedStorage.Shared.Store)
+local Shop = require(script.Parent.Shop)
+local Analytics = require(script.Parent.Kit.Analytics)
 
 local CrushRemote = Net.event("Crush")
 local BuyRemote = Net.event("BuyUpgrade")
@@ -44,6 +47,12 @@ local TEMPLATE = {
 	rebirths = 0,
 	crushed = 0,
 	collection = {}, -- ["<tier>"] = { Normal = n, Golden = n, Diamond = n }
+	purchases = {}, -- last 50 Robux receipt ids (Shop)
+	goldenRush = 0, -- objects left that are forced Golden (Golden Rush product)
+	lastSeen = 0, -- os.time(), for offline earnings
+	autoCrush = true, -- Auto Crush pass: on/off switch
+	funnel = true, -- new saves log the onboarding funnel (Kit/Analytics)
+	funnelStep = 0,
 }
 
 local function sanitize(d: any): any
@@ -54,6 +63,10 @@ local function sanitize(d: any): any
 		d.levels[k] = math.clamp(math.floor(tonumber(d.levels[k]) or 0), 0, u.max)
 	end
 	d.rebirths = math.max(0, math.floor(tonumber(d.rebirths) or 0))
+	d.goldenRush = math.max(0, math.floor(tonumber(d.goldenRush) or 0))
+	if typeof(d.purchases) ~= "table" then
+		d.purchases = {}
+	end
 	if typeof(d.collection) ~= "table" then
 		d.collection = {}
 	end
@@ -100,6 +113,9 @@ local function syncAttributes(player: Player, data: any)
 	player:SetAttribute("Cash", data.cash)
 	player:SetAttribute("Rebirths", data.rebirths)
 	player:SetAttribute("CashMult", cashMult(data))
+	player:SetAttribute("Crushed", data.crushed)
+	player:SetAttribute("GoldenRush", data.goldenRush)
+	player:SetAttribute("AutoOn", data.autoCrush)
 	player:SetAttribute("Tier", data.tier)
 	for _, k in LEVEL_KEYS do
 		player:SetAttribute(k .. "Lv", data.levels[k])
@@ -133,7 +149,13 @@ local function spawnObject(player: Player, slot: Slot)
 	local bed = Plots.bedBase(slot.plot)
 	local beltPos = Plots.beltStart(slot.plot).Position
 	local start = CFrame.new(beltPos.X, bed.Position.Y, beltPos.Z) * (bed - bed.Position)
-	slot.variant = Config.rollVariant()
+	local data = DataService.get(player)
+	slot.variant = Config.rollVariant(if Store.hasPass(player, "Lucky") then 2 else 1)
+	if data and data.goldenRush > 0 and slot.variant == "Normal" then
+		data.goldenRush -= 1
+		slot.variant = "Golden"
+		player:SetAttribute("GoldenRush", data.goldenRush)
+	end
 	local model = Objects.build(tier, start, slot.variant)
 	model.Parent = slot.plot.model
 	slot.object = model
@@ -214,6 +236,7 @@ local function onCrush(player: Player)
 	end
 
 	local value = Config.Economy.ObjectValue(tier) * effect(data, "Value") * Config.VariantById[variant].mult * cashMult(data)
+		* (if Store.hasPass(player, "DoubleCash") then 2 else 1)
 	data.cash += value
 	data.crushed += 1
 	-- Collection book.
@@ -224,6 +247,9 @@ local function onCrush(player: Player)
 	entry[variant] = (entry[variant] or 0) + 1
 	syncAttributes(player, data)
 	CrushedRemote:FireAllClients({ plot = slot.plot.index, position = pos, tier = tier, value = value, owner = player, variant = variant })
+	if data.crushed == 1 then
+		Analytics.funnelStep(player, data, 2, "FirstCrush")
+	end
 	if first then
 		CollectionRemote:FireClient(player, data.collection)
 		local label = (if variant == "Normal" then "" else variant .. " ") .. Config.Objects[tier].name
@@ -295,6 +321,8 @@ local function onBuy(player: Player, id: unknown)
 				spawnObject(player, slot)
 			end
 		end)
+		Analytics.funnelStep(player, data, 6, "FirstRebirth")
+		Analytics.custom(player, "Rebirth", data.rebirths)
 		DataService.saveNow(player)
 		return
 	end
@@ -321,6 +349,11 @@ local function onBuy(player: Player, id: unknown)
 		Plots.riseIn(slot.plot, RISE_SECONDS)
 		moveOffPress(player, slot.plot)
 		UpgradedRemote:FireAllClients({ plot = slot.plot.index, position = Plots.bedBase(slot.plot).Position, tier = data.tier, owner = player })
+		if data.tier == 2 then
+			Analytics.funnelStep(player, data, 4, "SecondPress")
+		elseif data.tier == Config.Rebirth.RequiredTier(0) then
+			Analytics.funnelStep(player, data, 5, "RebirthPress")
+		end
 		local tierAtBuy = data.tier
 		task.delay(RISE_SECONDS, function()
 			-- Skip if they bought again (or left) meanwhile; the newer buy spawns it.
@@ -347,6 +380,7 @@ local function onBuy(player: Player, id: unknown)
 	data.cash -= cost
 	data.levels[id] = lv + 1
 	syncAttributes(player, data)
+	Analytics.funnelStep(player, data, 3, "FirstUpgrade")
 end
 
 -- Studio only: ServerStorage.DevGiveCash:Invoke(player, amount) for testing.
@@ -421,6 +455,7 @@ local function onPlayer(player: Player)
 	slots[player] = slot
 	syncAttributes(player, data)
 	CollectionRemote:FireClient(player, data.collection)
+	Analytics.funnelStep(player, data, 1, "Joined")
 	Plots.buildPress(plot, data.tier)
 	task.spawn(spawnObject, player, slot)
 
@@ -449,3 +484,61 @@ Players.PlayerRemoving:Connect(function(player)
 		Plots.buildPress(slot.plot, 1)
 	end
 end)
+
+-- Auto Crush (pass) --------------------------------------------------------------
+
+Net.event("SetAuto").OnServerEvent:Connect(function(player, on)
+	local data = DataService.get(player)
+	if data and typeof(on) == "boolean" then
+		data.autoCrush = on
+		player:SetAttribute("AutoOn", on)
+	end
+end)
+
+task.spawn(function()
+	while true do
+		task.wait(0.1)
+		local now = os.clock()
+		for player, slot in slots do
+			if slot.ready and now >= slot.nextPress and player:GetAttribute("AutoOn") == true and Store.hasPass(player, "AutoCrush") then
+				task.spawn(onCrush, player)
+			end
+		end
+	end
+end)
+
+-- Robux shop -----------------------------------------------------------------
+
+-- Cash per second at the player's current press and upgrades (no rare objects).
+local function cashPerSecond(player: Player): number
+	local data = DataService.get(player)
+	if not data then
+		return 0
+	end
+	local tier = data.tier
+	local presses = math.ceil(Config.Economy.ObjectHp(tier) / effect(data, "Power"))
+	local seconds = presses * effect(data, "Speed") + Config.Economy.BeltSeconds + 0.4
+	local value = Config.Economy.ObjectValue(tier) * effect(data, "Value") * cashMult(data)
+		* (if Store.hasPass(player, "DoubleCash") then 2 else 1)
+	return value / seconds
+end
+
+Shop.start({
+	getData = DataService.get,
+	whenLoaded = DataService.whenLoaded,
+	save = DataService.saveNow,
+	addCash = function(player: Player, amount: number)
+		local data = DataService.get(player)
+		if data then
+			data.cash += amount
+			syncAttributes(player, data)
+		end
+	end,
+	sync = function(player: Player)
+		local data = DataService.get(player)
+		if data then
+			syncAttributes(player, data)
+		end
+	end,
+	cashPerSecond = cashPerSecond,
+})

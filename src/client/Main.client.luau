@@ -82,6 +82,7 @@ local hpFill = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = 
 
 -- CRUSH button (bottom right) -------------------------------------------------
 local crushButton = make("TextButton", {
+	Name = "CrushButton",
 	AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -20, 1, -20), Size = UDim2.fromOffset(150, 150),
 	BackgroundColor3 = RED, Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "CRUSH",
 	AutoButtonColor = false, Parent = gui,
@@ -143,6 +144,7 @@ end)
 
 -- Upgrades (left side) ------------------------------------------------------
 local panel = make("Frame", {
+	Name = "Upgrades",
 	AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(230, 0),
 	AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = gui,
 }, { make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }) })
@@ -158,7 +160,7 @@ type Card = { frame: Frame, title: TextLabel, info: TextLabel, buy: TextButton, 
 local cards: { Card } = {}
 
 local function makeCard(id: string, order: number): Card
-	local frame = make("Frame", { Size = UDim2.fromOffset(230, 70), BackgroundColor3 = DARK, BackgroundTransparency = 0.15, LayoutOrder = order, Parent = panel }, { corner(10), stroke(2) })
+	local frame = make("Frame", { Name = "Card_" .. id, Size = UDim2.fromOffset(230, 70), BackgroundColor3 = DARK, BackgroundTransparency = 0.15, LayoutOrder = order, Parent = panel }, { corner(10), stroke(2) })
 	local title = make("TextLabel", { Position = UDim2.fromOffset(10, 4), Size = UDim2.new(1, -110, 0, 26), BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.new(1, 1, 1), Parent = frame })
 	local info = make("TextLabel", { Position = UDim2.fromOffset(10, 34), Size = UDim2.new(1, -110, 0, 28), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(200, 200, 210), Parent = frame })
 	local buy = make("TextButton", { AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -8, 0.5, 0), Size = UDim2.fromOffset(92, 52), BackgroundColor3 = GREEN, Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), AutoButtonColor = true, Parent = frame }, { corner(8), stroke(2), make("UIPadding", { PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6), PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6) }) })

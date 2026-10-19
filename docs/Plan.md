@@ -12,5 +12,5 @@ it's small enough to build in days.
 2. **Progression polish** — all 13 tiers looking good, press growth feels great. *(done 19 Oct)*
 3. **Juice** — better sounds, debris, screen effects, crush animations per object. *(done 19 Oct)*
 4. **Depth** — rebirth (multiplier), golden objects, collection book. *(done 19 Oct)*
-5. **Release** — shop + passes (port from WarChest: auto-crush, 2x cash, offline earnings),
-   onboarding, analytics, thumbnail and icon.
+5. **Release** — shop + passes (auto-crush, 2x cash, lucky, offline earnings, cash packs,
+   golden rush), onboarding, analytics, thumbnail and icon. *(built 19 Oct; ids + publish left)*
