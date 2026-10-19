@@ -11,6 +11,9 @@ and require them.
 - `Style.button(button, color?)` glossy green (or any colour) button; `Style.setButtonColor`
 - `Style.text(label, stroke?)` white Fredoka text with dark outline
 - `Style.studsImage(gui, tile, transparency)` stud pattern in UI
+- `Style.iconButton(parent, {name, icon, label, a, b?, size?})` -> (button, badge): big tilted gradient tile with an emoji, outlined label and a red "!" badge; grows on hover, squishes on click
+- `Style.rainbow(gui, speed?)` moving rainbow gradient (client only)
+- `Style.wobble(gui, degrees?, speed?)` gentle tilt back and forth (client only)
 
 ## server/Kit/Build.luau
 - `Build.block(parent, name, size, cf, color, studFaces?)`

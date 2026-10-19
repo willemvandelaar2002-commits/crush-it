@@ -11,6 +11,9 @@
 --   Style.button(button, color?)               glossy button (default green) with outline + bounce
 --   Style.text(label, strokeThickness?)        white bold text with a dark outline
 --   Style.studsImage(guiObject, tile, transparency)   stud pattern inside UI
+--   Style.iconButton(parent, opts) -> (TextButton, badge)  big chunky icon tile with a label and a "!" badge
+--   Style.rainbow(guiObject, speed?) -> UIGradient          animated rainbow fill (client only)
+--   Style.wobble(guiObject, degrees?, speed?)               gentle tilt back and forth (client only)
 
 local Style = {}
 
@@ -128,6 +131,94 @@ function Style.setButtonColor(btn: TextButton, c: Color3)
 	if outline then
 		outline.Color = Style.darken(c, 0.65)
 	end
+end
+
+-- Big chunky icon button (Destroy a Vault's SHOP / INDEX / REWARDS): a tilted
+-- gradient tile with a large emoji, an outlined label overlapping its bottom
+-- edge and a red "!" badge (hidden; show it with badge.Visible = true).
+-- opts = { name, icon, label, a, b?, size? (px, default 84) }
+function Style.iconButton(parent: Instance, opts: { [string]: any }): (TextButton, Frame)
+	local size = opts.size or 84
+	local btn = child("TextButton", {
+		Name = opts.name or "IconButton", Size = UDim2.fromOffset(size, size + 14), BackgroundTransparency = 1, Text = "",
+		AutoButtonColor = false,
+	}, parent)
+	local scale = child("UIScale", { Scale = 1 }, btn)
+	local tile = child("Frame", {
+		Name = "Tile", Size = UDim2.fromOffset(size, size), Rotation = -4, ZIndex = 2,
+	}, btn)
+	Style.panel(tile, opts.a, opts.b)
+	child("TextLabel", {
+		Name = "Icon", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.42), Size = UDim2.fromScale(0.78, 0.78),
+		BackgroundTransparency = 1, TextScaled = true, Text = opts.icon, ZIndex = 3,
+	}, tile)
+	local label = child("TextLabel", {
+		Name = "Label", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, 0), Size = UDim2.new(1.15, 0, 0, size * 0.34),
+		BackgroundTransparency = 1, TextScaled = true, Text = opts.label, ZIndex = 4,
+	}, btn)
+	Style.text(label, 3)
+	local badge = child("Frame", {
+		Name = "Badge", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -6, 0, 6), Size = UDim2.fromOffset(size * 0.36, size * 0.36),
+		BackgroundColor3 = C(235, 40, 40), Visible = false, ZIndex = 5,
+	}, btn)
+	child("UICorner", { CornerRadius = UDim.new(1, 0) }, badge)
+	child("UIStroke", { Thickness = 3, Color = Color3.new(1, 1, 1) }, badge)
+	local bang = child("TextLabel", {
+		Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, TextScaled = true, Text = "!", ZIndex = 6,
+	}, badge)
+	Style.text(bang, 2)
+	-- hover grows, press squishes
+	local TweenService = game:GetService("TweenService")
+	local function to(v: number)
+		TweenService:Create(scale, TweenInfo.new(0.15, Enum.EasingStyle.Back), { Scale = v }):Play()
+	end
+	btn.MouseEnter:Connect(function()
+		to(1.08)
+	end)
+	btn.MouseLeave:Connect(function()
+		to(1)
+	end)
+	btn.Activated:Connect(function()
+		scale.Scale = 0.88
+		to(1)
+	end)
+	return btn, badge
+end
+
+-- Moving rainbow over a white-backed GuiObject: the hues slide along the
+-- gradient every frame (an Offset would clamp to one colour at the ends).
+function Style.rainbow(gui: GuiObject, speed: number?): UIGradient
+	local g = child("UIGradient", { Name = "Rainbow", Rotation = 20 }, gui)
+	local s = speed or 0.35
+	local function paint()
+		local shift = (os.clock() * s) % 1
+		local keys = {}
+		for i = 0, 6 do
+			local t = i / 6
+			keys[i + 1] = ColorSequenceKeypoint.new(t, Color3.fromHSV((t * 0.75 + shift) % 1, 0.72, 1))
+		end
+		g.Color = ColorSequence.new(keys)
+	end
+	paint()
+	local conn
+	conn = game:GetService("RunService").RenderStepped:Connect(function()
+		if not g.Parent then
+			conn:Disconnect()
+			return
+		end
+		paint()
+	end)
+	return g
+end
+
+-- Tilts a GuiObject gently back and forth (eye-catching offer buttons).
+function Style.wobble(gui: GuiObject, degrees: number?, speed: number?)
+	local d = degrees or 4
+	local s = speed or 3
+	local phase = math.random() * 6
+	game:GetService("RunService").RenderStepped:Connect(function()
+		gui.Rotation = math.sin(os.clock() * s + phase) * d
+	end)
 end
 
 Style.GREEN = GREEN

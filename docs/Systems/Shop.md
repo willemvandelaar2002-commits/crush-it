@@ -41,3 +41,9 @@ Custom events: ShopOpened (where from), PassPurchase, RobuxPurchase, Rebirth.
 ## Art
 `docs/art/CrushIt_thumbnail.png` (1920x1080) and `CrushIt_icon.png` (512x512):
 first versions made from an in-game shot of a golden car in the press.
+
+## Offer buttons (right side, Shop.client.luau)
+- Rainbow wobbling "2X Cash / ONLY R$ 249" button (DoubleCash pass); hidden once owned.
+- Featured pass card under it with a "BEST!" ribbon: Auto Crush, then Lucky, then Offline Earnings (first one not owned); hidden when all owned.
+- Both fire ShopOpened analytics ("DoubleCashOffer" / "FeaturedOffer") and prompt the pass ("Coming soon!" while ids are 0).
+- SHOP is now a big icon button with a "!" badge until the shop is opened once per session; hidden offers while the book is open.

@@ -25,3 +25,9 @@ All numbers in `src/shared/Config.luau`.
 ## Cash per crush
 `ObjectValue(tier) × Value upgrade × variant mult × rebirth mult × collection mult`
 (rebirth × collection is shown next to your cash as "x1.75" etc.)
+
+## Goal bar (Goal.client.luau)
+Top centre, Destroy a Vault style: cash / price of the next Bigger Press with
+"Next up: <object>". Full bar pulses and says "Tap to unlock"; tapping buys the
+press. Once rebirth is unlocked it turns gold: "Rebirth ready! Cash xA > xB".
+Cash moved to the bottom-left corner (top centre on phones, because of the thumbstick).

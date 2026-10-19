@@ -14,3 +14,4 @@
 - 2026-10-19: Stud pattern everywhere (floors, pad, rims, walkway, board, UI rows), bright grass floors, dark pad under the press, coloured plot rims.
 - 2026-10-19: Reusable style kit (shared/Kit/Style, server/Kit/Build) in the Destroy a Vault look; Crush It restyled with the Teal theme (yellow ground, raised teal platforms, chunky signs, floating labels, gradient panel rows).
 - 2026-10-19: Props in the kit (tree, bush, rock, fence, lamp) and Decor.luau placing them round the plots; seeded so the layout is fixed. Can be switched off with Config.Look.Props.
+- 2026-10-20: HUD closer to Destroy a Vault: Next-up goal bar top centre, big icon buttons (BOOK/SHOP with ! badge), rainbow 2X Cash offer + featured pass card on the right, cash moved bottom-left.

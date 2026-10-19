@@ -40,7 +40,7 @@ ringCorner.Parent = ring
 -- Big banner across the top ("Buy An Upgrade") like Destroy a Vault.
 local banner = Instance.new("Frame")
 banner.AnchorPoint = Vector2.new(0.5, 0)
-banner.Position = UDim2.new(0.5, 0, 0, 120)
+banner.Position = UDim2.new(0.5, 0, 0, 132)
 banner.Size = UDim2.new(0.6, 0, 0, 64)
 banner.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 banner.BackgroundTransparency = 0.45
