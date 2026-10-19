@@ -84,3 +84,11 @@ attribute (degrees) per frame. Plots are now 120 wide (spacing 140, rows at
   in the player's own PlayerGui (adorned), so only the owner uses it.
 - Tutorial: dark banner across the top ("Hold CRUSH", "Buy An Upgrade",
   "Buy A Bigger Press") plus a pointing hand and ring on the button.
+
+## Stud look (19 Oct)
+Floors (bright grass), the dark pad under the press (grows with the press),
+plot rims (each plot its own colour), walkway, press plinth and the board
+frame carry the classic stud pattern: a Texture with
+`Config.Look.StudTexture` (free "Stud Texture" image 7447638591), 2 studs
+per tile. UI rows and the board background get the same pattern as a tiled
+ImageLabel. The board frame is grey with white glowing edges.

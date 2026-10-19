@@ -177,11 +177,24 @@ local function shine(): UIGradient
 	})
 end
 
+-- Stud pattern overlay for UI panels (same texture as the floors).
+local function studsOverlay(parent: GuiObject, tile: number, transparency: number)
+	if Config.Look.StudTexture == "rbxassetid://0" then
+		return
+	end
+	make("ImageLabel", {
+		Name = "Studs", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = Config.Look.StudTexture,
+		ScaleType = Enum.ScaleType.Tile, TileSize = UDim2.fromOffset(tile, tile), ImageTransparency = transparency, ZIndex = parent.ZIndex,
+		Parent = parent,
+	}, { corner(12) })
+end
+
 local function makeCard(id: string, order: number, parent: Instance?): Card
 	local style = ROW_STYLE[id] or { color = DARK, icon = "" }
 	local frame = make("Frame", {
 		Name = "Card_" .. id, Size = UDim2.fromOffset(262, 66), BackgroundColor3 = style.color, LayoutOrder = order, Parent = parent or panel,
 	}, { corner(12), shine(), make("UIStroke", { Thickness = 3, Color = style.color:Lerp(Color3.new(0, 0, 0), 0.55) }) })
+	studsOverlay(frame, 22, 0.35)
 	local iconBox = make("Frame", {
 		Position = UDim2.fromOffset(6, 6), Size = UDim2.fromOffset(54, 54), BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 0.25, Parent = frame,
 	}, { corner(10) })
@@ -333,7 +346,8 @@ task.spawn(function()
 		Name = "UpgradeBoardGui", Adornee = boardPart, Face = Enum.NormalId.Back, SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud,
 		PixelsPerStud = 30, ZOffset = 1, LightInfluence = 0, ResetOnSpawn = false, Parent = player.PlayerGui,
 	})
-	local bg = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(30, 34, 48), Parent = surface }, { corner(24) })
+	local bg = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(70, 76, 95), Parent = surface }, { corner(24) })
+	studsOverlay(bg, 40, 0.3)
 	make("TextLabel", {
 		Position = UDim2.new(0.05, 0, 0, 8), Size = UDim2.new(0.9, 0, 0, 48), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
 		TextColor3 = GOLD, Text = "UPGRADES", Parent = bg,

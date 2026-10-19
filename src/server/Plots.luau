@@ -29,9 +29,11 @@ export type Plot = {
 }
 
 local FLOOR_Y = 0.3 -- just above a Baseplate's top (y = 0) so they don't z-fight
+local GRASS = Color3.fromRGB(105, 200, 85)
+-- each plot's rim colour
 local FLOOR_COLORS = {
-	Color3.fromRGB(96, 160, 110), Color3.fromRGB(110, 140, 200), Color3.fromRGB(200, 140, 90), Color3.fromRGB(170, 110, 190),
-	Color3.fromRGB(90, 170, 170), Color3.fromRGB(200, 110, 120), Color3.fromRGB(160, 160, 90), Color3.fromRGB(120, 120, 130),
+	Color3.fromRGB(255, 120, 110), Color3.fromRGB(110, 170, 255), Color3.fromRGB(255, 190, 70), Color3.fromRGB(200, 130, 255),
+	Color3.fromRGB(80, 220, 210), Color3.fromRGB(255, 130, 200), Color3.fromRGB(170, 230, 90), Color3.fromRGB(200, 200, 215),
 }
 
 local root = Instance.new("Folder")
@@ -49,6 +51,22 @@ local function part(props: { [string]: any }, parent: Instance): Part
 	end
 	p.Parent = parent
 	return p
+end
+
+-- The stud pattern on a part's faces (Config.Look).
+function Plots.studs(p: BasePart, faces: { Enum.NormalId }?)
+	if Config.Look.StudTexture == "rbxassetid://0" then
+		return
+	end
+	for _, face in faces or { Enum.NormalId.Top } do
+		local t = Instance.new("Texture")
+		t.Name = "Studs"
+		t.Texture = Config.Look.StudTexture
+		t.Face = face
+		t.StudsPerTileU = Config.Look.StudsPerTile
+		t.StudsPerTileV = Config.Look.StudsPerTile
+		t.Parent = p
+	end
 end
 
 function Plots.originFor(index: number): CFrame
@@ -69,6 +87,14 @@ function Plots.buildPress(plot: Plot, tier: number)
 	end
 	local built = PressBuilder.build(plot.origin, tier)
 	built.model.Parent = plot.model
+	-- the dark pad under the press grows with it
+	local pad = plot.model:FindFirstChild("Pad") :: BasePart?
+	if pad then
+		local F = Config.Plots.FloorSize
+		local size = math.clamp(Config.pressWidth(tier) * 1.9 + 14, 34, F - 16)
+		pad.Size = Vector3.new(size, 0.2, size)
+		pad.CFrame = plot.origin * CFrame.new(0, 0.1, 0)
+	end
 	-- keep the upgrade board just right of the press, facing the spawn
 	local board = plot.model:FindFirstChild("Board") :: Model?
 	if board then
@@ -116,7 +142,19 @@ function Plots.create()
 		model.Name = "Plot" .. i
 		model:SetAttribute("Index", i)
 		local F = Config.Plots.FloorSize
-		part({ Name = "Floor", Size = Vector3.new(F, 1, F), CFrame = origin * CFrame.new(0, -0.5, 0), Color = FLOOR_COLORS[i], Material = Enum.Material.Concrete }, model)
+		local floor = part({ Name = "Floor", Size = Vector3.new(F, 1, F), CFrame = origin * CFrame.new(0, -0.5, 0), Color = GRASS, Material = Enum.Material.SmoothPlastic }, model)
+		Plots.studs(floor)
+		-- raised rim round the plot
+		local rimColor = FLOOR_COLORS[i]
+		for _, e in { { 0, F / 2 }, { 0, -F / 2 } } do
+			Plots.studs(part({ Name = "Rim", Size = Vector3.new(F + 2, 1.2, 2), CFrame = origin * CFrame.new(e[1], 0.1, e[2]), Color = rimColor }, model), { Enum.NormalId.Top })
+		end
+		for _, e in { { F / 2, 0 }, { -F / 2, 0 } } do
+			Plots.studs(part({ Name = "Rim", Size = Vector3.new(2, 1.2, F), CFrame = origin * CFrame.new(e[1], 0.1, e[2]), Color = rimColor }, model), { Enum.NormalId.Top })
+		end
+		-- dark studded pad under the press area
+		local pad = part({ Name = "Pad", Size = Vector3.new(F - 16, 0.2, F - 16), CFrame = origin * CFrame.new(0, 0.1, -2), Color = Color3.fromRGB(75, 78, 92) }, model)
+		Plots.studs(pad)
 		-- Conveyor from the front edge to the bed.
 		local beltLen = F / 2 - 4
 		part({ Name = "Conveyor", Size = Vector3.new(8, 0.6, beltLen), CFrame = origin * CFrame.new(0, 0.3, F / 2 - beltLen / 2), Color = Color3.fromRGB(35, 35, 40), Material = Enum.Material.Fabric }, model)
@@ -143,7 +181,12 @@ function Plots.create()
 		for _, side in { -1, 1 } do
 			part({ Name = "BoardPost", Size = Vector3.new(0.8, 4, 0.8), CFrame = boardBase * CFrame.new(side * boardW * 0.4, 2, 0), Color = Color3.fromRGB(60, 60, 68), Material = Enum.Material.Metal }, boardModel)
 		end
-		part({ Name = "BoardFrame", Size = Vector3.new(boardW + 0.8, boardH + 0.8, 0.5), CFrame = boardBase * CFrame.new(0, 4 + boardH / 2, -0.1), Color = Color3.fromRGB(245, 190, 40) }, boardModel)
+		local boardFrame = part({ Name = "BoardFrame", Size = Vector3.new(boardW + 1.2, boardH + 1.2, 0.6), CFrame = boardBase * CFrame.new(0, 4 + boardH / 2, -0.15), Color = Color3.fromRGB(150, 156, 170) }, boardModel)
+		Plots.studs(boardFrame, { Enum.NormalId.Back, Enum.NormalId.Front })
+		-- glowing white edges like the boards in Destroy a Vault
+		for _, side in { -1, 1 } do
+			part({ Name = "BoardGlow", Size = Vector3.new(0.25, boardH + 1.2, 0.25), CFrame = boardBase * CFrame.new(side * (boardW / 2 + 0.6), 4 + boardH / 2, 0.2), Color = Color3.new(1, 1, 1), Material = Enum.Material.Neon }, boardModel)
+		end
 		local board = part({ Name = "UpgradeBoard", Size = Vector3.new(boardW, boardH, 0.6), CFrame = boardBase * CFrame.new(0, 4 + boardH / 2, 0), Color = Color3.fromRGB(30, 34, 48) }, boardModel)
 		local boardGui = Instance.new("SurfaceGui")
 		boardGui.Face = Enum.NormalId.Back
@@ -166,7 +209,8 @@ function Plots.create()
 		table.insert(plots, plot)
 	end
 	-- Walkway + spawn in the middle.
-	part({ Name = "Walkway", Size = Vector3.new(Config.Plots.Spacing * 4 + 20, 1, Config.Plots.RowOffset * 2 - Config.Plots.FloorSize), CFrame = CFrame.new(0, FLOOR_Y - 0.6, 0), Color = Color3.fromRGB(200, 200, 205), Material = Enum.Material.Concrete }, root)
+	local walk = part({ Name = "Walkway", Size = Vector3.new(Config.Plots.Spacing * 4 + 20, 1, Config.Plots.RowOffset * 2 - Config.Plots.FloorSize), CFrame = CFrame.new(0, FLOOR_Y - 0.6, 0), Color = Color3.fromRGB(225, 228, 235), Material = Enum.Material.SmoothPlastic }, root)
+	Plots.studs(walk)
 end
 
 -- Where the conveyor starts / where objects wait, in world space.
