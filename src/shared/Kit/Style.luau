@@ -185,21 +185,28 @@ function Style.iconButton(parent: Instance, opts: { [string]: any }): (TextButto
 	return btn, badge
 end
 
-local RAINBOW = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, C(255, 60, 60)), ColorSequenceKeypoint.new(0.17, C(255, 160, 40)),
-	ColorSequenceKeypoint.new(0.33, C(255, 240, 60)), ColorSequenceKeypoint.new(0.5, C(70, 230, 90)),
-	ColorSequenceKeypoint.new(0.67, C(60, 170, 255)), ColorSequenceKeypoint.new(0.83, C(170, 80, 255)),
-	ColorSequenceKeypoint.new(1, C(255, 60, 60)),
-})
-
--- Moving rainbow over a white-backed GuiObject (or a UIStroke's parent).
+-- Moving rainbow over a white-backed GuiObject: the hues slide along the
+-- gradient every frame (an Offset would clamp to one colour at the ends).
 function Style.rainbow(gui: GuiObject, speed: number?): UIGradient
-	local g = child("UIGradient", { Name = "Rainbow", Color = RAINBOW, Rotation = 20 }, gui)
+	local g = child("UIGradient", { Name = "Rainbow", Rotation = 20 }, gui)
 	local s = speed or 0.35
-	game:GetService("RunService").RenderStepped:Connect(function()
-		if g.Parent then
-			g.Offset = Vector2.new(((os.clock() * s) % 2) - 1, 0)
+	local function paint()
+		local shift = (os.clock() * s) % 1
+		local keys = {}
+		for i = 0, 6 do
+			local t = i / 6
+			keys[i + 1] = ColorSequenceKeypoint.new(t, Color3.fromHSV((t * 0.75 + shift) % 1, 0.72, 1))
 		end
+		g.Color = ColorSequence.new(keys)
+	end
+	paint()
+	local conn
+	conn = game:GetService("RunService").RenderStepped:Connect(function()
+		if not g.Parent then
+			conn:Disconnect()
+			return
+		end
+		paint()
 	end)
 	return g
 end

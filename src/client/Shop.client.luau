@@ -265,7 +265,7 @@ end)
 local offers = make("Frame", {
 	Name = "Offers", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -14, 0.5, -60), Size = UDim2.fromOffset(200, 0),
 	AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = gui,
-}, { make("UIListLayout", { Padding = UDim.new(0, 14), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Right }) })
+}, { make("UIListLayout", { Padding = UDim.new(0, 26), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Right }) })
 local offersScale = make("UIScale", { Parent = offers })
 local function fitOffers()
 	local h = Workspace.CurrentCamera.ViewportSize.Y
