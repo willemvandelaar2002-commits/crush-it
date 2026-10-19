@@ -194,7 +194,8 @@ local function refresh()
 				card.info.Text = fmtEffect(u.id, u.effect(lv)) .. " (max)"
 				cost = nil
 			else
-				card.info.Text = fmtEffect(u.id, u.effect(lv)) .. " → " .. fmtEffect(u.id, u.effect(lv + 1))
+				local now, nxt = fmtEffect(u.id, u.effect(lv)), fmtEffect(u.id, u.effect(lv + 1))
+				card.info.Text = string.gsub(now, " dmg", "") .. " → " .. nxt
 				cost = u.cost(lv)
 			end
 		end

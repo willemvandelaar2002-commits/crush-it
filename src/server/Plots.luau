@@ -26,7 +26,7 @@ export type Plot = {
 	sign: TextLabel,
 }
 
-local FLOOR_Y = 0
+local FLOOR_Y = 0.3 -- just above a Baseplate's top (y = 0) so they don't z-fight
 local BED_HEIGHT = 2
 local STEEL = Color3.fromRGB(70, 74, 82)
 local YELLOW = Color3.fromRGB(245, 190, 40)
@@ -89,7 +89,11 @@ function Plots.buildPress(plot: Plot, tier: number)
 	local bedTop = (bedCenter * CFrame.new(0, BED_HEIGHT / 2, 0)).Position.Y
 	local restBottom = bedTop + clearance
 	local ram = part({ Name = "Ram", Size = Vector3.new(W * 0.92, plateH, W * 0.92), CFrame = CFrame.new(o.Position.X, restBottom + plateH / 2, o.Position.Z) * (o - o.Position), Color = STEEL, Material = Enum.Material.Metal }, press)
-	local rodLen = pillarH - (restBottom + plateH - FLOOR_Y) + W * 0.9
+	-- Hydraulic cylinder housing on the beam; the rod stays inside it over the full stroke.
+	local beamTop = FLOOR_Y + pillarH + beamH
+	local housingH = clearance + 1
+	part({ Name = "Housing", Size = Vector3.new(W * 0.34, housingH, W * 0.34), CFrame = o * CFrame.new(0, pillarH + beamH + housingH / 2, 0), Color = STEEL, Material = Enum.Material.Metal }, press)
+	local rodLen = beamTop - (restBottom + plateH) + housingH * 0.9
 	local rod = part({ Name = "Rod", Size = Vector3.new(W * 0.22, rodLen, W * 0.22), CFrame = ram.CFrame * CFrame.new(0, plateH / 2 + rodLen / 2, 0), Color = Color3.fromRGB(200, 205, 210), Material = Enum.Material.Metal }, press)
 	local weld = Instance.new("WeldConstraint")
 	weld.Part0 = ram
@@ -142,7 +146,7 @@ function Plots.create()
 		table.insert(plots, plot)
 	end
 	-- Walkway + spawn in the middle.
-	part({ Name = "Walkway", Size = Vector3.new(Config.Plots.Spacing * 4 + 20, 1, Config.Plots.RowOffset * 2 - Config.Plots.FloorSize), CFrame = CFrame.new(0, -0.5, 0), Color = Color3.fromRGB(200, 200, 205), Material = Enum.Material.Concrete }, root)
+	part({ Name = "Walkway", Size = Vector3.new(Config.Plots.Spacing * 4 + 20, 1, Config.Plots.RowOffset * 2 - Config.Plots.FloorSize), CFrame = CFrame.new(0, FLOOR_Y - 0.6, 0), Color = Color3.fromRGB(200, 200, 205), Material = Enum.Material.Concrete }, root)
 end
 
 -- Where the conveyor starts / where objects wait, in world space.
