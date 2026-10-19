@@ -9,3 +9,4 @@
 - 2026-10-19: Press redesign: own procedural model (PressBuilder) instead of Creator Store models (free models often hide scripts and couldn't grow per tier). 13 named presses in 5 stages, always bigger each tier.
 - 2026-10-19: /credits (and /cash) chat command for testing: Studio + the place owner only.
 - 2026-10-19: Objects are AI-generated meshes (ReplicatedStorage.ObjectMeshes in the place file); presses stay code-built for now, AI press frames were mixed.
+- 2026-10-19: Press frames are AI meshes per stage (Rusty, Steel, Industrial, Mega, Titan); ram/bed stay code so the press can move. Plots enlarged to 120.

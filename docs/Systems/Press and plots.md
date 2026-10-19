@@ -62,3 +62,14 @@ exists and otherwise falls back to the parts in `Config.Objects`.
   save/publish the place.
 - AI test presses (Rusty, Steel, Titan frames) are parked in
   `ServerStorage.GeneratedPresses` for later.
+
+## Mesh press frames (19 Oct)
+`ServerStorage.PressMeshes.Stage1..Stage5` (AI meshes, in the place file)
+replace the code-built pillars/beam/extras for that stage. PressBuilder
+stretches the frame to `W * 1.65` wide and tall enough for the stroke, adds a
+hanging cylinder the rod slides into, an accent-coloured glow round the
+plinth (each tier its own colour) and a sign in front with the press name and
+13 level lights. Bed, ram, stripes and rod are still code. Remove a Stage
+model to fall back to the code-built look for that stage. Optional `Yaw`
+attribute (degrees) per frame. Plots are now 120 wide (spacing 140, rows at
+±95) to fit the biggest frame.
