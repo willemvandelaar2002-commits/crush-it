@@ -74,7 +74,7 @@ function Plots.buildPress(plot: Plot, tier: number)
 	if board then
 		local W = Config.pressWidth(tier)
 		local F = Config.Plots.FloorSize
-		local x = math.clamp(W * 0.83 + 8, 14, F / 2 - 6)
+		local x = math.clamp(W * 0.9 + 9, 15, F / 2 - 7)
 		local z = math.clamp(W * 0.3, 4, 30)
 		board:PivotTo(plot.origin * CFrame.new(x, 0, z) * CFrame.Angles(0, math.rad(-25), 0))
 	end
@@ -138,7 +138,7 @@ function Plots.create()
 		-- Upgrade board (moved next to the press whenever the press changes size).
 		local boardModel = Instance.new("Model")
 		boardModel.Name = "Board"
-		local boardW, boardH = 11, 13.5
+		local boardW, boardH = 12, 18
 		local boardBase = origin
 		for _, side in { -1, 1 } do
 			part({ Name = "BoardPost", Size = Vector3.new(0.8, 4, 0.8), CFrame = boardBase * CFrame.new(side * boardW * 0.4, 2, 0), Color = Color3.fromRGB(60, 60, 68), Material = Enum.Material.Metal }, boardModel)

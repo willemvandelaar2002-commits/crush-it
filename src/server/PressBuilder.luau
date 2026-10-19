@@ -341,11 +341,13 @@ function PressBuilder.build(o: CFrame, tier: number): Built
 		local turned = math.abs(yawDeg) % 180 == 90
 		local srcW = if turned then size.Z else size.X
 		local srcD = if turned then size.X else size.Z
-		local targetW = W * 1.65 -- the openings are ~60% of the frame width
-		local targetH = math.max(pillarH + beamH, (sleeveTop - floorY) / 0.8)
-		local sx = targetW / srcW
-		local sy = targetH / size.Y
-		local sz = math.max(sx, (W * 0.45) / srcD)
+		-- Uniform scale (no stretching): wide enough for the bed, tall enough that
+		-- the cylinder/rod stays inside the frame over the whole stroke.
+		local fitW = (W * 1.55) / srcW
+		local fitH = (sleeveTop - floorY) / size.Y
+		local k = math.max(fitW, fitH)
+		local sx, sy, sz = k, k, k
+		local _ = srcD
 		local bottom = CFrame.new(cf.Position - Vector3.new(0, size.Y / 2, 0))
 		local yaw = CFrame.Angles(0, math.rad(yawDeg), 0)
 		local scaleV = if turned then Vector3.new(sz, sy, sx) else Vector3.new(sx, sy, sz)

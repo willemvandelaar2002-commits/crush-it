@@ -151,7 +151,7 @@ local panel = make("Frame", {
 local panelScale = make("UIScale", { Parent = panel })
 local function fitPanel()
 	local h = Workspace.CurrentCamera.ViewportSize.Y
-	panelScale.Scale = math.clamp((h - 150) / 400, 0.55, 1)
+	panelScale.Scale = math.clamp((h - 150) / 400, 0.55, 0.9)
 end
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitPanel)
 fitPanel()
@@ -291,7 +291,7 @@ local function refresh()
 		end
 		if cost then
 			card.buy.Text = Format.cash(cost)
-			card.buy.BackgroundColor3 = if cash >= cost then GREEN else GREY
+			card.buy.BackgroundColor3 = if cash >= cost then GREEN else Color3.fromRGB(95, 120, 100)
 			card.buy.Active = true
 		else
 			card.buy.Text = "MAX"
@@ -331,21 +331,21 @@ task.spawn(function()
 	end
 	local surface = make("SurfaceGui", {
 		Name = "UpgradeBoardGui", Adornee = boardPart, Face = Enum.NormalId.Back, SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud,
-		PixelsPerStud = 40, ZOffset = 1, LightInfluence = 0, ResetOnSpawn = false, Parent = player.PlayerGui,
+		PixelsPerStud = 30, ZOffset = 1, LightInfluence = 0, ResetOnSpawn = false, Parent = player.PlayerGui,
 	})
 	local bg = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(30, 34, 48), Parent = surface }, { corner(24) })
 	make("TextLabel", {
-		Position = UDim2.new(0.05, 0, 0, 14), Size = UDim2.new(0.9, 0, 0, 62), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
+		Position = UDim2.new(0.05, 0, 0, 8), Size = UDim2.new(0.9, 0, 0, 48), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
 		TextColor3 = GOLD, Text = "UPGRADES", Parent = bg,
 	}, { stroke(4) })
 	local list = make("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 90), Size = UDim2.fromOffset(262, 380), BackgroundTransparency = 1, Parent = bg,
+		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 62), Size = UDim2.fromOffset(262, 380), BackgroundTransparency = 1, Parent = bg,
 	}, { make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }) })
 	local listScale = make("UIScale", { Parent = list })
 	local function fit()
 		-- fill the board's width
 		local size = surface.AbsoluteSize
-		listScale.Scale = math.min((size.X * 0.9) / 262, (size.Y - 105) / 370)
+		listScale.Scale = math.min((size.X * 0.92) / 262, (size.Y - 70) / 370)
 	end
 	surface:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
 	fit()
