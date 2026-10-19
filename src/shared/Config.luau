@@ -309,6 +309,29 @@ Config.Plots = {
 	FloorSize = 90,
 }
 
+-- Every press tier has its own name and paint; the look changes per stage:
+--   1 Workshop (1-2)  rusty iron, wooden bed, hand wheel
+--   2 Steel (3-5)     painted frame, hazard stripes, twin side cylinders, gauge, control panel
+--   3 Industrial (6-8) I-beam pillars, beacons, oil tank + pipes, steam vents
+--   4 Mega (9-11)     dark steel with neon edges, energy cells, screen, spinning ring
+--   5 Titan (12-13)   black and gold, spikes, energy core with orbiting rings
+-- (built by src/server/PressBuilder.luau)
+Config.Presses = {
+	{ name = "Rusty Press", stage = 1, accent = C(190, 110, 60) },
+	{ name = "Workshop Press", stage = 1, accent = C(160, 120, 80) },
+	{ name = "Steel Press", stage = 2, accent = C(245, 190, 40) },
+	{ name = "Hazard Press", stage = 2, accent = C(255, 140, 30) },
+	{ name = "Pro Press", stage = 2, accent = C(225, 55, 50) },
+	{ name = "Industrial Press", stage = 3, accent = C(235, 120, 30) },
+	{ name = "Factory Press", stage = 3, accent = C(50, 140, 230) },
+	{ name = "Heavy Press", stage = 3, accent = C(80, 180, 70) },
+	{ name = "Mega Press", stage = 4, accent = C(0, 225, 255) },
+	{ name = "Turbo Press", stage = 4, accent = C(80, 255, 120) },
+	{ name = "Hyper Press", stage = 4, accent = C(255, 60, 200) },
+	{ name = "Titan Press", stage = 5, accent = C(170, 80, 255) },
+	{ name = "Cosmic Press", stage = 5, accent = C(90, 210, 255) },
+}
+
 -- The press's footprint grows with the object it crushes.
 function Config.pressWidth(tier: number): number
 	return math.max(6, Config.Objects[tier].width * 1.35)

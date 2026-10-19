@@ -11,6 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
 local Config = require(ReplicatedStorage.Shared.Config)
+local PressBuilder = require(script.Parent.PressBuilder)
 
 local Plots = {}
 
@@ -28,9 +29,6 @@ export type Plot = {
 }
 
 local FLOOR_Y = 0.3 -- just above a Baseplate's top (y = 0) so they don't z-fight
-local BED_HEIGHT = 2
-local STEEL = Color3.fromRGB(70, 74, 82)
-local YELLOW = Color3.fromRGB(245, 190, 40)
 local FLOOR_COLORS = {
 	Color3.fromRGB(96, 160, 110), Color3.fromRGB(110, 140, 200), Color3.fromRGB(200, 140, 90), Color3.fromRGB(170, 110, 190),
 	Color3.fromRGB(90, 170, 170), Color3.fromRGB(200, 110, 120), Color3.fromRGB(160, 160, 90), Color3.fromRGB(120, 120, 130),
@@ -64,48 +62,17 @@ function Plots.originFor(index: number): CFrame
 	return CFrame.new(x, FLOOR_Y, z) * facing
 end
 
--- Rebuilds this plot's press for `tier` (bigger press = bigger objects).
+-- Rebuilds this plot's press for `tier` (bigger and fancier every tier: PressBuilder).
 function Plots.buildPress(plot: Plot, tier: number)
 	if plot.press then
 		plot.press:Destroy()
 	end
-	local W = Config.pressWidth(tier)
-	local objH = Config.Objects[tier].height
-	local press = Instance.new("Model")
-	press.Name = "Press"
-	local o = plot.origin
-	local bedCenter = o * CFrame.new(0, BED_HEIGHT / 2, 0)
-	part({ Name = "Bed", Size = Vector3.new(W, BED_HEIGHT, W), CFrame = bedCenter, Color = STEEL, Material = Enum.Material.DiamondPlate }, press)
-	part({ Name = "BedStripe", Size = Vector3.new(W + 0.2, 0.4, 0.6), CFrame = bedCenter * CFrame.new(0, BED_HEIGHT / 2 - 0.2, -W / 2), Color = YELLOW }, press)
-	local clearance = objH + math.max(2, W * 0.15)
-	local pillarH = BED_HEIGHT + clearance + W * 0.35 + 3
-	local pillarW = math.max(1.5, W * 0.12)
-	for _, side in { -1, 1 } do
-		part({ Name = "Pillar", Size = Vector3.new(pillarW, pillarH, pillarW), CFrame = o * CFrame.new(side * (W / 2 + pillarW / 2 + 0.3), pillarH / 2, 0), Color = YELLOW }, press)
-	end
-	local beamH = math.max(2, W * 0.18)
-	part({ Name = "Beam", Size = Vector3.new(W + pillarW * 2 + 0.6, beamH, pillarW * 1.6), CFrame = o * CFrame.new(0, pillarH + beamH / 2, 0), Color = YELLOW }, press)
-	-- The ram: a plate plus its hydraulic rod, moved together (rod welded visually by CFrame).
-	local plateH = math.max(1, W * 0.1)
-	local bedTop = (bedCenter * CFrame.new(0, BED_HEIGHT / 2, 0)).Position.Y
-	local restBottom = bedTop + clearance
-	local ram = part({ Name = "Ram", Size = Vector3.new(W * 0.92, plateH, W * 0.92), CFrame = CFrame.new(o.Position.X, restBottom + plateH / 2, o.Position.Z) * (o - o.Position), Color = STEEL, Material = Enum.Material.Metal }, press)
-	-- Hydraulic cylinder housing on the beam; the rod stays inside it over the full stroke.
-	local beamTop = FLOOR_Y + pillarH + beamH
-	local housingH = clearance + 1
-	part({ Name = "Housing", Size = Vector3.new(W * 0.34, housingH, W * 0.34), CFrame = o * CFrame.new(0, pillarH + beamH + housingH / 2, 0), Color = STEEL, Material = Enum.Material.Metal }, press)
-	local rodLen = beamTop - (restBottom + plateH) + housingH * 0.9
-	local rod = part({ Name = "Rod", Size = Vector3.new(W * 0.22, rodLen, W * 0.22), CFrame = ram.CFrame * CFrame.new(0, plateH / 2 + rodLen / 2, 0), Color = Color3.fromRGB(200, 205, 210), Material = Enum.Material.Metal }, press)
-	local weld = Instance.new("WeldConstraint")
-	weld.Part0 = ram
-	weld.Part1 = rod
-	weld.Parent = ram
-	rod.Anchored = false
-	press.Parent = plot.model
-	plot.press = press
-	plot.ram = ram
-	plot.bedTop = bedTop
-	plot.ramRestY = restBottom
+	local built = PressBuilder.build(plot.origin, tier)
+	built.model.Parent = plot.model
+	plot.press = built.model
+	plot.ram = built.ram
+	plot.bedTop = built.bedTop
+	plot.ramRestY = built.restBottom
 	plot.tier = tier
 end
 

@@ -718,7 +718,7 @@ Net.event("Upgraded").OnClientEvent:Connect(function(msg)
 		end
 	end)
 	if mine then
-		showBanner("BIGGER PRESS!", "Now crushing: " .. Config.Objects[msg.tier].name, GOLD)
+		showBanner(string.upper(Config.Presses[msg.tier].name) .. "!", "Now crushing: " .. Config.Objects[msg.tier].name, Config.Presses[msg.tier].accent)
 	end
 end)
 
@@ -872,4 +872,21 @@ Net.event("Collection").OnClientEvent:Connect(function(data)
 	end
 	gotFirst = true
 	refreshBook()
+end)
+
+-- Spinning press parts (PressBuilder tags Models "PressSpin", attribute Speed rad/s).
+local CollectionService = game:GetService("CollectionService")
+RunService.RenderStepped:Connect(function(dt)
+	for _, m in CollectionService:GetTagged("PressSpin") do
+		if m:IsA("Model") then
+			local speed = (m:GetAttribute("Speed") :: number?) or 1
+			local centre = m:GetBoundingBox()
+			local turn = CFrame.Angles(0, speed * dt, 0)
+			for _, p in m:GetChildren() do
+				if p:IsA("BasePart") then
+					p.CFrame = centre * turn * centre:ToObjectSpace(p.CFrame)
+				end
+			end
+		end
+	end
 end)
