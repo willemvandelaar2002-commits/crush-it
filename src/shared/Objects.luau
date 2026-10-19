@@ -50,11 +50,13 @@ local function buildFromMesh(template: Model, def: any, base: CFrame, v: any, si
 	local cf, size = model:GetBoundingBox()
 	local scale = math.min(def.height / size.Y, def.width / math.max(size.X, size.Z))
 	local bottom = CFrame.new(cf.Position - Vector3.new(0, size.Y / 2, 0))
+	-- Template attribute "Yaw" (degrees) turns a mesh whose front isn't the default way round.
+	local yaw = CFrame.Angles(0, math.rad((template:GetAttribute("Yaw") :: number?) or 0), 0)
 	local list: { Original } = {}
 	for _, d in model:GetDescendants() do
 		if d:IsA("BasePart") then
 			local rel = bottom:ToObjectSpace(d.CFrame)
-			local offset = FACING * (CFrame.new(rel.Position * scale) * (rel - rel.Position))
+			local offset = yaw * FACING * (CFrame.new(rel.Position * scale) * (rel - rel.Position))
 			local partSize = d.Size * scale
 			d.Size = partSize
 			d.CFrame = base * offset
