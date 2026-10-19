@@ -341,7 +341,7 @@ function PressBuilder.build(o: CFrame, tier: number): Built
 		local turned = math.abs(yawDeg) % 180 == 90
 		local srcW = if turned then size.Z else size.X
 		local srcD = if turned then size.X else size.Z
-		local targetW = W * 1.5
+		local targetW = W * 1.65 -- the openings are ~60% of the frame width
 		local targetH = math.max(pillarH + beamH, (sleeveTop - floorY) / 0.8)
 		local sx = targetW / srcW
 		local sy = targetH / size.Y
