@@ -10,3 +10,13 @@ Small, quick game to test alongside WarChest: one loop, few systems, out fast.
 - [[Systems/Style kit]] — reusable studded look (Style + Build) for this and future games
 - [[Decisions log]]
 - [[Backlog]]
+
+## Status (19 Oct 2026, end of first session)
+Published as "Crush it" (placeId 132070482662061, Willem's account).
+Done: core loop, 13 objects (AI meshes), 13 presses (AI mesh frames per stage
++ code ram), effects + sounds, rebirth, golden/diamond, collection book,
+Robux shop (ids still 0), offline earnings, onboarding banner, analytics,
+upgrade board, /credits, Destroy-a-Vault studded look + reusable style kit.
+Next ideas: props/decoration (trees, rocks, fences, lamps) in the kit; a
+"Next up" goal bar; create the passes/products and fill Store ids; better
+Steel-stage press mesh; proper thumbnail.
