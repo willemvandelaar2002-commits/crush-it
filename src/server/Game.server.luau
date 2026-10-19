@@ -383,6 +383,86 @@ local function onBuy(player: Player, id: unknown)
 	Analytics.funnelStep(player, data, 3, "FirstUpgrade")
 end
 
+-- /credits <amount> (or /cash) chat command: gives cash for testing. Works in
+-- Studio and, in live servers, only for the game's owner (the account that
+-- owns the place). Amounts can use k/m/b/t: "/credits 5m".
+local SUFFIX = { k = 1e3, m = 1e6, b = 1e9, t = 1e12, qa = 1e15 }
+
+local function isAdmin(player: Player): boolean
+	if RunService:IsStudio() then
+		return true
+	end
+	return game.CreatorType == Enum.CreatorType.User and player.UserId == game.CreatorId
+end
+
+local function parseAmount(text: string?): number?
+	if not text then
+		return nil
+	end
+	local num, suffix = string.match(string.lower(text), "^([%d%.]+)(%a*)$")
+	local n = tonumber(num)
+	if not n then
+		return nil
+	end
+	if suffix ~= "" then
+		local mult = SUFFIX[suffix]
+		if not mult then
+			return nil
+		end
+		n *= mult
+	end
+	if n <= 0 or n ~= n or n == math.huge then
+		return nil
+	end
+	return math.floor(n)
+end
+
+local function onChatted(player: Player, message: string)
+	local words = string.split(message, " ")
+	local cmd = string.lower(words[1] or "")
+	if cmd ~= "/credits" and cmd ~= "/cash" then
+		return
+	end
+	if not isAdmin(player) then
+		return
+	end
+	local amount = parseAmount(words[2])
+	local data = DataService.get(player)
+	if not amount or not data then
+		notice(player, "Use: /credits 5m")
+		return
+	end
+	data.cash += amount
+	syncAttributes(player, data)
+	notice(player, "+" .. Format.cash(amount) .. " (dev)")
+end
+
+local TextChatService = game:GetService("TextChatService")
+if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+	-- A real chat command: the message isn't posted in chat.
+	local command = Instance.new("TextChatCommand")
+	command.Name = "CreditsCommand"
+	command.PrimaryAlias = "/credits"
+	command.SecondaryAlias = "/cash"
+	command.Triggered:Connect(function(source: TextSource, text: string)
+		local player = Players:GetPlayerByUserId(source.UserId)
+		if player then
+			onChatted(player, text)
+		end
+	end)
+	command.Parent = TextChatService
+else
+	local function hook(player: Player)
+		player.Chatted:Connect(function(message)
+			onChatted(player, message)
+		end)
+	end
+	Players.PlayerAdded:Connect(hook)
+	for _, player in Players:GetPlayers() do
+		hook(player)
+	end
+end
+
 -- Studio only: ServerStorage.DevGiveCash:Invoke(player, amount) for testing.
 if RunService:IsStudio() then
 	local give = Instance.new("BindableFunction")

@@ -7,3 +7,4 @@
 - 2026-10-19: Milestone 4: rebirth (first at Car, +50% cash each), Golden 5% x10 / Diamond 0.5% x50 objects, collection book with permanent cash bonuses. Objects.luau moved to Shared so the book can show 3D previews.
 - 2026-10-19: Milestone 5: Robux shop (4 passes, 3 cash packs, Golden Rush), offline earnings card, onboarding ring, funnel analytics, first thumbnail/icon. All Robux ids 0 until Willem creates them.
 - 2026-10-19: Press redesign: own procedural model (PressBuilder) instead of Creator Store models (free models often hide scripts and couldn't grow per tier). 13 named presses in 5 stages, always bigger each tier.
+- 2026-10-19: /credits (and /cash) chat command for testing: Studio + the place owner only.

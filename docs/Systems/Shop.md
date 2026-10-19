@@ -26,6 +26,8 @@ a 0 id shows "SOON" and can't be bought. Fill the ids in Store.luau only.
 - Studio test hooks (ServerStorage): `DevPass:Invoke(player, perk, true)`,
   `DevProduct:Invoke(player, id)`, `DevOffline:Invoke(player, hours)`,
   `DevGiveCash:Invoke(player, amount)`.
+- Chat command `/credits <amount>` (or `/cash`): gives cash, e.g. `/credits 5m`
+  (k/m/b/t/qa). Works in Studio and, live, only for the place owner.
 
 ## Onboarding (`src/client/Onboarding.client.luau`)
 Pulsing ring + hint: Hold CRUSH → buy first upgrade (when affordable) →
