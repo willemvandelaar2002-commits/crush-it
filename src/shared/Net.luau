@@ -14,12 +14,14 @@
 --   ShopNotice  server -> client : { kind = "offline", owned, seconds, cash } — offline earnings card
 --   Purchased   server -> client : { id, text } — a Robux purchase went through (celebrate)
 --   ShopOpened  client -> server : tab name — analytics only
+--   Rewards     server -> client : { joined, claimed = {i,...}, cps, daily = { streak, canClaim, nextAt } }
+--   ClaimReward client -> server : ("playtime", index) | ("daily")
 --   (Hit / Crushed also carry `variant`: "Normal" | "Golden" | "Diamond"; BuyUpgrade also takes "Rebirth")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local NAMES = { "Crush", "BuyUpgrade", "Crushed", "Hit", "Notice", "Upgraded", "Rebirthed", "Collection", "SetAuto", "ShopNotice", "Purchased", "ShopOpened" }
+local NAMES = { "Crush", "BuyUpgrade", "Crushed", "Hit", "Notice", "Upgraded", "Rebirthed", "Collection", "SetAuto", "ShopNotice", "Purchased", "ShopOpened", "Rewards", "ClaimReward" }
 
 local Net = {}
 

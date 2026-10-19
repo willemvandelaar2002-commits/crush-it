@@ -53,6 +53,7 @@ local TEMPLATE = {
 	autoCrush = true, -- Auto Crush pass: on/off switch
 	funnel = true, -- new saves log the onboarding funnel (Kit/Analytics)
 	funnelStep = 0,
+	daily = { day = 0, streak = 0 }, -- daily check-in (Rewards): last UTC day claimed, which day it was
 }
 
 local function sanitize(d: any): any
@@ -610,6 +611,25 @@ local function cashPerSecond(player: Player): number
 		* (if Store.hasPass(player, "DoubleCash") then 2 else 1)
 	return value / seconds
 end
+
+require(script.Parent.Rewards).start({
+	getData = DataService.get,
+	whenLoaded = DataService.whenLoaded,
+	addCash = function(player: Player, amount: number)
+		local data = DataService.get(player)
+		if data then
+			data.cash += amount
+			syncAttributes(player, data)
+		end
+	end,
+	sync = function(player: Player)
+		local data = DataService.get(player)
+		if data then
+			syncAttributes(player, data)
+		end
+	end,
+	cashPerSecond = cashPerSecond,
+})
 
 Shop.start({
 	getData = DataService.get,
