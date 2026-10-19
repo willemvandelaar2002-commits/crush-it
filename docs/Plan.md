@@ -10,7 +10,7 @@ it's small enough to build in days.
 ## Milestones
 1. **Core loop** — plots, press, objects, crush, cash, HUD, upgrades, saving. *(done 19 Oct)*
 2. **Progression polish** — all 13 tiers looking good, press growth feels great. *(done 19 Oct)*
-3. **Juice** — better sounds, debris, screen effects, crush animations per object.
+3. **Juice** — better sounds, debris, screen effects, crush animations per object. *(done 19 Oct)*
 4. **Depth** — rebirth (multiplier), golden objects, collection book.
 5. **Release** — shop + passes (port from WarChest: auto-crush, 2x cash, offline earnings),
    onboarding, analytics, thumbnail and icon.

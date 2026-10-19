@@ -197,6 +197,22 @@ local function onCrush(player: Player)
 	end
 end
 
+-- A bigger press can grow under the player: step them back to the plot's spawn.
+local function moveOffPress(player: Player, plot: Plots.Plot)
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not character or not root then
+		return
+	end
+	local bed = Plots.bedBase(plot).Position
+	local offset = root.Position - bed
+	local half = Config.pressWidth(plot.tier) / 2 + 3
+	if math.abs(offset.X) < half and math.abs(offset.Z) < half then
+		local spawnCf = Plots.spawnFor(plot)
+		character:PivotTo(CFrame.lookAt(spawnCf.Position, Vector3.new(bed.X, spawnCf.Position.Y, bed.Z)))
+	end
+end
+
 local function notice(player: Player, text: string)
 	NoticeRemote:FireClient(player, { text = text })
 end
@@ -228,6 +244,7 @@ local function onBuy(player: Player, id: unknown)
 		slot.ready = false
 		Plots.buildPress(slot.plot, data.tier)
 		Plots.riseIn(slot.plot, RISE_SECONDS)
+		moveOffPress(player, slot.plot)
 		UpgradedRemote:FireAllClients({ plot = slot.plot.index, position = Plots.bedBase(slot.plot).Position, tier = data.tier, owner = player })
 		local tierAtBuy = data.tier
 		task.delay(RISE_SECONDS, function()

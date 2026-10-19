@@ -20,3 +20,14 @@
 - Objects are drawn in `Config.Objects` with their front at -Z and turned
   around in `Objects.build` so the player (on the plot's walkway side) sees
   the front. Cylinders in Config stand along Y.
+- Crush styles: every object has a `kind` (soft, fluff, glass, metal, wood,
+  stone, planet). `Config.Kinds` picks its hit/crush sounds and effects:
+  juice splat for the apple, fluff for the teddy, electric zaps and glass
+  shards for phone/TV, sparks and smoke for metal, dust for the house and
+  statue, fire and an explosion for the planet.
+- Sounds: all ids in `Config.Sounds` (free Creator Store audio, preloaded on
+  join). Every stroke: thud + the kind's hit sound + a short hydraulic hiss
+  on your own press; crush: heavy thud + crush sound + coin; bigger press:
+  level-up jingle.
+- Buying a bigger press moves you off the bed if the new press would grow
+  under you.

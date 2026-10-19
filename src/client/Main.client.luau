@@ -253,7 +253,7 @@ local fxFolder = Instance.new("Folder")
 fxFolder.Name = "CrushFx"
 fxFolder.Parent = Workspace
 
-local function sound(id: string, pos: Vector3, volume: number, pitch: number)
+local function sound(id: string, pos: Vector3, volume: number, pitch: number): Sound
 	local anchor = Instance.new("Part")
 	anchor.Anchored, anchor.CanCollide, anchor.CanQuery, anchor.CanTouch = true, false, false, false
 	anchor.Transparency = 1
@@ -267,8 +267,30 @@ local function sound(id: string, pos: Vector3, volume: number, pitch: number)
 	s.RollOffMaxDistance = 200
 	s.Parent = anchor
 	s:Play()
-	Debris:AddItem(anchor, 3)
+	Debris:AddItem(anchor, 6)
+	return s
 end
+
+-- A sound from Config.Sounds by name.
+local function sfx(key: string, pos: Vector3, volume: number, pitch: number): Sound?
+	local id = Config.Sounds[key]
+	if not id then
+		return nil
+	end
+	return sound("rbxassetid://" .. id, pos, volume, pitch)
+end
+
+task.spawn(function()
+	local list = {}
+	for _, id in Config.Sounds do
+		local s = Instance.new("Sound")
+		s.SoundId = "rbxassetid://" .. id
+		table.insert(list, s)
+	end
+	pcall(function()
+		game:GetService("ContentProvider"):PreloadAsync(list)
+	end)
+end)
 
 local function burst(pos: Vector3, color: Color3, count: number, size: number)
 	local anchor = Instance.new("Part")
@@ -289,6 +311,49 @@ local function burst(pos: Vector3, color: Color3, count: number, size: number)
 	e.Parent = anchor
 	e:Emit(count)
 	Debris:AddItem(anchor, 1.5)
+end
+
+type EmitOpts = {
+	color: ColorSequence,
+	count: number,
+	size: NumberSequence,
+	lifetime: NumberRange,
+	speed: NumberRange,
+	spread: number?,
+	gravity: number?,
+	light: number?,
+	transparency: NumberSequence?,
+	drag: number?,
+	rot: boolean?,
+}
+
+local function emit(pos: Vector3, o: EmitOpts)
+	local anchor = Instance.new("Part")
+	anchor.Anchored, anchor.CanCollide, anchor.CanQuery, anchor.CanTouch = true, false, false, false
+	anchor.Transparency = 1
+	anchor.Size = Vector3.one
+	anchor.Position = pos
+	anchor.Parent = fxFolder
+	local e = Instance.new("ParticleEmitter")
+	e.Color = o.color
+	e.Size = o.size
+	e.Lifetime = o.lifetime
+	e.Speed = o.speed
+	local spread = o.spread or 80
+	e.SpreadAngle = Vector2.new(spread, spread)
+	e.Acceleration = Vector3.new(0, -(o.gravity or 60), 0)
+	e.LightEmission = o.light or 0
+	e.Transparency = o.transparency or NumberSequence.new(0)
+	e.Drag = o.drag or 0
+	if o.rot then
+		e.Rotation = NumberRange.new(0, 360)
+		e.RotSpeed = NumberRange.new(-120, 120)
+	end
+	e.EmissionDirection = Enum.NormalId.Top
+	e.Rate = 0
+	e.Parent = anchor
+	e:Emit(o.count)
+	Debris:AddItem(anchor, o.lifetime.Max + 0.5)
 end
 
 local shake = 0
@@ -315,26 +380,25 @@ local function floatText(pos: Vector3, text: string, color: Color3)
 	Debris:AddItem(anchor, 1.3)
 end
 
-Net.event("Hit").OnClientEvent:Connect(function(msg)
-	local mine = msg.owner == player
-	local scale = math.clamp(Config.pressWidth(msg.tier) / 10, 0.6, 4)
-	sound("rbxasset://sounds/collide.wav", msg.position, if mine then 0.7 else 0.25, 0.7 + math.random() * 0.2)
-	burst(msg.position, Color3.fromRGB(255, 210, 120), if mine then 10 else 4, 0.3 * scale)
-	if mine then
-		shake = math.min(1, shake + 0.35)
-	end
-end)
 
 -- Pieces of the object fly off on the final hit (client-only, physics, short-lived).
-local function debris(pos: Vector3, tier: number, count: number)
+local function debris(pos: Vector3, tier: number, count: number, shards: boolean?)
 	local def = Config.Objects[tier]
 	local unit = math.clamp(def.width / 6, 0.3, 5)
 	for _ = 1, count do
 		local spec = def.parts[math.random(1, #def.parts)]
 		local p = Instance.new("Part")
-		p.Size = Vector3.new(unit * (0.3 + math.random() * 0.5), unit * (0.15 + math.random() * 0.25), unit * (0.3 + math.random() * 0.5))
-		p.Color = spec.color
-		p.Material = spec.material or Enum.Material.SmoothPlastic
+		if shards then
+			p.Size = Vector3.new(unit * (0.3 + math.random() * 0.4), 0.08, unit * (0.2 + math.random() * 0.3))
+			p.Color = Color3.fromRGB(200, 235, 255)
+			p.Material = Enum.Material.Glass
+			p.Transparency = 0.3
+			p.Reflectance = 0.3
+		else
+			p.Size = Vector3.new(unit * (0.3 + math.random() * 0.5), unit * (0.15 + math.random() * 0.25), unit * (0.3 + math.random() * 0.5))
+			p.Color = spec.color
+			p.Material = spec.material or Enum.Material.SmoothPlastic
+		end
 		p.CanCollide = true
 		p.CanQuery = false
 		p.CanTouch = false
@@ -367,17 +431,162 @@ local function shockwave(pos: Vector3, radius: number, color: Color3)
 	Debris:AddItem(ring, 0.5)
 end
 
+-- Crush styles ----------------------------------------------------------------
+-- Each Config.Kinds entry names a hitFx / crushFx drawn here.
+-- (pos = top of the squashed object, def = the object, s = size scale, big = final hit)
+
+local function seq(...: Color3): ColorSequence
+	local c = { ... }
+	if #c == 1 then
+		return ColorSequence.new(c[1])
+	end
+	return ColorSequence.new(c[1], c[2])
+end
+
+local SPARK_YELLOW = Color3.fromRGB(255, 230, 120)
+local SPARK_ORANGE = Color3.fromRGB(255, 120, 30)
+
+local styles: { [string]: (pos: Vector3, def: any, s: number, big: boolean) -> () } = {}
+
+styles.droplets = function(pos, def, s, big)
+	emit(pos, {
+		color = seq(def.parts[1].color), count = if big then 40 else 10,
+		size = NumberSequence.new(0.35 * s, 0.05), lifetime = NumberRange.new(0.4, 0.8),
+		speed = NumberRange.new(10 * s, 22 * s), spread = 75, gravity = 90,
+	})
+end
+
+styles.splat = function(pos, def, s, big)
+	styles.droplets(pos, def, s, big)
+	local disc = Instance.new("Part")
+	disc.Anchored, disc.CanCollide, disc.CanQuery, disc.CanTouch = true, false, false, false
+	disc.Shape = Enum.PartType.Cylinder
+	disc.Color = def.parts[1].color
+	disc.Material = Enum.Material.SmoothPlastic
+	disc.Size = Vector3.new(0.1, def.width * 0.6, def.width * 0.6)
+	disc.CFrame = CFrame.new(pos.X, pos.Y - 0.05, pos.Z) * CFrame.Angles(0, 0, math.pi / 2)
+	disc.Parent = fxFolder
+	TweenService:Create(disc, TweenInfo.new(0.15), { Size = Vector3.new(0.1, def.width * 1.8, def.width * 1.6) }):Play()
+	TweenService:Create(disc, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 0.9), { Transparency = 1 }):Play()
+	Debris:AddItem(disc, 1.6)
+end
+
+styles.fluff = function(pos, def, s, big)
+	emit(pos, {
+		color = seq(Color3.fromRGB(255, 250, 240), def.parts[1].color), count = if big then 35 else 8,
+		size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.3 * s), NumberSequenceKeypoint.new(1, 0.7 * s) }),
+		lifetime = NumberRange.new(1.0, 1.8), speed = NumberRange.new(6 * s, 14 * s), spread = 90, gravity = 4,
+		drag = 3, rot = true, transparency = NumberSequence.new(0.1, 1),
+	})
+end
+
+styles.zap = function(pos, def, s, big)
+	emit(pos, {
+		color = seq(Color3.fromRGB(220, 245, 255), Color3.fromRGB(80, 170, 255)), count = if big then 30 else 12,
+		size = NumberSequence.new(0.18 * s, 0), lifetime = NumberRange.new(0.15, 0.35),
+		speed = NumberRange.new(20 * s, 40 * s), spread = 100, gravity = 30, light = 1,
+	})
+end
+
+styles.shards = function(pos, def, s, big)
+	styles.zap(pos, def, s, true)
+	debris(pos, table.find(Config.Objects, def) or 1, 14, true)
+end
+
+styles.sparks = function(pos, def, s, big)
+	emit(pos, {
+		color = seq(SPARK_YELLOW, SPARK_ORANGE), count = if big then 60 else 16,
+		size = NumberSequence.new(0.2 * s, 0), lifetime = NumberRange.new(0.25, 0.6),
+		speed = NumberRange.new(25 * s, 50 * s), spread = 85, gravity = 120, light = 1,
+	})
+	if big then
+		emit(pos, {
+			color = seq(Color3.fromRGB(90, 90, 95)), count = 14,
+			size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1 * s), NumberSequenceKeypoint.new(1, 3 * s) }),
+			lifetime = NumberRange.new(0.8, 1.4), speed = NumberRange.new(4 * s, 9 * s), spread = 90, gravity = -6,
+			drag = 2, rot = true, transparency = NumberSequence.new(0.3, 1),
+		})
+	end
+end
+
+styles.dust = function(pos, def, s, big)
+	emit(pos, {
+		color = seq(Color3.fromRGB(200, 185, 160), Color3.fromRGB(150, 140, 130)), count = if big then 30 else 8,
+		size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.8 * s), NumberSequenceKeypoint.new(1, 2.6 * s) }),
+		lifetime = NumberRange.new(0.8, 1.6), speed = NumberRange.new(5 * s, 14 * s), spread = 90, gravity = -2,
+		drag = 2.5, rot = true, transparency = NumberSequence.new(0.2, 1),
+	})
+end
+
+styles.fire = function(pos, def, s, big)
+	emit(pos, {
+		color = seq(Color3.fromRGB(255, 220, 90), Color3.fromRGB(255, 60, 20)), count = if big then 50 else 12,
+		size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1.2 * s), NumberSequenceKeypoint.new(1, 0) }),
+		lifetime = NumberRange.new(0.3, 0.7), speed = NumberRange.new(10 * s, 25 * s), spread = 90, gravity = -10,
+		light = 1, rot = true,
+	})
+end
+
+styles.explosion = function(pos, def, s, big)
+	styles.fire(pos, def, s * 1.6, true)
+	styles.dust(pos, def, s * 1.4, true)
+	local e = Instance.new("Explosion")
+	e.Position = pos
+	e.BlastRadius = def.width * 0.8
+	e.BlastPressure = 0
+	e.DestroyJointRadiusPercent = 0
+	e.ExplosionType = Enum.ExplosionType.NoCraters
+	e.Parent = fxFolder
+end
+
+local lastHiss = 0
+
+Net.event("Hit").OnClientEvent:Connect(function(msg)
+	local mine = msg.owner == player
+	local def = Config.Objects[msg.tier]
+	local kind = Config.Kinds[def.kind]
+	local scale = math.clamp(Config.pressWidth(msg.tier) / 10, 0.6, 4)
+	local v = if mine then 1 else 0.3
+	sfx("Thud", msg.position, 0.45 * v, 1.05 - scale * 0.08 + math.random() * 0.1)
+	sfx(kind.hitSound, msg.position, 0.5 * v, 0.9 + math.random() * 0.2)
+	local style = styles[kind.hitFx]
+	if style then
+		style(msg.position, def, scale, false)
+	end
+	if mine then
+		shake = math.min(1, shake + 0.35)
+		if os.clock() - lastHiss > 0.7 then
+			lastHiss = os.clock()
+			task.delay(0.12, function()
+				local h = sfx("Hiss", msg.position + Vector3.new(0, Config.pressWidth(msg.tier), 0), 0.18, 1.25)
+				if h then
+					task.delay(0.35, function()
+						TweenService:Create(h, TweenInfo.new(0.3), { Volume = 0 }):Play()
+					end)
+				end
+			end)
+		end
+	end
+end)
+
 Net.event("Crushed").OnClientEvent:Connect(function(msg)
 	local mine = msg.owner == player
 	local def = Config.Objects[msg.tier]
-	local color = def.parts[1].color
+	local kind = Config.Kinds[def.kind]
 	local scale = math.clamp(Config.pressWidth(msg.tier) / 10, 0.6, 4)
-	burst(msg.position, color, if mine then 30 else 10, 0.5 * scale)
-	debris(msg.position, msg.tier, if mine then 12 else 5)
+	local v = if mine then 1 else 0.3
+	local style = styles[kind.crushFx]
+	if style then
+		style(msg.position, def, scale, true)
+	end
+	if kind.crushFx ~= "shards" then
+		debris(msg.position, msg.tier, if mine then 12 else 5)
+	end
 	shockwave(msg.position, Config.pressWidth(msg.tier) * 0.9, Color3.fromRGB(255, 230, 160))
-	sound("rbxasset://sounds/collide.wav", msg.position, if mine then 1 else 0.35, 0.45)
+	sfx("Thud", msg.position, 0.8 * v, 0.6)
+	sfx(kind.crushSound, msg.position, 0.8 * v, 1)
 	if mine then
-		sound("rbxasset://sounds/electronicpingshort.wav", msg.position, 0.6, 1)
+		sfx("Coin", msg.position, 0.5, 1)
 		floatText(msg.position, "+" .. Format.cash(msg.value), GREEN)
 		shake = 1
 	end
@@ -409,7 +618,7 @@ Net.event("Upgraded").OnClientEvent:Connect(function(msg)
 		burst(msg.position + Vector3.new(0, W * 0.8, 0), Color3.fromRGB(255, 220, 60), if mine then 25 else 8, 0.4 * math.clamp(W / 10, 0.6, 4))
 		shockwave(msg.position, W * 1.2, Color3.fromRGB(255, 210, 60))
 		if mine then
-			sound("rbxasset://sounds/electronicpingshort.wav", msg.position, 0.8, 0.8)
+			sfx("LevelUp", msg.position, 0.7, 1)
 			shake = 0.8
 		end
 	end)

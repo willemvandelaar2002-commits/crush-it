@@ -17,6 +17,7 @@ export type PartSpec = {
 
 export type ObjectDef = {
 	name: string,
+	kind: string, -- crush style, see Config.Kinds
 	parts: { PartSpec },
 	height: number, -- total height (for the ram's rest position)
 	width: number, -- widest footprint side (sizes the press)
@@ -28,13 +29,13 @@ local V = Vector3.new
 -- One object per tier. Simple part models for now; swap in real meshes later
 -- without touching game logic (Objects.build only reads `parts`).
 Config.Objects = {
-	{ name = "Apple", height = 2.6, width = 2.2, parts = {
+	{ name = "Apple", kind = "soft", height = 2.6, width = 2.2, parts = {
 		{ shape = "sphere", size = V(2.2, 2.1, 2.2), pos = V(0, 1.05, 0), color = C(214, 38, 38) },
 		{ shape = "sphere", size = V(0.7, 0.5, 0.5), pos = V(-0.45, 1.6, -0.75), color = C(255, 120, 120) }, -- shine
 		{ shape = "cylinder", size = V(0.2, 0.6, 0.2), pos = V(0, 2.25, 0), color = C(92, 64, 40), rot = V(0, 0, 10) },
 		{ shape = "sphere", size = V(0.8, 0.12, 0.45), pos = V(0.4, 2.35, 0), color = C(70, 160, 60), rot = V(0, 0, 20) },
 	} },
-	{ name = "Teddy Bear", height = 4.6, width = 3.2, parts = {
+	{ name = "Teddy Bear", kind = "fluff", height = 4.6, width = 3.2, parts = {
 		{ shape = "sphere", size = V(2.8, 2.8, 2.4), pos = V(0, 1.4, 0), color = C(160, 110, 70) },
 		{ shape = "sphere", size = V(1.6, 1.6, 0.6), pos = V(0, 1.4, -1.0), color = C(220, 190, 150) }, -- tummy
 		{ shape = "sphere", size = V(2, 2, 2), pos = V(0, 3.4, 0), color = C(160, 110, 70) },
@@ -46,7 +47,7 @@ Config.Objects = {
 		{ shape = "sphere", size = V(0.25, 0.3, 0.15), pos = V(0.4, 3.7, -0.9), color = C(20, 20, 20) },
 		{ shape = "block", size = V(1.4, 0.35, 0.3), pos = V(0, 2.55, -0.95), color = C(220, 40, 60) }, -- bow tie
 	} },
-	{ name = "Phone", height = 5.2, width = 2.8, parts = {
+	{ name = "Phone", kind = "glass", height = 5.2, width = 2.8, parts = {
 		{ shape = "block", size = V(2.6, 5.2, 0.4), pos = V(0, 2.6, 0), color = C(25, 25, 30) },
 		{ shape = "block", size = V(2.3, 4.6, 0.05), pos = V(0, 2.6, -0.21), color = C(40, 90, 200), material = Enum.Material.Neon },
 		{ shape = "block", size = V(0.5, 0.5, 0.06), pos = V(-0.65, 4.2, -0.24), color = C(255, 90, 90), material = Enum.Material.Neon },
@@ -57,7 +58,7 @@ Config.Objects = {
 		{ shape = "block", size = V(0.8, 0.12, 0.06), pos = V(0, 0.55, -0.24), color = C(230, 230, 230), material = Enum.Material.Neon },
 		{ shape = "block", size = V(0.9, 0.9, 0.15), pos = V(-0.7, 4.4, 0.25), color = C(40, 40, 45) }, -- camera bump
 	} },
-	{ name = "TV", height = 5.2, width = 7, parts = {
+	{ name = "TV", kind = "glass", height = 5.2, width = 7, parts = {
 		{ shape = "block", size = V(7, 4.2, 0.5), pos = V(0, 3.0, 0), color = C(20, 20, 24) },
 		{ shape = "block", size = V(6.5, 3.7, 0.05), pos = V(0, 3.0, -0.26), color = C(70, 170, 255), material = Enum.Material.Neon },
 		{ shape = "sphere", size = V(2.2, 1.6, 0.06), pos = V(-1.3, 3.4, -0.29), color = C(255, 230, 120), material = Enum.Material.Neon }, -- sun on screen
@@ -65,7 +66,7 @@ Config.Objects = {
 		{ shape = "block", size = V(0.6, 1.0, 0.4), pos = V(0, 0.7, 0), color = C(35, 35, 40) },
 		{ shape = "block", size = V(3, 0.3, 1.8), pos = V(0, 0.15, 0), color = C(35, 35, 40) },
 	} },
-	{ name = "Fridge", height = 8, width = 4, parts = {
+	{ name = "Fridge", kind = "metal", height = 8, width = 4, parts = {
 		{ shape = "block", size = V(4, 8, 4), pos = V(0, 4, 0), color = C(235, 238, 242) },
 		{ shape = "block", size = V(4.02, 0.12, 4.02), pos = V(0, 5.2, 0), color = C(150, 155, 160) },
 		{ shape = "block", size = V(0.25, 1.8, 0.25), pos = V(1.5, 6.4, -2.12), color = C(170, 175, 180), material = Enum.Material.Metal },
@@ -75,7 +76,7 @@ Config.Objects = {
 		{ shape = "block", size = V(1.4, 1.8, 0.06), pos = V(-0.6, 3.6, -2.03), color = C(255, 245, 200) }, -- drawing
 		{ shape = "block", size = V(3.6, 0.3, 3.6), pos = V(0, 0.15, 0), color = C(60, 60, 65) },
 	} },
-	{ name = "Car", height = 5, width = 11, parts = {
+	{ name = "Car", kind = "metal", height = 5, width = 11, parts = {
 		{ shape = "block", size = V(5.6, 2, 11), pos = V(0, 1.9, 0), color = C(30, 110, 220) },
 		{ shape = "block", size = V(5, 1.8, 5.5), pos = V(0, 3.8, 0.5), color = C(30, 110, 220) },
 		{ shape = "block", size = V(5.1, 1.3, 5.2), pos = V(0, 3.8, 0.5), color = C(150, 210, 255), material = Enum.Material.Glass },
@@ -89,7 +90,7 @@ Config.Objects = {
 		{ shape = "cylinder", size = V(1.8, 0.8, 1.8), pos = V(-2.9, 0.9, -3.4), color = C(20, 20, 20), rot = V(0, 0, 90) },
 		{ shape = "cylinder", size = V(1.8, 0.8, 1.8), pos = V(2.9, 0.9, -3.4), color = C(20, 20, 20), rot = V(0, 0, 90) },
 	} },
-	{ name = "Truck", height = 9, width = 18, parts = {
+	{ name = "Truck", kind = "metal", height = 9, width = 18, parts = {
 		{ shape = "block", size = V(7.5, 7, 12), pos = V(0, 5, 3), color = C(225, 225, 230) },
 		{ shape = "block", size = V(7.55, 1.2, 12.05), pos = V(0, 5.5, 3), color = C(240, 150, 30) }, -- stripe
 		{ shape = "block", size = V(7.5, 5.5, 5), pos = V(0, 4.2, -6.2), color = C(210, 40, 40) },
@@ -104,7 +105,7 @@ Config.Objects = {
 		{ shape = "cylinder", size = V(2.6, 1, 2.6), pos = V(-3.8, 1.3, -6), color = C(20, 20, 20), rot = V(0, 0, 90) },
 		{ shape = "cylinder", size = V(2.6, 1, 2.6), pos = V(3.8, 1.3, -6), color = C(20, 20, 20), rot = V(0, 0, 90) },
 	} },
-	{ name = "Tank", height = 8, width = 16, parts = {
+	{ name = "Tank", kind = "metal", height = 8, width = 16, parts = {
 		{ shape = "block", size = V(10, 2.2, 16), pos = V(0, 1.1, 0), color = C(40, 40, 38), material = Enum.Material.DiamondPlate }, -- tracks
 		{ shape = "block", size = V(8, 2.6, 14), pos = V(0, 3.4, 0), color = C(85, 100, 60) },
 		{ shape = "wedge", size = V(8, 1.6, 2.5), pos = V(0, 3.9, -8.2), color = C(85, 100, 60) },
@@ -115,7 +116,7 @@ Config.Objects = {
 		{ shape = "cylinder", size = V(1.8, 0.6, 1.8), pos = V(1.6, 7.4, 2.2), color = C(70, 82, 50) }, -- hatch
 		{ shape = "block", size = V(2.4, 0.2, 1.6), pos = V(-2.5, 4.75, 4), color = C(240, 240, 240) }, -- star-ish marking
 	} },
-	{ name = "House", height = 18, width = 16, parts = {
+	{ name = "House", kind = "wood", height = 18, width = 16, parts = {
 		{ shape = "block", size = V(16, 10, 14), pos = V(0, 5, 0), color = C(235, 220, 190) },
 		{ shape = "wedge", size = V(16.6, 7, 7.4), pos = V(0, 13.5, 3.7), color = C(170, 60, 50), rot = V(0, 180, 0) },
 		{ shape = "wedge", size = V(16.6, 7, 7.4), pos = V(0, 13.5, -3.7), color = C(170, 60, 50) },
@@ -128,7 +129,7 @@ Config.Objects = {
 		{ shape = "block", size = V(3.6, 0.4, 0.5), pos = V(4.5, 5.0, -7.2), color = C(255, 255, 255) },
 		{ shape = "block", size = V(17, 0.6, 15), pos = V(0, 0.3, 0), color = C(120, 120, 125), material = Enum.Material.Concrete },
 	} },
-	{ name = "Plane", height = 11, width = 30, parts = {
+	{ name = "Plane", kind = "metal", height = 11, width = 30, parts = {
 		{ shape = "cylinder", size = V(5, 24, 5), pos = V(0, 4.5, 0.5), color = C(240, 242, 245), rot = V(90, 0, 0) }, -- fuselage
 		{ shape = "sphere", size = V(5, 5, 4), pos = V(0, 4.5, -11.5), color = C(240, 242, 245) }, -- nose
 		{ shape = "block", size = V(3.2, 1.2, 0.2), pos = V(0, 5.6, -12.6), color = C(40, 50, 70), rot = V(-30, 0, 0) }, -- cockpit
@@ -141,7 +142,7 @@ Config.Objects = {
 		{ shape = "block", size = V(0.8, 2, 0.8), pos = V(0, 1, -7), color = C(60, 60, 65) }, -- gear
 		{ shape = "block", size = V(5, 2, 0.8), pos = V(0, 1, 3), color = C(60, 60, 65) },
 	} },
-	{ name = "Ship", height = 20, width = 36, parts = {
+	{ name = "Ship", kind = "metal", height = 20, width = 36, parts = {
 		{ shape = "block", size = V(12, 7, 32), pos = V(0, 4.5, 2), color = C(30, 40, 60) },
 		{ shape = "wedge", size = V(12, 7, 6), pos = V(0, 4.5, -17), color = C(30, 40, 60) }, -- bow
 		{ shape = "block", size = V(12.2, 1.6, 32.2), pos = V(0, 1.2, 2), color = C(170, 40, 40) },
@@ -154,7 +155,7 @@ Config.Objects = {
 		{ shape = "cylinder", size = V(3, 5, 3), pos = V(0, 17.5, 10), color = C(220, 140, 40) },
 		{ shape = "cylinder", size = V(3.1, 1, 3.1), pos = V(0, 19.5, 10), color = C(30, 30, 30) },
 	} },
-	{ name = "Statue", height = 32, width = 14, parts = {
+	{ name = "Statue", kind = "stone", height = 32, width = 14, parts = {
 		{ shape = "block", size = V(14, 4, 14), pos = V(0, 2, 0), color = C(150, 150, 140), material = Enum.Material.Slate },
 		{ shape = "block", size = V(10, 2, 10), pos = V(0, 5, 0), color = C(160, 160, 150), material = Enum.Material.Slate },
 		{ shape = "block", size = V(6, 15, 5), pos = V(0, 13.5, 0), color = C(95, 170, 140), material = Enum.Material.Metal }, -- robe
@@ -166,7 +167,7 @@ Config.Objects = {
 		{ shape = "sphere", size = V(2.4, 3.4, 2.4), pos = V(5.3, 30.2, 0), color = C(255, 190, 60), material = Enum.Material.Neon },
 		{ shape = "block", size = V(4.6, 1.2, 4.6), pos = V(0, 25.8, 0), color = C(95, 170, 140), material = Enum.Material.Metal }, -- crown
 	} },
-	{ name = "Planet", height = 36, width = 36, parts = {
+	{ name = "Planet", kind = "planet", height = 36, width = 36, parts = {
 		{ shape = "sphere", size = V(34, 34, 34), pos = V(0, 17, 0), color = C(70, 130, 230) },
 		{ shape = "sphere", size = V(20, 10, 24), pos = V(-6, 23, -7), color = C(80, 170, 90) },
 		{ shape = "sphere", size = V(14, 9, 12), pos = V(9, 10, -10), color = C(80, 170, 90) },
@@ -177,6 +178,36 @@ Config.Objects = {
 } :: { ObjectDef }
 
 Config.MaxTier = #Config.Objects
+
+-- Sound ids (all free Creator Store audio; swap freely, the client preloads them).
+Config.Sounds = {
+	Hiss = 9113052976, -- ram going back up
+	Thud = 9116488438, -- every press stroke
+	Coin = 607665037, -- cash on a crush
+	LevelUp = 112485797063762, -- bigger press
+	SquishHit = 90416226721742,
+	SquishCrush = 116062165012558,
+	SparkHit = 122898241692939,
+	GlassCrush = 139826391278483,
+	MetalHit = 9116771817,
+	MetalCrush = 9114016018,
+	WoodHit = 9120805690,
+	WoodCrush = 9120828958,
+	BoomHit = 140278004623742,
+	BoomCrush = 138533090376585,
+}
+
+-- How each kind of object reacts. Sounds name Config.Sounds keys; the client
+-- draws `hitFx` / `crushFx` (see Main.client.luau, "Crush styles").
+Config.Kinds = {
+	soft = { hitSound = "SquishHit", crushSound = "SquishCrush", hitFx = "droplets", crushFx = "splat" },
+	fluff = { hitSound = "SquishHit", crushSound = "SquishCrush", hitFx = "fluff", crushFx = "fluff" },
+	glass = { hitSound = "SparkHit", crushSound = "GlassCrush", hitFx = "zap", crushFx = "shards" },
+	metal = { hitSound = "MetalHit", crushSound = "MetalCrush", hitFx = "sparks", crushFx = "sparks" },
+	wood = { hitSound = "WoodHit", crushSound = "WoodCrush", hitFx = "dust", crushFx = "dust" },
+	stone = { hitSound = "MetalHit", crushSound = "WoodCrush", hitFx = "dust", crushFx = "dust" },
+	planet = { hitSound = "BoomHit", crushSound = "BoomCrush", hitFx = "fire", crushFx = "explosion" },
+}
 
 -- Economy (see docs/Systems/Economy.md for the simulation behind these).
 Config.Economy = {
