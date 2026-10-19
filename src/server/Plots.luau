@@ -69,6 +69,15 @@ function Plots.buildPress(plot: Plot, tier: number)
 	end
 	local built = PressBuilder.build(plot.origin, tier)
 	built.model.Parent = plot.model
+	-- keep the upgrade board just right of the press, facing the spawn
+	local board = plot.model:FindFirstChild("Board") :: Model?
+	if board then
+		local W = Config.pressWidth(tier)
+		local F = Config.Plots.FloorSize
+		local x = math.clamp(W * 0.83 + 8, 14, F / 2 - 6)
+		local z = math.clamp(W * 0.3, 4, 30)
+		board:PivotTo(plot.origin * CFrame.new(x, 0, z) * CFrame.Angles(0, math.rad(-25), 0))
+	end
 	plot.press = built.model
 	plot.ram = built.ram
 	plot.bedTop = built.bedTop
@@ -126,6 +135,31 @@ function Plots.create()
 		label.TextColor3 = Color3.new(1, 1, 1)
 		label.Text = "Free plot"
 		label.Parent = gui
+		-- Upgrade board (moved next to the press whenever the press changes size).
+		local boardModel = Instance.new("Model")
+		boardModel.Name = "Board"
+		local boardW, boardH = 11, 13.5
+		local boardBase = origin
+		for _, side in { -1, 1 } do
+			part({ Name = "BoardPost", Size = Vector3.new(0.8, 4, 0.8), CFrame = boardBase * CFrame.new(side * boardW * 0.4, 2, 0), Color = Color3.fromRGB(60, 60, 68), Material = Enum.Material.Metal }, boardModel)
+		end
+		part({ Name = "BoardFrame", Size = Vector3.new(boardW + 0.8, boardH + 0.8, 0.5), CFrame = boardBase * CFrame.new(0, 4 + boardH / 2, -0.1), Color = Color3.fromRGB(245, 190, 40) }, boardModel)
+		local board = part({ Name = "UpgradeBoard", Size = Vector3.new(boardW, boardH, 0.6), CFrame = boardBase * CFrame.new(0, 4 + boardH / 2, 0), Color = Color3.fromRGB(30, 34, 48) }, boardModel)
+		local boardGui = Instance.new("SurfaceGui")
+		boardGui.Face = Enum.NormalId.Back
+		boardGui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		boardGui.PixelsPerStud = 30
+		boardGui.Parent = board
+		local boardLabel = Instance.new("TextLabel")
+		boardLabel.Size = UDim2.fromScale(1, 0.2)
+		boardLabel.BackgroundTransparency = 1
+		boardLabel.Font = Enum.Font.FredokaOne
+		boardLabel.TextScaled = true
+		boardLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
+		boardLabel.Text = "UPGRADES"
+		boardLabel.Parent = boardGui
+		boardModel.WorldPivot = boardBase
+		boardModel.Parent = model
 		model.Parent = root
 		local plot: Plot = { index = i, origin = origin, model = model, press = nil, ram = nil, bedTop = 0, ramRestY = 0, tier = 1, owner = nil, sign = label }
 		Plots.buildPress(plot, 1)

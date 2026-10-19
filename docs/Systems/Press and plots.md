@@ -73,3 +73,13 @@ plinth (each tier its own colour) and a sign in front with the press name and
 model to fall back to the code-built look for that stage. Optional `Yaw`
 attribute (degrees) per frame. Plots are now 120 wide (spacing 140, rows at
 ±95) to fit the biggest frame.
+
+## Upgrade board and row style (19 Oct, after Destroy a Vault)
+- Upgrades are coloured rows (icon, name, "1.0 > 1.3", big green price
+  button): Power red, Speed blue, Value yellow, Bigger Press purple, Rebirth
+  orange. Same rows in the HUD panel and on a board next to the press.
+- The board (`Plot.Board`) moves with the press size so it's always just
+  right of it, turned toward the spawn. Its clickable rows are a SurfaceGui
+  in the player's own PlayerGui (adorned), so only the owner uses it.
+- Tutorial: dark banner across the top ("Hold CRUSH", "Buy An Upgrade",
+  "Buy A Bigger Press") plus a pointing hand and ring on the button.

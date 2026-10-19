@@ -145,7 +145,7 @@ end)
 -- Upgrades (left side) ------------------------------------------------------
 local panel = make("Frame", {
 	Name = "Upgrades",
-	AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(230, 0),
+	AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(262, 0),
 	AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = gui,
 }, { make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }) })
 local panelScale = make("UIScale", { Parent = panel })
@@ -159,13 +159,51 @@ fitPanel()
 type Card = { frame: Frame, title: TextLabel, info: TextLabel, buy: TextButton, id: string }
 local cards: { Card } = {}
 
-local function makeCard(id: string, order: number): Card
-	local frame = make("Frame", { Name = "Card_" .. id, Size = UDim2.fromOffset(230, 70), BackgroundColor3 = DARK, BackgroundTransparency = 0.15, LayoutOrder = order, Parent = panel }, { corner(10), stroke(2) })
-	local title = make("TextLabel", { Position = UDim2.fromOffset(10, 4), Size = UDim2.new(1, -110, 0, 26), BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.new(1, 1, 1), Parent = frame })
-	local info = make("TextLabel", { Position = UDim2.fromOffset(10, 34), Size = UDim2.new(1, -110, 0, 28), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(200, 200, 210), Parent = frame })
-	local buy = make("TextButton", { AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -8, 0.5, 0), Size = UDim2.fromOffset(92, 52), BackgroundColor3 = GREEN, Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), AutoButtonColor = true, Parent = frame }, { corner(8), stroke(2), make("UIPadding", { PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6), PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6) }) })
+-- Upgrade rows in the "Destroy a Vault" style: a coloured row with an icon,
+-- the name, what the next level does and a big green price button. The same
+-- rows are used in the HUD panel and on the board next to your press.
+local ROW_STYLE: { [string]: { color: Color3, icon: string } } = {
+	Power = { color = Color3.fromRGB(225, 65, 60), icon = "💥" },
+	Speed = { color = Color3.fromRGB(55, 135, 235), icon = "⚡" },
+	Value = { color = Color3.fromRGB(240, 175, 30), icon = "💰" },
+	Size = { color = Color3.fromRGB(165, 75, 230), icon = "🔨" },
+	Rebirth = { color = Color3.fromRGB(255, 140, 30), icon = "🔄" },
+}
+
+local function shine(): UIGradient
+	return make("UIGradient", {
+		Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(170, 170, 170)),
+		Rotation = 90,
+	})
+end
+
+local function makeCard(id: string, order: number, parent: Instance?): Card
+	local style = ROW_STYLE[id] or { color = DARK, icon = "" }
+	local frame = make("Frame", {
+		Name = "Card_" .. id, Size = UDim2.fromOffset(262, 66), BackgroundColor3 = style.color, LayoutOrder = order, Parent = parent or panel,
+	}, { corner(12), shine(), make("UIStroke", { Thickness = 3, Color = style.color:Lerp(Color3.new(0, 0, 0), 0.55) }) })
+	local iconBox = make("Frame", {
+		Position = UDim2.fromOffset(6, 6), Size = UDim2.fromOffset(54, 54), BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 0.25, Parent = frame,
+	}, { corner(10) })
+	make("TextLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Font = FONT, TextScaled = true, Text = style.icon, Parent = iconBox })
+	local title = make("TextLabel", {
+		Position = UDim2.fromOffset(66, 5), Size = UDim2.new(1, -146, 0, 26), BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextWrapped = false,
+		TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.new(1, 1, 1), Parent = frame,
+	}, { stroke(2) })
+	local info = make("TextLabel", {
+		Position = UDim2.fromOffset(66, 34), Size = UDim2.new(1, -146, 0, 24), BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextWrapped = false,
+		TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 255, 210), Parent = frame,
+	}, { stroke(1.5) })
+	local buy = make("TextButton", {
+		AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -7, 0.5, 0), Size = UDim2.fromOffset(74, 46), BackgroundColor3 = GREEN,
+		Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), AutoButtonColor = true, Parent = frame,
+	}, { corner(10), shine(), make("UIStroke", { Thickness = 2.5, Color = Color3.fromRGB(20, 70, 30), ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
+		make("UIPadding", { PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 5), PaddingTop = UDim.new(0, 7), PaddingBottom = UDim.new(0, 7) }), stroke(1.5) })
 	local confirmUntil = 0
 	buy.Activated:Connect(function()
+		-- a little squish on press
+		buy.Size = UDim2.fromOffset(66, 40)
+		TweenService:Create(buy, TweenInfo.new(0.15, Enum.EasingStyle.Back), { Size = UDim2.fromOffset(74, 46) }):Play()
 		if id == "Rebirth" then
 			-- Two taps: the first one asks "SURE?".
 			if os.clock() > confirmUntil then
@@ -194,7 +232,6 @@ for i, u in Config.Upgrades do
 end
 makeCard("Size", #Config.Upgrades + 1)
 local rebirthCard = makeCard("Rebirth", #Config.Upgrades + 2)
-rebirthCard.title.TextColor3 = GOLD
 
 local function fmtEffect(id: string, v: number): string
 	if id == "Power" then
@@ -220,7 +257,7 @@ local function refresh()
 				continue
 			end
 			if tier >= need then
-				card.info.Text = string.format("Cash x%.1f → x%.1f", Config.rebirthMult(r), Config.rebirthMult(r + 1))
+				card.info.Text = string.format("Cash x%.1f > x%.1f", Config.rebirthMult(r), Config.rebirthMult(r + 1))
 				card.buy.Text = "REBIRTH"
 				card.buy.BackgroundColor3 = GOLD
 			else
@@ -248,7 +285,7 @@ local function refresh()
 				cost = nil
 			else
 				local now, nxt = fmtEffect(u.id, u.effect(lv)), fmtEffect(u.id, u.effect(lv + 1))
-				card.info.Text = string.gsub(now, " dmg", "") .. " → " .. nxt
+				card.info.Text = string.gsub(now, " dmg", "") .. " > " .. nxt
 				cost = u.cost(lv)
 			end
 		end
@@ -278,6 +315,48 @@ for _, name in { "Cash", "Tier", "PowerLv", "SpeedLv", "ValueLv", "Hp", "MaxHp",
 end
 refresh()
 rebirthCard.buy:GetAttributeChangedSignal("Refresh"):Connect(refresh)
+
+-- Upgrade board next to your press (Plots builds the board; the clickable
+-- rows live in a SurfaceGui here, adorned to it, so only you use yours).
+task.spawn(function()
+	while not player:GetAttribute("Plot") do
+		player:GetAttributeChangedSignal("Plot"):Wait()
+	end
+	local plots = Workspace:WaitForChild("Plots")
+	local plotModel = plots:WaitForChild("Plot" .. tostring(player:GetAttribute("Plot")))
+	local boardModel = plotModel:WaitForChild("Board", 30)
+	local boardPart = boardModel and boardModel:WaitForChild("UpgradeBoard", 30) :: BasePart?
+	if not boardPart then
+		return
+	end
+	local surface = make("SurfaceGui", {
+		Name = "UpgradeBoardGui", Adornee = boardPart, Face = Enum.NormalId.Back, SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud,
+		PixelsPerStud = 40, ZOffset = 1, LightInfluence = 0, ResetOnSpawn = false, Parent = player.PlayerGui,
+	})
+	local bg = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(30, 34, 48), Parent = surface }, { corner(24) })
+	make("TextLabel", {
+		Position = UDim2.new(0.05, 0, 0, 14), Size = UDim2.new(0.9, 0, 0, 62), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
+		TextColor3 = GOLD, Text = "UPGRADES", Parent = bg,
+	}, { stroke(4) })
+	local list = make("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 90), Size = UDim2.fromOffset(262, 380), BackgroundTransparency = 1, Parent = bg,
+	}, { make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }) })
+	local listScale = make("UIScale", { Parent = list })
+	local function fit()
+		-- fill the board's width
+		local size = surface.AbsoluteSize
+		listScale.Scale = math.min((size.X * 0.9) / 262, (size.Y - 105) / 370)
+	end
+	surface:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
+	fit()
+	for i, u in Config.Upgrades do
+		makeCard(u.id, i, list)
+	end
+	makeCard("Size", #Config.Upgrades + 1, list)
+	local boardRebirth = makeCard("Rebirth", #Config.Upgrades + 2, list)
+	boardRebirth.buy:GetAttributeChangedSignal("Refresh"):Connect(refresh)
+	refresh()
+end)
 
 -- Cash pop when it goes up
 local lastCash = (player:GetAttribute("Cash") :: number?) or 0

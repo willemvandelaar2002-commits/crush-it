@@ -1,8 +1,8 @@
 --!strict
 -- First-session guide: a pulsing frame around what to press next plus a hint.
 --   1. never crushed            -> CRUSH button  "Hold CRUSH (or F)!"
---   2. no upgrades yet          -> Power card     "Buy your first upgrade!"  (once affordable)
---   3. still on the first press -> Bigger Press   "Get a bigger press!"      (once affordable)
+--   2. no upgrades yet          -> Power card     "Buy An Upgrade"  (once affordable)
+--   3. still on the first press -> Bigger Press   "Buy A Bigger Press"      (once affordable)
 -- Gone for good once the press is bigger than the first one (or after a rebirth).
 
 local Players = game:GetService("Players")
@@ -37,17 +37,42 @@ local ringCorner = Instance.new("UICorner")
 ringCorner.CornerRadius = UDim.new(0, 12)
 ringCorner.Parent = ring
 
+-- Big banner across the top ("Buy An Upgrade") like Destroy a Vault.
+local banner = Instance.new("Frame")
+banner.AnchorPoint = Vector2.new(0.5, 0)
+banner.Position = UDim2.new(0.5, 0, 0, 120)
+banner.Size = UDim2.new(0.6, 0, 0, 64)
+banner.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+banner.BackgroundTransparency = 0.45
+banner.BorderSizePixel = 0
+banner.Visible = false
+banner.Parent = gui
+local bannerGrad = Instance.new("UIGradient")
+bannerGrad.Transparency = NumberSequence.new({
+	NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.2, 0), NumberSequenceKeypoint.new(0.8, 0), NumberSequenceKeypoint.new(1, 1),
+})
+bannerGrad.Parent = banner
 local hint = Instance.new("TextLabel")
 hint.BackgroundTransparency = 1
 hint.Font = Enum.Font.FredokaOne
 hint.TextScaled = true
-hint.TextColor3 = Color3.fromRGB(255, 230, 90)
-hint.Size = UDim2.fromOffset(260, 36)
-hint.Visible = false
-hint.Parent = gui
+hint.TextColor3 = Color3.new(1, 1, 1)
+hint.Size = UDim2.fromScale(1, 0.8)
+hint.Position = UDim2.fromScale(0, 0.1)
+hint.Parent = banner
 local hintStroke = Instance.new("UIStroke")
 hintStroke.Thickness = 3
 hintStroke.Parent = hint
+
+-- A pointing hand next to the thing to press.
+local hand = Instance.new("TextLabel")
+hand.BackgroundTransparency = 1
+hand.Font = Enum.Font.FredokaOne
+hand.TextScaled = true
+hand.Text = "👉"
+hand.Size = UDim2.fromOffset(60, 60)
+hand.Visible = false
+hand.Parent = gui
 
 local function attr(name: string): number
 	return (player:GetAttribute(name) :: number?) or 0
@@ -63,18 +88,18 @@ local function target(): (GuiObject?, string?, string?)
 		return nil, nil, "done"
 	end
 	if attr("Crushed") == 0 then
-		local keys = if UserInputService.KeyboardEnabled then "Hold CRUSH (or F)!" else "Hold CRUSH!"
+		local keys = if UserInputService.KeyboardEnabled then "Hold CRUSH (or F)" else "Hold CRUSH"
 		return crushButton, keys, "left"
 	end
 	local cash = attr("Cash")
 	if not anyLevel() then
 		if cash >= Config.Upgrades[1].cost(0) then
-			return powerCard, "Buy your first upgrade!", "right"
+			return powerCard, "Buy An Upgrade", "right"
 		end
 		return nil
 	end
 	if cash >= Config.SizeCost(1) then
-		return sizeCard, "Get a bigger press!", "right"
+		return sizeCard, "Buy A Bigger Press", "right"
 	end
 	return nil
 end
@@ -93,7 +118,8 @@ RunService.RenderStepped:Connect(function()
 	end
 	if not el or not el.Visible then
 		ring.Visible = false
-		hint.Visible = false
+		banner.Visible = false
+		hand.Visible = false
 		return
 	end
 	-- Element positions are in the HUD's space (below the top bar); ours too
@@ -106,13 +132,16 @@ RunService.RenderStepped:Connect(function()
 	ringCorner.CornerRadius = if el == crushButton then UDim.new(1, 0) else UDim.new(0, 12)
 	ring.Visible = true
 	hint.Text = text or ""
-	local bob = math.sin(os.clock() * 4) * 4
+	banner.Visible = true
+	local bob = math.sin(os.clock() * 7) * 8
 	if side == "left" then
-		hint.TextXAlignment = Enum.TextXAlignment.Right
-		hint.Position = UDim2.fromOffset(pos.X - 270 + bob, pos.Y + size.Y / 2 - 18)
+		-- hand to the left of the target, pointing right
+		hand.Text = "👉"
+		hand.Position = UDim2.fromOffset(pos.X - 70 + bob, pos.Y + size.Y / 2 - 30)
 	else
-		hint.TextXAlignment = Enum.TextXAlignment.Left
-		hint.Position = UDim2.fromOffset(pos.X + size.X + 14 + bob, pos.Y + size.Y / 2 - 18)
+		-- hand to the right of the target, pointing left
+		hand.Text = "👈"
+		hand.Position = UDim2.fromOffset(pos.X + size.X + 10 - bob, pos.Y + size.Y / 2 - 30)
 	end
-	hint.Visible = true
+	hand.Visible = true
 end)
