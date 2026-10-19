@@ -303,8 +303,7 @@ end
 
 -- Look: the classic Roblox stud pattern on floors, pads and boards.
 Config.Look = {
-	StudTexture = "rbxassetid://7447638591", -- free "Stud Texture" (decal 7447638611)
-	StudsPerTile = 2, -- studs: one bump per 2x2 studs
+	Theme = "Teal", -- see shared/Kit/Style.luau (Teal, Scrap)
 }
 
 -- World layout: 8 plots in two rows of 4 facing a central walkway.

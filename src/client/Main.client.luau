@@ -16,6 +16,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local Format = require(ReplicatedStorage.Shared.Format)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Objects = require(ReplicatedStorage.Shared.Objects)
+local Style = require(ReplicatedStorage.Shared.Kit.Style)
 
 local player = Players.LocalPlayer
 local CrushRemote = Net.event("Crush")
@@ -162,61 +163,49 @@ local cards: { Card } = {}
 -- Upgrade rows in the "Destroy a Vault" style: a coloured row with an icon,
 -- the name, what the next level does and a big green price button. The same
 -- rows are used in the HUD panel and on the board next to your press.
-local ROW_STYLE: { [string]: { color: Color3, icon: string } } = {
-	Power = { color = Color3.fromRGB(225, 65, 60), icon = "💥" },
-	Speed = { color = Color3.fromRGB(55, 135, 235), icon = "⚡" },
-	Value = { color = Color3.fromRGB(240, 175, 30), icon = "💰" },
-	Size = { color = Color3.fromRGB(165, 75, 230), icon = "🔨" },
-	Rebirth = { color = Color3.fromRGB(255, 140, 30), icon = "🔄" },
+local ROW_STYLE: { [string]: { a: Color3, b: Color3, icon: string } } = {
+	-- two-colour gradients like Destroy a Vault's boards (pink>purple, cyan>blue ...)
+	Power = { a = Color3.fromRGB(255, 95, 80), b = Color3.fromRGB(200, 30, 90), icon = "💥" },
+	Speed = { a = Color3.fromRGB(70, 220, 255), b = Color3.fromRGB(40, 90, 230), icon = "⚡" },
+	Value = { a = Color3.fromRGB(255, 225, 70), b = Color3.fromRGB(240, 140, 20), icon = "💰" },
+	Size = { a = Color3.fromRGB(240, 90, 255), b = Color3.fromRGB(120, 50, 220), icon = "🔨" },
+	Rebirth = { a = Color3.fromRGB(255, 170, 60), b = Color3.fromRGB(230, 70, 40), icon = "🔄" },
 }
 
-local function shine(): UIGradient
-	return make("UIGradient", {
-		Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(170, 170, 170)),
-		Rotation = 90,
-	})
-end
-
--- Stud pattern overlay for UI panels (same texture as the floors).
 local function studsOverlay(parent: GuiObject, tile: number, transparency: number)
-	if Config.Look.StudTexture == "rbxassetid://0" then
-		return
-	end
-	make("ImageLabel", {
-		Name = "Studs", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = Config.Look.StudTexture,
-		ScaleType = Enum.ScaleType.Tile, TileSize = UDim2.fromOffset(tile, tile), ImageTransparency = transparency, ZIndex = parent.ZIndex,
-		Parent = parent,
-	}, { corner(12) })
+	Style.studsImage(parent, tile, transparency)
 end
 
 local function makeCard(id: string, order: number, parent: Instance?): Card
-	local style = ROW_STYLE[id] or { color = DARK, icon = "" }
+	local style = ROW_STYLE[id] or { a = DARK, b = DARK, icon = "" }
 	local frame = make("Frame", {
-		Name = "Card_" .. id, Size = UDim2.fromOffset(262, 66), BackgroundColor3 = style.color, LayoutOrder = order, Parent = parent or panel,
-	}, { corner(12), shine(), make("UIStroke", { Thickness = 3, Color = style.color:Lerp(Color3.new(0, 0, 0), 0.55) }) })
-	studsOverlay(frame, 22, 0.35)
-	local iconBox = make("Frame", {
-		Position = UDim2.fromOffset(6, 6), Size = UDim2.fromOffset(54, 54), BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 0.25, Parent = frame,
-	}, { corner(10) })
-	make("TextLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Font = FONT, TextScaled = true, Text = style.icon, Parent = iconBox })
+		Name = "Card_" .. id, Size = UDim2.fromOffset(262, 66), LayoutOrder = order, Parent = parent or panel,
+	})
+	Style.panel(frame, style.a, style.b)
+	make("TextLabel", {
+		Position = UDim2.fromOffset(4, 3), Size = UDim2.fromOffset(60, 60), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
+		Text = style.icon, Parent = frame,
+	})
 	local title = make("TextLabel", {
-		Position = UDim2.fromOffset(66, 5), Size = UDim2.new(1, -146, 0, 26), BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextWrapped = false,
-		TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.new(1, 1, 1), Parent = frame,
-	}, { stroke(2) })
+		Position = UDim2.fromOffset(66, 5), Size = UDim2.new(1, -146, 0, 27), BackgroundTransparency = 1, TextScaled = true, TextWrapped = false,
+		TextXAlignment = Enum.TextXAlignment.Left, Parent = frame,
+	})
+	Style.text(title, 2.5)
 	local info = make("TextLabel", {
-		Position = UDim2.fromOffset(66, 34), Size = UDim2.new(1, -146, 0, 24), BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextWrapped = false,
-		TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 255, 210), Parent = frame,
-	}, { stroke(1.5) })
+		Position = UDim2.fromOffset(66, 35), Size = UDim2.new(1, -146, 0, 23), BackgroundTransparency = 1, TextScaled = true, TextWrapped = false,
+		TextXAlignment = Enum.TextXAlignment.Left, Parent = frame,
+	})
+	Style.text(info, 2)
+	info.TextColor3 = Color3.fromRGB(255, 250, 200)
 	local buy = make("TextButton", {
-		AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -7, 0.5, 0), Size = UDim2.fromOffset(74, 46), BackgroundColor3 = GREEN,
-		Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), AutoButtonColor = true, Parent = frame,
-	}, { corner(10), shine(), make("UIStroke", { Thickness = 2.5, Color = Color3.fromRGB(20, 70, 30), ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
-		make("UIPadding", { PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 5), PaddingTop = UDim.new(0, 7), PaddingBottom = UDim.new(0, 7) }), stroke(1.5) })
+		AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -8, 0.5, 0), Size = UDim2.fromOffset(74, 44), TextScaled = true, Parent = frame,
+	}, { make("UIPadding", { PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 5), PaddingTop = UDim.new(0, 7), PaddingBottom = UDim.new(0, 7) }) })
+	Style.button(buy)
 	local confirmUntil = 0
 	buy.Activated:Connect(function()
 		-- a little squish on press
-		buy.Size = UDim2.fromOffset(66, 40)
-		TweenService:Create(buy, TweenInfo.new(0.15, Enum.EasingStyle.Back), { Size = UDim2.fromOffset(74, 46) }):Play()
+		buy.Size = UDim2.fromOffset(66, 38)
+		TweenService:Create(buy, TweenInfo.new(0.15, Enum.EasingStyle.Back), { Size = UDim2.fromOffset(74, 44) }):Play()
 		if id == "Rebirth" then
 			-- Two taps: the first one asks "SURE?".
 			if os.clock() > confirmUntil then
@@ -272,11 +261,11 @@ local function refresh()
 			if tier >= need then
 				card.info.Text = string.format("Cash x%.1f > x%.1f", Config.rebirthMult(r), Config.rebirthMult(r + 1))
 				card.buy.Text = "REBIRTH"
-				card.buy.BackgroundColor3 = GOLD
+				Style.setButtonColor(card.buy, GOLD)
 			else
 				card.info.Text = "Reach the " .. Config.Objects[need].name
 				card.buy.Text = "LOCKED"
-				card.buy.BackgroundColor3 = GREY
+				Style.setButtonColor(card.buy, GREY)
 			end
 			continue
 		elseif card.id == "Size" then
@@ -304,11 +293,11 @@ local function refresh()
 		end
 		if cost then
 			card.buy.Text = Format.cash(cost)
-			card.buy.BackgroundColor3 = if cash >= cost then GREEN else Color3.fromRGB(95, 120, 100)
+			Style.setButtonColor(card.buy, if cash >= cost then Style.GREEN else Color3.fromRGB(110, 130, 110))
 			card.buy.Active = true
 		else
 			card.buy.Text = "MAX"
-			card.buy.BackgroundColor3 = GREY
+			Style.setButtonColor(card.buy, GREY)
 			card.buy.Active = false
 		end
 	end
@@ -346,20 +335,16 @@ task.spawn(function()
 		Name = "UpgradeBoardGui", Adornee = boardPart, Face = Enum.NormalId.Back, SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud,
 		PixelsPerStud = 30, ZOffset = 1, LightInfluence = 0, ResetOnSpawn = false, Parent = player.PlayerGui,
 	})
-	local bg = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(70, 76, 95), Parent = surface }, { corner(24) })
-	studsOverlay(bg, 40, 0.3)
-	make("TextLabel", {
-		Position = UDim2.new(0.05, 0, 0, 8), Size = UDim2.new(0.9, 0, 0, 48), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
-		TextColor3 = GOLD, Text = "UPGRADES", Parent = bg,
-	}, { stroke(4) })
+	local bg = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(40, 46, 60), Parent = surface }, { corner(16) })
+	studsOverlay(bg, 40, 0.45)
 	local list = make("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 62), Size = UDim2.fromOffset(262, 380), BackgroundTransparency = 1, Parent = bg,
+		AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(262, 362), BackgroundTransparency = 1, Parent = bg,
 	}, { make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }) })
 	local listScale = make("UIScale", { Parent = list })
 	local function fit()
 		-- fill the board's width
 		local size = surface.AbsoluteSize
-		listScale.Scale = math.min((size.X * 0.92) / 262, (size.Y - 70) / 370)
+		listScale.Scale = math.min((size.X * 0.94) / 262, (size.Y * 0.95) / 362)
 	end
 	surface:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
 	fit()

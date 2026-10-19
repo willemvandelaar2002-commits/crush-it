@@ -7,5 +7,6 @@ Small, quick game to test alongside WarChest: one loop, few systems, out fast.
 - [[Systems/Press and plots]] — the world, the press, crushing
 - [[Systems/Shop]] — Robux passes/products, onboarding, analytics, thumbnail
 - [[Systems/Progression]] — rebirth, golden/diamond objects, collection book
+- [[Systems/Style kit]] — reusable studded look (Style + Build) for this and future games
 - [[Decisions log]]
 - [[Backlog]]

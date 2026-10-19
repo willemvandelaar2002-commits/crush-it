@@ -12,6 +12,8 @@ local Workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
 local Config = require(ReplicatedStorage.Shared.Config)
 local PressBuilder = require(script.Parent.PressBuilder)
+local Style = require(ReplicatedStorage.Shared.Kit.Style)
+local Build = require(script.Parent.Kit.Build)
 
 local Plots = {}
 
@@ -28,7 +30,7 @@ export type Plot = {
 	sign: TextLabel,
 }
 
-local FLOOR_Y = 0.3 -- just above a Baseplate's top (y = 0) so they don't z-fight
+local FLOOR_Y = 1.6 -- top of the raised plot platforms (the ground sits at y = 0.05)
 local GRASS = Color3.fromRGB(105, 200, 85)
 -- each plot's rim colour
 local FLOOR_COLORS = {
@@ -55,18 +57,7 @@ end
 
 -- The stud pattern on a part's faces (Config.Look).
 function Plots.studs(p: BasePart, faces: { Enum.NormalId }?)
-	if Config.Look.StudTexture == "rbxassetid://0" then
-		return
-	end
-	for _, face in faces or { Enum.NormalId.Top } do
-		local t = Instance.new("Texture")
-		t.Name = "Studs"
-		t.Texture = Config.Look.StudTexture
-		t.Face = face
-		t.StudsPerTileU = Config.Look.StudsPerTile
-		t.StudsPerTileV = Config.Look.StudsPerTile
-		t.Parent = p
-	end
+	Style.studs(p, faces)
 end
 
 function Plots.originFor(index: number): CFrame
@@ -92,8 +83,27 @@ function Plots.buildPress(plot: Plot, tier: number)
 	if pad then
 		local F = Config.Plots.FloorSize
 		local size = math.clamp(Config.pressWidth(tier) * 1.9 + 14, 34, F - 16)
-		pad.Size = Vector3.new(size, 0.2, size)
-		pad.CFrame = plot.origin * CFrame.new(0, 0.1, 0)
+		pad.Size = Vector3.new(size, 0.12, size)
+		pad.CFrame = plot.origin * CFrame.new(0, 0.06, 0)
+		-- framed edge round the pad
+		local edge = plot.model:FindFirstChild("PadEdge")
+		if edge then
+			edge:ClearAllChildren()
+			local theme = Style.theme(Config.Look.Theme)
+			for _, z in { -1, 1 } do
+				Build.block(edge, "Frame", Vector3.new(size + 2, 0.3, 1), plot.origin * CFrame.new(0, 0.15, z * (size / 2 + 0.5)), theme.edge)
+			end
+			for _, x in { -1, 1 } do
+				Build.block(edge, "Frame", Vector3.new(1, 0.3, size), plot.origin * CFrame.new(x * (size / 2 + 0.5), 0.15, 0), theme.edge)
+			end
+		end
+	end
+	-- floating name over the press
+	local info = Config.Presses[tier]
+	local topPart = built.model:FindFirstChild("Bed") :: BasePart?
+	if topPart then
+		local _, size = built.model:GetBoundingBox()
+		Build.label(topPart, info.name, info.accent:Lerp(Color3.new(1, 1, 1), 0.35), size.Y + 3, Vector2.new(math.clamp(Config.pressWidth(tier), 14, 40), 4))
 	end
 	-- keep the upgrade board just right of the press, facing the spawn
 	local board = plot.model:FindFirstChild("Board") :: Model?
@@ -136,81 +146,79 @@ function Plots.all(): { Plot }
 end
 
 function Plots.create()
-	for i = 1, Config.Plots.Count do
+	local theme = Style.theme(Config.Look.Theme)
+	local F = Config.Plots.FloorSize
+	local P = Config.Plots
+	-- Ground under everything (covers the Baseplate).
+	local base = Workspace:FindFirstChild("Baseplate")
+	if base and base:IsA("BasePart") then
+		base.Transparency = 1
+		for _, t in base:GetChildren() do
+			if t:IsA("Texture") or t:IsA("Decal") then
+				t.Transparency = 1
+			end
+		end
+	end
+	Build.block(root, "Ground", Vector3.new(1600, 1, 1600), CFrame.new(0, 0.05 - 0.5, 0), theme.ground)
+	-- Walkway down the middle: a lower platform with an edge.
+	local walkW = P.Spacing * 4 + 30
+	local walkD = P.RowOffset * 2 - F + 6
+	Build.platform(root, "Walkway", CFrame.new(0, 0.7, 0), walkW, walkD, 0.65, theme.path, theme.edge, 1.5)
+
+	for i = 1, P.Count do
 		local origin = Plots.originFor(i)
 		local model = Instance.new("Model")
 		model.Name = "Plot" .. i
 		model:SetAttribute("Index", i)
-		local F = Config.Plots.FloorSize
-		local floor = part({ Name = "Floor", Size = Vector3.new(F, 1, F), CFrame = origin * CFrame.new(0, -0.5, 0), Color = GRASS, Material = Enum.Material.SmoothPlastic }, model)
-		Plots.studs(floor)
-		-- raised rim round the plot
-		local rimColor = FLOOR_COLORS[i]
-		for _, e in { { 0, F / 2 }, { 0, -F / 2 } } do
-			Plots.studs(part({ Name = "Rim", Size = Vector3.new(F + 2, 1.2, 2), CFrame = origin * CFrame.new(e[1], 0.1, e[2]), Color = rimColor }, model), { Enum.NormalId.Top })
+		-- Raised platform; its top is the plot floor (origin).
+		Build.platform(model, "Floor", origin, F, F, origin.Position.Y - 0.05, theme.platform, theme.edge, 2)
+		-- Coloured trim just inside the edge so each plot has its own colour.
+		local trim = FLOOR_COLORS[i]
+		for _, z in { -1, 1 } do
+			Build.block(model, "Trim", Vector3.new(F - 4, 0.15, 0.8), origin * CFrame.new(0, 0.075, z * (F / 2 - 2.4)), trim)
 		end
-		for _, e in { { F / 2, 0 }, { -F / 2, 0 } } do
-			Plots.studs(part({ Name = "Rim", Size = Vector3.new(2, 1.2, F), CFrame = origin * CFrame.new(e[1], 0.1, e[2]), Color = rimColor }, model), { Enum.NormalId.Top })
+		for _, x in { -1, 1 } do
+			Build.block(model, "Trim", Vector3.new(0.8, 0.15, F - 5.6), origin * CFrame.new(x * (F / 2 - 2.4), 0.075, 0), trim)
 		end
-		-- dark studded pad under the press area
-		local pad = part({ Name = "Pad", Size = Vector3.new(F - 16, 0.2, F - 16), CFrame = origin * CFrame.new(0, 0.1, -2), Color = Color3.fromRGB(75, 78, 92) }, model)
-		Plots.studs(pad)
+		-- Framed pad under the press (resized with the press).
+		local pad = Build.block(model, "Pad", Vector3.new(F - 16, 0.12, F - 16), origin * CFrame.new(0, 0.06, 0), theme.pad)
+		local padEdge = Instance.new("Model")
+		padEdge.Name = "PadEdge"
+		padEdge.Parent = model
+		local _ = pad
 		-- Conveyor from the front edge to the bed.
 		local beltLen = F / 2 - 4
-		part({ Name = "Conveyor", Size = Vector3.new(8, 0.6, beltLen), CFrame = origin * CFrame.new(0, 0.3, F / 2 - beltLen / 2), Color = Color3.fromRGB(35, 35, 40), Material = Enum.Material.Fabric }, model)
-		-- Owner sign at the front.
-		local signPost = part({ Name = "SignPost", Size = Vector3.new(14, 4, 0.6), CFrame = origin * CFrame.new(-F / 2 + 10, 6, F / 2 - 2), Color = Color3.fromRGB(30, 30, 34) }, model)
+		local belt = Build.block(model, "Conveyor", Vector3.new(8, 0.6, beltLen), origin * CFrame.new(0, 0.3, F / 2 - beltLen / 2), theme.dark)
+		local _ = belt
+		for _, x in { -1, 1 } do
+			Build.block(model, "ConveyorRail", Vector3.new(0.8, 0.9, beltLen), origin * CFrame.new(x * 4.4, 0.45, F / 2 - beltLen / 2), Color3.fromRGB(255, 200, 60))
+		end
+		-- Owner sign at the front left.
+		local signModel, signFace = Build.signFrame(model, origin * CFrame.new(-F / 2 + 12, 0, F / 2 - 6), 14, 4, theme.edge)
+		signModel.Name = "OwnerSign"
 		local gui = Instance.new("SurfaceGui")
 		gui.Face = Enum.NormalId.Back
 		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
 		gui.PixelsPerStud = 40
-		gui.Parent = signPost
+		gui.LightInfluence = 0
+		gui.Parent = signFace
 		local label = Instance.new("TextLabel")
 		label.Size = UDim2.fromScale(1, 1)
 		label.BackgroundTransparency = 1
 		label.TextScaled = true
-		label.Font = Enum.Font.FredokaOne
-		label.TextColor3 = Color3.new(1, 1, 1)
 		label.Text = "Free plot"
 		label.Parent = gui
+		Style.text(label, 3)
 		-- Upgrade board (moved next to the press whenever the press changes size).
-		local boardModel = Instance.new("Model")
+		local boardModel, boardFace = Build.signFrame(model, origin, 12, 16, theme.edge)
 		boardModel.Name = "Board"
-		local boardW, boardH = 12, 18
-		local boardBase = origin
-		for _, side in { -1, 1 } do
-			part({ Name = "BoardPost", Size = Vector3.new(0.8, 4, 0.8), CFrame = boardBase * CFrame.new(side * boardW * 0.4, 2, 0), Color = Color3.fromRGB(60, 60, 68), Material = Enum.Material.Metal }, boardModel)
-		end
-		local boardFrame = part({ Name = "BoardFrame", Size = Vector3.new(boardW + 1.2, boardH + 1.2, 0.6), CFrame = boardBase * CFrame.new(0, 4 + boardH / 2, -0.15), Color = Color3.fromRGB(150, 156, 170) }, boardModel)
-		Plots.studs(boardFrame, { Enum.NormalId.Back, Enum.NormalId.Front })
-		-- glowing white edges like the boards in Destroy a Vault
-		for _, side in { -1, 1 } do
-			part({ Name = "BoardGlow", Size = Vector3.new(0.25, boardH + 1.2, 0.25), CFrame = boardBase * CFrame.new(side * (boardW / 2 + 0.6), 4 + boardH / 2, 0.2), Color = Color3.new(1, 1, 1), Material = Enum.Material.Neon }, boardModel)
-		end
-		local board = part({ Name = "UpgradeBoard", Size = Vector3.new(boardW, boardH, 0.6), CFrame = boardBase * CFrame.new(0, 4 + boardH / 2, 0), Color = Color3.fromRGB(30, 34, 48) }, boardModel)
-		local boardGui = Instance.new("SurfaceGui")
-		boardGui.Face = Enum.NormalId.Back
-		boardGui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-		boardGui.PixelsPerStud = 30
-		boardGui.Parent = board
-		local boardLabel = Instance.new("TextLabel")
-		boardLabel.Size = UDim2.fromScale(1, 0.2)
-		boardLabel.BackgroundTransparency = 1
-		boardLabel.Font = Enum.Font.FredokaOne
-		boardLabel.TextScaled = true
-		boardLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
-		boardLabel.Text = "UPGRADES"
-		boardLabel.Parent = boardGui
-		boardModel.WorldPivot = boardBase
-		boardModel.Parent = model
+		boardFace.Name = "UpgradeBoard"
+		Build.label(boardFace, "⬆️ Upgrades", Color3.fromRGB(255, 225, 120), 10, Vector2.new(14, 3.5))
 		model.Parent = root
 		local plot: Plot = { index = i, origin = origin, model = model, press = nil, ram = nil, bedTop = 0, ramRestY = 0, tier = 1, owner = nil, sign = label }
 		Plots.buildPress(plot, 1)
 		table.insert(plots, plot)
 	end
-	-- Walkway + spawn in the middle.
-	local walk = part({ Name = "Walkway", Size = Vector3.new(Config.Plots.Spacing * 4 + 20, 1, Config.Plots.RowOffset * 2 - Config.Plots.FloorSize), CFrame = CFrame.new(0, FLOOR_Y - 0.6, 0), Color = Color3.fromRGB(225, 228, 235), Material = Enum.Material.SmoothPlastic }, root)
-	Plots.studs(walk)
 end
 
 -- Where the conveyor starts / where objects wait, in world space.

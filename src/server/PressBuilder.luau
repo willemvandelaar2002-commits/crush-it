@@ -14,6 +14,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
 local Config = require(ReplicatedStorage.Shared.Config)
+local Style = require(ReplicatedStorage.Shared.Kit.Style)
 
 local PressBuilder = {}
 
@@ -187,14 +188,7 @@ function PressBuilder.build(o: CFrame, tier: number): Built
 
 	-- Base and bed
 	local plinth = new(press, "Plinth", Vector3.new(beamW + 1.6, 0.6, math.max(W, beamD) + 1.6), at(0, 0.3, 0), st.trim, M.SmoothPlastic)
-	if Config.Look.StudTexture ~= "rbxassetid://0" then
-		local t = Instance.new("Texture")
-		t.Texture = Config.Look.StudTexture
-		t.Face = Enum.NormalId.Top
-		t.StudsPerTileU = Config.Look.StudsPerTile
-		t.StudsPerTileV = Config.Look.StudsPerTile
-		t.Parent = plinth
-	end
+	Style.studs(plinth)
 	local bed = new(press, "Bed", Vector3.new(W, BED_HEIGHT, W), at(0, BED_HEIGHT / 2, 0), st.bed, st.bedMat)
 	bed:SetAttribute("Keep", true)
 	if stage >= 2 then

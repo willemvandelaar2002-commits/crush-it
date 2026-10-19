@@ -79,6 +79,7 @@ local function sanitize(d: any): any
 end
 
 DataService.start("CrushItPlayer_v1", TEMPLATE, sanitize)
+require(script.Parent.Kit.Build).lighting()
 Plots.create()
 
 -- Per-plot object state ------------------------------------------------------
