@@ -245,6 +245,21 @@ local function onBuy(player: Player, id: unknown)
 	syncAttributes(player, data)
 end
 
+-- Studio only: ServerStorage.DevGiveCash:Invoke(player, amount) for testing.
+if RunService:IsStudio() then
+	local give = Instance.new("BindableFunction")
+	give.Name = "DevGiveCash"
+	give.OnInvoke = function(player: Player, amount: number)
+		local data = DataService.get(player)
+		if data then
+			data.cash += amount
+			syncAttributes(player, data)
+		end
+		return data and data.cash
+	end
+	give.Parent = game:GetService("ServerStorage")
+end
+
 CrushRemote.OnServerEvent:Connect(function(player)
 	onCrush(player)
 end)

@@ -159,7 +159,7 @@ end
 -- Spawn point in front of the plot, facing the press.
 function Plots.spawnFor(plot: Plot): CFrame
 	local F = Config.Plots.FloorSize
-	return plot.origin * CFrame.new(10, 3, F / 2 - 10) * CFrame.Angles(0, 0, 0)
+	return plot.origin * CFrame.new(8, 3, math.min(F / 2 - 10, 14 + Config.pressWidth(plot.tier)))
 end
 
 return Plots

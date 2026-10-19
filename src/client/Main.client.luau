@@ -162,7 +162,7 @@ makeCard("Size", #Config.Upgrades + 1)
 
 local function fmtEffect(id: string, v: number): string
 	if id == "Power" then
-		return Format.compact(v) .. " dmg"
+		return (if v < 100 then string.format("%.1f", v) else Format.compact(v)) .. " dmg"
 	elseif id == "Speed" then
 		return string.format("%.2fs", v)
 	else
