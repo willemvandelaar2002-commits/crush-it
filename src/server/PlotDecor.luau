@@ -195,7 +195,7 @@ end
 
 -- A heap of junk waiting to be crushed: stepped dirt mound with wrecked car
 -- bodies, crushed cubes, tyres and sheets on top. `cf` = ground centre.
-function PlotDecor.scrapHeap(parent: Instance, cf: CFrame, rng: Random)
+function PlotDecor.scrapHeap(parent: Instance, cf: CFrame, rng: Random): Model
 	local m = Instance.new("Model")
 	m.Name = "ScrapHeap"
 	local mound = { C(118, 96, 78), C(98, 82, 70), C(132, 112, 92) }
@@ -236,11 +236,12 @@ function PlotDecor.scrapHeap(parent: Instance, cf: CFrame, rng: Random)
 		end
 	end
 	m.Parent = parent
+	return m
 end
 
 -- A magnet crane that slowly swings over the scrap heap (the client turns
 -- Models tagged PressSpin round their "Axis" attribute). `cf` = mast foot.
-function PlotDecor.crane(parent: Instance, cf: CFrame)
+function PlotDecor.crane(parent: Instance, cf: CFrame): Model
 	local m = Instance.new("Model")
 	m.Name = "Crane"
 	local mastH = 15
@@ -273,10 +274,11 @@ function PlotDecor.crane(parent: Instance, cf: CFrame)
 	CollectionService:AddTag(top, "PressSpin")
 	top.Parent = m
 	m.Parent = parent
+	return m
 end
 
 -- Bales of crushed scrap on pallets, and a forklift. `cf` = ground centre.
-function PlotDecor.bales(parent: Instance, cf: CFrame, rng: Random)
+function PlotDecor.bales(parent: Instance, cf: CFrame, rng: Random): Model
 	local m = Instance.new("Model")
 	m.Name = "Bales"
 	local colors = { C(200, 80, 60), C(70, 140, 210), C(150, 156, 168), C(90, 170, 100), C(230, 180, 60) }
@@ -311,6 +313,7 @@ function PlotDecor.bales(parent: Instance, cf: CFrame, rng: Random)
 		end
 	end
 	m.Parent = parent
+	return m
 end
 
 -- An overhead pipe on posts (walk under it) through the given ground points.
@@ -340,6 +343,18 @@ function PlotDecor.pipe(parent: Instance, points: { Vector3 }, y: number, color:
 	m.Parent = parent
 end
 
+-- Scales a prop model about its centre and stands it back on the floor (y = floorY).
+local function grow(model: Model, scale: number, floorY: number)
+	model:ScaleTo(scale)
+	local lowest = math.huge
+	for _, p in model:GetDescendants() do
+		if p:IsA("BasePart") then
+			lowest = math.min(lowest, p.Position.Y - p.Size.Y / 2)
+		end
+	end
+	model:PivotTo(model:GetPivot() + Vector3.new(0, floorY - lowest, 0))
+end
+
 -- Everything for one plot; returns the gate's name label.
 function PlotDecor.build(plotModel: Model, origin: CFrame, accent: Color3, theme: { [string]: Color3 }, index: number): TextLabel
 	local F = Config.Plots.FloorSize
@@ -350,10 +365,14 @@ function PlotDecor.build(plotModel: Model, origin: CFrame, accent: Color3, theme
 	local label = PlotDecor.gate(m, origin * CFrame.new(16, 0, half - 2.2), 11, accent, theme)
 	PlotDecor.boiler(m, origin * CFrame.new(46, 0, -20) * CFrame.Angles(0, math.rad(-60), 0))
 	-- the free grass beside the press (kept clear of the biggest press, x < 38)
-	PlotDecor.scrapHeap(m, origin * CFrame.new(-45, 0, -17), rng)
-	PlotDecor.crane(m, origin * CFrame.new(-53, 0, -7) * CFrame.Angles(0, math.rad(200), 0))
+	local floorY = origin.Position.Y
+	grow(PlotDecor.scrapHeap(m, origin * CFrame.new(-48, 0, -14), rng), 1.4, floorY)
+	local crane = PlotDecor.crane(m, origin * CFrame.new(-54, 0, -30) * CFrame.Angles(0, math.rad(60), 0))
+	grow(crane, 1.5, floorY)
+	local swing = crane:FindFirstChild("Swing") :: Model
+	swing:SetAttribute("Axis", (crane:FindFirstChild("CraneBase") :: BasePart).Position)
 	PlotDecor.crates(m, origin * CFrame.new(-42, 0, -42) * CFrame.Angles(0, math.rad(90), 0), rng)
-	PlotDecor.bales(m, origin * CFrame.new(49, 0, -2) * CFrame.Angles(0, math.rad(90), 0), rng)
+	grow(PlotDecor.bales(m, origin * CFrame.new(49, 0, -4) * CFrame.Angles(0, math.rad(90), 0), rng), 1.5, floorY)
 	-- steam pipe from the boiler round to the scrap shop
 	local function pt(x: number, z: number): Vector3
 		return (origin * CFrame.new(x, 0, z)).Position
