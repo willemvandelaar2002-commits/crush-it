@@ -41,7 +41,7 @@ local function edgeProps(m: Instance, origin: CFrame, rng: Random)
 		return origin * CFrame.new(x, 0, z) * CFrame.Angles(0, rng:NextNumber() * 6, 0)
 	end
 	local spots = {
-		{ -half + 5, -42, "tree" }, { -half + 5, -4, "lamp" }, { -half + 5, 26, "bush" },
+		{ -half + 5, -36, "tree" }, { -half + 5, 26, "bush" },
 		{ half - 5, -40, "bush" }, { half - 5, 24, "tree" },
 	}
 	for _, s in spots do

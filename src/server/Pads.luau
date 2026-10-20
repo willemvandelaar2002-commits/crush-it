@@ -134,8 +134,8 @@ function Pads.build(plotModel: Model, origin: CFrame)
 			gui.StudsOffsetWorldSpace = Vector3.new(0, 6.8, 0)
 		end
 	end
-	-- stats board (left of the scrap pile, turned toward the pile and the press)
-	local boardCf = origin * CFrame.new(-34, 0, -38) * CFrame.Angles(0, math.rad(55), 0)
+	-- stats board (right of the scrap pile, turned toward the pile and the press)
+	local boardCf = origin * CFrame.new(34, 0, -38) * CFrame.Angles(0, math.rad(-55), 0)
 	local board, face = Build.signFrame(m, boardCf, 16, 10, C(40, 42, 50))
 	board.Name = "StatsBoard"
 	face.Name = "StatsFace"
