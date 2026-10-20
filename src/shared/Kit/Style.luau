@@ -350,6 +350,18 @@ function Style.modal(panel: Frame)
 	end)
 end
 
+-- An uploaded icon image, centred and kept square (props override the defaults).
+function Style.image(parent: Instance, image: string, props: { [string]: any }?): ImageLabel
+	local img = child("ImageLabel", {
+		Name = "Icon", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1, Image = image, ScaleType = Enum.ScaleType.Fit,
+	}, parent)
+	for k, v in props or {} do
+		(img :: any)[k] = v
+	end
+	return img
+end
+
 -- Big chunky icon button (Destroy a Vault's SHOP / INDEX / REWARDS): a tilted
 -- gradient tile with a large emoji, an outlined label overlapping its bottom
 -- edge and a red "!" badge (hidden; show it with badge.Visible = true).
@@ -364,7 +376,9 @@ function Style.iconButton(parent: Instance, opts: { [string]: any }): (TextButto
 		Name = "Tile", Size = UDim2.fromOffset(size, size), Rotation = -4, ZIndex = 2,
 	}, btn)
 	Style.panel(tile, opts.a, opts.b)
-	if opts.art then
+	if opts.image then
+		Style.image(tile, opts.image, { Position = UDim2.fromScale(0.5, 0.44), Size = UDim2.fromScale(0.86, 0.86), ZIndex = 3 })
+	elseif opts.art then
 		Style.icon(tile, opts.art)
 	else
 		child("TextLabel", {

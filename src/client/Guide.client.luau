@@ -2,7 +2,7 @@
 -- Ground guide (Kit/GuidePath): glowing chevrons that lead the player to
 --   * the upgrade board while the tutorial says "Buy An Upgrade"
 --     (first session, enough cash, no upgrades yet), and
---   * back to their own press whenever they wander more than RETURN_DISTANCE away.
+--   * back to their own press once they're off their plot (RETURN_DISTANCE).
 -- Otherwise hidden.
 
 local Players = game:GetService("Players")
@@ -14,7 +14,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local GuidePath = require(ReplicatedStorage.Shared.Kit.GuidePath)
 
 local player = Players.LocalPlayer
-local RETURN_DISTANCE = 40
+local RETURN_DISTANCE = 65 -- a bit past the plot edge (plots are 120 wide)
 
 local path = GuidePath.new({ color = Color3.new(1, 1, 1) })
 

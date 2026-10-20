@@ -16,6 +16,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local Format = require(ReplicatedStorage.Shared.Format)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
+local Icons = require(ReplicatedStorage.Shared.Icons)
 
 local player = Players.LocalPlayer
 
@@ -110,9 +111,10 @@ local statusLabel = make("TextLabel", {
 -- Collapsed button.
 local openButton = make("TextButton", {
 	AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 8), Size = UDim2.fromOffset(46, 46),
-	BackgroundColor3 = BG, BackgroundTransparency = 0.25, Text = "🏆", TextScaled = true, Visible = false,
+	BackgroundColor3 = BG, BackgroundTransparency = 0.25, Text = "", TextScaled = true, Visible = false,
 }, gui)
 Style.button(openButton, Color3.fromRGB(71, 145, 239))
+Style.image(openButton, Icons.Trophy, { Size = UDim2.fromScale(0.85, 0.85), ZIndex = 2 })
 local function fitLeaderboard()
 	local compact = Style.compact()
 	panel.Position = UDim2.new(1, -10, 0, if compact then 86 else 8)

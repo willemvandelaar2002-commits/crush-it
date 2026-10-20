@@ -17,6 +17,7 @@ local Format = require(ReplicatedStorage.Shared.Format)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Objects = require(ReplicatedStorage.Shared.Objects)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
+local Icons = require(ReplicatedStorage.Shared.Icons)
 
 local player = Players.LocalPlayer
 local CrushRemote = Net.event("Crush")
@@ -73,7 +74,7 @@ if not TOUCH then
 		Name = "CashIcon", AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 12, 1, -40), Size = UDim2.fromOffset(66, 66),
 		BackgroundTransparency = 1, Rotation = -10, Parent = gui,
 	})
-	Style.icon(cashIcon, "Cash")
+	Style.image(cashIcon, Icons.Cash)
 end
 
 local multLabel = make("TextLabel", {
@@ -242,11 +243,11 @@ local cards: { Card } = {}
 -- `image` (an uploaded icon) is used instead of the emoji `icon` when set.
 local ROW_STYLE: { [string]: { a: Color3, b: Color3, icon: string, image: string? } } = {
 	-- two-colour gradients like Destroy a Vault's boards (pink>purple, cyan>blue ...)
-	Power = { a = Color3.fromRGB(255, 95, 80), b = Color3.fromRGB(200, 30, 90), icon = "💥" },
-	Speed = { a = Color3.fromRGB(70, 220, 255), b = Color3.fromRGB(40, 90, 230), icon = "⚡" },
-	Value = { a = Color3.fromRGB(255, 225, 70), b = Color3.fromRGB(240, 140, 20), icon = "💰" },
-	Size = { a = Color3.fromRGB(240, 90, 255), b = Color3.fromRGB(120, 50, 220), icon = "🔨" },
-	Rebirth = { a = Color3.fromRGB(255, 170, 60), b = Color3.fromRGB(230, 70, 40), icon = "🔄", image = "rbxassetid://119986205257706" }, -- WarChest rebirth icon
+	Power = { a = Color3.fromRGB(255, 95, 80), b = Color3.fromRGB(200, 30, 90), icon = "💥", image = Icons.Power },
+	Speed = { a = Color3.fromRGB(70, 220, 255), b = Color3.fromRGB(40, 90, 230), icon = "⚡", image = Icons.Speed },
+	Value = { a = Color3.fromRGB(255, 225, 70), b = Color3.fromRGB(240, 140, 20), icon = "💰", image = Icons.Value },
+	Size = { a = Color3.fromRGB(240, 90, 255), b = Color3.fromRGB(120, 50, 220), icon = "🔨", image = Icons.Press },
+	Rebirth = { a = Color3.fromRGB(255, 170, 60), b = Color3.fromRGB(230, 70, 40), icon = "🔄", image = Icons.Rebirth },
 }
 
 local function studsOverlay(parent: GuiObject, tile: number, transparency: number)
@@ -952,7 +953,7 @@ end)
 local collection: { [string]: { [string]: number } } = {}
 
 local bookButton, bookDot = Style.iconButton(gui, {
-	name = "BookButton", icon = "📖", art = "Book", label = "BOOK", a = Color3.fromRGB(90, 160, 255), b = Color3.fromRGB(60, 70, 220),
+	name = "BookButton", icon = "📖", image = Icons.Book, label = "BOOK", a = Color3.fromRGB(90, 160, 255), b = Color3.fromRGB(60, 70, 220),
 })
 Style.placeHudButton(bookButton, 0)
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() Style.placeHudButton(bookButton, 0) end)

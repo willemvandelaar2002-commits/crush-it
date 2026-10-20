@@ -10,14 +10,15 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Store = require(ReplicatedStorage.Shared.Store)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
+local Icons = require(ReplicatedStorage.Shared.Icons)
 local Build = require(script.Parent.Kit.Build)
 local Analytics = require(script.Parent.Kit.Analytics)
 
 local RobuxSigns = {}
 
 RobuxSigns.Signs = {
-	{ perk = "AutoCrush", icon = "🤖", a = Color3.fromRGB(255, 120, 90), b = Color3.fromRGB(200, 40, 70) },
-	{ perk = "DoubleCash", icon = "💸", a = Color3.fromRGB(120, 235, 100), b = Color3.fromRGB(40, 150, 60) },
+	{ perk = "AutoCrush", icon = Icons.AutoCrush, a = Color3.fromRGB(255, 120, 90), b = Color3.fromRGB(200, 40, 70) },
+	{ perk = "DoubleCash", icon = Icons.DoubleCash, a = Color3.fromRGB(120, 235, 100), b = Color3.fromRGB(40, 150, 60) },
 }
 
 local W, H = 9, 6 -- sign face size (studs)
@@ -48,12 +49,12 @@ function RobuxSigns.build(parent: Instance, frameColor: Color3): Model
 		bg.Size = UDim2.fromScale(1, 1)
 		bg.Parent = gui
 		Style.panel(bg, def.a, def.b)
-		local icon = Instance.new("TextLabel")
+		local icon = Instance.new("ImageLabel")
 		icon.Position = UDim2.fromScale(0.04, 0.08)
 		icon.Size = UDim2.fromScale(0.36, 0.56)
 		icon.BackgroundTransparency = 1
-		icon.TextScaled = true
-		icon.Text = def.icon
+		icon.ScaleType = Enum.ScaleType.Fit
+		icon.Image = def.icon
 		icon.ZIndex = 2
 		icon.Parent = bg
 		local title = Instance.new("TextLabel")

@@ -18,6 +18,7 @@ and require them.
 - `Style.grid(container, minWidth, height, gap?)` reflows an existing UIGridLayout to fill the available width
 - `Style.scroll(scrollingFrame)` consistent scrollbar and padding to leave room for card outlines
 - `Style.modal(panel)` adds a click-outside backdrop, raises its ScreenGui while open, and closes any previous modal; `Style.setOpen(panel, open)` animates opening/closing and protects against stale close callbacks; `Style.hasModal()` lets tutorials/input pause while a panel has focus
+- `Style.image(parent, image, props?)` an uploaded icon (ImageLabel, Fit, centred); `Style.iconButton` takes `image` too
 - `Style.rainbow(gui, speed?)` moving rainbow gradient (client only)
 - `Style.wobble(gui, degrees?, speed?)` gentle tilt back and forth (client only)
 
@@ -82,3 +83,11 @@ Props in Crush It (`src/server/Decor.luau`, toggle `Config.Look.Props`, layout s
 `Config.Look.PropSeed`): white fence behind both rows and down both ends (walkway
 open), lamp + bush + tree + rock in every gap between plots, lamps at the walkway
 ends, and a band of trees/bushes/rocks outside the fence (~230 props, ~1,200 parts).
+
+## Icons (shared/Icons.luau, Crush It)
+15 uploaded 512px icons (book, shop, rewards, cash, power, speed, value, press,
+rebirth, robot, 2x cash, moon, clover, star, trophy) used on the HUD buttons,
+upgrade rows + board, cash counter, offers, shop cards, reward cards, the
+leaderboard button and the Robux signs. Change an icon by editing its id there.
+These ids don't load as `rbxassetid://` (they behave like decal ids), so the
+module builds `rbxthumb://type=Asset&id=<id>&w=420&h=420`, which works for any asset.
