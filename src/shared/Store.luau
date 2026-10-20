@@ -17,7 +17,7 @@ Store.Passes = {
 	{ perk = "AutoCrush", gamePassId = 0, price = 199, title = "Auto Crush", desc = "Crushes for you, even while you're AFK", color = Color3.fromRGB(230, 80, 70) },
 	{ perk = "DoubleCash", gamePassId = 0, price = 249, title = "2x Cash", desc = "Double cash from every crush, forever", color = Color3.fromRGB(80, 200, 110) },
 	{ perk = "Lucky", gamePassId = 0, price = 149, title = "Lucky", desc = "2x chance of Golden and Diamond objects", color = Color3.fromRGB(255, 200, 50) },
-	{ perk = "AutoCollect", gamePassId = 0, price = 99, title = "Auto Collect", desc = "Scrap flies to you and sells itself", color = Color3.fromRGB(255, 160, 50) },
+	{ perk = "AutoCollect", gamePassId = 0, price = 99, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
 	{ perk = "OfflineEarnings", gamePassId = 0, price = 149, title = "Offline Earnings", desc = "Earn cash while you're offline (up to 8h)", color = Color3.fromRGB(110, 140, 230) },
 } :: { Pass }
 

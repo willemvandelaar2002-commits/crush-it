@@ -25,4 +25,5 @@ Free rewards: playtime gifts + 7-day daily check-in (20 Oct).
 Friend boost + invite button, Robux signs on the plot (20 Oct).
 New Steel press frame, ground guide path (20 Oct).
 Scrap loop: crushing drops scrap, pick it up, sell at the scrap shop island behind your plot; Auto Collect pass; warm sunset sky (20 Oct).
-Next ideas: Halloween event; create the passes/products and fill Store ids; proper thumbnail.
+Reference-video pass (20 Oct): smelter with deposit/collect pads, buy pads, cliffs + lavafalls, factory look, brick paths, numbered tutorial, zone label.
+Next ideas: helper units (like the capybaras/tanks), Halloween event; create the passes/products and fill Store ids; proper thumbnail.

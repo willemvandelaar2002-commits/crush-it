@@ -126,7 +126,7 @@ end)
 
 -- Object + HP bar (under the cash) -------------------------------------------
 local objFrame = make("Frame", {
-	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, if TOUCH then 154 else 116), Size = UDim2.fromOffset(if TOUCH then 220 else 280, 48),
+	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, if TOUCH then 154 else 122), Size = UDim2.fromOffset(if TOUCH then 220 else 280, 48),
 	BackgroundTransparency = 1, Parent = gui,
 })
 local objName = make("TextLabel", {
@@ -489,7 +489,7 @@ end)
 
 -- Notices -------------------------------------------------------------------
 local noticeLabel = make("TextLabel", {
-	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, if TOUCH then 205 else 172), Size = UDim2.new(0.65, 0, 0, 30),
+	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, if TOUCH then 205 else 176), Size = UDim2.new(0.65, 0, 0, 30),
 	BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextColor3 = Color3.fromRGB(255, 220, 90), Text = "",
 	TextTransparency = 1, Parent = gui,
 }, { stroke(2) })
