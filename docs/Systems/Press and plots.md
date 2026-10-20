@@ -101,3 +101,24 @@ the legs (asset 136890182957615). The old beige arch and three other attempts
 are parked in `ServerStorage.GeneratedPresses` (Old_Stage2_Beige, Gen_Steel_2..4).
 Prompt tip for frames: say "connected ONLY at the top", "nothing between the
 legs", "no table, no lower crossbar", or the bed/object ends up inside a slab.
+
+## Islands in a lava sea (20 Oct, after the reference videos)
+The flat field is gone. The whole map is a bright lava sea (`World.luau`:
+flat orange surface with a slowly sliding stud pattern, glowing layer under it,
+drifting blobs and crust plates, embers; cliffs and lavafalls rise out of it).
+- Every plot is a thick **island** (`Moat.luau` + kit `Build.island`): grass top,
+  dirt band, studded stone sides going down into the lava, rocks sticking out,
+  boulders at the lava line, a chunky stone curb along the edge with gaps at
+  the bridges, trees/bushes/lamps along the free edges.
+- A **hub island** in the middle (`Hub.luau`, the tank game's "Market"): brick
+  road, branch paths to every bridge with dark landing patches, lamps, trees,
+  bushes, rocks, a lava fountain and two "CRUSH IT" signs; players spawn here.
+- **Wooden plank bridges** (kit `Build.bridge`, the Yuzu game's) from the hub to
+  every plot (`Config.World.HubGap` = 18) and from every plot to its scrap shop
+  island (`Config.Plots.Moat` = 12). Long bridges get legs into the lava.
+- Plot floors: bright green studded grass with dark **asphalt zones with stepped
+  edges** (kit `Build.patch`) under the buy pads and round the scrap pile, plus
+  the dark pad under the press and the orange brick paths.
+- Falling into the lava (below `Config.World.SeaY + 2`) puts you back on your plot
+  with "Ouch, hot lava!". Sky back to bright **Day**. Rows moved apart
+  (`RowOffset` 115) to make room for the hub. Theme "Island" in Style.

@@ -26,4 +26,5 @@ Friend boost + invite button, Robux signs on the plot (20 Oct).
 New Steel press frame, ground guide path (20 Oct).
 Scrap loop: crushing drops scrap, pick it up, sell at the scrap shop island behind your plot; Auto Collect pass; warm sunset sky (20 Oct).
 Reference-video pass (20 Oct): smelter with deposit/collect pads, buy pads, cliffs + lavafalls, factory look, brick paths, numbered tutorial, zone label.
+Islands: every plot is an island in a bright lava sea with wooden bridges to a hub island (20 Oct).
 Next ideas: helper units (like the capybaras/tanks), Halloween event; create the passes/products and fill Store ids; proper thumbnail.
