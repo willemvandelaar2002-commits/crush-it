@@ -34,11 +34,12 @@ tap target and scroll above the thumbstick. Compact HUDs collapse the
 leaderboard initially and hide offers; all passes remain available in Shop.
 The cash label animates increases and snaps to the new balance after spending.
 
-Validation for the 20 Oct polish: all 24 Luau files compile. A temporary headless
-Roblox mock exercises client construction and panel, cash, upgrade, auto,
-reward, offline-card and grid callbacks at 1920x1080, 390x844, 360x780 and
-844x390. This does not replace a Studio Play test or visual/device QA; those
-remain outstanding because no Studio integration was available in the session.
+Validation for the 20 Oct polish: tested in Studio Play (1080p-ish window). Fixes
+after that test: CRUSH and AUTO stay solid colours (a Style.button gradient tints the
+label text too), the leaderboard only starts collapsed on phones (the viewport isn't
+final when the script starts), the "+$X" pop sits next to the cash, offers shrink
+a bit more to clear the taller leaderboard, and the server-built Robux signs use
+Sibling ZIndex. Phone layouts are still untested on a real device.
 
 ## server/Kit/Leaderboard.luau
 - `Leaderboard.start({ store, score = fn(player) -> number, top? = 50, every? = 120 })`
