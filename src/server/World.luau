@@ -112,8 +112,10 @@ function World.create()
 		return
 	end
 	local rng = Random.new(Config.Look.PropSeed or 7)
-	local folder = Instance.new("Folder")
+	-- a Model that always streams in, so the backdrop is visible from every plot
+	local folder = Instance.new("Model")
 	folder.Name = "World"
+	folder.ModelStreamingMode = Enum.ModelStreamingMode.Persistent
 	local X, Z = 400, 340 -- inner faces of the cliff ring
 	-- each side: walk along it placing cliffs of random width
 	local sides = {

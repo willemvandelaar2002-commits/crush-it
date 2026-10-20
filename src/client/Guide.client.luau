@@ -58,15 +58,22 @@ local function goal(root: BasePart): (Vector3?, string?)
 			end
 		end
 	end
-	-- tutorial step: first upgrade
-	local firstSession = attr("Tier") <= 1 and attr("Rebirths") == 0
-	local noUpgrades = attr("PowerLv") + attr("SpeedLv") + attr("ValueLv") == 0
-	if firstSession and noUpgrades and attr("Crushed") > 0 and attr("Cash") >= Config.Upgrades[1].cost(0) then
-		local board = plot:FindFirstChild("Board") :: Model?
-		if board then
-			local pivot = board:GetPivot()
-			-- stand in front of the board (its face points +Z)
-			return (pivot * CFrame.new(0, 0, 6)).Position, "Upgrades!"
+	-- tutorial steps (Onboarding.client sets TutorialStep)
+	local step = attr("TutorialStep")
+	if step == 2 then
+		local pile = plot:FindFirstChild("PileTray")
+		if pile and pile:IsA("Model") then
+			return pile:GetPivot().Position, "Scrap!"
+		end
+	elseif step == 4 and attr("Cash") >= Config.Upgrades[1].cost(0) then
+		local pad = plot:FindFirstChild("Pad_Power", true) :: BasePart?
+		if pad then
+			return pad.Position, "Upgrade!"
+		end
+	elseif step == 5 and attr("Cash") >= Config.SizeCost(1) then
+		local pad = plot:FindFirstChild("Pad_Size", true) :: BasePart?
+		if pad then
+			return pad.Position, "Bigger Press!"
 		end
 	end
 	-- wandered off: back to the press

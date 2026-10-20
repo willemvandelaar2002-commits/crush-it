@@ -41,6 +41,8 @@ Pads.Defs = {
 	{ id = "AutoCrush", kind = "robux", x = 40, color = C(255, 110, 90) },
 } :: { PadDef }
 
+local NAMES = { Size = "Bigger Press", AutoCollect = "Auto Collect", AutoCrush = "Auto Crush" }
+
 local PAD_Z = 47 -- local Z of the pad row (the front edge is at FloorSize/2)
 
 local function billboard(adornee: BasePart): (TextLabel, TextLabel)
@@ -209,8 +211,8 @@ function Pads.start(api: Api)
 						price.Text = p
 					end
 					price.TextColor3 = if def.kind == "robux" then GREEN elseif ok then GREEN else RED
-				elseif title.Text ~= def.id then
-					title.Text = if def.id == "Size" then "Bigger Press" else def.id
+				elseif title.Text ~= (NAMES[def.id] or def.id) then
+					title.Text = NAMES[def.id] or def.id
 					price.Text = ""
 				end
 			end
