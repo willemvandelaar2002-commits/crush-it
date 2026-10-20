@@ -233,6 +233,9 @@ local function fitPanel()
 end
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitPanel)
 fitPanel()
+-- Hidden since 20 Oct: the same upgrades are walk-on pads on the plot (Pads.luau) and
+-- on the board next to the press. Kept (not deleted) so the board code keeps working.
+panel.Visible = false
 
 type Card = { frame: Frame, title: TextLabel, info: TextLabel, buy: TextButton, id: string }
 local cards: { Card } = {}

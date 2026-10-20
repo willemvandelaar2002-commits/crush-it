@@ -24,9 +24,6 @@ local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local player = Players.LocalPlayer
 local hud = player:WaitForChild("PlayerGui"):WaitForChild("CrushHud")
 local crushButton = hud:WaitForChild("CrushButton") :: GuiObject
-local upgrades = hud:WaitForChild("Upgrades")
-local powerCard = upgrades:WaitForChild("Card_Power") :: GuiObject
-local sizeCard = upgrades:WaitForChild("Card_Size") :: GuiObject
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "Onboarding"
@@ -126,7 +123,7 @@ local function current(): (number, string?, GuiObject?, string?)
 		return 1, string.format("Crush Objects (%d/3)%s", crushed, keys), crushButton, "left"
 	end
 	if anyLevel() then
-		return 5, "Buy A Bigger Press (0/1)", sizeCard, "right"
+		return 5, "Buy A Bigger Press (0/1)" -- the guide arrow points at the pad
 	end
 	if not sold and attr("Cash") <= 0 then
 		if attr("Scrap") > 0 then
@@ -137,7 +134,7 @@ local function current(): (number, string?, GuiObject?, string?)
 		end
 		return 2, "Pick Up The Scrap (0/1)"
 	end
-	return 4, "Buy An Upgrade (0/1)", powerCard, "right"
+	return 4, "Buy An Upgrade (0/1)" -- the guide arrow points at the Power pad
 end
 
 local lastStep = -1
