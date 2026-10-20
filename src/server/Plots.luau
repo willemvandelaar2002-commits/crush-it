@@ -77,6 +77,52 @@ function Plots.originFor(index: number): CFrame
 	return CFrame.new(x, FLOOR_Y, z) * facing
 end
 
+-- Props (Decor children: heap, crane, bales, boiler, crates, pipe) that the
+-- current press overlaps are parked in ServerStorage, and come back when the
+-- press is smaller again (after a rebirth). The biggest press is ~104 x 64 studs.
+local ServerStorage = game:GetService("ServerStorage")
+local function localBox(model: Model, origin: CFrame): (Vector2, Vector2)
+	local cf, size = model:GetBoundingBox()
+	local lo, hi = Vector2.new(math.huge, math.huge), Vector2.new(-math.huge, -math.huge)
+	for _, sx in { -0.5, 0.5 } do
+		for _, sz in { -0.5, 0.5 } do
+			local p = origin:PointToObjectSpace((cf * CFrame.new(size.X * sx, 0, size.Z * sz)).Position)
+			lo = Vector2.new(math.min(lo.X, p.X), math.min(lo.Y, p.Z))
+			hi = Vector2.new(math.max(hi.X, p.X), math.max(hi.Y, p.Z))
+		end
+	end
+	return lo, hi
+end
+
+local function clearProps(plot: Plot, press: Model)
+	local decor = plot.model:FindFirstChild("Decor")
+	if not decor then
+		return
+	end
+	local parkName = "ParkedDecor" .. plot.index
+	local park = ServerStorage:FindFirstChild(parkName)
+	if not park then
+		park = Instance.new("Folder")
+		park.Name = parkName
+		park.Parent = ServerStorage
+	end
+	local plo, phi = localBox(press, plot.origin)
+	local function overlaps(m: Model): boolean
+		local lo, hi = localBox(m, plot.origin)
+		return lo.X < phi.X and hi.X > plo.X and lo.Y < phi.Y and hi.Y > plo.Y
+	end
+	for _, m in decor:GetChildren() do
+		if m:IsA("Model") and overlaps(m) then
+			m.Parent = park
+		end
+	end
+	for _, m in park:GetChildren() do
+		if m:IsA("Model") and not overlaps(m) then
+			m.Parent = decor
+		end
+	end
+end
+
 -- Rebuilds this plot's press for `tier` (bigger and fancier every tier: PressBuilder).
 function Plots.buildPress(plot: Plot, tier: number)
 	if plot.press then
@@ -129,6 +175,7 @@ function Plots.buildPress(plot: Plot, tier: number)
 		local z = math.clamp(W * 0.3, 4, 30)
 		signs:PivotTo(plot.origin * CFrame.new(-x, 0, z) * CFrame.Angles(0, math.rad(25), 0))
 	end
+	clearProps(plot, built.model)
 	plot.press = built.model
 	plot.ram = built.ram
 	plot.bedTop = built.bedTop
