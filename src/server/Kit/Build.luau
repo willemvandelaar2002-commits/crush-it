@@ -10,6 +10,9 @@
 --   Build.label(adornee, text, color, offsetY, sizeStuds?) -> BillboardGui
 --        big floating outlined label ("Smelt" style)
 --   Build.path(parent, a, b, width, color?)                   flat orange brick path with dark edging
+--   Build.island(parent, topCf, w, d, seaY, palette, opts?)   island body under a floor: dirt, stone sides, rocks, curb
+--   Build.patch(parent, cf, w, d, color, rng?, name?)         stepped-outline asphalt patch on a floor
+--   Build.bridge(parent, a, b, width, palette, seaY?)        chunky wooden plank bridge with block posts
 --   Build.lava(parent, surfaceCf, length, width, opts?)       lava strip (crust, glowing rims, drifting blobs, embers) -> (Model, floor)
 --   Build.bank(parent, cf, length, height, thickness?)        basalt curb along a lava strip
 --   Build.lighting(preset)                                    cartoon lighting: Day, Sunset, GoldenHour, Dusk, Smog
@@ -207,6 +210,165 @@ function Build.path(parent: Instance, a: Vector3, b: Vector3, width: number, col
 	for _, side in { -1, 1 } do
 		local edge = Build.block(m, "PathEdge", Vector3.new(0.6, 0.16, len), mid * CFrame.new(side * (width / 2 + 0.3), 0.08, 0), Style.darken(c, 0.35), {})
 		edge.CanCollide = false
+	end
+	m.Parent = parent
+	return m
+end
+
+-- Islands ----------------------------------------------------------------------
+-- Build.island(parent, topCf, w, d, seaY, palette, opts?) -> Model
+-- The body UNDER a floor whose top is at topCf: a dirt band, chunky studded stone
+-- sides going down past the sea surface (seaY), random rocks at the waterline and a
+-- low stone curb along the top edge (gaps where opts.gaps say). Does not build the
+-- floor itself. opts = { gaps = { { side = "front"|"back"|"left"|"right", at = number, width = number } }, rng = Random?, curb = boolean? }
+function Build.island(parent: Instance, top: CFrame, w: number, d: number, seaY: number, palette: { [string]: Color3 }, opts: { [string]: any }?): Model
+	local o = opts or {}
+	local rng: Random = o.rng or Random.new(3)
+	local m = Instance.new("Model")
+	m.Name = "IslandBody"
+	local ALL4 = { Enum.NormalId.Top, Enum.NormalId.Front, Enum.NormalId.Back, Enum.NormalId.Left, Enum.NormalId.Right }
+	local topY = top.Position.Y
+	local function level(y: number): CFrame
+		return top * CFrame.new(0, y - topY, 0)
+	end
+	-- dirt band just under the floor, stone body down into the lava
+	local dirtTop = topY - 0.4
+	local dirtH = 3
+	Build.block(m, "Dirt", Vector3.new(w + 0.8, dirtH, d + 0.8), level(dirtTop - dirtH / 2), palette.dirt or Color3.fromRGB(138, 96, 60), ALL4)
+	local stoneTop = dirtTop - dirtH
+	local stoneBottom = seaY - 6
+	local stoneH = stoneTop - stoneBottom
+	Build.block(m, "Stone", Vector3.new(w + 2, stoneH, d + 2), level(stoneBottom + stoneH / 2), palette.stone or Color3.fromRGB(132, 130, 140), ALL4)
+	-- chunky blocks sticking out of the sides at random heights (breaks the straight wall)
+	local stoneDark = palette.stoneDark or Color3.fromRGB(102, 100, 110)
+	local function sideBlocks(len: number, place: (number) -> CFrame)
+		local t = -len / 2 + rng:NextNumber(2, 6)
+		while t < len / 2 - 4 do
+			local bw = rng:NextNumber(4, 10)
+			local bh = rng:NextNumber(2, stoneH * 0.6)
+			local by = stoneBottom + rng:NextNumber(0, stoneH - bh)
+			local color = if rng:NextNumber() < 0.5 then stoneDark else (palette.stone or Color3.fromRGB(132, 130, 140))
+			Build.block(m, "Rock", Vector3.new(bw, bh, 1.6), place(t + bw / 2) * CFrame.new(0, by + bh / 2 - topY, 0), color, ALL4)
+			t += bw + rng:NextNumber(3, 12)
+		end
+	end
+	sideBlocks(w, function(x) return top * CFrame.new(x, 0, d / 2 + 1.4) end)
+	sideBlocks(w, function(x) return top * CFrame.new(x, 0, -d / 2 - 1.4) * CFrame.Angles(0, math.pi, 0) end)
+	sideBlocks(d, function(z) return top * CFrame.new(w / 2 + 1.4, 0, z) * CFrame.Angles(0, math.pi / 2, 0) end)
+	sideBlocks(d, function(z) return top * CFrame.new(-w / 2 - 1.4, 0, z) * CFrame.Angles(0, -math.pi / 2, 0) end)
+	-- boulders at the waterline
+	for _ = 1, math.floor((w + d) / 14) do
+		local side = rng:NextInteger(1, 4)
+		local along = rng:NextNumber(-0.5, 0.5)
+		local local_: Vector3
+		if side == 1 then
+			local_ = Vector3.new(along * w, 0, d / 2 + rng:NextNumber(1.5, 3))
+		elseif side == 2 then
+			local_ = Vector3.new(along * w, 0, -d / 2 - rng:NextNumber(1.5, 3))
+		elseif side == 3 then
+			local_ = Vector3.new(w / 2 + rng:NextNumber(1.5, 3), 0, along * d)
+		else
+			local_ = Vector3.new(-w / 2 - rng:NextNumber(1.5, 3), 0, along * d)
+		end
+		local sz = rng:NextNumber(2.5, 5)
+		Build.block(m, "Boulder", Vector3.new(sz, sz * 0.8, sz), top * CFrame.new(local_.X, seaY - topY + sz * 0.15, local_.Z) * CFrame.Angles(rng:NextNumber(-0.2, 0.2), rng:NextNumber() * 6, rng:NextNumber(-0.2, 0.2)), stoneDark, ALL4)
+	end
+	-- low stone curb along the edge, chunky blocks of random length/height, with gaps
+	if o.curb ~= false then
+		local gaps = o.gaps or {}
+		local function blocked(side: string, t: number): boolean
+			for _, g in gaps do
+				if g.side == side and math.abs(t - g.at) < g.width / 2 + 0.5 then
+					return true
+				end
+			end
+			return false
+		end
+		local function curb(side: string, len: number, place: (number) -> CFrame)
+			local t = -len / 2
+			while t < len / 2 do
+				local bw = math.min(rng:NextNumber(4, 9), len / 2 - t)
+				local mid = t + bw / 2
+				if bw > 0.5 and not blocked(side, mid) and not blocked(side, t + 0.2) and not blocked(side, t + bw - 0.2) then
+					local bh = rng:NextNumber(1.3, 2.2)
+					Build.block(m, "Curb", Vector3.new(bw, bh, 1.8), place(mid) * CFrame.new(0, bh / 2, 0),
+						if rng:NextNumber() < 0.3 then stoneDark else (palette.stone or Color3.fromRGB(132, 130, 140)), ALL4)
+				end
+				t += bw
+			end
+		end
+		curb("front", w, function(x) return top * CFrame.new(x, 0, d / 2 - 0.9) end)
+		curb("back", w, function(x) return top * CFrame.new(x, 0, -d / 2 + 0.9) end)
+		curb("right", d - 3.6, function(z) return top * CFrame.new(w / 2 - 0.9, 0, z) * CFrame.Angles(0, math.pi / 2, 0) end)
+		curb("left", d - 3.6, function(z) return top * CFrame.new(-w / 2 + 0.9, 0, z) * CFrame.Angles(0, math.pi / 2, 0) end)
+	end
+	m.Parent = parent
+	return m
+end
+
+-- A stepped-outline patch lying on a floor (Destroy a Vault's dark asphalt zones):
+-- a main rectangle plus a few smaller rectangles sticking out of its edges.
+function Build.patch(parent: Instance, cf: CFrame, w: number, d: number, color: Color3, rng: Random?, name: string?): Model
+	local r = rng or Random.new(5)
+	local m = Instance.new("Model")
+	m.Name = name or "Patch"
+	local function rect(x: number, z: number, rw: number, rd: number)
+		local p = Build.block(m, "PatchPart", Vector3.new(rw, 0.1, rd), cf * CFrame.new(x, 0.05, z), color)
+		p.CanCollide = false
+	end
+	rect(0, 0, w, d)
+	for _ = 1, r:NextInteger(3, 6) do
+		local side = r:NextInteger(1, 4)
+		local rw = r:NextNumber(0.2, 0.45) * (if side <= 2 then w else d)
+		local depth = r:NextNumber(2.5, 6)
+		local t = r:NextNumber(-0.5, 0.5) * ((if side <= 2 then w else d) - rw)
+		if side == 1 then
+			rect(t, d / 2 + depth / 2, rw, depth)
+		elseif side == 2 then
+			rect(t, -d / 2 - depth / 2, rw, depth)
+		elseif side == 3 then
+			rect(w / 2 + depth / 2, t, depth, rw)
+		else
+			rect(-w / 2 - depth / 2, t, depth, rw)
+		end
+	end
+	m.Parent = parent
+	return m
+end
+
+-- Chunky wooden plank bridge (the Yuzu game's) from a to b (deck top at their Y):
+-- studded planks in two tones, side beams, big block posts at both ends with a
+-- low rail between, and stone legs down into the sea (seaY) under longer bridges.
+function Build.bridge(parent: Instance, a: Vector3, b: Vector3, width: number, palette: { [string]: Color3 }, seaY: number?): Model
+	local m = Instance.new("Model")
+	m.Name = "Bridge"
+	local wood = palette.wood or Color3.fromRGB(168, 116, 66)
+	local woodDark = palette.woodDark or Color3.fromRGB(120, 80, 46)
+	local ALL4 = { Enum.NormalId.Top, Enum.NormalId.Front, Enum.NormalId.Back, Enum.NormalId.Left, Enum.NormalId.Right }
+	local flat = Vector3.new(b.X - a.X, 0, b.Z - a.Z)
+	local len = flat.Magnitude
+	local base = CFrame.lookAt(a, a + flat) -- -Z runs from a to b
+	local n = math.max(2, math.floor(len / 2.5))
+	for i = 0, n - 1 do
+		local z = -(i + 0.5) * len / n
+		Build.block(m, "Plank", Vector3.new(width, 0.7, len / n - 0.15), base * CFrame.new(0, -0.35, z), if i % 2 == 0 then wood else Style.lighten(wood, 0.08), ALL4)
+	end
+	for _, x in { -1, 1 } do
+		Build.block(m, "Beam", Vector3.new(0.9, 1, len), base * CFrame.new(x * (width / 2 + 0.2), -0.6, -len / 2), woodDark, ALL4)
+		for _, z in { -0.6, -len + 0.6 } do
+			Build.block(m, "Post", Vector3.new(2.2, 2.6, 2.2), base * CFrame.new(x * (width / 2 + 0.3), 1.3, z), wood, ALL4)
+		end
+		Build.block(m, "Rail", Vector3.new(0.6, 0.6, len - 2.4), base * CFrame.new(x * (width / 2 + 0.3), 1.6, -len / 2), woodDark, ALL4)
+	end
+	if seaY then
+		local legs = math.max(0, math.floor(len / 14))
+		for i = 1, legs do
+			local z = -len * i / (legs + 1)
+			local h = a.Y - seaY + 4
+			for _, x in { -1, 1 } do
+				Build.block(m, "Leg", Vector3.new(1.6, h, 1.6), base * CFrame.new(x * (width / 2 - 0.6), -h / 2 - 0.8, z), woodDark, ALL4)
+			end
+		end
 	end
 	m.Parent = parent
 	return m

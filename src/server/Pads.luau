@@ -48,7 +48,7 @@ local PAD_Z = 47 -- local Z of the pad row (the front edge is at FloorSize/2)
 local function billboard(adornee: BasePart): (TextLabel, TextLabel)
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "PadLabel"
-	gui.Size = UDim2.fromScale(11, 4.4)
+	gui.Size = UDim2.fromScale(8.6, 3.6) -- narrower than the 9.5-stud pad spacing, so labels never overlap
 	gui.StudsOffsetWorldSpace = Vector3.new(0, 4.2, 0)
 	gui.LightInfluence = 0
 	gui.MaxDistance = 140
@@ -124,8 +124,13 @@ end
 function Pads.build(plotModel: Model, origin: CFrame)
 	local m = Instance.new("Model")
 	m.Name = "Pads"
-	for _, def in Pads.Defs do
-		Pads.make(m, origin * CFrame.new(def.x, 0, PAD_Z), def.id, def.color, NAMES[def.id] or def.id)
+	for i, def in Pads.Defs do
+		local top = Pads.make(m, origin * CFrame.new(def.x, 0, PAD_Z), def.id, def.color, NAMES[def.id] or def.id)
+		-- every other label a bit higher, so neighbours never cover each other
+		local gui = top:FindFirstChild("PadLabel") :: BillboardGui?
+		if gui and i % 2 == 0 then
+			gui.StudsOffsetWorldSpace = Vector3.new(0, 6.8, 0)
+		end
 	end
 	-- stats board (back left, turned toward the spawn)
 	local boardCf = origin * CFrame.new(-36, 0, -34) * CFrame.Angles(0, math.rad(30), 0)

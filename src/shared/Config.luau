@@ -376,19 +376,26 @@ Config.Rewards = {
 
 -- Look: the classic Roblox stud pattern on floors, pads and boards.
 Config.Look = {
-	Theme = "Factory", -- see shared/Kit/Style.luau (Factory, Teal, Scrap)
+	Theme = "Island", -- see shared/Kit/Style.luau (Island, Factory, Teal, Scrap)
 	Props = true, -- trees, rocks, fences and lamps round the plots (server/Decor.luau)
-	Sky = "Sunset", -- Build.lighting preset: "Day", "Sunset", "GoldenHour", "Dusk" or "Smog"
+	Sky = "Day", -- Build.lighting preset: "Day", "Sunset", "GoldenHour", "Dusk" or "Smog"
 	PropSeed = 7, -- change for a different (but still fixed) layout
 }
 
--- World layout: 8 plots in two rows of 4 facing a central walkway.
+-- Islands in a lava sea (server/Moat.luau, Hub.luau, World.luau): the plots stand in
+-- two rows of 4 facing the hub island in the middle, each joined to it by a bridge.
+Config.World = {
+	SeaY = -3, -- lava surface (just under the island edges, like the water in the reference games); falling in puts you back on your plot
+	HubGap = 18, -- lava between a plot island and the hub island (the bridge length)
+}
+
+-- World layout: 8 plots in two rows of 4 facing the hub island.
 Config.Plots = {
 	Count = 8,
 	Spacing = 140, -- along X
-	RowOffset = 95, -- each row's distance from the walkway centre (Z)
+	RowOffset = 115, -- each row's distance from the hub island's centre line (Z)
 	FloorSize = 120, -- big enough for the widest (Cosmic) press frame
-	Moat = 10, -- lava moat round every plot (server/Moat.luau); also the gap to the scrap shop
+	Moat = 12, -- lava gap between a plot island and its scrap shop island
 }
 
 -- Every press tier has its own name and paint; the look changes per stage:
