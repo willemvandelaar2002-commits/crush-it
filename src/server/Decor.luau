@@ -49,8 +49,10 @@ function Decor.create()
 		end
 	end
 
-	-- Gaps between neighbouring plots: lamp near the walkway, then bush, tree, rock.
-	for col = 1, 3 do
+	-- Gaps between neighbouring plots: lamp near the walkway, then bush, tree, rock
+	-- (only if there is ground between the moats).
+	local gapWidth = P.Spacing - F - 2 * (P.Moat or 0)
+	for col = 1, if gapWidth >= 10 then 3 else 0 do
 		local x = (col - 2) * P.Spacing
 		for _, side in { -1, 1 } do
 			local z0 = walkZ + 6

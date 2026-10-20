@@ -244,11 +244,11 @@ function Build.lava(parent: Instance, surface: CFrame, length: number, width: nu
 		p:SetAttribute("Axis", surface.XVector)
 		CollectionService:AddTag(p, "LavaDrift")
 	end
-	local n = math.max(2, math.floor(length / 9))
+	local n = math.max(1, math.floor(length / 20))
 	for i = 1, n do
-		local z = (math.random() - 0.5) * (width - 2.2)
-		local d = 1.2 + math.random() * 1.6
-		drifter("Blob", Vector3.new(d * 1.6, 0.14, d), z, 0.05, if math.random() < 0.4 then LAVA_HOT else LAVA_GLOW, Enum.Material.Neon,
+		local z = (math.random() - 0.5) * (width - 3)
+		local d = 0.9 + math.random() * 1.1
+		drifter("Blob", Vector3.new(d * 2.2, 0.12, d), z, 0.02, if math.random() < 0.25 then LAVA_HOT else LAVA_GLOW, Enum.Material.Neon,
 			(i - math.random()) * length / n, speed * (0.8 + math.random() * 0.4))
 	end
 	for i = 1, math.max(1, math.floor(length / 13)) do
