@@ -15,6 +15,7 @@ local PressBuilder = require(script.Parent.PressBuilder)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Build = require(script.Parent.Kit.Build)
 local RobuxSigns = require(script.Parent.RobuxSigns)
+local ScrapShop = require(script.Parent.ScrapShop)
 
 local Plots = {}
 
@@ -29,6 +30,7 @@ export type Plot = {
 	tier: number,
 	owner: Player?,
 	sign: TextLabel,
+	shop: ScrapShop.Shop, -- the scrap shop island behind the plot
 }
 
 local FLOOR_Y = 1.6 -- top of the raised plot platforms (the ground sits at y = 0.05)
@@ -227,7 +229,9 @@ function Plots.create()
 		-- Robux signs (moved next to the press like the board)
 		RobuxSigns.build(model, theme.edge)
 		model.Parent = root
-		local plot: Plot = { index = i, origin = origin, model = model, press = nil, ram = nil, bedTop = 0, ramRestY = 0, tier = 1, owner = nil, sign = label }
+		-- Scrap shop island behind the plot (water channel, bridge, gate, smelter, sell pad).
+		local shop = ScrapShop.build(model, origin, theme)
+		local plot: Plot = { index = i, origin = origin, model = model, press = nil, ram = nil, bedTop = 0, ramRestY = 0, tier = 1, owner = nil, sign = label, shop = shop }
 		Plots.buildPress(plot, 1)
 		table.insert(plots, plot)
 	end

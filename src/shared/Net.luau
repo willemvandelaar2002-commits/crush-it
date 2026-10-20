@@ -16,12 +16,14 @@
 --   ShopOpened  client -> server : tab name — analytics only
 --   Rewards     server -> client : { joined, claimed = {i,...}, cps, daily = { streak, canClaim, nextAt } }
 --   ClaimReward client -> server : ("playtime", index) | ("daily")
+--   ScrapPicked server -> client : { value, total } — you picked up scrap (sound/pop)
+--   ScrapSold   server -> all    : { plot, position, amount, owner, auto } — scrap sold at a shop (effects)
 --   (Hit / Crushed also carry `variant`: "Normal" | "Golden" | "Diamond"; BuyUpgrade also takes "Rebirth")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local NAMES = { "Crush", "BuyUpgrade", "Crushed", "Hit", "Notice", "Upgraded", "Rebirthed", "Collection", "SetAuto", "ShopNotice", "Purchased", "ShopOpened", "Rewards", "ClaimReward" }
+local NAMES = { "Crush", "BuyUpgrade", "Crushed", "Hit", "Notice", "Upgraded", "Rebirthed", "Collection", "SetAuto", "ShopNotice", "Purchased", "ShopOpened", "Rewards", "ClaimReward", "ScrapPicked", "ScrapSold" }
 
 local Net = {}
 

@@ -62,7 +62,7 @@ Sibling ZIndex. Phone layouts are still untested on a real device.
 - `Build.inset(...)` framed patch on a surface
 - `Build.signFrame(parent, baseCf, w, h, frameColor)` chunky sign on posts -> (model, face)
 - `Build.label(part, text, color, offsetY, sizeStuds?)` big floating outlined label
-- `Build.lighting()` bright cartoon lighting (colour correction, bloom, atmosphere)
+- `Build.lighting(preset?)` cartoon lighting: "Day" (noon) or "Sunset" (low warm sun, orange haze, sun rays); Crush It uses `Config.Look.Sky`
 
 Props (blocky + studded, colours from the theme's `leaf`, `trunk`, `rock`, `fence`, `lamp`;
 pass a seeded `Random` so every server looks the same):

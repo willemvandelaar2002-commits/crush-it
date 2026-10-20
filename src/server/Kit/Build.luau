@@ -9,7 +9,7 @@
 --        chunky studded sign on two posts; draw on facePart's Back face (+Z)
 --   Build.label(adornee, text, color, offsetY, sizeStuds?) -> BillboardGui
 --        big floating outlined label ("Smelt" style)
---   Build.lighting(preset)                                    bright cartoon lighting
+--   Build.lighting(preset)                                    cartoon lighting: "Day" or "Sunset"
 --
 -- Props (blocky + studded; `palette` is Style.theme(...), `rng` a Random for variety):
 --   Build.tree(parent, baseCf, scale, palette, rng?)    trunk + stacked leaf cubes
@@ -107,12 +107,15 @@ function Build.label(adornee: BasePart, text: string, color: Color3, offsetY: nu
 	return gui
 end
 
+-- presets: "Day" (bright noon) or "Sunset" (low warm sun, orange haze, long shadows)
 function Build.lighting(preset: string?)
-	local _ = preset
-	Lighting.ClockTime = 13.5
-	Lighting.Brightness = 2.2
-	Lighting.Ambient = Color3.fromRGB(90, 90, 105)
-	Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 140)
+	local sunset = preset == "Sunset"
+	Lighting.ClockTime = if sunset then 17.25 else 13.5
+	Lighting.GeographicLatitude = if sunset then 30 else 41.7
+	Lighting.Brightness = if sunset then 3.2 else 2.2
+	Lighting.ExposureCompensation = if sunset then 0.25 else 0
+	Lighting.Ambient = if sunset then Color3.fromRGB(130, 112, 118) else Color3.fromRGB(90, 90, 105)
+	Lighting.OutdoorAmbient = if sunset then Color3.fromRGB(200, 170, 160) else Color3.fromRGB(128, 128, 140)
 	Lighting.EnvironmentDiffuseScale = 1
 	Lighting.EnvironmentSpecularScale = 0.4
 	Lighting.ShadowSoftness = 0.3
@@ -123,20 +126,32 @@ function Build.lighting(preset: string?)
 		return e
 	end
 	local cc = effect("ColorCorrectionEffect", "KitColor")
-	cc.Saturation = 0.08
-	cc.Contrast = 0.06
-	cc.Brightness = 0
+	cc.Saturation = if sunset then 0.15 else 0.08
+	cc.Contrast = if sunset then 0.08 else 0.06
+	cc.Brightness = if sunset then 0.02 else 0
+	cc.TintColor = if sunset then Color3.fromRGB(255, 236, 218) else Color3.new(1, 1, 1)
 	local bloom = effect("BloomEffect", "KitBloom")
-	bloom.Intensity = 0.2
+	bloom.Intensity = if sunset then 0.35 else 0.2
 	bloom.Size = 24
-	bloom.Threshold = 2
+	bloom.Threshold = if sunset then 1.6 else 2
+	local rays = effect("SunRaysEffect", "KitSunRays")
+	rays.Enabled = sunset
+	rays.Intensity = 0.06
+	rays.Spread = 0.6
 	local atmo = Lighting:FindFirstChildOfClass("Atmosphere") or Instance.new("Atmosphere")
-	atmo.Density = 0.2
-	atmo.Haze = 0.5
-	atmo.Glare = 0.2
-	atmo.Color = Color3.fromRGB(200, 230, 255)
-	atmo.Decay = Color3.fromRGB(120, 170, 220)
+	atmo.Density = if sunset then 0.26 else 0.2
+	atmo.Offset = if sunset then 0.15 else 0
+	atmo.Haze = if sunset then 1.6 else 0.5
+	atmo.Glare = if sunset then 0.8 else 0.2
+	atmo.Color = if sunset then Color3.fromRGB(255, 190, 150) else Color3.fromRGB(200, 230, 255)
+	atmo.Decay = if sunset then Color3.fromRGB(190, 95, 110) else Color3.fromRGB(120, 170, 220)
 	atmo.Parent = Lighting
+	local sky = Lighting:FindFirstChildOfClass("Sky") or Instance.new("Sky")
+	sky.SunAngularSize = if sunset then 18 else 21
+	sky.MoonAngularSize = 11
+	sky.CelestialBodiesShown = true
+	sky.StarCount = if sunset then 600 else 3000
+	sky.Parent = Lighting
 end
 
 -- Props --------------------------------------------------------------------------

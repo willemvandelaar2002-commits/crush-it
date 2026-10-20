@@ -19,17 +19,29 @@ local RobuxSigns = {}
 RobuxSigns.Signs = {
 	{ perk = "AutoCrush", icon = Icons.AutoCrush, a = Color3.fromRGB(255, 120, 90), b = Color3.fromRGB(200, 40, 70) },
 	{ perk = "DoubleCash", icon = Icons.DoubleCash, a = Color3.fromRGB(120, 235, 100), b = Color3.fromRGB(40, 150, 60) },
+	{ perk = "AutoCollect", icon = Icons.Cash, a = Color3.fromRGB(255, 185, 70), b = Color3.fromRGB(225, 110, 30) },
 }
+-- Which signs stand next to the press (the scrap shop island has its own Auto Collect sign).
+RobuxSigns.PressSigns = { "AutoCrush", "DoubleCash" }
 
 local W, H = 9, 6 -- sign face size (studs)
 local GAP = 2
 
--- Builds the sign pair into `parent` as Model "RobuxSigns" (pivot at its ground centre).
-function RobuxSigns.build(parent: Instance, frameColor: Color3): Model
+-- Builds a row of signs (default: PressSigns) into `parent` as Model "RobuxSigns"
+-- (pivot at its ground centre).
+function RobuxSigns.build(parent: Instance, frameColor: Color3, perks: { string }?): Model
 	local m = Instance.new("Model")
 	m.Name = "RobuxSigns"
-	local total = #RobuxSigns.Signs * (W + 2) + (#RobuxSigns.Signs - 1) * GAP
-	for i, def in RobuxSigns.Signs do
+	local list = {}
+	for _, perk in perks or RobuxSigns.PressSigns do
+		for _, def in RobuxSigns.Signs do
+			if def.perk == perk then
+				table.insert(list, def)
+			end
+		end
+	end
+	local total = #list * (W + 2) + (#list - 1) * GAP
+	for i, def in list do
 		local pass = Store.passByPerk(def.perk)
 		if not pass then
 			continue
@@ -130,19 +142,26 @@ function RobuxSigns.start(getPlots: () -> { PlotLike })
 			end
 		end
 	end
-	-- OWNED on the owner's own signs (cheap poll: 8 plots x 2 labels).
+	-- OWNED on the owner's own signs (cheap poll over the sign models found once).
+	type Entry = { plot: PlotLike, signs: Instance }
+	local entries: { Entry } = {}
+	for _, plot in getPlots() do
+		for _, d in plot.model:GetDescendants() do
+			if d:IsA("Model") and d.Name == "RobuxSigns" then
+				table.insert(entries, { plot = plot, signs = d })
+			end
+		end
+	end
 	task.spawn(function()
 		while true do
-			for _, plot in getPlots() do
-				local signs = plot.model:FindFirstChild("RobuxSigns")
-				if not signs then
-					continue
-				end
+			for _, e in entries do
 				for _, def in RobuxSigns.Signs do
-					local price = signs:FindFirstChild(def.perk) and signs[def.perk]:FindFirstChild("Price", true) :: TextButton?
+					local sign = e.signs:FindFirstChild(def.perk)
+					local price = sign and sign:FindFirstChild("Price", true) :: TextButton?
 					local pass = Store.passByPerk(def.perk)
 					if price and pass then
-						local owned = plot.owner ~= nil and Store.hasPass(plot.owner, def.perk)
+						local owner = e.plot.owner
+						local owned = owner ~= nil and Store.hasPass(owner, def.perk)
 						local text = if owned then "OWNED" else "R$ " .. pass.price
 						if price.Text ~= text then
 							price.Text = text
