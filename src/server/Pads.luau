@@ -48,7 +48,7 @@ local PAD_Z = 47 -- local Z of the pad row (the front edge is at FloorSize/2)
 local function billboard(adornee: BasePart): (TextLabel, TextLabel)
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "PadLabel"
-	gui.Size = UDim2.fromScale(11, 4.4)
+	gui.Size = UDim2.fromScale(8.6, 3.6) -- narrower than the 9.5-stud pad spacing, so labels never overlap
 	gui.StudsOffsetWorldSpace = Vector3.new(0, 4.2, 0)
 	gui.LightInfluence = 0
 	gui.MaxDistance = 140
