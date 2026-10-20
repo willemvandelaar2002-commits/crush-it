@@ -53,7 +53,6 @@ local function zone(pos: Vector3): string
 		return "Hub"
 	end
 	local half = Config.Plots.FloorSize / 2
-	local moat = Config.Plots.Moat
 	local shop = Config.ScrapShop
 	for _, plot in plots:GetChildren() do
 		local origin = plot:GetAttribute("Origin") :: CFrame?
@@ -70,7 +69,7 @@ local function zone(pos: Vector3): string
 			local name = sign and sign.Text or ""
 			return if name ~= "" and name ~= "Free plot" then name else "Free Plot"
 		end
-		if math.abs(p.X) <= shop.Width / 2 and p.Z < -half and p.Z >= -half - moat - shop.Depth then
+		if math.abs(p.X) <= shop.Width / 2 and p.Z < -half and p.Z >= -half - shop.Depth then
 			return if mine then "Your Scrap Shop" else "Scrap Shop"
 		end
 	end

@@ -114,11 +114,34 @@ drifting blobs and crust plates, embers; cliffs and lavafalls rise out of it).
   road, branch paths to every bridge with dark landing patches, lamps, trees,
   bushes, rocks, a lava fountain and two "CRUSH IT" signs; players spawn here.
 - **Wooden plank bridges** (kit `Build.bridge`, the Yuzu game's) from the hub to
-  every plot (`Config.World.HubGap` = 18) and from every plot to its scrap shop
-  island (`Config.Plots.Moat` = 12). Long bridges get legs into the lava.
+  every plot (`Config.World.HubGap` = 18). Long bridges get legs into the lava.
+  (Until 20 Oct evening there was a second bridge to a separate scrap shop island;
+  the shop is now a tab of the plot island, see below.)
 - Plot floors: bright green studded grass with dark **asphalt zones with stepped
   edges** (kit `Build.patch`) under the buy pads and round the scrap pile, plus
   the dark pad under the press and the orange brick paths.
 - Falling into the lava (below `Config.World.SeaY + 2`) puts you back on your plot
   with "Ouch, hot lava!". Sky back to bright **Day**. Rows moved apart
   (`RowOffset` 115) to make room for the hub. Theme "Island" in Style.
+
+## Plot layout (20 Oct, evening): shop on the plot, everything close
+Willem: the separate shop island made a long walk; in both reference games the
+place you hand stuff in is on your own plot. Plot-local, +Z toward the hub:
+
+- **Back** (the loop you repeat): scrap pile right behind the press (z -36) ->
+  upgrade pad row (`Pads.ROW_Z` = -55: Power, Speed, Value, Bigger Press, Rebirth
+  on the left, Auto Collect / Auto Crush on the right) -> "SCRAP SHOP" gate ->
+  the shop on a 48 x 34 tab of the same island (`Config.ScrapShop`): Deposit,
+  Collect Cash, Smelt Speed, Finish Now, smelter, Smelting board. No lava gap,
+  no second bridge. Stats board ("Now Crushing") right of the pile.
+- **Front**: hub bridge + gate, conveyor, spawn, and the two Mini Press yards
+  (4 slots each, either side of the conveyor) with the Buy / Merge pads.
+- **Sides of the press** (`PlotDecor`): scrap heap with a magnet crane that
+  slowly swings over it (client turns `PressSpin` models round their `Axis`
+  attribute), crates, bales of crushed scrap with a forklift, the boiler and an
+  overhead steam pipe to the shop.
+- The biggest press (AI mesh, tier 13) is ~104 x 64 studs: props it overlaps are
+  parked in `ServerStorage.ParkedDecor<i>` and come back when the press is smaller
+  (`Plots.buildPress` -> clearProps). Helper yards (z >= 33.5) and the pad row stay clear.
+- Known: at the top tiers the Upgrades board and Robux signs still sit partly
+  inside the big press frame (as before).

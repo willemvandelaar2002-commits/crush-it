@@ -1,11 +1,11 @@
 --!strict
 -- Islands (after the Yuzu onsen and Destroy a Vault): every plot is a thick island
 -- standing in the lava sea (World.luau), joined to the hub island in the middle
--- by a chunky wooden bridge, with its scrap shop island behind it over a second
--- bridge (ScrapShop.luau uses Moat.bridge). Island body: Build.island (dirt
--- band, studded stone sides, rocks, a stone curb along the edge with gaps at the
--- bridges). Also: trees, bushes, lamps and barrels along the free edges, and
--- the lava rescue (fall in -> back on your plot).
+-- by a chunky wooden bridge, with the scrap shop on a tab at the back of the
+-- same island (ScrapShop.luau), so the shop is a few steps from the scrap pile.
+-- Island body: Build.island (dirt band, studded stone sides, rocks, a stone curb
+-- along the edge with gaps at the bridge and the shop). Also: trees, bushes and
+-- lamps along the free edges, and the lava rescue (fall in -> back on your plot).
 -- (File name kept from the old lava moat so nothing else had to change.)
 
 local Players = game:GetService("Players")
@@ -41,11 +41,8 @@ local function edgeProps(m: Instance, origin: CFrame, rng: Random)
 		return origin * CFrame.new(x, 0, z) * CFrame.Angles(0, rng:NextNumber() * 6, 0)
 	end
 	local spots = {
-		{ -half + 5, -38, "tree" }, { -half + 5, -26, "bush" }, { -half + 5, -14, "tree" }, { -half + 5, -4, "lamp" },
-		{ half - 5, -30, "tree" }, { half - 5, -8, "bush" },
-		{ -40, -half + 5, "tree" }, { -27, -half + 5, "bush" }, { -14, -half + 5, "lamp" },
-		{ 13, -half + 5, "lamp" }, { 24, -half + 5, "tree" },
-		{ -half + 5, 30, "bush" }, { 30, half - 5, "bush" }, { 44, half - 5, "tree" },
+		{ -half + 5, 8, "tree" }, { -half + 5, 26, "bush" },
+		{ half - 5, -40, "bush" }, { half - 5, 24, "tree" },
 	}
 	for _, s in spots do
 		local x, z, kind = s[1] :: number, s[2] :: number, s[3] :: string
@@ -68,12 +65,18 @@ function Moat.build(plotModel: Model, origin: CFrame)
 	m.Name = "Island"
 	local index = (plotModel:GetAttribute("Index") :: number?) or 1
 	local rng = Random.new(200 + index)
+	local S = Config.ScrapShop
 	Build.island(m, origin, F, F, seaY, palette(), {
 		rng = rng,
 		gaps = {
 			{ side = "front", at = Moat.FRONT_BRIDGE_X, width = Moat.BRIDGE_WIDTH + 1 },
-			{ side = "back", at = 0, width = Moat.BRIDGE_WIDTH + 1 },
+			{ side = "back", at = 0, width = S.Width + 3 }, -- open into the shop tab
 		},
+	})
+	-- the shop tab behind the plot (its front is the plot's back edge: no curb there)
+	Build.island(m, origin * CFrame.new(0, 0, -half - S.Depth / 2), S.Width, S.Depth, seaY, palette(), {
+		rng = rng,
+		gaps = { { side = "front", at = 0, width = S.Width + 4 } },
 	})
 	-- bridge over the lava to the hub (deck from the plot edge to the hub edge)
 	local gap = Config.World.HubGap

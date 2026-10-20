@@ -6,9 +6,12 @@
 --     plot colour, lamps on top          -> returns the name TextLabel
 --   * a big boiler tank (back right): banded tank, porthole glow, gauge,
 --     valve wheel, pipes into the floor, steam
---   * crate stacks and lamp posts in the corners
+--   * beside the press: a scrap heap with a slowly swinging magnet crane, crates,
+--     bales of crushed scrap with a forklift, an overhead steam pipe to the shop
+--   * a lamp post in the front-left corner
 -- Plot local space: +Z to the walkway, floor top at origin.
 
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
@@ -190,6 +193,168 @@ function PlotDecor.crates(parent: Instance, cf: CFrame, rng: Random)
 	m.Parent = parent
 end
 
+-- A heap of junk waiting to be crushed: stepped dirt mound with wrecked car
+-- bodies, crushed cubes, tyres and sheets on top. `cf` = ground centre.
+function PlotDecor.scrapHeap(parent: Instance, cf: CFrame, rng: Random): Model
+	local m = Instance.new("Model")
+	m.Name = "ScrapHeap"
+	local mound = { C(118, 96, 78), C(98, 82, 70), C(132, 112, 92) }
+	for i, layer in { { 13, 1.2 }, { 9.5, 1.2 }, { 6, 1.1 } } do
+		local w, h = layer[1], layer[2]
+		local y = (i - 1) * 1.2 + h / 2
+		Build.block(m, "Mound", Vector3.new(w, h, w * 0.85), cf * CFrame.new(rng:NextNumber(-0.6, 0.6), y, rng:NextNumber(-0.6, 0.6)) * CFrame.Angles(0, rng:NextNumber(-0.3, 0.3), 0), mound[i], ALL)
+	end
+	local junk = { C(70, 150, 200), C(220, 70, 60), C(150, 156, 168), C(240, 190, 60), C(90, 180, 110), C(170, 110, 70) }
+	-- wrecked car bodies (flattened boxes with a squashed cabin)
+	for i = 1, 2 do
+		local a = rng:NextNumber() * math.pi * 2
+		local at = cf * CFrame.new(math.cos(a) * 2.5, 3.2 + i * 0.9, math.sin(a) * 2.2) * CFrame.Angles(rng:NextNumber(-0.35, 0.35), rng:NextNumber() * 6, rng:NextNumber(-0.4, 0.4))
+		local col = junk[rng:NextInteger(1, #junk)]
+		Build.block(m, "CarBody", Vector3.new(6, 1.4, 3), at, col, ALL)
+		Build.block(m, "CarCabin", Vector3.new(3, 0.9, 2.6), at * CFrame.new(-0.4, 1.1, 0) * CFrame.Angles(0, 0, 0.25), col:Lerp(Color3.new(0, 0, 0), 0.2), ALL)
+		Build.block(m, "CarGlass", Vector3.new(0.2, 0.7, 2.2), at * CFrame.new(1.1, 1.05, 0) * CFrame.Angles(0, 0, 0.6), C(150, 210, 240), {})
+	end
+	-- crushed cubes, tyres, sheets scattered over the mound
+	for _ = 1, 9 do
+		local a = rng:NextNumber() * math.pi * 2
+		local r = rng:NextNumber(1, 5.5)
+		local y = 3.6 - r * 0.45
+		local at = cf * CFrame.new(math.cos(a) * r, y + 0.6, math.sin(a) * r) * CFrame.Angles(rng:NextNumber(-0.6, 0.6), rng:NextNumber() * 6, rng:NextNumber(-0.6, 0.6))
+		local roll = rng:NextNumber()
+		if roll < 0.45 then
+			local sz = rng:NextNumber(1.2, 2)
+			Build.block(m, "Cube", Vector3.new(sz, sz, sz), at, junk[rng:NextInteger(1, #junk)], ALL)
+		elseif roll < 0.7 then
+			cyl(m, "Tyre", 0.9, 2.2, at, C(36, 36, 40))
+		else
+			Build.block(m, "Sheet", Vector3.new(rng:NextNumber(2.5, 4), 0.25, rng:NextNumber(1.5, 2.5)), at, C(150, 156, 168), {}).Material = Enum.Material.Metal
+		end
+	end
+	for _, p in m:GetDescendants() do
+		if p:IsA("BasePart") then
+			p.CanCollide = p.Name == "Mound" -- walk over the mound, through the junk
+		end
+	end
+	m.Parent = parent
+	return m
+end
+
+-- A magnet crane that slowly swings over the scrap heap (the client turns
+-- Models tagged PressSpin round their "Axis" attribute). `cf` = mast foot.
+function PlotDecor.crane(parent: Instance, cf: CFrame): Model
+	local m = Instance.new("Model")
+	m.Name = "Crane"
+	local mastH = 15
+	Build.block(m, "CraneBase", Vector3.new(6, 1, 6), cf * CFrame.new(0, 0.5, 0), BLACK, ALL)
+	for i = 0, 5 do
+		Build.block(m, "Mast", Vector3.new(2, mastH / 6, 2), cf * CFrame.new(0, 1 + (i + 0.5) * mastH / 6, 0), if i % 2 == 0 then YELLOW else BLACK, ALL)
+	end
+	local top = Instance.new("Model")
+	top.Name = "Swing"
+	local y = 1 + mastH
+	Build.block(top, "Cab", Vector3.new(3.6, 3, 3.6), cf * CFrame.new(0, y + 1.5, 0), YELLOW, ALL)
+	Build.block(top, "CabWindow", Vector3.new(3.7, 1.2, 2.6), cf * CFrame.new(0, y + 2, 0), C(150, 210, 240), {})
+	local boomLen = 12
+	Build.block(top, "Boom", Vector3.new(boomLen, 1.2, 1.4), cf * CFrame.new(boomLen / 2, y + 3.6, 0), YELLOW, ALL)
+	Build.block(top, "BoomStripe", Vector3.new(boomLen, 0.3, 1.5), cf * CFrame.new(boomLen / 2, y + 3.3, 0), BLACK, {})
+	Build.block(top, "CounterJib", Vector3.new(5, 1.2, 1.4), cf * CFrame.new(-2.5, y + 3.6, 0), YELLOW, ALL)
+	Build.block(top, "Counterweight", Vector3.new(2.4, 2.4, 2.4), cf * CFrame.new(-4.4, y + 2.2, 0), C(70, 74, 86), ALL)
+	Build.block(top, "Cable", Vector3.new(0.25, 7, 0.25), cf * CFrame.new(boomLen - 1, y + 3 - 3.5, 0), BLACK, {})
+	cyl(top, "Magnet", 0.9, 3.4, cf * CFrame.new(boomLen - 1, y - 4.4, 0), C(60, 62, 70), Enum.Material.Metal)
+	cyl(top, "MagnetRim", 0.4, 3.6, cf * CFrame.new(boomLen - 1, y - 4.7, 0), C(220, 50, 50))
+	local held = Build.block(top, "HeldCube", Vector3.new(1.8, 1.8, 1.8), cf * CFrame.new(boomLen - 1, y - 6, 0) * CFrame.Angles(0.2, 0.5, 0.1), C(70, 150, 200), ALL)
+	local _ = held
+	for _, p in top:GetChildren() do
+		if p:IsA("BasePart") then
+			p.CanCollide = false
+		end
+	end
+	top:SetAttribute("Speed", 0.22)
+	top:SetAttribute("Axis", cf.Position)
+	CollectionService:AddTag(top, "PressSpin")
+	top.Parent = m
+	m.Parent = parent
+	return m
+end
+
+-- Bales of crushed scrap on pallets, and a forklift. `cf` = ground centre.
+function PlotDecor.bales(parent: Instance, cf: CFrame, rng: Random): Model
+	local m = Instance.new("Model")
+	m.Name = "Bales"
+	local colors = { C(200, 80, 60), C(70, 140, 210), C(150, 156, 168), C(90, 170, 100), C(230, 180, 60) }
+	local function bale(at: CFrame)
+		Build.block(m, "Bale", Vector3.new(3, 3, 3), at, colors[rng:NextInteger(1, #colors)], ALL)
+		for _, x in { -0.8, 0.8 } do
+			Build.block(m, "Strap", Vector3.new(0.3, 3.08, 3.08), at * CFrame.new(x, 0, 0), BLACK, {})
+		end
+	end
+	for _, pz in { -2, 2 } do
+		Build.block(m, "Pallet", Vector3.new(7, 0.5, 3.4), cf * CFrame.new(0, 0.25, pz), C(176, 128, 74), ALL)
+		for i, px in { -1.6, 1.6 } do
+			bale(cf * CFrame.new(px, 2, pz) * CFrame.Angles(0, rng:NextNumber(-0.08, 0.08), 0))
+			if pz < 0 or i == 1 then
+				bale(cf * CFrame.new(px, 5, pz) * CFrame.Angles(0, rng:NextNumber(-0.1, 0.1), 0))
+			end
+		end
+	end
+	bale(cf * CFrame.new(0, 8, -2) * CFrame.Angles(0, 0.3, 0))
+	-- forklift in front of the stack
+	local f = cf * CFrame.new(-8, 0, 0)
+	Build.block(m, "LiftBody", Vector3.new(4, 2, 3.4), f * CFrame.new(-0.8, 1.6, 0), YELLOW, ALL)
+	Build.block(m, "LiftSeat", Vector3.new(1.6, 1.2, 1.8), f * CFrame.new(-1.4, 3.2, 0), BLACK, ALL)
+	Build.block(m, "LiftRoof", Vector3.new(2.6, 0.3, 3), f * CFrame.new(-1, 5.6, 0), BLACK, {})
+	for _, z in { -1.3, 1.3 } do
+		Build.block(m, "LiftPost", Vector3.new(0.3, 3, 0.3), f * CFrame.new(-2.1, 4.1, z), BLACK, {})
+		Build.block(m, "LiftPostF", Vector3.new(0.3, 3, 0.3), f * CFrame.new(0.1, 4.1, z), BLACK, {})
+		Build.block(m, "Mast", Vector3.new(0.4, 5, 0.4), f * CFrame.new(1.4, 2.5, z * 0.8), C(60, 62, 70), {})
+		Build.block(m, "Fork", Vector3.new(2.6, 0.25, 0.5), f * CFrame.new(2.8, 0.6, z * 0.8), C(60, 62, 70), {})
+		for _, x in { -2.2, 0.8 } do
+			cyl(m, "Wheel", 0.7, 1.6, f * CFrame.new(x, 0.8, z * 1.35) * CFrame.Angles(math.rad(90), 0, 0), C(36, 36, 40))
+		end
+	end
+	m.Parent = parent
+	return m
+end
+
+-- An overhead pipe on posts (walk under it) through the given ground points.
+function PlotDecor.pipe(parent: Instance, points: { Vector3 }, y: number, color: Color3)
+	local m = Instance.new("Model")
+	m.Name = "Pipe"
+	for i = 1, #points - 1 do
+		local a = points[i] + Vector3.new(0, y, 0)
+		local b = points[i + 1] + Vector3.new(0, y, 0)
+		local len = (b - a).Magnitude
+		local mid = CFrame.lookAt((a + b) / 2, b)
+		local p = cyl(m, "PipeRun", len + 1.2, 1.2, mid * CFrame.Angles(math.rad(90), 0, 0), color, Enum.Material.Metal)
+		local _ = p
+		cyl(m, "Joint", 1.4, 1.6, CFrame.new(a), YELLOW)
+		local n = math.max(1, math.floor(len / 12))
+		for k = 0, n do
+			local at = a:Lerp(b, k / n)
+			if k > 0 and k < n or i == 1 and k == 0 then
+				Build.block(m, "PipePost", Vector3.new(0.6, y, 0.6), CFrame.new(at.X, at.Y - y / 2, at.Z), BLACK, {})
+			end
+		end
+	end
+	cyl(m, "Joint", 1.4, 1.6, CFrame.new(points[#points] + Vector3.new(0, y, 0)), YELLOW)
+	-- down into the floor at the end
+	local last = points[#points]
+	cyl(m, "PipeDown", y, 1.2, CFrame.new(last + Vector3.new(0, y / 2, 0)), color, Enum.Material.Metal)
+	m.Parent = parent
+end
+
+-- Scales a prop model about its centre and stands it back on the floor (y = floorY).
+local function grow(model: Model, scale: number, floorY: number)
+	model:ScaleTo(scale)
+	local lowest = math.huge
+	for _, p in model:GetDescendants() do
+		if p:IsA("BasePart") then
+			lowest = math.min(lowest, p.Position.Y - p.Size.Y / 2)
+		end
+	end
+	model:PivotTo(model:GetPivot() + Vector3.new(0, floorY - lowest, 0))
+end
+
 -- Everything for one plot; returns the gate's name label.
 function PlotDecor.build(plotModel: Model, origin: CFrame, accent: Color3, theme: { [string]: Color3 }, index: number): TextLabel
 	local F = Config.Plots.FloorSize
@@ -198,16 +363,22 @@ function PlotDecor.build(plotModel: Model, origin: CFrame, accent: Color3, theme
 	m.Name = "Decor"
 	local rng = Random.new(100 + index)
 	local label = PlotDecor.gate(m, origin * CFrame.new(16, 0, half - 2.2), 11, accent, theme)
-	PlotDecor.boiler(m, origin * CFrame.new(40, 0, -42) * CFrame.Angles(0, math.rad(-35), 0))
-	PlotDecor.crates(m, origin * CFrame.new(50, 0, -18), rng)
-	PlotDecor.crates(m, origin * CFrame.new(-50, 0, -50) * CFrame.Angles(0, math.rad(90), 0), rng)
-	for _, x in { -1, 1 } do
-		for _, z in { -1, 1 } do
-			if not (x == 1 and z == 1) then -- front-right is the gate
-				Build.lamp(m, origin * CFrame.new(x * (half - 5), 0, z * (half - 5)), theme, 11)
-			end
-		end
+	PlotDecor.boiler(m, origin * CFrame.new(46, 0, -20) * CFrame.Angles(0, math.rad(-60), 0))
+	-- the free grass beside the press (kept clear of the biggest press, x < 38)
+	local floorY = origin.Position.Y
+	grow(PlotDecor.scrapHeap(m, origin * CFrame.new(-48, 0, -14), rng), 1.4, floorY)
+	local crane = PlotDecor.crane(m, origin * CFrame.new(-54, 0, -30) * CFrame.Angles(0, math.rad(60), 0))
+	grow(crane, 1.5, floorY)
+	local swing = crane:FindFirstChild("Swing") :: Model
+	swing:SetAttribute("Axis", (crane:FindFirstChild("CraneBase") :: BasePart).Position)
+	PlotDecor.crates(m, origin * CFrame.new(-42, 0, -42) * CFrame.Angles(0, math.rad(90), 0), rng)
+	grow(PlotDecor.bales(m, origin * CFrame.new(49, 0, -4) * CFrame.Angles(0, math.rad(90), 0), rng), 1.5, floorY)
+	-- steam pipe from the boiler round to the scrap shop
+	local function pt(x: number, z: number): Vector3
+		return (origin * CFrame.new(x, 0, z)).Position
 	end
+	PlotDecor.pipe(m, { pt(53, -26), pt(55, -46), pt(55, -58), pt(30, -58) }, 7, STEEL)
+	Build.lamp(m, origin * CFrame.new(-(half - 5), 0, half - 5), theme, 11) -- front-left (front-right is the gate)
 	m.Parent = plotModel
 	return label
 end

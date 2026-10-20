@@ -87,3 +87,9 @@ The old separate shop channel (and the oil option) is gone.
   Deposit Your Scrap, Collect Your Cash, Buy An Upgrade, Buy A Bigger Press);
   zone label above the goal bar (Your Plot / name / Scrap Shop / Walkway,
   `client/Zone.client.luau`).
+
+## 20 Oct, evening: shop on the plot
+The shop island and its bridge are gone: the shop is a tab at the back of the plot
+island, directly behind the scrap pile and the upgrade pad row (see
+[[Press and plots]] "Plot layout"). Pile -> Deposit is about 30 studs.
+`Config.Plots.Moat` removed; `Config.ScrapShop.Width` back to 48.

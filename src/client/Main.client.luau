@@ -1090,7 +1090,8 @@ RunService.RenderStepped:Connect(function(dt)
 	for _, m in CollectionService:GetTagged("PressSpin") do
 		if m:IsA("Model") then
 			local speed = (m:GetAttribute("Speed") :: number?) or 1
-			local centre = m:GetBoundingBox()
+			local axis = m:GetAttribute("Axis") :: Vector3?
+			local centre = if axis then CFrame.new(axis) else m:GetBoundingBox()
 			local turn = CFrame.Angles(0, speed * dt, 0)
 			for _, p in m:GetChildren() do
 				if p:IsA("BasePart") then
