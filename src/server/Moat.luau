@@ -87,7 +87,7 @@ end
 -- Fall into the lava -> back on your plot (or the hub). `spawnFor(player)` gives a CFrame.
 function Moat.start(spawnFor: (Player) -> CFrame)
 	local Notice = Net.event("Notice")
-	local limit = Config.World.SeaY + 2
+	local limit = Config.World.SeaY + 4 -- a character standing on the lava has its root ~3 studs up
 	task.spawn(function()
 		while true do
 			task.wait(0.2)

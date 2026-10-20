@@ -385,7 +385,7 @@ Config.Look = {
 -- Islands in a lava sea (server/Moat.luau, Hub.luau, World.luau): the plots stand in
 -- two rows of 4 facing the hub island in the middle, each joined to it by a bridge.
 Config.World = {
-	SeaY = -3, -- lava surface (just under the island edges, like the water in the reference games); falling below SeaY + 2 puts you back on your plot
+	SeaY = -3, -- lava surface (just under the island edges, like the water in the reference games); falling in puts you back on your plot
 	HubGap = 18, -- lava between a plot island and the hub island (the bridge length)
 }
 
