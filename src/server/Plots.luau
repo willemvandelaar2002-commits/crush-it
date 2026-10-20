@@ -175,7 +175,11 @@ function Plots.create()
 		end
 	end
 	if base and base:IsA("BasePart") then
-		base.CanCollide = false -- no invisible floor in the lava sea
+		-- no invisible floor in the lava sea (Humanoids stand on CanCollide=false parts that can be queried)
+		base.CanCollide = false
+		base.CanQuery = false
+		base.CanTouch = false
+		base.CFrame = CFrame.new(0, -500, 0)
 	end
 	-- Hub island in the middle; every plot's bridge lands on it.
 	local landings = {}
