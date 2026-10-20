@@ -22,6 +22,7 @@ local Objects = require(ReplicatedStorage.Shared.Objects)
 local Store = require(ReplicatedStorage.Shared.Store)
 local Shop = require(script.Parent.Shop)
 local Analytics = require(script.Parent.Kit.Analytics)
+local FriendBoost = require(script.Parent.FriendBoost)
 
 local CrushRemote = Net.event("Crush")
 local BuyRemote = Net.event("BuyUpgrade")
@@ -82,6 +83,8 @@ end
 DataService.start("CrushItPlayer_v1", TEMPLATE, sanitize)
 require(script.Parent.Kit.Build).lighting()
 Plots.create()
+FriendBoost.start()
+require(script.Parent.RobuxSigns).start(Plots.all)
 require(script.Parent.Decor).create()
 require(script.Parent.Kit.Leaderboard).start({
 	store = "CashBoard_v1",
@@ -245,7 +248,7 @@ local function onCrush(player: Player)
 	end
 
 	local value = Config.Economy.ObjectValue(tier) * effect(data, "Value") * Config.VariantById[variant].mult * cashMult(data)
-		* (if Store.hasPass(player, "DoubleCash") then 2 else 1)
+		* (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player)
 	data.cash += value
 	data.crushed += 1
 	-- Collection book.
@@ -608,7 +611,7 @@ local function cashPerSecond(player: Player): number
 	local presses = math.ceil(Config.Economy.ObjectHp(tier) / effect(data, "Power"))
 	local seconds = presses * effect(data, "Speed") + Config.Economy.BeltSeconds + 0.4
 	local value = Config.Economy.ObjectValue(tier) * effect(data, "Value") * cashMult(data)
-		* (if Store.hasPass(player, "DoubleCash") then 2 else 1)
+		* (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player)
 	return value / seconds
 end
 

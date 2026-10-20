@@ -14,6 +14,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local PressBuilder = require(script.Parent.PressBuilder)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Build = require(script.Parent.Kit.Build)
+local RobuxSigns = require(script.Parent.RobuxSigns)
 
 local Plots = {}
 
@@ -113,6 +114,15 @@ function Plots.buildPress(plot: Plot, tier: number)
 		local x = math.clamp(W * 0.9 + 9, 15, F / 2 - 7)
 		local z = math.clamp(W * 0.3, 4, 30)
 		board:PivotTo(plot.origin * CFrame.new(x, 0, z) * CFrame.Angles(0, math.rad(-25), 0))
+	end
+	-- Robux signs mirror the board on the left of the press
+	local signs = plot.model:FindFirstChild("RobuxSigns") :: Model?
+	if signs then
+		local W = Config.pressWidth(tier)
+		local F = Config.Plots.FloorSize
+		local x = math.clamp(W * 0.9 + 15, 21, F / 2 - 13)
+		local z = math.clamp(W * 0.3, 4, 30)
+		signs:PivotTo(plot.origin * CFrame.new(-x, 0, z) * CFrame.Angles(0, math.rad(25), 0))
 	end
 	plot.press = built.model
 	plot.ram = built.ram
@@ -214,6 +224,8 @@ function Plots.create()
 		boardModel.Name = "Board"
 		boardFace.Name = "UpgradeBoard"
 		Build.label(boardFace, "⬆️ Upgrades", Color3.fromRGB(255, 225, 120), 10, Vector2.new(14, 3.5))
+		-- Robux signs (moved next to the press like the board)
+		RobuxSigns.build(model, theme.edge)
 		model.Parent = root
 		local plot: Plot = { index = i, origin = origin, model = model, press = nil, ram = nil, bedTop = 0, ramRestY = 0, tier = 1, owner = nil, sign = label }
 		Plots.buildPress(plot, 1)
