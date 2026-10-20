@@ -19,11 +19,14 @@ local Style = {}
 
 local C = Color3.fromRGB
 local TweenService = game:GetService("TweenService")
-local INK = C(19, 23, 38)
+local INK = C(19, 23, 42) -- #13172A
 
 Style.Colors = {
 	Ink = INK, Blue = C(65, 151, 255), Purple = C(153, 83, 238),
 	Pink = C(255, 89, 135), Gold = C(255, 210, 68), Red = C(245, 78, 81),
+	Cobalt = C(48, 111, 224), CobaltDark = C(30, 64, 139),
+	Steel = C(119, 145, 169), SteelDark = C(62, 82, 110),
+	Safety = C(255, 216, 72), Chrome = C(211, 231, 245),
 }
 
 Style.Studs = {
@@ -40,16 +43,15 @@ Style.Themes = {
 		-- props (Build.tree/bush/rock/fence/lamp)
 		leaf = C(86, 190, 70), trunk = C(120, 78, 46), rock = C(140, 146, 160), fence = C(235, 235, 240), lamp = C(255, 214, 120),
 	},
-	-- dark studded steel plots on bright green grass, yellow paving and trims
-	-- (Destroy a Vault's plots + the Yuzu game's lawns)
-	-- floating islands in a lava sea (after the Yuzu onsen + Destroy a Vault islands)
+	-- Toy workshop finishes on the existing island geometry. Legacy keys remain
+	-- because Build/Plots/Hub consume them; changing this palette changes no shapes.
 	Island = {
-		ground = C(110, 200, 70), platform = C(108, 202, 72), edge = C(48, 50, 58), path = C(236, 150, 62),
-		dark = C(32, 34, 42), pad = C(58, 60, 70), light = C(170, 176, 190),
-		grass = C(108, 202, 72), grassEdge = C(84, 168, 56), dirt = C(138, 96, 60), stone = C(132, 130, 140), stoneDark = C(102, 100, 110),
-		wood = C(168, 116, 66), woodDark = C(120, 80, 46),
-		leaf = C(96, 200, 72), trunk = C(118, 78, 48), rock = C(132, 128, 136), fence = C(236, 236, 242), lamp = C(255, 206, 110),
-		cliff = C(150, 146, 136), cliffDark = C(118, 112, 104),
+		ground = C(119, 145, 169), platform = C(119, 145, 169), edge = C(48, 67, 94), path = C(167, 181, 194),
+		dark = C(29, 42, 65), pad = C(68, 92, 122), light = C(211, 231, 245), trim = C(255, 216, 72),
+		grass = C(119, 145, 169), grassEdge = C(57, 80, 109), dirt = C(73, 95, 123), stone = C(141, 161, 180), stoneDark = C(78, 100, 127),
+		wood = C(167, 181, 194), woodDark = C(48, 67, 94),
+		leaf = C(85, 151, 130), trunk = C(103, 93, 83), rock = C(141, 161, 180), fence = C(185, 205, 223), lamp = C(255, 242, 200),
+		cliff = C(141, 161, 180), cliffDark = C(104, 127, 153),
 	},
 	Factory = {
 		ground = C(118, 206, 78), platform = C(96, 100, 110), edge = C(48, 50, 58), path = C(236, 186, 64),
@@ -145,8 +147,68 @@ function Style.panel(frame: Frame, a: Color3, b: Color3?)
 	})
 	decoration(inner, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(0, 9) })
 	decoration(inner, "UIStroke", "Shine", { Name = "Shine", Thickness = 2, Color = Color3.new(1, 1, 1), Transparency = 0.5, ApplyStrokeMode = Enum.ApplyStrokeMode.Border })
-	local studs = Style.studsImage(frame, 22, 0.55) -- as strong as before the 20 Oct polish
+	local studs = Style.studsImage(frame, 28, 0.82) -- texture supports text rather than competing with it
 	studs.ZIndex = 0
+end
+
+-- Opt-in bolted casing for major workshop panels. Keep this off list/grid
+-- containers; the single noninteractive decoration layer sits behind content.
+function Style.workshopPanel(frame: Frame, accent: Color3?)
+	Style.panel(frame, Style.Colors.SteelDark, C(35, 52, 81))
+	local hardware = decoration(frame, "Frame", "WorkshopHardware", {
+		Name = "WorkshopHardware", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
+		BorderSizePixel = 0, Active = false, Selectable = false, ZIndex = 0,
+	})
+	decoration(hardware, "Frame", "Accent", {
+		Name = "Accent", Position = UDim2.fromOffset(22, 3), Size = UDim2.new(1, -44, 0, 3),
+		BackgroundColor3 = accent or Style.Colors.Cobalt, BorderSizePixel = 0,
+	})
+	for index, point in { Vector2.new(0, 0), Vector2.new(1, 0), Vector2.new(0, 1), Vector2.new(1, 1) } do
+		local bolt = decoration(hardware, "Frame", "Bolt" .. index, {
+			Name = "Bolt" .. index, AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(point.X, if point.X == 0 then 8 else -8, point.Y, if point.Y == 0 then 8 else -8),
+			Size = UDim2.fromOffset(6, 6), BackgroundColor3 = Style.Colors.Chrome, BorderSizePixel = 0,
+		})
+		decoration(bolt, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(1, 0) })
+		decoration(bolt, "Frame", "Slot", {
+			Name = "Slot", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromOffset(4, 1), Rotation = 35, BackgroundColor3 = INK, BorderSizePixel = 0,
+		})
+	end
+end
+
+-- Small pressure dial for machine controls. The caller owns needle motion;
+-- this helper never reads or changes gameplay state.
+function Style.pressureGauge(parent: GuiObject): (Frame, Frame)
+	local dial = decoration(parent, "Frame", "PressureGauge", {
+		Name = "PressureGauge", Size = UDim2.fromOffset(32, 32), BackgroundColor3 = Style.Colors.Chrome,
+		BorderSizePixel = 0, Active = false, Selectable = false,
+	})
+	decoration(dial, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(1, 0) })
+	decoration(dial, "UIStroke", "Outline", { Name = "Outline", Color = INK, Thickness = 3 })
+	for index, angle in { -60, -30, 0, 30, 60 } do
+		local radians = math.rad(angle - 90)
+		decoration(dial, "Frame", "Tick" .. index, {
+			Name = "Tick" .. index, AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5 + math.cos(radians) * 0.35, 0.57 + math.sin(radians) * 0.35),
+			Size = UDim2.fromOffset(2, 4), Rotation = angle, BorderSizePixel = 0,
+			BackgroundColor3 = if index == 5 then Style.Colors.Red else INK,
+		})
+	end
+	local needle = decoration(dial, "Frame", "Needle", {
+		Name = "Needle", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.57),
+		Size = UDim2.fromScale(0.65, 0.65), BackgroundTransparency = 1, Rotation = -60, ZIndex = 2,
+	})
+	decoration(needle, "Frame", "Pointer", {
+		Name = "Pointer", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromOffset(3, 11), BackgroundColor3 = Style.Colors.Red, BorderSizePixel = 0,
+	})
+	local hub = decoration(dial, "Frame", "Hub", {
+		Name = "Hub", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.57),
+		Size = UDim2.fromOffset(6, 6), BackgroundColor3 = INK, BorderSizePixel = 0, ZIndex = 3,
+	})
+	decoration(hub, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(1, 0) })
+	return dial, needle
 end
 
 local GREEN = C(104, 232, 65)

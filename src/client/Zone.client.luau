@@ -1,7 +1,7 @@
 --!strict
 -- Zone label at the top of the screen (Destroy a Vault's "Base" / "Market"):
 -- "Your Plot", "<Name>'s Plot", "Free Plot", "Scrap Shop" or "Hub",
--- in a chunky green pill that pops when it changes. Plots carry their
+-- in a cobalt workshop plate that pops when it changes. Plots carry their
 -- floor-centre CFrame as the attribute "Origin" (server/Plots.luau).
 
 local Players = game:GetService("Players")
@@ -30,7 +30,18 @@ pill.AnchorPoint = Vector2.new(0.5, 0)
 pill.Position = if touch then UDim2.new(1, -110, 0, 44) else UDim2.new(0.5, 0, 0, 4)
 pill.Size = UDim2.fromOffset(if touch then 150 else 200, if touch then 28 else 34)
 pill.Parent = gui
-Style.panel(pill, Color3.fromRGB(110, 235, 80), Color3.fromRGB(40, 160, 50))
+Style.panel(pill, Style.Colors.Cobalt, Style.Colors.CobaltDark)
+local function fitZone()
+	local viewport = Workspace.CurrentCamera.ViewportSize
+	local compact = Style.compact()
+	local portrait = compact and viewport.X < viewport.Y
+	pill.AnchorPoint = if compact and not portrait then Vector2.new(1, 0) else Vector2.new(0.5, 0)
+	pill.Position = if portrait then UDim2.new(0.5, 0, 0, 86)
+		else if compact then UDim2.new(1, -14, 0, 44) else UDim2.new(0.5, 0, 0, 4)
+	pill.Size = UDim2.fromOffset(if compact then 150 else 200, if compact then 24 else 34)
+end
+Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitZone)
+fitZone()
 local scale = Instance.new("UIScale")
 scale.Parent = pill
 local label = Instance.new("TextLabel")

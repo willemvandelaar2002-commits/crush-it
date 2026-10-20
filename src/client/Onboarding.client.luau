@@ -24,6 +24,7 @@ local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local player = Players.LocalPlayer
 local hud = player:WaitForChild("PlayerGui"):WaitForChild("CrushHud")
 local crushButton = hud:WaitForChild("CrushButton") :: GuiObject
+local upgrades = hud:WaitForChild("Upgrades") :: ScrollingFrame
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "Onboarding"
@@ -42,6 +43,14 @@ holder.Size = UDim2.fromOffset(if touch then 320 else 480, if touch then 58 else
 holder.BackgroundTransparency = 1
 holder.Visible = false
 holder.Parent = gui
+local function fitTutorial()
+	local viewport = workspace.CurrentCamera.ViewportSize
+	local portrait = touch and viewport.X < viewport.Y
+	holder.Position = UDim2.new(0.5, 0, 0, if portrait then 240 else if touch then 190 else 168)
+	holder.Size = UDim2.fromOffset(math.min(if touch then 320 else 480, viewport.X - 24), if touch then 58 else 76)
+end
+workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitTutorial)
+fitTutorial()
 local title = Instance.new("TextLabel")
 title.Size = UDim2.fromScale(1, 0.42)
 title.BackgroundTransparency = 1
@@ -186,7 +195,7 @@ RunService.RenderStepped:Connect(function()
 		hand.Visible = false
 		return
 	end
-	if el ~= lastTarget and upgrades:IsA("ScrollingFrame") and el:IsDescendantOf(upgrades) then
+	if el ~= lastTarget and upgrades and upgrades:IsA("ScrollingFrame") and el:IsDescendantOf(upgrades) then
 		local scale = upgrades:FindFirstChildOfClass("UIScale")
 		local zoom = if scale then scale.Scale else 1
 		upgrades.CanvasPosition = Vector2.new(0, math.max(0, upgrades.CanvasPosition.Y + (el.AbsolutePosition.Y - upgrades.AbsolutePosition.Y) / zoom - 6))

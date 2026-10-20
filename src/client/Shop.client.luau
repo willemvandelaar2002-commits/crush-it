@@ -148,7 +148,7 @@ local panel = make("Frame", {
 	Name = "ShopPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0.82, 0),
 	BackgroundColor3 = DARK, BackgroundTransparency = 0.03, Visible = false, ZIndex = 5, Parent = gui,
 }, { make("UISizeConstraint", { MaxSize = Vector2.new(820, 560) }) })
-Style.panel(panel, Color3.fromRGB(249, 104, 154), Color3.fromRGB(133, 53, 156))
+Style.workshopPanel(panel, Style.Colors.Pink)
 Style.modal(panel)
 local shopTitle = make("TextLabel", {
 	Position = UDim2.fromOffset(16, 8), Size = UDim2.new(1, -80, 0, 34), BackgroundTransparency = 1, Font = FONT,

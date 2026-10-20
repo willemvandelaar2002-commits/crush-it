@@ -1,5 +1,10 @@
 # Press and plots
 
+20 Oct visual update: shared Island colours now use blue-grey platforms,
+navy borders and steel bridge finishes. All server geometry and gameplay
+are unchanged. See [[Toy workshop]] for the remaining garden/lava replacement
+and press styling steps blocked by the protected server-file constraint.
+
 - 8 plots, two rows of 4 facing a walkway (`Config.Plots`). Each player gets
   one on join; the sign shows their name. Server full → kick with a message.
 - The press is rebuilt when the tier changes; its width is

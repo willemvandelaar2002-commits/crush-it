@@ -52,7 +52,7 @@ local panel = make("Frame", {
 	Name = "Leaderboard", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 8),
 	Size = UDim2.fromOffset(WIDTH, 226), BackgroundColor3 = BG,
 }, gui)
-Style.panel(panel, Color3.fromRGB(55, 104, 159), Color3.fromRGB(30, 47, 84))
+Style.workshopPanel(panel, Style.Colors.Safety)
 -- Keep decorations outside the list layout so studs/borders cannot become rows.
 local content = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1 }, panel)
 make("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder }, content)
@@ -118,7 +118,10 @@ Style.image(openButton, Icons.Trophy, { Size = UDim2.fromScale(0.85, 0.85), ZInd
 local function fitLeaderboard()
 	local compact = Style.compact()
 	panel.Position = UDim2.new(1, -10, 0, if compact then 86 else 8)
-	openButton.Position = UDim2.new(1, -12, 0, if compact then 146 else 8)
+	-- Keep the collapsed leaderboard below navigation, away from CRUSH and
+	-- the jump button on landscape phones. The thumbstick stays clear below.
+	openButton.AnchorPoint = if compact then Vector2.zero else Vector2.new(1, 0)
+	openButton.Position = if compact then UDim2.fromOffset(12, 86) else UDim2.new(1, -12, 0, 8)
 end
 -- Start collapsed on phones only (the camera's viewport isn't final yet when this runs).
 if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then

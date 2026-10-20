@@ -24,7 +24,7 @@ local CrushRemote = Net.event("Crush")
 local BuyRemote = Net.event("BuyUpgrade")
 
 local FONT = Enum.Font.FredokaOne
-local DARK = Color3.fromRGB(28, 30, 38)
+local DARK = Style.Colors.Ink
 local GREEN = Color3.fromRGB(80, 200, 110)
 local RED = Color3.fromRGB(230, 80, 70)
 local GREY = Color3.fromRGB(110, 112, 120)
@@ -51,7 +51,7 @@ local function corner(r: number): UICorner
 end
 
 local function stroke(t: number): UIStroke
-	return make("UIStroke", { Thickness = t, Color = Color3.new(0, 0, 0), Transparency = 0.2 })
+	return make("UIStroke", { Thickness = t, Color = Style.Colors.Ink, Transparency = 0.1 })
 end
 
 local gui = make("ScreenGui", { Name = "CrushHud", ResetOnSpawn = false, IgnoreGuiInset = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, Parent = player:WaitForChild("PlayerGui") })
@@ -130,16 +130,28 @@ local objFrame = make("Frame", {
 	BackgroundTransparency = 1, Parent = gui,
 })
 local objName = make("TextLabel", {
-	Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
+	Position = UDim2.fromOffset(40, 0), Size = UDim2.new(1, -40, 0, 20), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
 	TextColor3 = Color3.new(1, 1, 1), Text = "", Parent = objFrame,
 }, { stroke(2) })
 local hpBack = make("Frame", {
-	Position = UDim2.fromOffset(0, 24), Size = UDim2.new(1, 0, 0, 16), BackgroundColor3 = DARK, Parent = objFrame,
+	Position = UDim2.fromOffset(40, 24), Size = UDim2.new(1, -40, 0, 16), BackgroundColor3 = DARK, Parent = objFrame,
 }, { corner(8), stroke(2) })
 local hpFill = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = RED, Parent = hpBack }, { corner(8) })
 hpFill.BackgroundColor3 = Color3.new(1, 1, 1)
 make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(255, 149, 130), RED), Parent = hpFill })
 Style.studsImage(hpFill, 18, 0.85)
+local pressureDial, pressureNeedle = Style.pressureGauge(objFrame)
+pressureDial.Position = UDim2.fromOffset(0, 5)
+local function fitStatus()
+	if not TOUCH then return end
+	local viewport = Workspace.CurrentCamera.ViewportSize
+	local portrait = viewport.X < viewport.Y
+	cashLabel.Position = UDim2.new(0.5, 0, 0, if portrait then 114 else 74)
+	friendRow.Position = UDim2.new(0.5, -96, 0, if portrait then 185 else 145)
+	objFrame.Position = UDim2.new(0.5, 0, 0, if portrait then 194 else 154)
+end
+Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitStatus)
+fitStatus()
 
 -- CRUSH button (bottom right) -------------------------------------------------
 local crushButton = make("TextButton", {
@@ -147,7 +159,7 @@ local crushButton = make("TextButton", {
 	AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -20, 1, -20), Size = UDim2.fromOffset(150, 150),
 	BackgroundColor3 = RED, Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "CRUSH",
 	AutoButtonColor = false, Parent = gui,
-}, { make("UICorner", { CornerRadius = UDim.new(1, 0) }), make("UIStroke", { Thickness = 5, Color = Color3.fromRGB(120, 20, 20) }), make("UIPadding", { PaddingLeft = UDim.new(0, 18), PaddingRight = UDim.new(0, 18) }) })
+}, { make("UICorner", { CornerRadius = UDim.new(1, 0) }), make("UIStroke", { Thickness = 5, Color = Style.Colors.Ink }), make("UIPadding", { PaddingLeft = UDim.new(0, 18), PaddingRight = UDim.new(0, 18) }) })
 -- Solid red with white text (a Style.button gradient would tint the text too); press feedback only.
 Style.feedback(crushButton)
 local keyHint = make("TextLabel", {
@@ -167,6 +179,7 @@ local function setHold(delta: number)
 	if Style.hasModal() then delta = 0; holds = 0 end
 	holds = math.max(0, holds + delta)
 	crushButton.BackgroundColor3 = if holds > 0 then Color3.fromRGB(190, 50, 45) else RED
+	pressureNeedle.Rotation = if holds > 0 then 55 else -60
 end
 crushButton.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -965,7 +978,7 @@ local book = make("Frame", {
 	Name = "Book", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0.8, 0),
 	BackgroundColor3 = DARK, BackgroundTransparency = 0.05, Visible = false, ZIndex = 10, Parent = gui,
 }, { make("UISizeConstraint", { MaxSize = Vector2.new(820, 560) }) })
-Style.panel(book, Color3.fromRGB(70, 145, 249), Color3.fromRGB(43, 62, 154))
+Style.workshopPanel(book, Style.Colors.Cobalt)
 Style.modal(book)
 local bookTitle = make("TextLabel", {
 	Position = UDim2.fromOffset(16, 8), Size = UDim2.new(1, -80, 0, 34), BackgroundTransparency = 1, Font = FONT,

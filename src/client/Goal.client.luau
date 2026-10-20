@@ -35,7 +35,7 @@ bar.Name = "GoalBar"
 bar.AnchorPoint = Vector2.new(0.5, 0)
 bar.Position = UDim2.new(0.5, 0, 0, 44)
 bar.Size = UDim2.new(if TOUCH then 0.5 else 0.42, 0, 0, if TOUCH then 32 else 42)
-bar.BackgroundColor3 = Color3.fromRGB(25, 30, 28)
+bar.BackgroundColor3 = Style.Colors.Ink
 bar.AutoButtonColor = false
 bar.Text = ""
 bar.Parent = gui
@@ -47,7 +47,7 @@ corner.CornerRadius = UDim.new(0, 10)
 corner.Parent = bar
 local outline = Instance.new("UIStroke")
 outline.Thickness = 3
-outline.Color = Color3.fromRGB(15, 20, 18)
+outline.Color = Style.Colors.Ink
 outline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 outline.Parent = bar
 local scale = Instance.new("UIScale")
@@ -97,6 +97,16 @@ reward.BackgroundTransparency = 1
 reward.TextScaled = true
 reward.Parent = bar
 Style.text(reward, 2.5)
+local function fitReward()
+	local viewport = workspace.CurrentCamera.ViewportSize
+	local sharedRow = Style.compact() and viewport.X > viewport.Y
+	-- Landscape shares this line with the zone plate on the right.
+	reward.AnchorPoint = if sharedRow then Vector2.zero else Vector2.new(0.5, 0)
+	reward.Position = UDim2.new(if sharedRow then 0 else 0.5, 0, 1, 4)
+	reward.Size = UDim2.new(1, if sharedRow then -164 else 0, 0, if Style.compact() then 20 else 24)
+end
+workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitReward)
+fitReward()
 
 local function attr(name: string): number
 	return (player:GetAttribute(name) :: number?) or 0

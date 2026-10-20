@@ -10,6 +10,7 @@ Small, quick game to test alongside WarChest: one loop, few systems, out fast.
 - [[Systems/Scrap]] — crush -> scrap -> sell at your scrap shop (the core loop since 20 Oct)
 - [[Systems/Helpers]] — Mini Presses you buy and merge that crush for you
 - [[Systems/Style kit]] — reusable studded look (Style + Build) for this and future games
+- [[Systems/Toy workshop]] — blue-grey workshop theme, Play checks and remaining protected server changes
 - [[Decisions log]]
 - [[Backlog]]
 

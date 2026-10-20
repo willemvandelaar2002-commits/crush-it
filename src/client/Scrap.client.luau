@@ -35,7 +35,16 @@ pill.Position = UDim2.new(0.5, 0, 1, -14)
 pill.Size = UDim2.fromOffset(250, 62)
 pill.Visible = false
 pill.Parent = gui
-Style.panel(pill, Color3.fromRGB(255, 170, 60), Color3.fromRGB(205, 90, 30))
+Style.workshopPanel(pill, Style.Colors.Safety)
+local function fitPill()
+	local viewport = Workspace.CurrentCamera.ViewportSize
+	-- In portrait, the bottom centre is inside the thumbstick/jump area.
+	local portrait = viewport.X < viewport.Y and Style.compact()
+	pill.Position = UDim2.new(0.5, 0, 1, if portrait then -242 else -14)
+	pill.Size = UDim2.fromOffset(math.min(250, math.max(160, viewport.X - 32)), 62)
+end
+Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitPill)
+fitPill()
 local scale = Instance.new("UIScale")
 scale.Parent = pill
 

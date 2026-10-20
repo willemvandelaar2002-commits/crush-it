@@ -5,6 +5,9 @@ copy `src/shared/Kit/` and `src/server/Kit/` (DataService, Analytics, Build)
 and require them.
 
 ## shared/Kit/Style.luau (client + server)
+- Current Crush It theme (20 Oct): `Island` keeps its legacy keys but now supplies blue-grey platforms, navy borders and steel bridge finishes. See [[Toy workshop]] for the permitted changes and remaining world work; the earlier Teal/Decor description below is historical.
+- `Style.workshopPanel(frame, accent?)` opt-in bolted blue-grey casing for panels without direct list/grid layouts; decorations stay behind content and do not intercept input.
+- `Style.pressureGauge(parent)` returns `(dial, needle)` for a small machine gauge; the caller controls needle rotation. Existing helpers and arguments are preserved.
 - `Style.studs(part, faces?, perTile?)` stud texture (free image 7447638591, 2 studs/tile)
 - `Style.theme("Teal" | "Scrap")` world colours: ground, platform, edge, path, dark, pad, light
 - `Style.panel(frame, colorA, colorB?)` gradient panel, dark outline, white inner border, studs

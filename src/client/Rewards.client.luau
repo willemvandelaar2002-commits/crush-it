@@ -47,7 +47,7 @@ local panel = make("Frame", {
 	Name = "RewardsPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0.84, 0),
 	BackgroundColor3 = DARK, BackgroundTransparency = 0.03, Visible = false, ZIndex = 5,
 }, gui)
-Style.panel(panel, Color3.fromRGB(174, 111, 255), Color3.fromRGB(79, 49, 163))
+Style.workshopPanel(panel, Style.Colors.Purple)
 Style.modal(panel)
 make("UISizeConstraint", { MaxSize = Vector2.new(720, 520) }, panel)
 local title = make("TextLabel", {
