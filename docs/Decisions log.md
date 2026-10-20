@@ -22,3 +22,4 @@
 - 2026-10-20: UI polish patch (made with another tool) tested in Studio and merged with small fixes: solid CRUSH/AUTO, leaderboard open on PC, cash pop placement, offer size, Sibling ZIndex on Robux signs.
 - 2026-10-20: New Steel-stage press frame (yellow steel, chrome cylinders, hazard feet; old beige arch parked). Ground guide path (Kit/GuidePath): chevrons to the upgrade board during the tutorial and back to your press when you wander off.
 - 2026-10-20: Uploaded icon set (15 PNGs) replaces emoji/drawn icons everywhere (shared/Icons.luau, loaded via rbxthumb because the ids don't work as rbxassetid). Guide path back to your press only once you're off your plot (65 studs).
+- 2026-10-20: Core loop changed: crushing drops scrap instead of cash; walk over it to pick it up (no limit) and sell it on the pad of your own scrap shop island behind the plot (bridge, gate, smelter). Auto Collect is a Robux pass (R$ 99). Sky switched to a warm sunset.

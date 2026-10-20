@@ -7,6 +7,7 @@ Small, quick game to test alongside WarChest: one loop, few systems, out fast.
 - [[Systems/Press and plots]] — the world, the press, crushing
 - [[Systems/Shop]] — Robux passes/products, onboarding, analytics, thumbnail
 - [[Systems/Progression]] — rebirth, golden/diamond objects, collection book
+- [[Systems/Scrap]] — crush -> scrap -> sell at your scrap shop (the core loop since 20 Oct)
 - [[Systems/Style kit]] — reusable studded look (Style + Build) for this and future games
 - [[Decisions log]]
 - [[Backlog]]
@@ -23,4 +24,5 @@ Leaderboard (Here / Friends / Global) top right (20 Oct).
 Free rewards: playtime gifts + 7-day daily check-in (20 Oct).
 Friend boost + invite button, Robux signs on the plot (20 Oct).
 New Steel press frame, ground guide path (20 Oct).
+Scrap loop: crushing drops scrap, pick it up, sell at the scrap shop island behind your plot; Auto Collect pass; warm sunset sky (20 Oct).
 Next ideas: Halloween event; create the passes/products and fill Store ids; proper thumbnail.
