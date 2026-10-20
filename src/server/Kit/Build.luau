@@ -110,11 +110,12 @@ end
 -- presets: "Day" (bright noon) or "Sunset" (low warm sun, orange haze, long shadows)
 function Build.lighting(preset: string?)
 	local sunset = preset == "Sunset"
-	Lighting.ClockTime = if sunset then 17.55 else 13.5
+	Lighting.ClockTime = if sunset then 17.25 else 13.5
 	Lighting.GeographicLatitude = if sunset then 30 else 41.7
-	Lighting.Brightness = if sunset then 2.6 else 2.2
-	Lighting.Ambient = if sunset then Color3.fromRGB(110, 90, 100) else Color3.fromRGB(90, 90, 105)
-	Lighting.OutdoorAmbient = if sunset then Color3.fromRGB(165, 130, 125) else Color3.fromRGB(128, 128, 140)
+	Lighting.Brightness = if sunset then 3.2 else 2.2
+	Lighting.ExposureCompensation = if sunset then 0.25 else 0
+	Lighting.Ambient = if sunset then Color3.fromRGB(130, 112, 118) else Color3.fromRGB(90, 90, 105)
+	Lighting.OutdoorAmbient = if sunset then Color3.fromRGB(200, 170, 160) else Color3.fromRGB(128, 128, 140)
 	Lighting.EnvironmentDiffuseScale = 1
 	Lighting.EnvironmentSpecularScale = 0.4
 	Lighting.ShadowSoftness = 0.3
@@ -138,7 +139,7 @@ function Build.lighting(preset: string?)
 	rays.Intensity = 0.06
 	rays.Spread = 0.6
 	local atmo = Lighting:FindFirstChildOfClass("Atmosphere") or Instance.new("Atmosphere")
-	atmo.Density = if sunset then 0.3 else 0.2
+	atmo.Density = if sunset then 0.26 else 0.2
 	atmo.Offset = if sunset then 0.15 else 0
 	atmo.Haze = if sunset then 1.6 else 0.5
 	atmo.Glare = if sunset then 0.8 else 0.2

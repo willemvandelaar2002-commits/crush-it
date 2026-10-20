@@ -70,7 +70,7 @@ function Scrap.drop(player: Player, plot: any, from: Vector3, value: number, tie
 	local origin: CFrame = plot.origin
 	local width = Config.pressWidth(tier)
 	for i = 1, count do
-		local size = 0.9 + math.random() * 0.8 + math.min(tier, 13) * 0.04
+		local size = 1.5 + math.random() * 0.8 + math.min(tier, 13) * 0.05
 		local color, material = pieceColor(tier, variant, i)
 		local p = Instance.new("Part")
 		p.Name = "Scrap"
@@ -82,6 +82,10 @@ function Scrap.drop(player: Player, plot: any, from: Vector3, value: number, tie
 		p.Color = color
 		p.Material = material
 		p:SetAttribute("Value", value / count)
+		-- a little glint so pieces stand out on the dark pad
+		local glint = Instance.new("Sparkles")
+		glint.SparkleColor = Color3.fromRGB(255, 240, 180)
+		glint.Parent = p
 		p:SetAttribute("Owner", player.UserId)
 		-- land in a ring in front of / beside the press (+Z is toward the walkway)
 		local angle = math.rad(-110 + math.random() * 220) -- mostly the front half

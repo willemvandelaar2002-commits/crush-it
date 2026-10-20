@@ -149,7 +149,7 @@ function ScrapShop.build(plotModel: Model, origin: CFrame, theme: { [string]: Co
 	pad.Name = "SellPadFill"
 	pad.Material = Enum.Material.Neon
 	pad.Transparency = 0.25
-	Build.label(pad, "SELL SCRAP", C(255, 220, 90), 5, Vector2.new(14, 3.2))
+	Build.label(pad, "SELL SCRAP", C(255, 220, 90), 3, Vector2.new(12, 2.8))
 
 	-- Smelter at the back of the island.
 	local machineZ = islandMid - 6
