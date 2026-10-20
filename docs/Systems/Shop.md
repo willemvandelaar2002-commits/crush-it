@@ -47,3 +47,10 @@ first versions made from an in-game shot of a golden car in the press.
 - Featured pass card under it with a "BEST!" ribbon: Auto Crush, then Lucky, then Offline Earnings (first one not owned); hidden when all owned.
 - Both fire ShopOpened analytics ("DoubleCashOffer" / "FeaturedOffer") and prompt the pass ("Coming soon!" while ids are 0).
 - SHOP is now a big icon button with a "!" badge until the shop is opened once per session; hidden offers while the book is open.
+
+## Robux signs on the plot (server/RobuxSigns.luau)
+Two chunky signs left of the press (mirroring the upgrade board, moved with it
+when the press grows): Auto Crush and 2x Cash with icon, description and a green
+price button. Click (ClickDetector, 60 studs) -> server prompts the pass ("coming
+soon" notice while the id is 0, analytics "SignClicked"). On the owner's plot a
+pass they have shows OWNED. Which passes: `RobuxSigns.Signs`.

@@ -301,6 +301,9 @@ Config.SizeCost = function(tier: number): number
 	return Config.Economy.ObjectValue(tier) * 10 * 1.32 ^ (tier - 1)
 end
 
+-- Friend boost: extra cash for every Roblox friend in your server (server/FriendBoost.luau).
+Config.FriendBoost = { Per = 0.1, Max = 0.5 }
+
 -- Free rewards (server/Rewards.luau, client/Rewards.client.luau).
 -- kind "cash": `seconds` worth of your current earning rate (so it grows with you,
 -- never less than MinCash); kind "golden": that many Golden objects in a row.

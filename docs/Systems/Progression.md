@@ -45,3 +45,8 @@ REWARDS gift button next to BOOK/SHOP, "!" badge when something can be claimed.
 - Daily check-in: 7 days, one claim per UTC day (`data.daily = { day, streak }`); missing a day restarts at day 1, after day 7 it starts over.
 - Cash rewards are N seconds of your current earning rate (min $25), so they stay useful at every stage; some slots give Golden objects (adds to goldenRush).
 - All numbers in `Config.Rewards`. Server checks time and claims; analytics events PlaytimeReward / DailyReward.
+
+## Friend boost (server/FriendBoost.luau)
++10% crush cash per Roblox friend in the same server, max +50% (`Config.FriendBoost`).
+Player attribute FriendBoost; multiplies crush cash and the offline/reward rate.
+HUD: "Friend Boost: X%" under the cash with a green + that opens Roblox's invite dialog.

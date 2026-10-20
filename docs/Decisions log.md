@@ -17,3 +17,4 @@
 - 2026-10-20: HUD closer to Destroy a Vault: Next-up goal bar top centre, big icon buttons (BOOK/SHOP with ! badge), rainbow 2X Cash offer + featured pass card on the right, cash moved bottom-left.
 - 2026-10-20: Leaderboard panel (Here / Friends / Global cash) top right instead of Roblox's player list; global top 50 via a reusable Kit/Leaderboard. Offers moved down to sit between it and CRUSH.
 - 2026-10-20: Free rewards: playtime gifts (8 per session) and a 7-day daily check-in behind a REWARDS gift button; cash scales with earning rate, some Golden objects. Shop/Rewards ScreenGuis use Sibling ZIndex (fixed panel contents hidden behind the panel).
+- 2026-10-20: Friend boost (+10% per friend in server, max 50%) with invite button under the cash; Robux signs (Auto Crush, 2x Cash) on every plot next to the press.

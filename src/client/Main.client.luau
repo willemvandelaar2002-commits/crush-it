@@ -63,14 +63,14 @@ local CASH_SIZE = if TOUCH then Vector2.new(220, 40) else Vector2.new(320, 64)
 local cashLabel = make("TextLabel", {
 	Name = "Cash",
 	AnchorPoint = if TOUCH then Vector2.new(0.5, 0) else Vector2.new(0, 1),
-	Position = if TOUCH then UDim2.new(0.5, 0, 0, 74) else UDim2.new(0, 84, 1, -14),
+	Position = if TOUCH then UDim2.new(0.5, 0, 0, 74) else UDim2.new(0, 84, 1, -42),
 	Size = UDim2.fromOffset(CASH_SIZE.X, CASH_SIZE.Y), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
 	TextXAlignment = if TOUCH then Enum.TextXAlignment.Center else Enum.TextXAlignment.Left,
 	TextColor3 = Color3.fromRGB(110, 255, 90), Text = "$0", Parent = gui,
 }, { make("UIStroke", { Thickness = 4, Color = Color3.fromRGB(20, 40, 15) }) })
 if not TOUCH then
 	make("TextLabel", {
-		Name = "CashIcon", AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 12, 1, -12), Size = UDim2.fromOffset(66, 66),
+		Name = "CashIcon", AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 12, 1, -40), Size = UDim2.fromOffset(66, 66),
 		BackgroundTransparency = 1, Font = FONT, TextScaled = true, Text = "💵", Rotation = -10, Parent = gui,
 	})
 end
@@ -82,6 +82,45 @@ local multLabel = make("TextLabel", {
 	BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left,
 	TextColor3 = GOLD, Text = "", Parent = cashLabel,
 }, { stroke(2) })
+
+-- Friend boost line under the cash ("Friend Boost: 20%  [+]"); the + opens
+-- Roblox's invite dialog. The server sets FriendBoost (server/FriendBoost.luau).
+local friendRow = make("Frame", {
+	Name = "FriendBoost", AnchorPoint = Vector2.new(0, 1),
+	Position = if TOUCH then UDim2.fromOffset(12, 150) else UDim2.new(0, 14, 1, -10), Size = UDim2.fromOffset(if TOUCH then 200 else 260, if TOUCH then 24 else 30),
+	BackgroundTransparency = 1, Parent = gui,
+})
+local friendLabel = make("TextLabel", {
+	Size = UDim2.new(1, -40, 1, 0), BackgroundTransparency = 1, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left,
+	Text = "Friend Boost: 0%", Parent = friendRow,
+})
+Style.text(friendLabel, 2.5)
+local inviteButton = make("TextButton", {
+	AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.fromOffset(if TOUCH then 24 else 30, if TOUCH then 24 else 30),
+	Text = "+", TextScaled = true, Parent = friendRow,
+})
+Style.button(inviteButton)
+local function refreshFriends()
+	local boost = (player:GetAttribute("FriendBoost") :: number?) or 0
+	friendLabel.Text = string.format("Friend Boost: %d%%", math.floor(boost * 100 + 0.5))
+	friendLabel.TextColor3 = if boost > 0 then Color3.fromRGB(120, 255, 120) else Color3.new(1, 1, 1)
+	inviteButton.Position = UDim2.new(0, friendLabel.TextBounds.X + 8, 0.5, 0)
+	inviteButton.AnchorPoint = Vector2.new(0, 0.5)
+end
+player:GetAttributeChangedSignal("FriendBoost"):Connect(refreshFriends)
+friendLabel:GetPropertyChangedSignal("TextBounds"):Connect(refreshFriends)
+refreshFriends()
+inviteButton.Activated:Connect(function()
+	local SocialService = game:GetService("SocialService")
+	local ok, can = pcall(function()
+		return SocialService:CanSendGameInviteAsync(player)
+	end)
+	if ok and can then
+		pcall(function()
+			SocialService:PromptGameInvite(player)
+		end)
+	end
+end)
 
 -- Object + HP bar (under the cash) -------------------------------------------
 local objFrame = make("Frame", {
