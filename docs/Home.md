@@ -23,4 +23,4 @@ Leaderboard (Here / Friends / Global) top right (20 Oct).
 Free rewards: playtime gifts + 7-day daily check-in (20 Oct).
 Friend boost + invite button, Robux signs on the plot (20 Oct).
 New Steel press frame, ground guide path (20 Oct).
-Next ideas:, Halloween event; create the passes/products and fill Store ids; proper thumbnail.
+Next ideas: Halloween event; create the passes/products and fill Store ids; proper thumbnail.
