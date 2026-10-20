@@ -62,6 +62,8 @@ Sibling ZIndex. Phone layouts are still untested on a real device.
 - `Build.inset(...)` framed patch on a surface
 - `Build.signFrame(parent, baseCf, w, h, frameColor)` chunky sign on posts -> (model, face)
 - `Build.label(part, text, color, offsetY, sizeStuds?)` big floating outlined label
+- `Build.lava(parent, surfaceCf, length, width, opts?)` -> (Model, floor): stylised lava strip (crust, glowing rims, drifting blobs/plates tagged LavaDrift for a client to move, embers, lights); hook `floor.Touched`
+- `Build.bank(parent, cf, length, height, thickness?)` basalt curb
 - `Build.lighting(preset?)` cartoon lighting: "Day" (noon) or "Sunset" (low warm sun, orange haze, sun rays); Crush It uses `Config.Look.Sky`
 
 Props (blocky + studded, colours from the theme's `leaf`, `trunk`, `rock`, `fence`, `lamp`;
