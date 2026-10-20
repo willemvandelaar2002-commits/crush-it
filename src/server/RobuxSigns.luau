@@ -42,6 +42,7 @@ function RobuxSigns.build(parent: Instance, frameColor: Color3): Model
 		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
 		gui.PixelsPerStud = 40
 		gui.LightInfluence = 0
+		gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling -- Style.panel puts its studs/border under the content
 		gui.Parent = face
 		local bg = Instance.new("Frame")
 		bg.Size = UDim2.fromScale(1, 1)
