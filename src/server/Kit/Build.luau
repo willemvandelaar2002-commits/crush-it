@@ -9,6 +9,7 @@
 --        chunky studded sign on two posts; draw on facePart's Back face (+Z)
 --   Build.label(adornee, text, color, offsetY, sizeStuds?) -> BillboardGui
 --        big floating outlined label ("Smelt" style)
+--   Build.path(parent, a, b, width, color?)                   flat orange brick path with dark edging
 --   Build.lava(parent, surfaceCf, length, width, opts?)       lava strip (crust, glowing rims, drifting blobs, embers) -> (Model, floor)
 --   Build.bank(parent, cf, length, height, thickness?)        basalt curb along a lava strip
 --   Build.lighting(preset)                                    cartoon lighting: Day, Sunset, GoldenHour, Dusk, Smog
@@ -191,6 +192,26 @@ function Build.lighting(preset: string?)
 	sky.Parent = Lighting
 end
 
+-- Brick path (Destroy a Vault's orange paths): a flat orange brick strip from
+-- `a` to `b` (ground points, path top at their Y + 0.12) with darker edging.
+function Build.path(parent: Instance, a: Vector3, b: Vector3, width: number, color: Color3?): Model
+	local m = Instance.new("Model")
+	m.Name = "Path"
+	local c = color or Color3.fromRGB(236, 150, 62)
+	local flat = Vector3.new(b.X - a.X, 0, b.Z - a.Z)
+	local len = flat.Magnitude + width -- overlap the corners
+	local mid = CFrame.lookAt(a:Lerp(b, 0.5), a:Lerp(b, 0.5) + flat)
+	local top = Build.block(m, "PathTop", Vector3.new(width, 0.12, len), mid * CFrame.new(0, 0.06, 0), c, {})
+	top.Material = Enum.Material.Brick
+	top.CanCollide = false
+	for _, side in { -1, 1 } do
+		local edge = Build.block(m, "PathEdge", Vector3.new(0.6, 0.16, len), mid * CFrame.new(side * (width / 2 + 0.3), 0.08, 0), Style.darken(c, 0.35), {})
+		edge.CanCollide = false
+	end
+	m.Parent = parent
+	return m
+end
+
 -- Lava -------------------------------------------------------------------------
 -- Build.lava(parent, surfaceCf, length, width, opts?) -> (Model, floor: Part)
 -- A strip of stylised lava whose top surface is at surfaceCf (its X axis runs
@@ -244,11 +265,11 @@ function Build.lava(parent: Instance, surface: CFrame, length: number, width: nu
 		p:SetAttribute("Axis", surface.XVector)
 		CollectionService:AddTag(p, "LavaDrift")
 	end
-	local n = math.max(2, math.floor(length / 9))
+	local n = math.max(1, math.floor(length / 20))
 	for i = 1, n do
-		local z = (math.random() - 0.5) * (width - 2.2)
-		local d = 1.2 + math.random() * 1.6
-		drifter("Blob", Vector3.new(d * 1.6, 0.14, d), z, 0.05, if math.random() < 0.4 then LAVA_HOT else LAVA_GLOW, Enum.Material.Neon,
+		local z = (math.random() - 0.5) * (width - 3)
+		local d = 0.9 + math.random() * 1.1
+		drifter("Blob", Vector3.new(d * 2.2, 0.12, d), z, 0.02, if math.random() < 0.25 then LAVA_HOT else LAVA_GLOW, Enum.Material.Neon,
 			(i - math.random()) * length / n, speed * (0.8 + math.random() * 0.4))
 	end
 	for i = 1, math.max(1, math.floor(length / 13)) do

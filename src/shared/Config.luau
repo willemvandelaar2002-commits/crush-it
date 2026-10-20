@@ -315,7 +315,7 @@ end
 Config.Scrap = {
 	PiecesMin = 3, -- pieces per crush (more for bigger objects)
 	PiecesMax = 6,
-	MaxOnFloor = 40, -- per plot; extra value merges into pieces already lying there
+	MaxOnFloor = 60, -- per plot; extra value merges into pieces already lying there
 	PickupRadius = 5.5, -- studs (horizontal) from your character
 	-- Pieces land on one pile behind the press (between the press and the shop);
 	-- walk into the pile and you take all of it.
@@ -327,6 +327,19 @@ Config.Scrap = {
 Config.ScrapShop = {
 	Depth = 34, -- island size front to back
 	Width = 48,
+}
+
+-- The smelter (Yuzu stand / Destroy a Vault "Smelt"): deposited scrap is smelted
+-- into cash over time and waits on the green Collect Cash pad.
+-- Everything deposited at once takes SmeltSeconds(level) to finish.
+Config.Smelter = {
+	SmeltSeconds = function(level: number): number
+		return math.max(1, 8 * 0.88 ^ level)
+	end,
+	SpeedCost = function(level: number): number
+		return 20 * 1.7 ^ level
+	end,
+	SpeedMax = 17,
 }
 
 -- Friend boost: extra cash for every Roblox friend in your server (server/FriendBoost.luau).
@@ -363,7 +376,7 @@ Config.Rewards = {
 
 -- Look: the classic Roblox stud pattern on floors, pads and boards.
 Config.Look = {
-	Theme = "Teal", -- see shared/Kit/Style.luau (Teal, Scrap)
+	Theme = "Factory", -- see shared/Kit/Style.luau (Factory, Teal, Scrap)
 	Props = true, -- trees, rocks, fences and lamps round the plots (server/Decor.luau)
 	Sky = "Sunset", -- Build.lighting preset: "Day", "Sunset", "GoldenHour", "Dusk" or "Smog"
 	PropSeed = 7, -- change for a different (but still fixed) layout

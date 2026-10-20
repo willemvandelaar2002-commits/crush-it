@@ -55,7 +55,11 @@ local TEMPLATE = {
 	autoCrush = true, -- Auto Crush pass: on/off switch
 	funnel = true, -- new saves log the onboarding funnel (Kit/Analytics)
 	funnelStep = 0,
-	scrap = 0, -- picked-up scrap not sold yet (Scrap.luau), worth this much cash
+	scrap = 0, -- picked-up scrap not deposited yet (Scrap.luau), worth this much cash
+	smeltQueue = 0, -- deposited scrap still in the smelter (cash value)
+	smeltReady = 0, -- smelted cash waiting on the Collect Cash pad
+	smeltRate = 0, -- cash per second the current batch smelts at
+	smeltLv = 0, -- Smelt Speed upgrade level
 	daily = { day = 0, streak = 0 }, -- daily check-in (Rewards): last UTC day claimed, which day it was
 }
 
@@ -68,6 +72,10 @@ local function sanitize(d: any): any
 	end
 	d.rebirths = math.max(0, math.floor(tonumber(d.rebirths) or 0))
 	d.scrap = if typeof(d.scrap) == "number" and d.scrap == d.scrap and d.scrap >= 0 then d.scrap else 0
+	for _, k in { "smeltQueue", "smeltReady", "smeltRate" } do
+		d[k] = if typeof(d[k]) == "number" and d[k] == d[k] and d[k] >= 0 then d[k] else 0
+	end
+	d.smeltLv = math.clamp(math.floor(tonumber(d.smeltLv) or 0), 0, Config.Smelter.SpeedMax)
 	d.goldenRush = math.max(0, math.floor(tonumber(d.goldenRush) or 0))
 	if typeof(d.purchases) ~= "table" then
 		d.purchases = {}
@@ -89,6 +97,7 @@ Plots.create()
 FriendBoost.start()
 require(script.Parent.RobuxSigns).start(Plots.all)
 require(script.Parent.Decor).create()
+require(script.Parent.World).create()
 require(script.Parent.Kit.Leaderboard).start({
 	store = "CashBoard_v1",
 	score = function(player: Player): number
@@ -129,6 +138,9 @@ local function syncAttributes(player: Player, data: any)
 	player:SetAttribute("Scrap", data.scrap)
 	player:SetAttribute("Rebirths", data.rebirths)
 	player:SetAttribute("CashMult", cashMult(data))
+	-- what one normal crush of the current object is worth (stats board)
+	player:SetAttribute("CrushValue", Config.Economy.ObjectValue(data.tier) * UPGRADE_BY_ID.Value.effect(data.levels.Value or 0) * cashMult(data)
+		* (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player))
 	player:SetAttribute("Crushed", data.crushed)
 	player:SetAttribute("GoldenRush", data.goldenRush)
 	player:SetAttribute("AutoOn", data.autoCrush)
@@ -320,6 +332,7 @@ local function onBuy(player: Player, id: unknown)
 		data.rebirths += 1
 		data.cash = 0
 		data.scrap = 0
+		data.smeltQueue, data.smeltReady, data.smeltRate, data.smeltLv = 0, 0, 0, 0
 		Scrap.clear(slot.plot)
 		data.tier = 1
 		for _, k in LEVEL_KEYS do
@@ -623,6 +636,7 @@ local function cashPerSecond(player: Player): number
 	return value / seconds
 end
 
+require(script.Parent.Pads).start({ buy = onBuy, plots = Plots.all })
 Scrap.start({
 	getData = DataService.get,
 	sync = function(player: Player)

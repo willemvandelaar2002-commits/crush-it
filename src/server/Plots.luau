@@ -17,6 +17,8 @@ local Build = require(script.Parent.Kit.Build)
 local RobuxSigns = require(script.Parent.RobuxSigns)
 local ScrapShop = require(script.Parent.ScrapShop)
 local Moat = require(script.Parent.Moat)
+local PlotDecor = require(script.Parent.PlotDecor)
+local Pads = require(script.Parent.Pads)
 
 local Plots = {}
 
@@ -176,17 +178,28 @@ function Plots.create()
 	-- Walkway down the middle: a lower platform with an edge.
 	local walkW = P.Spacing * 4 + 30
 	local walkD = P.RowOffset * 2 - F - 2 * P.Moat -- stops at the lava moat in front of each row
-	Build.platform(root, "Walkway", CFrame.new(0, 0.7, 0), walkW, walkD, 0.65, theme.path, theme.edge, 1.5)
+	local walkway = Build.platform(root, "Walkway", CFrame.new(0, 0.7, 0), walkW, walkD, 0.65, theme.path, theme.edge, 1.5)
+	-- orange brick road (Destroy a Vault style) instead of plain studs
+	local walkTop = walkway:FindFirstChild("Top") :: BasePart
+	walkTop.Material = Enum.Material.Brick
+	walkTop.Color = Color3.fromRGB(236, 150, 62)
+	for _, t in walkTop:GetChildren() do
+		if t:IsA("Texture") then
+			t:Destroy()
+		end
+	end
 
 	for i = 1, P.Count do
 		local origin = Plots.originFor(i)
 		local model = Instance.new("Model")
 		model.Name = "Plot" .. i
 		model:SetAttribute("Index", i)
+		model:SetAttribute("Origin", origin) -- floor centre, +Z to the walkway (Zone.client)
 		-- Raised platform; its top is the plot floor (origin).
 		Build.platform(model, "Floor", origin, F, F, origin.Position.Y - 0.05, theme.platform, theme.edge, 2)
-		-- Coloured trim just inside the edge so each plot has its own colour.
-		local trim = FLOOR_COLORS[i]
+		-- Yellow trim just inside the edge (Destroy a Vault style); the plot's own
+		-- colour goes on its gate (PlotDecor).
+		local trim = theme.trim or FLOOR_COLORS[i]
 		for _, z in { -1, 1 } do
 			Build.block(model, "Trim", Vector3.new(F - 4, 0.15, 0.8), origin * CFrame.new(0, 0.075, z * (F / 2 - 2.4)), trim)
 		end
@@ -206,22 +219,21 @@ function Plots.create()
 		for _, x in { -1, 1 } do
 			Build.block(model, "ConveyorRail", Vector3.new(0.8, 0.9, beltLen), origin * CFrame.new(x * 4.4, 0.45, F / 2 - beltLen / 2), Color3.fromRGB(255, 200, 60))
 		end
-		-- Owner sign at the front left.
-		local signModel, signFace = Build.signFrame(model, origin * CFrame.new(-F / 2 + 12, 0, F / 2 - 6), 14, 4, theme.edge)
-		signModel.Name = "OwnerSign"
-		local gui = Instance.new("SurfaceGui")
-		gui.Face = Enum.NormalId.Back
-		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-		gui.PixelsPerStud = 40
-		gui.LightInfluence = 0
-		gui.Parent = signFace
-		local label = Instance.new("TextLabel")
-		label.Size = UDim2.fromScale(1, 1)
-		label.BackgroundTransparency = 1
-		label.TextScaled = true
-		label.Text = "Free plot"
-		label.Parent = gui
-		Style.text(label, 3)
+		-- Brick paths: walkway bridge -> along the pads -> past the press -> scrap shop bridge
+		do
+			local fx = Moat.FRONT_BRIDGE_X
+			local function pt(x: number, z: number): Vector3
+				return (origin * CFrame.new(x, 0, z)).Position
+			end
+			Build.path(model, pt(fx, F / 2 - 1), pt(fx, -F / 2 + 16), 7)
+			Build.path(model, pt(fx, -F / 2 + 16), pt(0, -F / 2 + 16), 7)
+			Build.path(model, pt(0, -F / 2 + 16), pt(0, -F / 2 + 1), 7)
+			Build.path(model, pt(-55, 47), pt(fx, 47), 9) -- under the buy pads
+		end
+		-- Gate with the owner's name, boiler, crates, lamps.
+		local label = PlotDecor.build(model, origin, FLOOR_COLORS[i], theme, i)
+		-- Walk-on buy pads + stats board.
+		Pads.build(model, origin)
 		-- Upgrade board (moved next to the press whenever the press changes size).
 		local boardModel, boardFace = Build.signFrame(model, origin, 12, 16, theme.edge)
 		boardModel.Name = "Board"

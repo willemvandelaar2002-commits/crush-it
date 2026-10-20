@@ -2,8 +2,9 @@
 -- Scrap: what a crush pays now. Game.server calls Scrap.drop when an object is
 -- flattened; the pieces fly out of the press and land on the plot. The owner
 -- picks them up by walking over them (no limit; data.scrap) and sells them by
--- standing on the sell pad of their scrap shop (ScrapShop.luau) -> cash.
--- Auto Collect pass: landed pieces fly to you and are sold straight away.
+-- standing on the Deposit pad of their scrap shop (ScrapShop.luau); the smelter
+-- turns it into cash over time, waiting on the Collect Cash pad.
+-- Auto Collect pass: landed pieces fly to you, go into the smelter and the cash is collected for you.
 -- Numbers in Config.Scrap.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -13,7 +14,11 @@ local RunService = game:GetService("RunService")
 local Config = require(ReplicatedStorage.Shared.Config)
 local Store = require(ReplicatedStorage.Shared.Store)
 local Net = require(ReplicatedStorage.Shared.Net)
+local Format = require(ReplicatedStorage.Shared.Format)
+local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Build = require(script.Parent.Kit.Build)
+local Pads = require(script.Parent.Pads)
+local MarketplaceService = game:GetService("MarketplaceService")
 
 export type Api = {
 	getData: (Player) -> any,
@@ -26,6 +31,8 @@ local Scrap = {}
 local api: Api
 local Picked = Net.event("ScrapPicked")
 local Sold = Net.event("ScrapSold")
+local Deposited = Net.event("ScrapDeposited")
+local Notice = Net.event("Notice")
 
 local C = Color3.fromRGB
 local METAL_TINTS = { C(150, 155, 165), C(120, 125, 135), C(175, 150, 120) }
@@ -71,6 +78,60 @@ local function pileSpot(plot: any, tier: number): CFrame
 	return spot
 end
 
+-- Big floating "$X" over the pile (what's lying there), like the gold pile counter.
+local function updateLabel(plot: any)
+	local folder = plot.model:FindFirstChild("Scrap")
+	local anchor = plot.model:FindFirstChild("PileAnchor") :: BasePart?
+	local total, top = 0, 0
+	if folder then
+		for _, p in folder:GetChildren() do
+			if p:IsA("BasePart") and not p:GetAttribute("Taken") then
+				total += (p:GetAttribute("Value") :: number?) or 0
+				top = math.max(top, p.Position.Y - plot.origin.Position.Y)
+			end
+		end
+	end
+	if total <= 0 then
+		if anchor then
+			anchor:Destroy()
+		end
+		return
+	end
+	if not anchor then
+		local a = Instance.new("Part")
+		a.Name = "PileAnchor"
+		a.Anchored = true
+		a.CanCollide = false
+		a.CanQuery = false
+		a.CanTouch = false
+		a.Transparency = 1
+		a.Size = Vector3.one
+		a.Parent = plot.model
+		local gui = Instance.new("BillboardGui")
+		gui.Size = UDim2.fromScale(14, 3.6)
+		gui.LightInfluence = 0
+		gui.MaxDistance = 160
+		gui.Parent = a
+		local label = Instance.new("TextLabel")
+		label.Name = "Value"
+		label.Size = UDim2.fromScale(1, 1)
+		label.BackgroundTransparency = 1
+		label.TextScaled = true
+		label.Parent = gui
+		Style.text(label, 5)
+		label.TextColor3 = Color3.fromRGB(130, 255, 90)
+		anchor = a
+	end
+	assert(anchor)
+	local folderAttrX = folder and folder:GetAttribute("PileX") :: number?
+	local folderAttrZ = folder and folder:GetAttribute("PileZ") :: number?
+	if folderAttrX and folderAttrZ then
+		anchor.CFrame = CFrame.new(folderAttrX, plot.origin.Position.Y + top + 4, folderAttrZ)
+	end
+	((anchor:FindFirstChildOfClass("BillboardGui") :: any).Value :: TextLabel).Text = Format.cash(total)
+end
+Scrap.updateLabel = updateLabel
+
 -- Drops `value` worth of scrap from `from` (the bed) onto the pile behind the press.
 function Scrap.drop(player: Player, plot: any, from: Vector3, value: number, tier: number, variant: string)
 	local S = Config.Scrap
@@ -84,6 +145,7 @@ function Scrap.drop(player: Player, plot: any, from: Vector3, value: number, tie
 			p:SetAttribute("Value", ((p:GetAttribute("Value") :: number?) or 0) + value / count)
 			p.Size = (p.Size * 1.04):Min(Vector3.new(3, 3, 3))
 		end
+		updateLabel(plot)
 		return
 	end
 	local width = Config.pressWidth(tier)
@@ -91,8 +153,9 @@ function Scrap.drop(player: Player, plot: any, from: Vector3, value: number, tie
 	for i = 1, count do
 		-- the pile grows wider and taller with every piece on it
 		local n = #existing + i
-		local radius = 2.2 + math.sqrt(n) * 0.75
-		local height = 0.6 + math.sqrt(n) * 0.75
+		-- a tall stack, Destroy a Vault gold-pile style
+		local radius = 2.4 + math.sqrt(n) * 0.45
+		local height = 0.8 + math.sqrt(n) * 1.5
 		folder:SetAttribute("PileX", spot.Position.X)
 		folder:SetAttribute("PileZ", spot.Position.Z)
 		folder:SetAttribute("PileR", radius)
@@ -129,6 +192,7 @@ function Scrap.drop(player: Player, plot: any, from: Vector3, value: number, tie
 				{ CFrame = land * CFrame.Angles(0, math.random() * 6, 0) })
 			down.Completed:Once(function()
 				p:SetAttribute("LandedAt", os.clock())
+				updateLabel(plot)
 			end)
 			down:Play()
 		end)
@@ -143,23 +207,201 @@ function Scrap.clear(plot: any)
 		f:ClearAllChildren()
 		f:SetAttribute("PileR", nil)
 	end
+	local anchor = plot.model:FindFirstChild("PileAnchor")
+	if anchor then
+		anchor:Destroy()
+	end
 	local tray = plot.model:FindFirstChild("PileTray")
 	if tray then
 		tray:Destroy()
 	end
 end
 
-local function sell(player: Player, data: any, plot: any, auto: boolean)
+-- Smelter ----------------------------------------------------------------------
+-- data.scrap (carried) -> Deposit pad -> data.smeltQueue, smelted at
+-- data.smeltRate per second into data.smeltReady -> Collect Cash pad -> cash.
+
+local smeltStart: { [Player]: number } = {} -- queue size when the current batch started (board bar)
+local settled: { [Player]: boolean } = {} -- offline smelting paid into "ready" once per session
+local padState: { [Player]: { id: string?, nextAt: number } } = {}
+local lastAutoCollect: { [Player]: number } = {}
+
+local GREEN = Color3.fromRGB(130, 255, 90)
+local RED = Color3.fromRGB(255, 95, 85)
+
+local function smeltSeconds(data: any): number
+	return Config.Smelter.SmeltSeconds(data.smeltLv or 0)
+end
+
+local function deposit(player: Player, data: any, plot: any, from: Vector3?)
 	local amount = data.scrap
 	if amount <= 0 then
 		return
 	end
 	data.scrap = 0
+	data.smeltQueue += amount
+	data.smeltRate = data.smeltQueue / smeltSeconds(data)
+	smeltStart[player] = data.smeltQueue
+	api.sync(player)
+	if plot.shop then
+		Deposited:FireAllClients({ plot = plot.index, from = from or plot.shop.pad.Position, to = plot.shop.hopper.Position, amount = amount, owner = player })
+	end
+end
+
+local function collect(player: Player, data: any, plot: any, auto: boolean)
+	local amount = data.smeltReady
+	if amount <= 0 then
+		return
+	end
+	data.smeltReady = 0
 	data.cash += amount
 	api.sync(player)
-	local where = if plot.shop then plot.shop.hopper.Position else plot.origin.Position
+	local where = if plot.shop then plot.shop.collect.Position else plot.origin.Position
 	Sold:FireAllClients({ plot = plot.index, position = where, amount = amount, owner = player, auto = auto })
 end
+
+-- Finish Now (Robux product, Shop.luau): everything in the smelter is done at once.
+function Scrap.finishSmelt(player: Player, data: any)
+	data.smeltReady += data.smeltQueue
+	data.smeltQueue = 0
+	data.smeltRate = 0
+	smeltStart[player] = nil
+end
+
+local function smeltTick(player: Player, data: any, dt: number)
+	if not settled[player] then
+		-- smelting carried on while you were away
+		settled[player] = true
+		data.smeltReady += data.smeltQueue
+		data.smeltQueue = 0
+		data.smeltRate = 0
+	end
+	if data.smeltQueue > 0 then
+		if data.smeltRate <= 0 then
+			data.smeltRate = data.smeltQueue / smeltSeconds(data)
+			smeltStart[player] = data.smeltQueue
+		end
+		local move = math.min(data.smeltQueue, data.smeltRate * dt)
+		data.smeltQueue -= move
+		data.smeltReady += move
+		if data.smeltQueue <= 1e-6 then
+			data.smeltQueue = 0
+			data.smeltRate = 0
+			smeltStart[player] = nil
+		end
+	end
+	player:SetAttribute("SmeltQueue", data.smeltQueue)
+	player:SetAttribute("SmeltReady", data.smeltReady)
+	player:SetAttribute("SmeltLv", data.smeltLv)
+end
+
+local function shopLabels(plot: any, owner: Player?, data: any)
+	local shop = plot.shop
+	if not shop then
+		return
+	end
+	local board = shop.board :: any
+	if not owner or not data then
+		Pads.label(shop.pad, "Deposit Scrap", "")
+		Pads.label(shop.collect, "Collect Cash", "")
+		Pads.label(shop.speed, "+ Smelt Speed", "")
+		Pads.label(shop.finish, "Finish Now", "")
+		board.Amount.Text = ""
+		board.Rate.Text = "Free plot"
+		board.Bar.Fill.Size = UDim2.fromScale(0, 1)
+		return
+	end
+	Pads.label(shop.pad, "Deposit Scrap", if data.scrap > 0 then Format.cash(data.scrap) else "", GREEN)
+	Pads.label(shop.collect, "Collect Cash", Format.cash(data.smeltReady), GREEN)
+	local lv = data.smeltLv or 0
+	if lv >= Config.Smelter.SpeedMax then
+		Pads.label(shop.speed, "Smelt Speed MAX", "", GREEN)
+	else
+		local cost = Config.Smelter.SpeedCost(lv)
+		Pads.label(shop.speed, "+ Smelt Speed", Format.cash(cost), if data.cash >= cost then GREEN else RED)
+	end
+	local product = Store.productById("FinishSmelt")
+	Pads.label(shop.finish, "Finish Now", if data.smeltQueue > 0 and product then "R$ " .. product.price else "", GREEN)
+	if data.smeltQueue > 0 then
+		board.Amount.Text = Format.cash(data.smeltQueue) .. " left"
+		board.Rate.Text = Format.cash(data.smeltRate) .. " / sec"
+		local start = smeltStart[owner] or data.smeltQueue
+		board.Bar.Fill.Size = UDim2.fromScale(math.clamp(1 - data.smeltQueue / math.max(start, 1e-9), 0, 1), 1)
+	else
+		board.Amount.Text = if data.smeltReady > 0 then Format.cash(data.smeltReady) .. " ready!" else "$0"
+		board.Rate.Text = string.format("Deposit scrap: done in %.1fs", smeltSeconds(data))
+		board.Bar.Fill.Size = UDim2.fromScale(if data.smeltReady > 0 then 1 else 0, 1)
+	end
+end
+
+local function shopPads(owner: Player, data: any, plot: any, root: BasePart, now: number)
+	local shop = plot.shop
+	if not shop then
+		return
+	end
+	local state = padState[owner] or { id = nil, nextAt = 0 }
+	padState[owner] = state
+	local on: string? = nil
+	local top: BasePart? = nil
+	for _, p in { shop.pad, shop.collect, shop.speed, shop.finish } do
+		if Pads.on(p, root) then
+			on = p:GetAttribute("PadId") :: string
+			top = p
+		end
+	end
+	if on ~= state.id then
+		state.id = on
+		state.nextAt = now
+	end
+	if not on or not top or now < state.nextAt then
+		return
+	end
+	if on == "Deposit" then
+		if data.scrap > 0 then
+			Pads.press(top)
+			deposit(owner, data, plot, root.Position)
+		end
+		state.nextAt = now + 0.3
+	elseif on == "Collect" then
+		if data.smeltReady > 0 then
+			Pads.press(top)
+			collect(owner, data, plot, false)
+		end
+		state.nextAt = now + 0.6
+	elseif on == "SmeltSpeed" then
+		Pads.press(top)
+		local lv = data.smeltLv or 0
+		local cost = Config.Smelter.SpeedCost(lv)
+		if lv >= Config.Smelter.SpeedMax then
+			state.nextAt = math.huge
+		elseif data.cash >= cost then
+			data.cash -= cost
+			data.smeltLv = lv + 1
+			if data.smeltQueue > 0 then
+				data.smeltRate = math.max(data.smeltRate, data.smeltQueue / smeltSeconds(data))
+			end
+			api.sync(owner)
+			Notice:FireClient(owner, { text = string.format("Smelt Speed Lv %d!", data.smeltLv) })
+			state.nextAt = now + 0.35
+		else
+			Notice:FireClient(owner, { text = "Not enough cash!" })
+			state.nextAt = math.huge -- once per step
+		end
+	elseif on == "FinishSmelt" then
+		state.nextAt = math.huge
+		if data.smeltQueue > 0 then
+			Pads.press(top)
+			local product = Store.productById("FinishSmelt")
+			if product and product.productId ~= 0 then
+				MarketplaceService:PromptProductPurchase(owner, product.productId)
+			else
+				Notice:FireClient(owner, { text = "Finish Now: coming soon!" })
+			end
+		end
+	end
+end
+
+local lastStep: { [Player]: number } = {}
 
 local function step()
 	local S = Config.Scrap
@@ -167,9 +409,20 @@ local function step()
 	for _, plot in api.plots() do
 		local owner: Player? = plot.owner
 		if not owner then
+			shopLabels(plot, nil, nil)
 			continue
 		end
 		local data = api.getData(owner)
+		if data then
+			smeltTick(owner, data, now - (lastStep[owner] or now))
+			lastStep[owner] = now
+			-- Auto Collect: smelted cash goes straight to you
+			if data.smeltReady > 0 and Store.hasPass(owner, "AutoCollect") and now - (lastAutoCollect[owner] or 0) > 1 then
+				lastAutoCollect[owner] = now
+				collect(owner, data, plot, true)
+			end
+		end
+		shopLabels(plot, owner, data)
 		local character = owner.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 		if not data or not root then
@@ -212,26 +465,28 @@ local function step()
 			end
 		end
 		if picked > 0 then
+			updateLabel(plot)
 			if auto then
-				sell(owner, data, plot, true)
+				-- Auto Collect: picked scrap goes straight into the smelter
+				deposit(owner, data, plot, root.Position)
 			else
 				api.sync(owner)
 				Picked:FireClient(owner, { value = picked, total = data.scrap })
 			end
 		end
-		-- standing on the sell pad
-		if data.scrap > 0 and plot.shop then
-			local pad: BasePart = plot.shop.pad
-			local d = Vector3.new(pad.Position.X - root.Position.X, 0, pad.Position.Z - root.Position.Z).Magnitude
-			if d <= S.SellRadius and math.abs(pad.Position.Y - root.Position.Y) < 6 then
-				sell(owner, data, plot, false)
-			end
-		end
+		shopPads(owner, data, plot, root, now)
 	end
 end
 
 function Scrap.start(a: Api)
 	api = a
+	game:GetService("Players").PlayerRemoving:Connect(function(p)
+		smeltStart[p] = nil
+		settled[p] = nil
+		padState[p] = nil
+		lastAutoCollect[p] = nil
+		lastStep[p] = nil
+	end)
 	local acc = 0
 	RunService.Heartbeat:Connect(function(dt)
 		acc += dt

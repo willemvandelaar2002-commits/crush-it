@@ -61,3 +61,29 @@ The lava itself is `Build.lava` in the kit: dark CrackedLava crust over a glowin
 molten layer, white-hot rims along the banks, bright blobs and dark crust plates
 drifting along (tag LavaDrift, moved on the client), rising embers, orange lights.
 The old separate shop channel (and the oil option) is gone.
+
+## 20 Oct, round 4: the two reference videos (Yuzu onsen game + Destroy a Vault)
+- **Smelter instead of instant selling** (Yuzu stand / tank game's Smelt): on the
+  scrap shop island, stand on **Deposit Scrap** -> your scrap goes into the
+  smelter (`data.smeltQueue`) and is smelted into cash over
+  `Config.Smelter.SmeltSeconds(level)` (8 s, x0.88 per level, min 1 s); the cash
+  waits on the green **Collect Cash** pad (`data.smeltReady`), stand on it to
+  collect (green bills burst into you). **+ Smelt Speed** pad (cash,
+  `Config.Smelter.SpeedCost`, max 17) and **Finish Now** pad (Robux product
+  FinishSmelt, R$ 19, id 0 for now). The **Smelting** board shows "$X left",
+  "$Y / sec" and a progress bar. Smelting while offline finishes by the next join.
+  Auto Collect now deposits for you and collects the cash every second.
+  Rebirth resets smelter + Smelt Speed.
+- Walk-on buy pads in front of every plot (Power, Speed, Value, Bigger Press,
+  Rebirth; Auto Collect / Auto Crush for Robux) with floating name + price
+  (`server/Pads.luau`; `Pads.make/on/label/press` are reused by the island).
+- World (`server/World.luau`): ring of blocky studded cliffs with grassy tops and
+  lavafalls; factory theme (grass ground, dark steel plots, yellow trim);
+  plot decor (`server/PlotDecor.luau`): entrance gate with owner name plate and
+  banners, boiler tank, crates, lamps; stats board; floating "$X" over the scrap pile.
+- Orange brick paths on every plot (walkway bridge -> pads -> past the press ->
+  shop bridge, `Build.path`) and a brick walkway.
+- HUD: Yuzu-style numbered tutorial ("Tutorial / Crush Objects (1/3)" ...
+  Deposit Your Scrap, Collect Your Cash, Buy An Upgrade, Buy A Bigger Press);
+  zone label above the goal bar (Your Plot / name / Scrap Shop / Walkway,
+  `client/Zone.client.luau`).
