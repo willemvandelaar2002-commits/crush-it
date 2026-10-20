@@ -49,3 +49,15 @@ Files: `server/Scrap.luau`, `server/ScrapShop.luau`, `client/Scrap.client.luau`,
   sell pad right behind the gate, so the walk press -> pile -> shop is shorter.
 - Sky presets in Build.lighting: Day, Sunset (default), GoldenHour, Dusk, Smog
   (`Config.Look.Sky`).
+
+## 20 Oct, round 3: lava moat
+Every plot is now an island in a lava moat (`server/Moat.luau`, width
+`Config.Plots.Moat` = 10), like the river round the Yuzu game's onsen. A steel
+diamond-plate bridge with yellow/black rails crosses from the walkway to the
+plot (front, right of the conveyor) and another from the back of the plot to the
+scrap shop. Basalt banks on the outer side, open at the bridges. The walkway now
+stops at the moat. Falling in bounces you to the nearest side.
+The lava itself is `Build.lava` in the kit: dark CrackedLava crust over a glowing
+molten layer, white-hot rims along the banks, bright blobs and dark crust plates
+drifting along (tag LavaDrift, moved on the client), rising embers, orange lights.
+The old separate shop channel (and the oil option) is gone.

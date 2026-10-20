@@ -325,8 +325,6 @@ Config.Scrap = {
 
 -- The scrap shop island behind every plot (server/ScrapShop.luau).
 Config.ScrapShop = {
-	Channel = "Lava", -- what flows between plot and island: "Lava" or "Oil" (falling in puts you back on the bridge)
-	Gap = 7, -- channel width between the plot and the island
 	Depth = 34, -- island size front to back
 	Width = 48,
 }
@@ -377,6 +375,7 @@ Config.Plots = {
 	Spacing = 140, -- along X
 	RowOffset = 95, -- each row's distance from the walkway centre (Z)
 	FloorSize = 120, -- big enough for the widest (Cosmic) press frame
+	Moat = 10, -- lava moat round every plot (server/Moat.luau); also the gap to the scrap shop
 }
 
 -- Every press tier has its own name and paint; the look changes per stage:
