@@ -1,5 +1,9 @@
 # Toy workshop theme
 
+Latest scope: see [[Scrapyard environment]]. Hydraulic press appearance is
+now explicitly excluded; the earlier PressBuilder suggestion below is
+superseded. The new pass concerns the environment only.
+
 ## Implemented, 2026-10-20
 
 The existing `Island` palette in `shared/Kit/Style.luau` now gives the

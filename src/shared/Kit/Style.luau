@@ -50,8 +50,8 @@ Style.Themes = {
 		dark = C(29, 42, 65), pad = C(68, 92, 122), light = C(211, 231, 245), trim = C(255, 216, 72),
 		grass = C(119, 145, 169), grassEdge = C(57, 80, 109), dirt = C(73, 95, 123), stone = C(141, 161, 180), stoneDark = C(78, 100, 127),
 		wood = C(167, 181, 194), woodDark = C(48, 67, 94),
-		leaf = C(85, 151, 130), trunk = C(103, 93, 83), rock = C(141, 161, 180), fence = C(185, 205, 223), lamp = C(255, 242, 200),
-		cliff = C(141, 161, 180), cliffDark = C(104, 127, 153),
+		leaf = C(105, 193, 79), trunk = C(133, 99, 69), rock = C(161, 156, 145), fence = C(185, 205, 223), lamp = C(255, 242, 200),
+		cliff = C(172, 166, 153), cliffDark = C(137, 131, 121),
 	},
 	Factory = {
 		ground = C(118, 206, 78), platform = C(96, 100, 110), edge = C(48, 50, 58), path = C(236, 186, 64),

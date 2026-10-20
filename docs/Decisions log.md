@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-20: New environment-only scrapyard direction: restored fresh green foliage and warm-grey rock/cliff colours through the shared Island palette. Press appearance and UI are explicitly excluded. Sandy surroundings, cliff caps, paths and prop placement require the five-file environment exception detailed in Systems/Scrapyard environment; protected server files remain untouched pending approval.
+
 - 2026-10-20: Toy workshop theme within the protected-server constraint: blue-grey/steel Island palette, #13172A UI outlines, bolted panel casings, cobalt zone plate and a hold-driven pressure dial. Improved phone HUD spacing and fixed the existing tutorial nil `upgrades` error. Desktop and phone Studio checks; geometry, Config/Store/Net and Studio meshes unchanged. Full lava/garden replacement needs the server changes listed in Systems/Toy workshop.
 
 - 2026-10-20: Background music uses Willem's audio 113892640002952, looping locally at 25% volume through respawns; id and volume in Config.Music.

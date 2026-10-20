@@ -11,6 +11,7 @@ Small, quick game to test alongside WarChest: one loop, few systems, out fast.
 - [[Systems/Helpers]] — Mini Presses you buy and merge that crush for you
 - [[Systems/Style kit]] — reusable studded look (Style + Build) for this and future games
 - [[Systems/Toy workshop]] — blue-grey workshop theme, Play checks and remaining protected server changes
+- [[Systems/Scrapyard environment]] — environment-only landscape pass and narrowly scoped server exception
 - [[Decisions log]]
 - [[Backlog]]
 
