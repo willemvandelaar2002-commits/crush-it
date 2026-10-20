@@ -50,3 +50,8 @@ REWARDS gift button next to BOOK/SHOP, "!" badge when something can be claimed.
 +10% crush cash per Roblox friend in the same server, max +50% (`Config.FriendBoost`).
 Player attribute FriendBoost; multiplies crush cash and the offline/reward rate.
 HUD: "Friend Boost: X%" under the cash with a green + that opens Roblox's invite dialog.
+
+## Ground guide (client/Guide.client.luau + Kit/GuidePath)
+White chevrons on the ground lead to: the upgrade board while the tutorial is
+on "Buy An Upgrade" (first session, can afford it, no upgrades yet), and back
+to your own press whenever you're more than 40 studs from it. Hidden otherwise.
