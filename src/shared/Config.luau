@@ -317,13 +317,16 @@ Config.Scrap = {
 	PiecesMax = 6,
 	MaxOnFloor = 40, -- per plot; extra value merges into pieces already lying there
 	PickupRadius = 5.5, -- studs (horizontal) from your character
+	-- Pieces land on one pile behind the press (between the press and the shop);
+	-- walk into the pile and you take all of it.
 	SellRadius = 5, -- studs from the sell pad centre
 	AutoDelay = 0.7, -- Auto Collect: seconds before landed pieces fly to you
 }
 
 -- The scrap shop island behind every plot (server/ScrapShop.luau).
 Config.ScrapShop = {
-	Gap = 12, -- water channel between the plot and the island
+	Channel = "Lava", -- what flows between plot and island: "Lava" or "Oil" (falling in puts you back on the bridge)
+	Gap = 7, -- channel width between the plot and the island
 	Depth = 34, -- island size front to back
 	Width = 48,
 }
@@ -364,7 +367,7 @@ Config.Rewards = {
 Config.Look = {
 	Theme = "Teal", -- see shared/Kit/Style.luau (Teal, Scrap)
 	Props = true, -- trees, rocks, fences and lamps round the plots (server/Decor.luau)
-	Sky = "Sunset", -- Build.lighting preset: "Day" or "Sunset"
+	Sky = "Sunset", -- Build.lighting preset: "Day", "Sunset", "GoldenHour", "Dusk" or "Smog"
 	PropSeed = 7, -- change for a different (but still fixed) layout
 }
 

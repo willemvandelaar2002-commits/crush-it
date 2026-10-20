@@ -25,3 +25,4 @@
 - 2026-10-20: New Steel-stage press frame (yellow steel, chrome cylinders, hazard feet; old beige arch parked). Ground guide path (Kit/GuidePath): chevrons to the upgrade board during the tutorial and back to your press when you wander off.
 - 2026-10-20: Uploaded icon set (15 PNGs) replaces emoji/drawn icons everywhere (shared/Icons.luau, loaded via rbxthumb because the ids don't work as rbxassetid). Guide path back to your press only once you're off your plot (65 studs).
 - 2026-10-20: Core loop changed: crushing drops scrap instead of cash; walk over it to pick it up (no limit) and sell it on the pad of your own scrap shop island behind the plot (bridge, gate, smelter). Auto Collect is a Robux pass (R$ 99). Sky switched to a warm sunset.
+- 2026-10-20: Scrap lands on one pile behind the press (walk in to take all); lava channel instead of water (oil as option), narrower, sell pad right behind the gate; sky presets GoldenHour/Dusk/Smog added next to Day/Sunset.
