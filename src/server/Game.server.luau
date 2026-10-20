@@ -24,6 +24,7 @@ local Shop = require(script.Parent.Shop)
 local Analytics = require(script.Parent.Kit.Analytics)
 local FriendBoost = require(script.Parent.FriendBoost)
 local Scrap = require(script.Parent.Scrap)
+local Helpers = require(script.Parent.Helpers)
 
 local CrushRemote = Net.event("Crush")
 local BuyRemote = Net.event("BuyUpgrade")
@@ -60,6 +61,7 @@ local TEMPLATE = {
 	smeltReady = 0, -- smelted cash waiting on the Collect Cash pad
 	smeltRate = 0, -- cash per second the current batch smelts at
 	smeltLv = 0, -- Smelt Speed upgrade level
+	helpers = {}, -- Mini Press levels, one per slot (Helpers.luau)
 	daily = { day = 0, streak = 0 }, -- daily check-in (Rewards): last UTC day claimed, which day it was
 }
 
@@ -76,6 +78,16 @@ local function sanitize(d: any): any
 		d[k] = if typeof(d[k]) == "number" and d[k] == d[k] and d[k] >= 0 then d[k] else 0
 	end
 	d.smeltLv = math.clamp(math.floor(tonumber(d.smeltLv) or 0), 0, Config.Smelter.SpeedMax)
+	local helpers = {}
+	if typeof(d.helpers) == "table" then
+		for _, l in d.helpers do
+			local n = math.floor(tonumber(l) or 0)
+			if n >= 1 and #helpers < Config.Helpers.Slots then
+				table.insert(helpers, math.min(n, 50))
+			end
+		end
+	end
+	d.helpers = helpers
 	d.goldenRush = math.max(0, math.floor(tonumber(d.goldenRush) or 0))
 	if typeof(d.purchases) ~= "table" then
 		d.purchases = {}
@@ -341,6 +353,7 @@ local function onBuy(player: Player, id: unknown)
 		data.cash = 0
 		data.scrap = 0
 		data.smeltQueue, data.smeltReady, data.smeltRate, data.smeltLv = 0, 0, 0, 0
+		data.helpers = {}
 		Scrap.clear(slot.plot)
 		data.tier = 1
 		for _, k in LEVEL_KEYS do
@@ -354,6 +367,7 @@ local function onBuy(player: Player, id: unknown)
 		end
 		slot.ready = false
 		Plots.buildPress(slot.plot, 1)
+		Helpers.refresh(slot.plot)
 		Plots.riseIn(slot.plot, RISE_SECONDS)
 		RebirthedRemote:FireAllClients({ plot = slot.plot.index, position = Plots.bedBase(slot.plot).Position, rebirths = data.rebirths, owner = player, mult = cashMult(data) })
 		task.delay(RISE_SECONDS, function()
@@ -577,6 +591,7 @@ local function onPlayer(player: Player)
 	CollectionRemote:FireClient(player, data.collection)
 	Analytics.funnelStep(player, data, 1, "Joined")
 	Plots.buildPress(plot, data.tier)
+	Helpers.refresh(plot)
 	task.spawn(spawnObject, player, slot)
 
 	player.CharacterAdded:Connect(function()
@@ -603,6 +618,7 @@ Players.PlayerRemoving:Connect(function(player)
 		slot.plot.sign.Text = "Free plot"
 		Scrap.clear(slot.plot)
 		Plots.buildPress(slot.plot, 1)
+		Helpers.refresh(slot.plot)
 	end
 end)
 
@@ -641,8 +657,30 @@ local function cashPerSecond(player: Player): number
 	local seconds = presses * effect(data, "Speed") + Config.Economy.BeltSeconds + 0.4
 	local value = Config.Economy.ObjectValue(tier) * effect(data, "Value") * cashMult(data)
 		* (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player)
-	return value / seconds
+	local helpers = 0
+	for _, level in data.helpers do
+		helpers += Config.Helpers.Value(level, tier)
+	end
+	helpers *= cashMult(data) * (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player)
+	return value / seconds + helpers / Config.Helpers.Tick
 end
+
+Helpers.start({
+	getData = DataService.get,
+	sync = function(player: Player)
+		local data = DataService.get(player)
+		if data then
+			syncAttributes(player, data)
+		end
+	end,
+	plots = Plots.all,
+	feed = function(player: Player, data: any, plot: any, amount: number)
+		Scrap.feed(player, data, plot, amount)
+	end,
+	mult = function(player: Player, data: any): number
+		return cashMult(data) * (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player)
+	end,
+})
 
 require(script.Parent.Pads).start({ buy = onBuy, plots = Plots.all })
 Scrap.start({

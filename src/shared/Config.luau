@@ -326,7 +326,7 @@ Config.Scrap = {
 -- The scrap shop island behind every plot (server/ScrapShop.luau).
 Config.ScrapShop = {
 	Depth = 34, -- island size front to back
-	Width = 48,
+	Width = 120, -- whole plot width: smelter in the middle, helper yards on both sides
 }
 
 -- The smelter (Yuzu stand / Destroy a Vault "Smelt"): deposited scrap is smelted
@@ -340,6 +340,28 @@ Config.Smelter = {
 		return 20 * 1.7 ^ level
 	end,
 	SpeedMax = 17,
+}
+
+-- Helpers (Mini Presses, after the Yuzu capybaras / tank game tanks): small presses
+-- on the slots of the scrap shop island that crush by themselves every Tick seconds
+-- and feed what they make straight into your smelter. Buy them on the Buy pad,
+-- merge 3 of the same level into 1 of the next on the Merge pad (server/Helpers.luau).
+Config.Helpers = {
+	Slots = 8,
+	Tick = 3,
+	Names = { "Mini Press", "Bronze Press", "Silver Press", "Gold Press", "Ruby Press", "Emerald Press", "Diamond Press", "Rainbow Press" },
+	Colors = {
+		Color3.fromRGB(150, 156, 170), Color3.fromRGB(205, 127, 50), Color3.fromRGB(215, 222, 235), Color3.fromRGB(255, 200, 50),
+		Color3.fromRGB(230, 50, 70), Color3.fromRGB(60, 210, 120), Color3.fromRGB(120, 220, 255), Color3.fromRGB(255, 110, 230),
+	},
+	-- cash a helper of `level` makes per tick, at your current press tier
+	Value = function(level: number, tier: number): number
+		return Config.Economy.ObjectValue(tier) * 2.6 ^ (level - 1)
+	end,
+	-- price of the next helper when you own `owned` of them
+	Cost = function(owned: number, tier: number): number
+		return Config.SizeCost(tier) * 0.15 * 1.45 ^ owned
+	end,
 }
 
 -- Friend boost: extra cash for every Roblox friend in your server (server/FriendBoost.luau).

@@ -248,6 +248,19 @@ local function deposit(player: Player, data: any, plot: any, from: Vector3?)
 	end
 end
 
+-- Helpers (Mini Presses) put their output straight into the smelter.
+function Scrap.feed(player: Player, data: any, plot: any, amount: number)
+	if amount <= 0 then
+		return
+	end
+	data.smeltQueue += amount
+	data.smeltRate = math.max(data.smeltRate, data.smeltQueue / smeltSeconds(data))
+	if not smeltStart[player] or data.smeltQueue > smeltStart[player] then
+		smeltStart[player] = data.smeltQueue
+	end
+	local _ = plot
+end
+
 local function collect(player: Player, data: any, plot: any, auto: boolean)
 	local amount = data.smeltReady
 	if amount <= 0 then
