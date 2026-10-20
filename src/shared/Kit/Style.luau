@@ -128,7 +128,7 @@ function Style.panel(frame: Frame, a: Color3, b: Color3?)
 	})
 	decoration(inner, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(0, 9) })
 	decoration(inner, "UIStroke", "Shine", { Name = "Shine", Thickness = 2, Color = Color3.new(1, 1, 1), Transparency = 0.5, ApplyStrokeMode = Enum.ApplyStrokeMode.Border })
-	local studs = Style.studsImage(frame, 24, 0.82)
+	local studs = Style.studsImage(frame, 22, 0.55) -- as strong as before the 20 Oct polish
 	studs.ZIndex = 0
 end
 
