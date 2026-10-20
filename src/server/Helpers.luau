@@ -1,8 +1,9 @@
 --!strict
--- Helpers: Mini Presses on the scrap shop island (after the Yuzu game's
+-- Helpers: Mini Presses round the big press (after the Yuzu game's
 -- capybaras and Destroy a Vault's tanks). data.helpers = { level, ... } (one per
 -- slot, max Config.Helpers.Slots). Every Tick seconds each one "crushes" and its
--- value goes into the owner's smelter (Scrap.feed). Pads on the island:
+-- value goes into the owner's smelter (Scrap.feed). Two yards of 4 on the front
+-- half of the plot, either side of the conveyor; pads next to them:
 --   Buy Mini Press  -> a level 1 helper in the next free slot (cash)
 --   Merge           -> 3 helpers of the same level become 1 of the next level
 -- Models are rebuilt whenever the list changes; the client animates the rams
@@ -38,15 +39,17 @@ local RED = C(255, 95, 85)
 
 local api: Api = nil :: any
 
--- Slot ground positions in plot-local space (behind the plot, on the shop island).
+-- Slot ground positions in plot-local space: front half of the plot, clear of
+-- the biggest press (its bed reaches z = 30.5), the conveyor (x = 0) and the
+-- path from the hub bridge (x = 16). Inner row first, so new ones sit by the press.
+local YARDS = { { x = { -30, -44 } }, { x = { 34, 48 } } }
+local ROWS = { 39, 52 }
 function Helpers.slotOffsets(): { Vector3 }
-	local F = Config.Plots.FloorSize
-	local front = -F / 2 - Config.Plots.Moat -- island front edge
 	local out = {}
-	for _, side in { -1, 1 } do
-		for _, z in { front - 16, front - 28 } do
-			for _, x in { 35.5, 49.5 } do
-				table.insert(out, Vector3.new(side * x, 0, z))
+	for _, yard in YARDS do
+		for _, z in ROWS do
+			for _, x in yard.x do
+				table.insert(out, Vector3.new(x, 0, z))
 			end
 		end
 	end
@@ -54,9 +57,7 @@ function Helpers.slotOffsets(): { Vector3 }
 end
 
 local function padOffsets(): (Vector3, Vector3)
-	local F = Config.Plots.FloorSize
-	local front = -F / 2 - Config.Plots.Moat
-	return Vector3.new(-42.5, 0, front - 6), Vector3.new(42.5, 0, front - 6)
+	return Vector3.new(-15, 0, 45.5), Vector3.new(23.5, 0, 45.5)
 end
 
 -- The yards: slot bases with white corner brackets, and the Buy / Merge pads.
@@ -64,6 +65,10 @@ function Helpers.build(plotModel: Model, origin: CFrame)
 	local m = Instance.new("Model")
 	m.Name = "HelperYard"
 	local pal = Style.theme(Config.Look.Theme)
+	-- dark asphalt under each yard (Destroy a Vault's unit zones)
+	for _, x in { -37, 41 } do
+		Build.block(m, "YardZone", Vector3.new(27, 0.1, 26), origin * CFrame.new(x, 0.05, 45.5), pal.pad or C(52, 54, 62)).CanCollide = false
+	end
 	for i, off in Helpers.slotOffsets() do
 		local cf = origin * CFrame.new(off)
 		local base = Build.block(m, "Slot" .. i, Vector3.new(SLOT, 0.16, SLOT), cf * CFrame.new(0, 0.08, 0), C(46, 48, 56))

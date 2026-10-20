@@ -198,16 +198,9 @@ function PlotDecor.build(plotModel: Model, origin: CFrame, accent: Color3, theme
 	m.Name = "Decor"
 	local rng = Random.new(100 + index)
 	local label = PlotDecor.gate(m, origin * CFrame.new(16, 0, half - 2.2), 11, accent, theme)
-	PlotDecor.boiler(m, origin * CFrame.new(40, 0, -42) * CFrame.Angles(0, math.rad(-35), 0))
-	PlotDecor.crates(m, origin * CFrame.new(50, 0, -18), rng)
-	PlotDecor.crates(m, origin * CFrame.new(-50, 0, -50) * CFrame.Angles(0, math.rad(90), 0), rng)
-	for _, x in { -1, 1 } do
-		for _, z in { -1, 1 } do
-			if not (x == 1 and z == 1) then -- front-right is the gate
-				Build.lamp(m, origin * CFrame.new(x * (half - 5), 0, z * (half - 5)), theme, 11)
-			end
-		end
-	end
+	PlotDecor.boiler(m, origin * CFrame.new(46, 0, -20) * CFrame.Angles(0, math.rad(-60), 0))
+	PlotDecor.crates(m, origin * CFrame.new(-52, 0, -14) * CFrame.Angles(0, math.rad(90), 0), rng)
+	Build.lamp(m, origin * CFrame.new(-(half - 5), 0, half - 5), theme, 11) -- front-left (front-right is the gate)
 	m.Parent = plotModel
 	return label
 end

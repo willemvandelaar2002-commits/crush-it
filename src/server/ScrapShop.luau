@@ -1,11 +1,12 @@
 --!strict
--- The scrap shop behind every plot: across the lava moat (Moat.luau) over a steel bridge, a
--- "SCRAP SHOP" gate and a small machinery island with a smelter (hopper,
--- glowing furnace, smoking chimney, spinning gear), a conveyor and the
--- yellow SELL pad. Stand on the pad to sell your scrap (server/Scrap.luau).
+-- The scrap shop at the back of every plot, right behind the scrap pile: a
+-- "SCRAP SHOP" gate into a dark tab of the plot island (Moat.luau builds the
+-- island under it) with the smelter (hopper, glowing furnace, smoking chimney,
+-- spinning gear), a conveyor, the Deposit / Collect Cash / Smelt Speed /
+-- Finish Now pads and the Smelting board (server/Scrap.luau runs them).
 --
--- Plot local space: +Z points to the walkway, the back edge is at -F/2, so
--- the island sits at -Z. Sizes in Config.ScrapShop.
+-- Plot local space: +Z points to the hub, the back edge is at -F/2, so the
+-- tab sits at -Z. Sizes in Config.ScrapShop.
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -14,7 +15,6 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Build = require(script.Parent.Kit.Build)
 local Pads = require(script.Parent.Pads)
-local Moat = require(script.Parent.Moat)
 
 local ScrapShop = {}
 
@@ -85,7 +85,7 @@ local function signText(part: BasePart, face: Enum.NormalId, text: string, color
 end
 
 function ScrapShop.build(plotModel: Model, origin: CFrame, theme: { [string]: Color3 }): Shop
-	local S = { Gap = Config.Plots.Moat, Depth = Config.ScrapShop.Depth, Width = Config.ScrapShop.Width }
+	local S = { Gap = 0, Depth = Config.ScrapShop.Depth, Width = Config.ScrapShop.Width }
 	local F = Config.Plots.FloorSize
 	local floorY = origin.Position.Y
 	local back = -F / 2
@@ -98,15 +98,9 @@ function ScrapShop.build(plotModel: Model, origin: CFrame, theme: { [string]: Co
 	local m = Instance.new("Model")
 	m.Name = "ScrapShop"
 
-	-- Bridge over the lava moat (Moat.luau builds the lava itself).
-	Moat.bridge(m, at(0, 0, back - S.Gap / 2), S.Gap + 3.5)
-
-	-- The island: a raised slab like the plots, in darker steel.
+	-- The tab: a raised slab like the plot floor, in dark asphalt (Moat.build
+	-- puts the island body under it).
 	Build.platform(m, "Island", at(0, 0, islandMid), S.Width, S.Depth, floorY - 0.05, theme.pad, theme.edge, 2)
-	Build.island(m, at(0, 0, islandMid), S.Width, S.Depth, Config.World.SeaY, theme, {
-		rng = Random.new(400),
-		gaps = { { side = "front", at = 0, width = Moat.BRIDGE_WIDTH + 1 } },
-	})
 	-- hazard edge along the island front
 	for i = 0, 11 do
 		local w = S.Width - 4

@@ -2,8 +2,9 @@
 -- Walk-on buy pads (the Yuzu game's "Buy 5 Yuzu" pads) and the stats board
 -- (its "Selling Yuzu 9.98K, 1 Yuzu/Sec" sign).
 --
--- Front left of every plot: Power, Speed, Value, Bigger Press, Rebirth.
--- Front right, past the gate: Auto Collect and Auto Crush (Robux).
+-- Back of every plot, between the scrap pile and the scrap shop gate, so the
+-- whole loop (pile -> deposit -> collect -> buy) is a few steps:
+-- left Power, Speed, Value, Bigger Press, Rebirth; right Auto Collect and Auto Crush (Robux).
 -- Stand on a pad to buy once; keep standing to keep buying (after a short
 -- pause). Only the plot owner can use them. Big floating labels show the name,
 -- level and price (green = affordable, red = not yet).
@@ -32,18 +33,19 @@ local SIZE = 7.5
 export type PadDef = { id: string, kind: "upgrade" | "robux", x: number, color: Color3 }
 
 Pads.Defs = {
-	{ id = "Power", kind = "upgrade", x = -13, color = C(255, 95, 80) },
-	{ id = "Speed", kind = "upgrade", x = -22.5, color = C(70, 190, 255) },
-	{ id = "Value", kind = "upgrade", x = -32, color = C(255, 210, 60) },
-	{ id = "Size", kind = "upgrade", x = -41.5, color = C(190, 90, 255) },
-	{ id = "Rebirth", kind = "upgrade", x = -51, color = C(255, 150, 50) },
-	{ id = "AutoCollect", kind = "robux", x = 30, color = C(255, 185, 70) },
-	{ id = "AutoCrush", kind = "robux", x = 40, color = C(255, 110, 90) },
+	{ id = "Power", kind = "upgrade", x = -16, color = C(255, 95, 80) },
+	{ id = "Speed", kind = "upgrade", x = -25.5, color = C(70, 190, 255) },
+	{ id = "Value", kind = "upgrade", x = -35, color = C(255, 210, 60) },
+	{ id = "Size", kind = "upgrade", x = -44.5, color = C(190, 90, 255) },
+	{ id = "Rebirth", kind = "upgrade", x = -54, color = C(255, 150, 50) },
+	{ id = "AutoCollect", kind = "robux", x = 16, color = C(255, 185, 70) },
+	{ id = "AutoCrush", kind = "robux", x = 25.5, color = C(255, 110, 90) },
 } :: { PadDef }
 
 local NAMES = { Size = "Bigger Press", AutoCollect = "Auto Collect", AutoCrush = "Auto Crush" }
 
-local PAD_Z = 47 -- local Z of the pad row (the front edge is at FloorSize/2)
+Pads.ROW_Z = -55 -- local Z of the pad row (the back edge is at -FloorSize/2, the shop tab behind it)
+local PAD_Z = Pads.ROW_Z
 
 local function billboard(adornee: BasePart): (TextLabel, TextLabel)
 	local gui = Instance.new("BillboardGui")
@@ -132,8 +134,8 @@ function Pads.build(plotModel: Model, origin: CFrame)
 			gui.StudsOffsetWorldSpace = Vector3.new(0, 6.8, 0)
 		end
 	end
-	-- stats board (back left, turned toward the spawn)
-	local boardCf = origin * CFrame.new(-36, 0, -34) * CFrame.Angles(0, math.rad(30), 0)
+	-- stats board (left of the scrap pile, turned toward the pile and the press)
+	local boardCf = origin * CFrame.new(-34, 0, -38) * CFrame.Angles(0, math.rad(55), 0)
 	local board, face = Build.signFrame(m, boardCf, 16, 10, C(40, 42, 50))
 	board.Name = "StatsBoard"
 	face.Name = "StatsFace"

@@ -325,8 +325,8 @@ Config.Scrap = {
 
 -- The scrap shop island behind every plot (server/ScrapShop.luau).
 Config.ScrapShop = {
-	Depth = 34, -- island size front to back
-	Width = 120, -- whole plot width: smelter in the middle, helper yards on both sides
+	Depth = 34, -- the shop's tab at the back of the plot island, front to back
+	Width = 48, -- tab width (smelter, its four pads and the board)
 }
 
 -- The smelter (Yuzu stand / Destroy a Vault "Smelt"): deposited scrap is smelted
@@ -417,7 +417,6 @@ Config.Plots = {
 	Spacing = 140, -- along X
 	RowOffset = 115, -- each row's distance from the hub island's centre line (Z)
 	FloorSize = 120, -- big enough for the widest (Cosmic) press frame
-	Moat = 12, -- lava gap between a plot island and its scrap shop island
 }
 
 -- Every press tier has its own name and paint; the look changes per stage:

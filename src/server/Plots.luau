@@ -33,7 +33,7 @@ export type Plot = {
 	tier: number,
 	owner: Player?,
 	sign: TextLabel,
-	shop: ScrapShop.Shop, -- the scrap shop island behind the plot
+	shop: ScrapShop.Shop, -- the scrap shop on the tab behind the plot
 }
 
 local FLOOR_Y = 1.6 -- top of the raised plot platforms (the ground sits at y = 0.05)
@@ -200,8 +200,8 @@ function Plots.create()
 		Build.platform(model, "Floor", origin, F, F, origin.Position.Y - 0.05, theme.platform, theme.grassEdge or theme.edge, 2)
 		-- dark asphalt zones with stepped edges (Destroy a Vault): under the buy pads and round the scrap pile
 		local zr = Random.new(300 + i)
-		Build.patch(model, origin * CFrame.new(-6, 0, 47), 108, 12, theme.pad, zr, "PadZone")
-		Build.patch(model, origin * CFrame.new(0, 0, -38), 36, 26, theme.pad, zr, "PileZone")
+		Build.block(model, "PadZone", Vector3.new(90, 0.1, 11), origin * CFrame.new(-14, 0.05, Pads.ROW_Z), theme.pad).CanCollide = false
+		Build.patch(model, origin * CFrame.new(0, 0, -36), 36, 24, theme.pad, zr, "PileZone")
 		-- Yellow trim just inside the edge (Destroy a Vault style); the plot's own
 		-- colour goes on its gate (PlotDecor).
 		local trim = theme.trim or FLOOR_COLORS[i]
@@ -224,7 +224,7 @@ function Plots.create()
 		for _, x in { -1, 1 } do
 			Build.block(model, "ConveyorRail", Vector3.new(0.8, 0.9, beltLen), origin * CFrame.new(x * 4.4, 0.45, F / 2 - beltLen / 2), Color3.fromRGB(255, 200, 60))
 		end
-		-- Brick paths: walkway bridge -> along the pads -> past the press -> scrap shop bridge
+		-- Brick paths: hub bridge -> past the press -> scrap pile -> scrap shop gate
 		do
 			local fx = Moat.FRONT_BRIDGE_X
 			local function pt(x: number, z: number): Vector3
@@ -232,8 +232,7 @@ function Plots.create()
 			end
 			Build.path(model, pt(fx, F / 2 - 1), pt(fx, -F / 2 + 16), 7)
 			Build.path(model, pt(fx, -F / 2 + 16), pt(0, -F / 2 + 16), 7)
-			Build.path(model, pt(0, -F / 2 + 16), pt(0, -F / 2 + 1), 7)
-			Build.path(model, pt(-8, 47), pt(fx, 47), 7) -- from the bridge path to the pads (asphalt under the pads)
+			Build.path(model, pt(0, -F / 2 + 16), pt(0, -F / 2 - 1), 7)
 		end
 		-- Gate with the owner's name, boiler, crates, lamps.
 		local label = PlotDecor.build(model, origin, FLOOR_COLORS[i], theme, i)
@@ -247,9 +246,9 @@ function Plots.create()
 		-- Robux signs (moved next to the press like the board)
 		RobuxSigns.build(model, theme.edge)
 		model.Parent = root
-		-- Lava moat round the plot with a bridge from the walkway
+		-- Island body (plot + shop tab) and the bridge to the hub
 		Moat.build(model, origin)
-		-- Scrap shop island behind the plot (water channel, bridge, gate, smelter, sell pad).
+		-- Scrap shop on the tab behind the scrap pile (gate, smelter, its pads, board).
 		local shop = ScrapShop.build(model, origin, theme)
 		require(script.Parent.Helpers).build(model, origin)
 		local plot: Plot = { index = i, origin = origin, model = model, press = nil, ram = nil, bedTop = 0, ramRestY = 0, tier = 1, owner = nil, sign = label, shop = shop }
