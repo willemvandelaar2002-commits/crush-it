@@ -1,6 +1,7 @@
 --!strict
 -- First-session guide: a pulsing frame around what to press next plus a hint.
 --   1. never crushed            -> CRUSH button  "Hold CRUSH (or F)!"
+--   (not enough cash yet)       -> banner "Pick Up The Scrap!" / "Sell Your Scrap At The Shop!"
 --   2. no upgrades yet          -> Power card     "Buy An Upgrade"  (once affordable)
 --   3. still on the first press -> Bigger Press   "Buy A Bigger Press"      (once affordable)
 -- Gone for good once the press is bigger than the first one (or after a rebirth).
@@ -89,16 +90,24 @@ local function target(): (GuiObject?, string?, string?)
 		return crushButton, keys, "left"
 	end
 	local cash = attr("Cash")
-	if not anyLevel() then
-		if cash >= Config.Upgrades[1].cost(0) then
-			return powerCard, "Buy An Upgrade", "right"
+	local need = if anyLevel() then Config.SizeCost(1) else Config.Upgrades[1].cost(0)
+	if cash < need then
+		-- scrap steps (banner only; the ground arrows point the way)
+		if attr("Scrap") > 0 then
+			return nil, "Sell Your Scrap At The Shop!", "banner"
+		end
+		local plots = workspace:FindFirstChild("Plots")
+		local plot = plots and plots:FindFirstChild("Plot" .. tostring(player:GetAttribute("Plot")))
+		local pieces = plot and plot:FindFirstChild("Scrap")
+		if pieces and #pieces:GetChildren() > 0 then
+			return nil, "Pick Up The Scrap!", "banner"
 		end
 		return nil
 	end
-	if cash >= Config.SizeCost(1) then
-		return sizeCard, "Buy A Bigger Press", "right"
+	if not anyLevel() then
+		return powerCard, "Buy An Upgrade", "right"
 	end
-	return nil
+	return sizeCard, "Buy A Bigger Press", "right"
 end
 
 local finished = false
@@ -112,6 +121,13 @@ RunService.RenderStepped:Connect(function()
 	if side == "done" then
 		finished = true
 		gui:Destroy()
+		return
+	end
+	if side == "banner" and text and not Style.hasModal() and hud:GetAttribute("NoticeActive") ~= true then
+		ring.Visible = false
+		hand.Visible = false
+		hint.Text = text
+		banner.Visible = true
 		return
 	end
 	if not el or not el.Visible or Style.hasModal() or hud:GetAttribute("NoticeActive") == true then

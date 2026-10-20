@@ -182,6 +182,7 @@ end
 
 local PASS_ICONS: { [string]: string } = {
 	AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, Lucky = Icons.Lucky, OfflineEarnings = Icons.Offline,
+	AutoCollect = Icons.Cash,
 }
 
 type ShopCard = { desc: TextLabel, button: TextButton, update: () -> () }
@@ -327,6 +328,7 @@ end)
 -- Featured pass card: gradient panel, "BEST!" ribbon, big icon, name and price.
 local FEATURED = {
 	{ perk = "AutoCrush", icon = Icons.AutoCrush, a = Color3.fromRGB(255, 120, 90), b = Color3.fromRGB(200, 40, 70) },
+	{ perk = "AutoCollect", icon = Icons.Cash, a = Color3.fromRGB(255, 185, 70), b = Color3.fromRGB(225, 110, 30) },
 	{ perk = "Lucky", icon = Icons.Lucky, a = Color3.fromRGB(255, 225, 90), b = Color3.fromRGB(230, 140, 20) },
 	{ perk = "OfflineEarnings", icon = Icons.Offline, a = Color3.fromRGB(130, 160, 255), b = Color3.fromRGB(70, 60, 210) },
 }

@@ -301,6 +301,27 @@ Config.SizeCost = function(tier: number): number
 	return Config.Economy.ObjectValue(tier) * 10 * 1.32 ^ (tier - 1)
 end
 
+-- Scrap: crushing no longer pays cash. Each crush drops scrap pieces around
+-- the press (worth what the crush used to pay); walk over them to pick them up
+-- (no limit) and stand on the sell pad of your scrap shop behind the plot to
+-- turn them into cash. Auto Collect pass: pieces fly to you and sell by themselves.
+-- (server/Scrap.luau, server/ScrapShop.luau, client/Scrap.client.luau)
+Config.Scrap = {
+	PiecesMin = 3, -- pieces per crush (more for bigger objects)
+	PiecesMax = 6,
+	MaxOnFloor = 40, -- per plot; extra value merges into pieces already lying there
+	PickupRadius = 5.5, -- studs (horizontal) from your character
+	SellRadius = 5, -- studs from the sell pad centre
+	AutoDelay = 0.7, -- Auto Collect: seconds before landed pieces fly to you
+}
+
+-- The scrap shop island behind every plot (server/ScrapShop.luau).
+Config.ScrapShop = {
+	Gap = 12, -- water channel between the plot and the island
+	Depth = 34, -- island size front to back
+	Width = 48,
+}
+
 -- Friend boost: extra cash for every Roblox friend in your server (server/FriendBoost.luau).
 Config.FriendBoost = { Per = 0.1, Max = 0.5 }
 
@@ -337,6 +358,7 @@ Config.Rewards = {
 Config.Look = {
 	Theme = "Teal", -- see shared/Kit/Style.luau (Teal, Scrap)
 	Props = true, -- trees, rocks, fences and lamps round the plots (server/Decor.luau)
+	Sky = "Sunset", -- Build.lighting preset: "Day" or "Sunset"
 	PropSeed = 7, -- change for a different (but still fixed) layout
 }
 

@@ -1,5 +1,7 @@
 --!strict
 -- Ground guide (Kit/GuidePath): glowing chevrons that lead the player to
+--   * the sell pad of their scrap shop when they carry scrap (always in the first
+--     session, later once it would pay for an upgrade),
 --   * the upgrade board while the tutorial says "Buy An Upgrade"
 --     (first session, enough cash, no upgrades yet), and
 --   * back to their own press once they're off their plot (RETURN_DISTANCE).
@@ -37,6 +39,24 @@ local function goal(root: BasePart): (Vector3?, string?)
 	local bed = plot:FindFirstChild("Bed", true) :: BasePart?
 	if not bed then
 		return nil
+	end
+	-- carrying scrap: to the sell pad (unless Auto Collect sells it for you)
+	local scrap = attr("Scrap")
+	if scrap > 0 and player:GetAttribute("Pass_AutoCollect") ~= true then
+		local firstSession = attr("Tier") <= 1 and attr("Rebirths") == 0
+		local cheapest = Config.SizeCost(math.max(1, attr("Tier")))
+		for _, u in Config.Upgrades do
+			local lv = attr(u.id .. "Lv")
+			if lv < u.max then
+				cheapest = math.min(cheapest, u.cost(lv))
+			end
+		end
+		if firstSession or scrap + attr("Cash") >= cheapest then
+			local pad = plot:FindFirstChild("SellPadFill", true) :: BasePart?
+			if pad then
+				return pad.Position, "Sell Scrap"
+			end
+		end
 	end
 	-- tutorial step: first upgrade
 	local firstSession = attr("Tier") <= 1 and attr("Rebirths") == 0

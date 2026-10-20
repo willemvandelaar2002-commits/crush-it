@@ -23,6 +23,7 @@ local Store = require(ReplicatedStorage.Shared.Store)
 local Shop = require(script.Parent.Shop)
 local Analytics = require(script.Parent.Kit.Analytics)
 local FriendBoost = require(script.Parent.FriendBoost)
+local Scrap = require(script.Parent.Scrap)
 
 local CrushRemote = Net.event("Crush")
 local BuyRemote = Net.event("BuyUpgrade")
@@ -54,6 +55,7 @@ local TEMPLATE = {
 	autoCrush = true, -- Auto Crush pass: on/off switch
 	funnel = true, -- new saves log the onboarding funnel (Kit/Analytics)
 	funnelStep = 0,
+	scrap = 0, -- picked-up scrap not sold yet (Scrap.luau), worth this much cash
 	daily = { day = 0, streak = 0 }, -- daily check-in (Rewards): last UTC day claimed, which day it was
 }
 
@@ -65,6 +67,7 @@ local function sanitize(d: any): any
 		d.levels[k] = math.clamp(math.floor(tonumber(d.levels[k]) or 0), 0, u.max)
 	end
 	d.rebirths = math.max(0, math.floor(tonumber(d.rebirths) or 0))
+	d.scrap = if typeof(d.scrap) == "number" and d.scrap == d.scrap and d.scrap >= 0 then d.scrap else 0
 	d.goldenRush = math.max(0, math.floor(tonumber(d.goldenRush) or 0))
 	if typeof(d.purchases) ~= "table" then
 		d.purchases = {}
@@ -81,7 +84,7 @@ local function sanitize(d: any): any
 end
 
 DataService.start("CrushItPlayer_v1", TEMPLATE, sanitize)
-require(script.Parent.Kit.Build).lighting()
+require(script.Parent.Kit.Build).lighting(Config.Look.Sky)
 Plots.create()
 FriendBoost.start()
 require(script.Parent.RobuxSigns).start(Plots.all)
@@ -123,6 +126,7 @@ end
 
 local function syncAttributes(player: Player, data: any)
 	player:SetAttribute("Cash", data.cash)
+	player:SetAttribute("Scrap", data.scrap)
 	player:SetAttribute("Rebirths", data.rebirths)
 	player:SetAttribute("CashMult", cashMult(data))
 	player:SetAttribute("Crushed", data.crushed)
@@ -249,7 +253,8 @@ local function onCrush(player: Player)
 
 	local value = Config.Economy.ObjectValue(tier) * effect(data, "Value") * Config.VariantById[variant].mult * cashMult(data)
 		* (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player)
-	data.cash += value
+	-- no cash straight away: the object breaks into scrap to pick up and sell
+	Scrap.drop(player, slot.plot, pos, value, tier, variant)
 	data.crushed += 1
 	-- Collection book.
 	local key = tostring(tier)
@@ -314,6 +319,8 @@ local function onBuy(player: Player, id: unknown)
 		end
 		data.rebirths += 1
 		data.cash = 0
+		data.scrap = 0
+		Scrap.clear(slot.plot)
 		data.tier = 1
 		for _, k in LEVEL_KEYS do
 			data.levels[k] = 0
@@ -573,6 +580,7 @@ Players.PlayerRemoving:Connect(function(player)
 		end
 		slot.plot.owner = nil
 		slot.plot.sign.Text = "Free plot"
+		Scrap.clear(slot.plot)
 		Plots.buildPress(slot.plot, 1)
 	end
 end)
@@ -614,6 +622,17 @@ local function cashPerSecond(player: Player): number
 		* (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player)
 	return value / seconds
 end
+
+Scrap.start({
+	getData = DataService.get,
+	sync = function(player: Player)
+		local data = DataService.get(player)
+		if data then
+			syncAttributes(player, data)
+		end
+	end,
+	plots = Plots.all,
+})
 
 require(script.Parent.Rewards).start({
 	getData = DataService.get,

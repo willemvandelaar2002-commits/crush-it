@@ -2,7 +2,7 @@
 -- Decoration around the plots, built from the kit props (Build.tree/bush/rock/
 -- fence/lamp). Seeded, so the world looks the same every server.
 --
---   * a white fence behind each row of plots and down both ends (walkway left open)
+--   * a white fence behind each row's scrap shops and down both ends (walkway left open)
 --   * lamp, bush, tree and rock in every gap between two plots
 --   * lamps at both ends of the walkway
 --   * a band of trees, bushes and rocks outside the fence
@@ -38,8 +38,9 @@ function Decor.create()
 	local root = Instance.new("Folder")
 	root.Name = "Decor"
 
-	-- Fences: along the back of both rows and down both ends, leaving the walkway open.
-	local fz = backZ + 7
+	-- Fences: behind the scrap shop islands of both rows and down both ends, leaving the walkway open.
+	local shopDepth = Config.ScrapShop.Gap + Config.ScrapShop.Depth
+	local fz = backZ + shopDepth + 7
 	local fx = halfX + 10
 	for _, side in { -1, 1 } do
 		Build.fence(root, Vector3.new(-fx, GROUND_Y, side * fz), Vector3.new(fx, GROUND_Y, side * fz), palette.fence)
