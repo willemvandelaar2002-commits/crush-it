@@ -26,6 +26,7 @@ local gui = Instance.new("ScreenGui")
 gui.Name = "GoalHud"
 gui.ResetOnSpawn = false
 gui.DisplayOrder = 2
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")
 
 -- Bar: dark rounded track with a studded gradient fill and big outlined text.
@@ -51,6 +52,14 @@ outline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 outline.Parent = bar
 local scale = Instance.new("UIScale")
 scale.Parent = bar
+local function fitBar()
+	local compact = Style.compact()
+	bar.AnchorPoint = if compact then Vector2.new(1, 0) else Vector2.new(0.5, 0)
+	bar.Position = if compact then UDim2.new(1, -14, 0, 8) else UDim2.new(0.5, 0, 0, 8)
+	bar.Size = if compact then UDim2.new(1, -220, 0, 32) else UDim2.new(0.38, 0, 0, 44)
+end
+workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitBar)
+fitBar()
 
 local fill = Instance.new("Frame")
 fill.Name = "Fill"

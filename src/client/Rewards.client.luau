@@ -36,17 +36,18 @@ end
 local gui = make("ScreenGui", { Name = "RewardsHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, player:WaitForChild("PlayerGui"))
 
 local button, badge = Style.iconButton(gui, {
-	name = "RewardsButton", icon = "🎁", label = "REWARDS", a = Color3.fromRGB(200, 120, 255), b = Color3.fromRGB(120, 50, 220),
+	name = "RewardsButton", icon = "🎁", art = "Rewards", label = "REWARDS", a = Color3.fromRGB(200, 120, 255), b = Color3.fromRGB(120, 50, 220),
 })
-button.Position = UDim2.fromOffset(196, 8)
+Style.placeHudButton(button, 2)
+Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() Style.placeHudButton(button, 2) end)
 
 -- Panel ----------------------------------------------------------------------------
 local panel = make("Frame", {
 	Name = "RewardsPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0.84, 0),
 	BackgroundColor3 = DARK, BackgroundTransparency = 0.03, Visible = false, ZIndex = 5,
 }, gui)
-corner(panel, 14)
-make("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0), Transparency = 0.2 }, panel)
+Style.panel(panel, Color3.fromRGB(174, 111, 255), Color3.fromRGB(79, 49, 163))
+Style.modal(panel)
 make("UISizeConstraint", { MaxSize = Vector2.new(720, 520) }, panel)
 local title = make("TextLabel", {
 	Position = UDim2.fromOffset(16, 8), Size = UDim2.new(1, -80, 0, 36), BackgroundTransparency = 1, TextScaled = true,
@@ -64,6 +65,7 @@ local scroll = make("ScrollingFrame", {
 	ScrollBarThickness = 6, AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(),
 }, panel)
 make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }, scroll)
+Style.scroll(scroll)
 
 local function heading(text: string, order: number)
 	local l = make("TextLabel", {
@@ -82,6 +84,7 @@ local function grid(order: number, cell: Vector2): Frame
 		CellSize = UDim2.fromOffset(cell.X, cell.Y), CellPadding = UDim2.fromOffset(8, 8), SortOrder = Enum.SortOrder.LayoutOrder,
 		HorizontalAlignment = Enum.HorizontalAlignment.Center,
 	}, f)
+	Style.grid(f, cell.X, cell.Y, 10)
 	return f
 end
 
@@ -100,15 +103,21 @@ local function makeCard(parent: Frame, order: number, top: string, reward: any, 
 	Style.text(head, 2)
 	local icon = make("TextLabel", {
 		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 24), Size = UDim2.fromOffset(36, 36), BackgroundTransparency = 1,
-		TextScaled = true, Text = if golden then "⭐" else "💵", ZIndex = 2,
+		TextScaled = true, Text = if golden then "★" else "", ZIndex = 2,
 	}, frame)
+	if golden then
+		Style.text(icon, 2)
+		icon.TextColor3 = GOLD
+	else
+		Style.icon(icon, "Cash")
+	end
 	local amount = make("TextLabel", {
-		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 60), Size = UDim2.new(1, -12, 0, 22), BackgroundTransparency = 1,
+		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 70), Size = UDim2.new(1, -12, 0, 22), BackgroundTransparency = 1,
 		TextScaled = true, Text = "", ZIndex = 2,
 	}, frame)
 	Style.text(amount, 2)
 	local btn = make("TextButton", {
-		AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -6), Size = UDim2.new(1, -14, 0, 30), Text = "", TextScaled = true, ZIndex = 3,
+		AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -6), Size = UDim2.new(1, -14, 0, 44), Text = "", TextScaled = true, ZIndex = 3,
 	}, frame)
 	Style.button(btn)
 	make("UIPadding", { PaddingTop = UDim.new(0, 5), PaddingBottom = UDim.new(0, 5), PaddingLeft = UDim.new(0, 4), PaddingRight = UDim.new(0, 4) }, btn)
@@ -123,7 +132,7 @@ local function makeCard(parent: Frame, order: number, top: string, reward: any, 
 end
 
 heading("⏱️ Playtime gifts", 1)
-local playGrid = grid(2, Vector2.new(150, 122))
+local playGrid = grid(2, Vector2.new(130, 148))
 local playCards: { Card } = {}
 for i, r in Config.Rewards.Playtime do
 	playCards[i] = makeCard(playGrid, i, r.minutes .. " min", r, function()
@@ -132,7 +141,7 @@ for i, r in Config.Rewards.Playtime do
 end
 
 heading("📅 Daily check-in  (come back every day!)", 3)
-local dailyGrid = grid(4, Vector2.new(92, 122))
+local dailyGrid = grid(4, Vector2.new(110, 148))
 local dailyCards: { Card } = {}
 for i, r in Config.Rewards.Daily do
 	dailyCards[i] = makeCard(dailyGrid, i, "Day " .. i, r, function()
@@ -225,11 +234,11 @@ Net.event("Rewards").OnClientEvent:Connect(function(s)
 end)
 
 button.Activated:Connect(function()
-	panel.Visible = not panel.Visible
+	Style.setOpen(panel, not panel.Visible)
 	refresh()
 end)
 close.Activated:Connect(function()
-	panel.Visible = false
+	Style.setOpen(panel, false)
 end)
 
 -- Count down once a second.

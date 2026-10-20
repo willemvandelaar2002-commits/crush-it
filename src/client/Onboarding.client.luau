@@ -11,6 +11,7 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
+local Style = require(ReplicatedStorage.Shared.Kit.Style)
 
 local player = Players.LocalPlayer
 local hud = player:WaitForChild("PlayerGui"):WaitForChild("CrushHud")
@@ -23,6 +24,7 @@ local gui = Instance.new("ScreenGui")
 gui.Name = "Onboarding"
 gui.ResetOnSpawn = false
 gui.DisplayOrder = 3
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player.PlayerGui
 
 local ring = Instance.new("Frame")
@@ -40,18 +42,15 @@ ringCorner.Parent = ring
 -- Big banner across the top ("Buy An Upgrade") like Destroy a Vault.
 local banner = Instance.new("Frame")
 banner.AnchorPoint = Vector2.new(0.5, 0)
-banner.Position = UDim2.new(0.5, 0, 0, 132)
-banner.Size = UDim2.new(0.6, 0, 0, 64)
+local touch = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+banner.Position = UDim2.new(0.5, 0, 0, if touch then 205 else 178)
+banner.Size = UDim2.new(if touch then 0.55 else 0.36, 0, 0, if touch then 36 else 48)
 banner.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 banner.BackgroundTransparency = 0.45
 banner.BorderSizePixel = 0
 banner.Visible = false
 banner.Parent = gui
-local bannerGrad = Instance.new("UIGradient")
-bannerGrad.Transparency = NumberSequence.new({
-	NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.2, 0), NumberSequenceKeypoint.new(0.8, 0), NumberSequenceKeypoint.new(1, 1),
-})
-bannerGrad.Parent = banner
+Style.panel(banner, Color3.fromRGB(78, 163, 250), Color3.fromRGB(40, 78, 170))
 local hint = Instance.new("TextLabel")
 hint.BackgroundTransparency = 1
 hint.Font = Enum.Font.FredokaOne
@@ -60,9 +59,7 @@ hint.TextColor3 = Color3.new(1, 1, 1)
 hint.Size = UDim2.fromScale(1, 0.8)
 hint.Position = UDim2.fromScale(0, 0.1)
 hint.Parent = banner
-local hintStroke = Instance.new("UIStroke")
-hintStroke.Thickness = 3
-hintStroke.Parent = hint
+Style.text(hint, 2.5)
 
 -- A pointing hand next to the thing to press.
 local hand = Instance.new("TextLabel")
@@ -105,6 +102,7 @@ local function target(): (GuiObject?, string?, string?)
 end
 
 local finished = false
+local lastTarget: GuiObject? = nil
 
 RunService.RenderStepped:Connect(function()
 	if finished then
@@ -116,12 +114,18 @@ RunService.RenderStepped:Connect(function()
 		gui:Destroy()
 		return
 	end
-	if not el or not el.Visible then
+	if not el or not el.Visible or Style.hasModal() or hud:GetAttribute("NoticeActive") == true then
 		ring.Visible = false
 		banner.Visible = false
 		hand.Visible = false
 		return
 	end
+	if el ~= lastTarget and upgrades:IsA("ScrollingFrame") and el:IsDescendantOf(upgrades) then
+		local scale = upgrades:FindFirstChildOfClass("UIScale")
+		local zoom = if scale then scale.Scale else 1
+		upgrades.CanvasPosition = Vector2.new(0, math.max(0, upgrades.CanvasPosition.Y + (el.AbsolutePosition.Y - upgrades.AbsolutePosition.Y) / zoom - 6))
+	end
+	lastTarget = el
 	-- Element positions are in the HUD's space (below the top bar); ours too
 	-- since both ScreenGuis keep the inset, so AbsolutePosition lines up.
 	local pos, size = el.AbsolutePosition, el.AbsoluteSize

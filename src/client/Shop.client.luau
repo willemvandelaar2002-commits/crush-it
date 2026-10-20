@@ -97,18 +97,19 @@ local crushButton = hud:WaitForChild("CrushButton") :: TextButton
 local autoButton = make("TextButton", {
 	Name = "AutoButton", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 0, -10), Size = UDim2.new(1, 0, 0, 40),
 	BackgroundColor3 = GREY, Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "AUTO", Parent = crushButton,
-}, { corner(10), stroke(2), pad(5) })
+}, { pad(5) })
+Style.button(autoButton, GREY)
 
 local function refreshAuto()
 	if not Store.hasPass(player, "AutoCrush") then
 		autoButton.Text = "AUTO 🔒"
-		autoButton.BackgroundColor3 = GREY
+		Style.setButtonColor(autoButton, GREY)
 	elseif player:GetAttribute("AutoOn") == true then
 		autoButton.Text = "AUTO: ON"
-		autoButton.BackgroundColor3 = GREEN
+		Style.setButtonColor(autoButton, Style.GREEN)
 	else
 		autoButton.Text = "AUTO: OFF"
-		autoButton.BackgroundColor3 = RED
+		Style.setButtonColor(autoButton, RED)
 	end
 end
 autoButton.Activated:Connect(function()
@@ -136,57 +137,68 @@ end)
 
 -- SHOP button + panel -----------------------------------------------------------
 local shopButton, shopBadge = Style.iconButton(gui, {
-	name = "ShopButton", icon = "🛒", label = "SHOP", a = Color3.fromRGB(255, 110, 130), b = Color3.fromRGB(220, 40, 70),
+	name = "ShopButton", icon = "🛒", art = "Shop", label = "SHOP", a = Color3.fromRGB(255, 110, 130), b = Color3.fromRGB(220, 40, 70),
 })
-shopButton.Position = UDim2.fromOffset(104, 8)
+Style.placeHudButton(shopButton, 1)
+Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() Style.placeHudButton(shopButton, 1) end)
 shopBadge.Visible = true -- until the shop has been opened once this session
 
 local panel = make("Frame", {
 	Name = "ShopPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0.82, 0),
 	BackgroundColor3 = DARK, BackgroundTransparency = 0.03, Visible = false, ZIndex = 5, Parent = gui,
-}, { corner(14), stroke(3), make("UISizeConstraint", { MaxSize = Vector2.new(820, 560) }) })
-make("TextLabel", {
+}, { make("UISizeConstraint", { MaxSize = Vector2.new(820, 560) }) })
+Style.panel(panel, Color3.fromRGB(249, 104, 154), Color3.fromRGB(133, 53, 156))
+Style.modal(panel)
+local shopTitle = make("TextLabel", {
 	Position = UDim2.fromOffset(16, 8), Size = UDim2.new(1, -80, 0, 34), BackgroundTransparency = 1, Font = FONT,
 	TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.new(1, 1, 1), Text = "Shop", Parent = panel,
 })
+Style.text(shopTitle, 2.5)
 local closeButton = make("TextButton", {
 	AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 10), Size = UDim2.fromOffset(40, 40), BackgroundColor3 = RED,
 	Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "X", Parent = panel,
-}, { corner(8), stroke(2) })
+}, { pad(5) })
+Style.button(closeButton, RED)
 local scroll = make("ScrollingFrame", {
 	Position = UDim2.fromOffset(12, 52), Size = UDim2.new(1, -24, 1, -64), BackgroundTransparency = 1, BorderSizePixel = 0,
 	ScrollBarThickness = 6, AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(), Parent = panel,
 }, { make("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }) })
+Style.scroll(scroll)
 
 local function section(title: string, order: number): Frame
-	make("TextLabel", {
+	local heading = make("TextLabel", {
 		Size = UDim2.new(1, 0, 0, 26), BackgroundTransparency = 1, Font = FONT, TextScaled = true, LayoutOrder = order,
 		TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = GOLD, Text = title, Parent = scroll,
 	})
-	return make("Frame", {
+	Style.text(heading, 2)
+	heading.TextColor3 = GOLD
+	local group = make("Frame", {
 		Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = order + 1, Parent = scroll,
 	}, { make("UIGridLayout", { CellSize = UDim2.fromOffset(185, 150), CellPadding = UDim2.fromOffset(10, 10), SortOrder = Enum.SortOrder.LayoutOrder }) })
+	Style.grid(group, 130, 174)
+	return group
 end
 
 type ShopCard = { desc: TextLabel, button: TextButton, update: () -> () }
 local shopCards: { ShopCard } = {}
 
 local function card(parent: Frame, order: number, title: string, color: Color3, onBuy: () -> ()): (TextLabel, TextButton)
-	local f = make("Frame", { BackgroundColor3 = Color3.fromRGB(45, 48, 60), LayoutOrder = order, Parent = parent }, { corner(10) })
-	make("Frame", { Size = UDim2.new(1, 0, 0, 8), BackgroundColor3 = color, BorderSizePixel = 0, Parent = f }, { corner(4) })
+	local f = make("Frame", { LayoutOrder = order, Parent = parent })
+	Style.panel(f, Style.darken(color, 0.12), Style.darken(color, 0.48))
 	make("TextLabel", {
 		Position = UDim2.fromOffset(10, 14), Size = UDim2.new(1, -20, 0, 28), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
-		TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = color, Text = title, Parent = f,
+		TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.new(1, 1, 1), Text = title, Parent = f,
 	}, { stroke(1.5) })
 	local desc = make("TextLabel", {
-		Position = UDim2.fromOffset(10, 44), Size = UDim2.new(1, -20, 0, 50), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium,
+		Position = UDim2.fromOffset(10, 48), Size = UDim2.new(1, -20, 0, 68), BackgroundTransparency = 1, Font = FONT,
 		TextWrapped = true, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top,
 		TextColor3 = Color3.fromRGB(210, 210, 220), Text = "", Parent = f,
 	})
 	local button = make("TextButton", {
 		AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -8), Size = UDim2.new(1, -20, 0, 40), BackgroundColor3 = GREEN,
 		Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "", Parent = f,
-	}, { corner(8), stroke(2), pad(6) })
+	}, { pad(6) })
+	Style.button(button)
 	button.Activated:Connect(onBuy)
 	return desc, button
 end
@@ -200,13 +212,13 @@ for i, pass in Store.Passes do
 	local function update()
 		if Store.hasPass(player, pass.perk) then
 			button.Text = "OWNED"
-			button.BackgroundColor3 = GREY
+			Style.setButtonColor(button, GREY)
 		elseif pass.gamePassId == 0 then
 			button.Text = "SOON"
-			button.BackgroundColor3 = GREY
+			Style.setButtonColor(button, GREY)
 		else
 			button.Text = "R$ " .. pass.price
-			button.BackgroundColor3 = GREEN
+			Style.setButtonColor(button, Style.GREEN)
 		end
 	end
 	player:GetAttributeChangedSignal(Store.passAttr(pass.perk)):Connect(update)
@@ -227,7 +239,7 @@ for i, product in Store.Products do
 			desc.Text = product.desc .. (if left > 0 then "\n(" .. left .. " left)" else "")
 		end
 		button.Text = if product.productId == 0 then "SOON" else "R$ " .. product.price
-		button.BackgroundColor3 = if product.productId == 0 then GREY else GREEN
+		Style.setButtonColor(button, if product.productId == 0 then GREY else Style.GREEN)
 	end
 	table.insert(shopCards, { desc = desc, button = button, update = update })
 end
@@ -244,18 +256,18 @@ refreshShop()
 local function openShop(from: string)
 	refreshShop()
 	shopBadge.Visible = false
-	panel.Visible = true
+	Style.setOpen(panel, true)
 	Net.event("ShopOpened"):FireServer(from)
 end
 shopButton.Activated:Connect(function()
 	if panel.Visible then
-		panel.Visible = false
+		Style.setOpen(panel, false)
 	else
 		openShop("ShopButton")
 	end
 end)
 closeButton.Activated:Connect(function()
-	panel.Visible = false
+	Style.setOpen(panel, false)
 end)
 
 -- Offer buttons (right side) ----------------------------------------------------
@@ -268,8 +280,12 @@ local offers = make("Frame", {
 }, { make("UIListLayout", { Padding = UDim.new(0, 26), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Right }) })
 local offersScale = make("UIScale", { Parent = offers })
 local function fitOffers()
-	local h = Workspace.CurrentCamera.ViewportSize.Y
+	local viewport = Workspace.CurrentCamera.ViewportSize
+	local h = viewport.Y
 	offersScale.Scale = math.clamp((h - 300) / 480, 0.5, 1) -- stays between the leaderboard and the CRUSH button
+	offers:SetAttribute("FitsScreen", not Style.compact() and h >= 650)
+	local book = hud:FindFirstChild("Book") :: GuiObject?
+	offers.Visible = offers:GetAttribute("FitsScreen") == true and not panel.Visible and not (book and book.Visible)
 end
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitOffers)
 fitOffers()
@@ -294,6 +310,7 @@ local doublePrice = make("TextLabel", {
 Style.text(doublePrice, 3)
 doublePrice.TextColor3 = Color3.fromRGB(150, 255, 110)
 Style.wobble(doubleButton, 4, 2.5)
+Style.feedback(doubleButton)
 doubleButton.Activated:Connect(function()
 	Net.event("ShopOpened"):FireServer("DoubleCashOffer")
 	buyPass("DoubleCash")
@@ -308,7 +325,7 @@ local FEATURED = {
 local featuredCard = make("TextButton", {
 	Name = "FeaturedOffer", Size = UDim2.fromOffset(170, 170), BackgroundTransparency = 1, Text = "", LayoutOrder = 2, Parent = offers,
 })
-local featuredScale = make("UIScale", { Parent = featuredCard })
+Style.feedback(featuredCard)
 local featuredPanels: { [string]: Frame } = {}
 for _, f in FEATURED do
 	local pass = Store.passByPerk(f.perk)
@@ -340,12 +357,6 @@ for _, f in FEATURED do
 	featuredPanels[f.perk] = p
 end
 local featuredPerk: string? = nil
-featuredCard.MouseEnter:Connect(function()
-	TweenService:Create(featuredScale, TweenInfo.new(0.15, Enum.EasingStyle.Back), { Scale = 1.06 }):Play()
-end)
-featuredCard.MouseLeave:Connect(function()
-	TweenService:Create(featuredScale, TweenInfo.new(0.15, Enum.EasingStyle.Back), { Scale = 1 }):Play()
-end)
 featuredCard.Activated:Connect(function()
 	if featuredPerk then
 		Net.event("ShopOpened"):FireServer("FeaturedOffer")
@@ -379,9 +390,12 @@ refreshOffers()
 local bookPanel = hud:WaitForChild("Book", 10) :: GuiObject?
 if bookPanel then
 	bookPanel:GetPropertyChangedSignal("Visible"):Connect(function()
-		offers.Visible = not bookPanel.Visible
+		offers.Visible = offers:GetAttribute("FitsScreen") == true and not bookPanel.Visible and not panel.Visible
 	end)
 end
+panel:GetPropertyChangedSignal("Visible"):Connect(function()
+	offers.Visible = offers:GetAttribute("FitsScreen") == true and not panel.Visible and not (bookPanel and bookPanel.Visible)
+end)
 
 -- Offline earnings card ---------------------------------------------------------
 local function duration(seconds: number): string
@@ -391,13 +405,16 @@ local function duration(seconds: number): string
 end
 
 local offlineCard = make("Frame", {
-	Name = "OfflineCard", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(380, 230),
-	BackgroundColor3 = DARK, Visible = false, Parent = gui,
-}, { corner(14), stroke(3) })
-make("TextLabel", {
+	Name = "OfflineCard", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0, 230),
+	BackgroundColor3 = DARK, Visible = false, ZIndex = 8, Parent = gui,
+}, { make("UISizeConstraint", { MaxSize = Vector2.new(380, 230) }) })
+Style.panel(offlineCard, Color3.fromRGB(94, 153, 247), Color3.fromRGB(72, 61, 161))
+Style.modal(offlineCard)
+local offlineTitle = make("TextLabel", {
 	Position = UDim2.fromOffset(16, 12), Size = UDim2.new(1, -32, 0, 34), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
 	TextColor3 = Color3.new(1, 1, 1), Text = "Welcome back!", Parent = offlineCard,
 })
+Style.text(offlineTitle, 2.5)
 local offlineAway = make("TextLabel", {
 	Position = UDim2.fromOffset(16, 50), Size = UDim2.new(1, -32, 0, 22), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, TextScaled = true,
 	TextColor3 = Color3.fromRGB(200, 200, 210), Text = "", Parent = offlineCard,
@@ -409,22 +426,25 @@ local offlineCash = make("TextLabel", {
 local offlineMain = make("TextButton", {
 	Position = UDim2.fromOffset(16, 132), Size = UDim2.new(1, -32, 0, 44), BackgroundColor3 = GREEN, Font = FONT, TextScaled = true,
 	TextColor3 = Color3.new(1, 1, 1), Text = "", Parent = offlineCard,
-}, { corner(8), stroke(2), pad(7) })
+}, { pad(7) })
+Style.button(offlineMain)
 local offlineSkip = make("TextButton", {
 	Position = UDim2.fromOffset(16, 184), Size = UDim2.new(1, -32, 0, 30), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, TextScaled = true,
 	TextColor3 = Color3.fromRGB(170, 170, 180), Text = "No thanks", Parent = offlineCard,
 })
+Style.text(offlineSkip, 1.5)
+Style.feedback(offlineSkip)
 local offlineOwned = false
 offlineMain.Activated:Connect(function()
 	if offlineOwned then
-		offlineCard.Visible = false
+		Style.setOpen(offlineCard, false)
 	else
 		Net.event("ShopOpened"):FireServer("OfflineCard")
 		buyPass("OfflineEarnings")
 	end
 end)
 offlineSkip.Activated:Connect(function()
-	offlineCard.Visible = false
+	Style.setOpen(offlineCard, false)
 end)
 
 Net.event("ShopNotice").OnClientEvent:Connect(function(msg)

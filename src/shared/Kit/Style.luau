@@ -18,6 +18,13 @@
 local Style = {}
 
 local C = Color3.fromRGB
+local TweenService = game:GetService("TweenService")
+local INK = C(19, 23, 38)
+
+Style.Colors = {
+	Ink = INK, Blue = C(65, 151, 255), Purple = C(153, 83, 238),
+	Pink = C(255, 89, 135), Gold = C(255, 210, 68), Red = C(245, 78, 81),
+}
 
 Style.Studs = {
 	Texture = "rbxassetid://7447638591", -- free "Stud Texture" (decal 7447638611)
@@ -76,49 +83,114 @@ local function child(class: string, props: { [string]: any }, parent: Instance):
 	return i
 end
 
+-- Named decorations are updated in place: restyling never stacks strokes or gradients.
+local function decoration(parent: Instance, class: string, name: string, props: { [string]: any }): any
+	local item = parent:FindFirstChild(name)
+	if not item then
+		return child(class, props, parent) -- name is assigned below by the caller's props
+	end
+	for key, value in props do
+		(item :: any)[key] = value
+	end
+	return item
+end
+
 function Style.studsImage(parent: GuiObject, tile: number, transparency: number)
-	local img = child("ImageLabel", {
+	local img = decoration(parent, "ImageLabel", "Studs", {
 		Name = "Studs", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = Style.Studs.Texture,
 		ScaleType = Enum.ScaleType.Tile, TileSize = UDim2.fromOffset(tile, tile), ImageTransparency = transparency,
 		ZIndex = parent.ZIndex,
-	}, parent)
-	child("UICorner", { CornerRadius = UDim.new(0, 10) }, img)
+	})
+	decoration(img, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(0, 10) })
 	return img
 end
 
 function Style.text(label: TextLabel | TextButton, strokeThickness: number?)
 	label.Font = Style.Font
 	label.TextColor3 = Color3.new(1, 1, 1)
-	child("UIStroke", { Thickness = strokeThickness or 2, Color = C(20, 20, 30), LineJoinMode = Enum.LineJoinMode.Round }, label)
+	label.BorderSizePixel = 0
+	decoration(label, "UIStroke", "TextOutline", { Name = "TextOutline", Thickness = strokeThickness or 2, Color = INK,
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual, LineJoinMode = Enum.LineJoinMode.Round })
 end
 
 -- A chunky panel: top-to-bottom gradient between two colours, dark outline,
 -- thin white inner border and a faint stud pattern.
 function Style.panel(frame: Frame, a: Color3, b: Color3?)
 	frame.BackgroundColor3 = Color3.new(1, 1, 1)
-	child("UICorner", { CornerRadius = UDim.new(0, 12) }, frame)
-	child("UIGradient", { Color = ColorSequence.new(Style.lighten(a, 0.1), b or Style.darken(a, 0.25)), Rotation = 90 }, frame)
-	child("UIStroke", { Thickness = 3, Color = Style.darken(a, 0.7), ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, frame)
-	local inner = child("Frame", {
+	frame.BackgroundTransparency = 0
+	frame.BorderSizePixel = 0
+	decoration(frame, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(0, 12) })
+	decoration(frame, "UIGradient", "PanelFill", { Name = "PanelFill", Color = ColorSequence.new(Style.lighten(a, 0.12), b or Style.darken(a, 0.3)), Rotation = 90 })
+	decoration(frame, "UIStroke", "Outline", { Name = "Outline", Thickness = 4, Color = INK, ApplyStrokeMode = Enum.ApplyStrokeMode.Border })
+	local inner = decoration(frame, "Frame", "InnerBorder", {
 		Name = "InnerBorder", Position = UDim2.fromOffset(3, 3), Size = UDim2.new(1, -6, 1, -6), BackgroundTransparency = 1,
-		ZIndex = frame.ZIndex,
-	}, frame)
-	child("UICorner", { CornerRadius = UDim.new(0, 10) }, inner)
-	child("UIStroke", { Thickness = 2, Color = Color3.new(1, 1, 1), Transparency = 0.45, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, inner)
-	Style.studsImage(frame, 22, 0.55)
+		ZIndex = 0, BorderSizePixel = 0,
+	})
+	decoration(inner, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(0, 9) })
+	decoration(inner, "UIStroke", "Shine", { Name = "Shine", Thickness = 2, Color = Color3.new(1, 1, 1), Transparency = 0.5, ApplyStrokeMode = Enum.ApplyStrokeMode.Border })
+	local studs = Style.studsImage(frame, 24, 0.82)
+	studs.ZIndex = 0
 end
 
-local GREEN = C(95, 220, 70)
+local GREEN = C(104, 232, 65)
+
+local function buttonFill(c: Color3): ColorSequence
+	return ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Style.lighten(c, 0.4)),
+		ColorSequenceKeypoint.new(0.48, Style.lighten(c, 0.12)),
+		ColorSequenceKeypoint.new(0.5, c),
+		ColorSequenceKeypoint.new(1, Style.darken(c, 0.25)),
+	})
+end
+
+-- Uses its own scale, never changes layout sizes, and also responds to gamepad focus.
+function Style.feedback(btn: GuiButton)
+	if btn:FindFirstChild("FeedbackScale") then
+		return
+	end
+	local scale = child("UIScale", { Name = "FeedbackScale", Scale = 1 }, btn)
+	local hover, down = false, false
+	local tween: Tween? = nil
+	local function update()
+		if tween then tween:Cancel() end
+		local target = if not btn.Active then 1 else if down then 0.94 else if hover then 1.04 else 1
+		local nextTween = TweenService:Create(scale, TweenInfo.new(0.14, Enum.EasingStyle.Quad), { Scale = target })
+		tween = nextTween
+		nextTween:Play()
+	end
+	btn.MouseEnter:Connect(function() hover = true; update() end)
+	btn.MouseLeave:Connect(function() hover = false; down = false; update() end)
+	btn.SelectionGained:Connect(function() hover = true; update() end)
+	btn.SelectionLost:Connect(function() hover = false; down = false; update() end)
+	btn.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch
+			or input.KeyCode == Enum.KeyCode.ButtonA then
+			down = true
+			update()
+			local connection: RBXScriptConnection? = nil
+			connection = input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End or input.UserInputState == Enum.UserInputState.Cancel then
+					if connection then connection:Disconnect() end
+					down = false
+					update()
+				end
+			end)
+		end
+	end)
+	btn:GetPropertyChangedSignal("Active"):Connect(update)
+end
 
 -- Glossy button: light-to-dark gradient, dark outline, outlined white text.
 function Style.button(btn: TextButton, color: Color3?)
 	local c = color or GREEN
 	btn.BackgroundColor3 = Color3.new(1, 1, 1)
-	btn.AutoButtonColor = true
-	child("UICorner", { CornerRadius = UDim.new(0, 10) }, btn)
-	child("UIGradient", { Name = "Fill", Color = ColorSequence.new(Style.lighten(c, 0.2), Style.darken(c, 0.2)), Rotation = 90 }, btn)
-	child("UIStroke", { Name = "Outline", Thickness = 3, Color = Style.darken(c, 0.65), ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, btn)
+	btn.AutoButtonColor = false
+	btn.BorderSizePixel = 0
+	decoration(btn, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(0, 10) })
+	decoration(btn, "UIGradient", "Fill", { Name = "Fill", Color = buttonFill(c), Rotation = 90 })
+	decoration(btn, "UIStroke", "Outline", { Name = "Outline", Thickness = 3, Color = INK, ApplyStrokeMode = Enum.ApplyStrokeMode.Border })
 	Style.text(btn, 2)
+	Style.feedback(btn)
 end
 
 -- Recolour a button made with Style.button.
@@ -126,11 +198,156 @@ function Style.setButtonColor(btn: TextButton, c: Color3)
 	local fill = btn:FindFirstChild("Fill") :: UIGradient?
 	local outline = btn:FindFirstChild("Outline") :: UIStroke?
 	if fill then
-		fill.Color = ColorSequence.new(Style.lighten(c, 0.2), Style.darken(c, 0.2))
+		fill.Color = buttonFill(c)
 	end
 	if outline then
-		outline.Color = Style.darken(c, 0.65)
+		outline.Color = INK
 	end
+end
+
+-- Small vector illustrations render consistently on every device without uploaded assets.
+function Style.icon(parent: Instance, kind: string): Frame
+	local root = child("Frame", { Name = "Icon", BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.45), Size = UDim2.fromScale(0.75, 0.75), ZIndex = 3 }, parent)
+	child("UIAspectRatioConstraint", { AspectRatio = 1 }, root)
+	local function block(x: number, y: number, w: number, h: number, color: Color3, radius: number?, outlined: boolean?): Frame
+		local part = child("Frame", { Position = UDim2.fromScale(x, y), Size = UDim2.fromScale(w, h),
+			BackgroundColor3 = color, BorderSizePixel = 0, ZIndex = 1 }, root)
+		child("UICorner", { CornerRadius = UDim.new(radius or 0.08, 0) }, part)
+		if outlined ~= false then
+			child("UIStroke", { Thickness = 3, Color = INK, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, part)
+		end
+		return part
+	end
+	if kind == "Shop" then
+		block(0.3, 0.04, 0.4, 0.45, C(255, 230, 246), 0.4)
+		block(0.08, 0.32, 0.84, 0.58, C(255, 88, 148))
+		block(0.16, 0.38, 0.68, 0.12, C(255, 184, 222), 0.1, false)
+		for _, x in { 0.3, 0.6 } do block(x, 0.59, 0.1, 0.18, C(190, 32, 98), 0.1, false) end
+	elseif kind == "Book" then
+		block(0.08, 0.2, 0.84, 0.7, C(39, 114, 235))
+		block(0.15, 0.12, 0.7, 0.65, C(224, 247, 255))
+		block(0.14, 0.06, 0.7, 0.59, C(73, 188, 255))
+		block(0.16, 0.08, 0.12, 0.55, C(25, 103, 219), 0.05, false)
+		block(0.38, 0.23, 0.32, 0.08, C(234, 255, 255), 0.1, false)
+		block(0.38, 0.38, 0.24, 0.06, C(234, 255, 255), 0.1, false)
+	elseif kind == "Rewards" then
+		local left = block(0.17, 0.08, 0.33, 0.3, C(255, 214, 64), 0.4)
+		left.Rotation = 24
+		local right = block(0.5, 0.08, 0.33, 0.3, C(255, 214, 64), 0.4)
+		right.Rotation = -24
+		block(0.12, 0.4, 0.76, 0.5, C(170, 94, 255))
+		block(0.06, 0.31, 0.88, 0.2, C(213, 153, 255))
+		block(0.42, 0.32, 0.16, 0.57, C(255, 219, 70), 0.05)
+	elseif kind == "Cash" then
+		block(0.08, 0.31, 0.82, 0.52, C(33, 150, 76))
+		block(0.13, 0.19, 0.78, 0.5, C(141, 255, 99))
+		block(0.19, 0.25, 0.66, 0.37, C(55, 188, 80), 0.08, false)
+		local dollar = child("TextLabel", { BackgroundTransparency = 1, Position = UDim2.fromScale(0.32, 0.18),
+			Size = UDim2.fromScale(0.4, 0.5), Text = "$", TextScaled = true, ZIndex = 2 }, root)
+		Style.text(dollar, 2)
+	end
+	return root
+end
+
+function Style.compact(): boolean
+	local input = game:GetService("UserInputService")
+	local camera = workspace.CurrentCamera
+	return (input.TouchEnabled and not input.KeyboardEnabled) or (camera ~= nil and camera.ViewportSize.X < 1000)
+end
+
+function Style.placeHudButton(btn: TextButton, slot: number)
+	local size = if Style.compact() then 54 else 84
+	btn.Size = UDim2.fromOffset(size, size + 14)
+	btn.Position = UDim2.fromOffset(12 + slot * (size + 10), 8)
+	local tile = btn:FindFirstChild("Tile") :: Frame
+	tile.Size = UDim2.fromOffset(size, size)
+	local label = btn:FindFirstChild("Label") :: TextLabel
+	label.Size = UDim2.new(1.15, 0, 0, size * 0.34)
+	local badge = btn:FindFirstChild("Badge") :: Frame
+	badge.Size = UDim2.fromOffset(size * 0.36, size * 0.36)
+end
+
+-- Reflow columns to use the available width, including narrow portrait phones.
+function Style.grid(container: GuiObject, minWidth: number, height: number, gap: number?)
+	local layout = container:FindFirstChildOfClass("UIGridLayout")
+	if not layout then return end
+	local spacing = gap or 10
+	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	local function fit()
+		local width = math.max(1, container.AbsoluteSize.X - 16)
+		local columns = math.max(1, math.floor((width + spacing) / (minWidth + spacing)))
+		layout.CellPadding = UDim2.fromOffset(spacing, spacing)
+		layout.CellSize = UDim2.fromOffset(math.floor((width - spacing * (columns - 1)) / columns), height)
+	end
+	container:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
+	fit()
+end
+
+function Style.scroll(scroll: ScrollingFrame)
+	scroll.ScrollBarImageColor3 = C(229, 237, 255)
+	scroll.ScrollBarThickness = 5
+	scroll.ScrollingDirection = Enum.ScrollingDirection.Y
+	child("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 8),
+		PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6) }, scroll)
+end
+
+local activePanel: Frame? = nil
+local panelTweens: { [Frame]: Tween } = {}
+local panelTokens: { [Frame]: number } = {}
+
+function Style.hasModal(): boolean
+	return activePanel ~= nil
+end
+
+function Style.setOpen(panel: Frame, open: boolean)
+	local scale = panel:FindFirstChild("ModalScale") :: UIScale?
+	if not scale then panel.Visible = open; return end
+	panelTokens[panel] = (panelTokens[panel] or 0) + 1
+	local token = panelTokens[panel]
+	if panelTweens[panel] then panelTweens[panel]:Cancel() end
+	if open then
+		if not panel.Visible then
+			panel.Visible = true -- the visibility handler starts the entrance tween
+			return
+		end
+		panel.Visible = true
+		local tween = TweenService:Create(scale, TweenInfo.new(0.24, Enum.EasingStyle.Back), { Scale = 1 })
+		panelTweens[panel] = tween
+		tween:Play()
+	else
+		local tween = TweenService:Create(scale, TweenInfo.new(0.12, Enum.EasingStyle.Quad), { Scale = 0.92 })
+		panelTweens[panel] = tween
+		tween:Play()
+		tween.Completed:Once(function()
+			if panelTokens[panel] == token then panel.Visible = false end
+		end)
+	end
+end
+
+-- Shared modal focus: backdrop blocks world/HUD input, with only one panel open.
+function Style.modal(panel: Frame)
+	local gui = panel:FindFirstAncestorOfClass("ScreenGui") :: ScreenGui
+	local order = gui.DisplayOrder
+	panel.Active = true
+	local scale = child("UIScale", { Name = "ModalScale", Scale = 1 }, panel)
+	local shade = child("TextButton", { Name = panel.Name .. "Backdrop", Size = UDim2.fromScale(1, 1),
+		BackgroundColor3 = INK, BackgroundTransparency = 0.35, BorderSizePixel = 0, Text = "",
+		AutoButtonColor = false, Visible = false, ZIndex = panel.ZIndex - 1, Modal = true }, gui)
+	shade.Activated:Connect(function() Style.setOpen(panel, false) end)
+	panel:GetPropertyChangedSignal("Visible"):Connect(function()
+		shade.Visible = panel.Visible
+		if panel.Visible then
+			if activePanel and activePanel ~= panel then activePanel.Visible = false end
+			activePanel = panel
+			gui.DisplayOrder = 30
+			scale.Scale = 0.92
+			Style.setOpen(panel, true)
+		else
+			if activePanel == panel then activePanel = nil end
+			gui.DisplayOrder = order
+		end
+	end)
 end
 
 -- Big chunky icon button (Destroy a Vault's SHOP / INDEX / REWARDS): a tilted
@@ -143,15 +360,18 @@ function Style.iconButton(parent: Instance, opts: { [string]: any }): (TextButto
 		Name = opts.name or "IconButton", Size = UDim2.fromOffset(size, size + 14), BackgroundTransparency = 1, Text = "",
 		AutoButtonColor = false,
 	}, parent)
-	local scale = child("UIScale", { Scale = 1 }, btn)
 	local tile = child("Frame", {
 		Name = "Tile", Size = UDim2.fromOffset(size, size), Rotation = -4, ZIndex = 2,
 	}, btn)
 	Style.panel(tile, opts.a, opts.b)
-	child("TextLabel", {
+	if opts.art then
+		Style.icon(tile, opts.art)
+	else
+		child("TextLabel", {
 		Name = "Icon", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.42), Size = UDim2.fromScale(0.78, 0.78),
 		BackgroundTransparency = 1, TextScaled = true, Text = opts.icon, ZIndex = 3,
 	}, tile)
+	end
 	local label = child("TextLabel", {
 		Name = "Label", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, 0), Size = UDim2.new(1.15, 0, 0, size * 0.34),
 		BackgroundTransparency = 1, TextScaled = true, Text = opts.label, ZIndex = 4,
@@ -162,26 +382,12 @@ function Style.iconButton(parent: Instance, opts: { [string]: any }): (TextButto
 		BackgroundColor3 = C(235, 40, 40), Visible = false, ZIndex = 5,
 	}, btn)
 	child("UICorner", { CornerRadius = UDim.new(1, 0) }, badge)
-	child("UIStroke", { Thickness = 3, Color = Color3.new(1, 1, 1) }, badge)
+	child("UIStroke", { Thickness = 3, Color = INK }, badge)
 	local bang = child("TextLabel", {
 		Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, TextScaled = true, Text = "!", ZIndex = 6,
 	}, badge)
 	Style.text(bang, 2)
-	-- hover grows, press squishes
-	local TweenService = game:GetService("TweenService")
-	local function to(v: number)
-		TweenService:Create(scale, TweenInfo.new(0.15, Enum.EasingStyle.Back), { Scale = v }):Play()
-	end
-	btn.MouseEnter:Connect(function()
-		to(1.08)
-	end)
-	btn.MouseLeave:Connect(function()
-		to(1)
-	end)
-	btn.Activated:Connect(function()
-		scale.Scale = 0.88
-		to(1)
-	end)
+	Style.feedback(btn)
 	return btn, badge
 end
 
@@ -216,7 +422,12 @@ function Style.wobble(gui: GuiObject, degrees: number?, speed: number?)
 	local d = degrees or 4
 	local s = speed or 3
 	local phase = math.random() * 6
-	game:GetService("RunService").RenderStepped:Connect(function()
+	local connection: RBXScriptConnection? = nil
+	connection = game:GetService("RunService").RenderStepped:Connect(function()
+		if not gui.Parent then
+			if connection then connection:Disconnect() end
+			return
+		end
 		gui.Rotation = math.sin(os.clock() * s + phase) * d
 	end)
 end
