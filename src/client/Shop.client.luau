@@ -14,6 +14,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local Format = require(ReplicatedStorage.Shared.Format)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
+local Icons = require(ReplicatedStorage.Shared.Icons)
 
 local player = Players.LocalPlayer
 local hud = player:WaitForChild("PlayerGui"):WaitForChild("CrushHud")
@@ -137,7 +138,7 @@ end)
 
 -- SHOP button + panel -----------------------------------------------------------
 local shopButton, shopBadge = Style.iconButton(gui, {
-	name = "ShopButton", icon = "🛒", art = "Shop", label = "SHOP", a = Color3.fromRGB(255, 110, 130), b = Color3.fromRGB(220, 40, 70),
+	name = "ShopButton", icon = "🛒", image = Icons.Shop, label = "SHOP", a = Color3.fromRGB(255, 110, 130), b = Color3.fromRGB(220, 40, 70),
 })
 Style.placeHudButton(shopButton, 1)
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() Style.placeHudButton(shopButton, 1) end)
@@ -179,14 +180,18 @@ local function section(title: string, order: number): Frame
 	return group
 end
 
+local PASS_ICONS: { [string]: string } = {
+	AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, Lucky = Icons.Lucky, OfflineEarnings = Icons.Offline,
+}
+
 type ShopCard = { desc: TextLabel, button: TextButton, update: () -> () }
 local shopCards: { ShopCard } = {}
 
-local function card(parent: Frame, order: number, title: string, color: Color3, onBuy: () -> ()): (TextLabel, TextButton)
+local function card(parent: Frame, order: number, title: string, color: Color3, onBuy: () -> (), image: string?): (TextLabel, TextButton)
 	local f = make("Frame", { LayoutOrder = order, Parent = parent })
 	Style.panel(f, Style.darken(color, 0.12), Style.darken(color, 0.48))
 	make("TextLabel", {
-		Position = UDim2.fromOffset(10, 14), Size = UDim2.new(1, -20, 0, 28), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
+		Position = UDim2.fromOffset(10, 14), Size = UDim2.new(1, -66, 0, 28), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
 		TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.new(1, 1, 1), Text = title, Parent = f,
 	}, { stroke(1.5) })
 	local desc = make("TextLabel", {
@@ -194,6 +199,9 @@ local function card(parent: Frame, order: number, title: string, color: Color3, 
 		TextWrapped = true, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top,
 		TextColor3 = Color3.fromRGB(210, 210, 220), Text = "", Parent = f,
 	})
+	if image then
+		Style.image(f, image, { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -6, 0, 6), Size = UDim2.fromOffset(46, 46), ZIndex = 2 })
+	end
 	local button = make("TextButton", {
 		AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -8), Size = UDim2.new(1, -20, 0, 40), BackgroundColor3 = GREEN,
 		Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "", Parent = f,
@@ -207,7 +215,7 @@ local passGrid = section("Passes (forever)", 1)
 for i, pass in Store.Passes do
 	local desc, button = card(passGrid, i, pass.title, pass.color, function()
 		buyPass(pass.perk)
-	end)
+	end, PASS_ICONS[pass.perk])
 	desc.Text = pass.desc
 	local function update()
 		if Store.hasPass(player, pass.perk) then
@@ -229,7 +237,7 @@ local boostGrid = section("Boosts", 3)
 for i, product in Store.Products do
 	local desc, button = card(boostGrid, i, product.title, product.color, function()
 		buyProduct(product.id)
-	end)
+	end, if product.id == "GoldenRush" then Icons.Golden else Icons.Cash)
 	local function update()
 		local tier = (player:GetAttribute("Tier") :: number?) or 1
 		if Store.CashPackShare[product.id] then
@@ -318,9 +326,9 @@ end)
 
 -- Featured pass card: gradient panel, "BEST!" ribbon, big icon, name and price.
 local FEATURED = {
-	{ perk = "AutoCrush", icon = "🤖", a = Color3.fromRGB(255, 120, 90), b = Color3.fromRGB(200, 40, 70) },
-	{ perk = "Lucky", icon = "🍀", a = Color3.fromRGB(255, 225, 90), b = Color3.fromRGB(230, 140, 20) },
-	{ perk = "OfflineEarnings", icon = "💤", a = Color3.fromRGB(130, 160, 255), b = Color3.fromRGB(70, 60, 210) },
+	{ perk = "AutoCrush", icon = Icons.AutoCrush, a = Color3.fromRGB(255, 120, 90), b = Color3.fromRGB(200, 40, 70) },
+	{ perk = "Lucky", icon = Icons.Lucky, a = Color3.fromRGB(255, 225, 90), b = Color3.fromRGB(230, 140, 20) },
+	{ perk = "OfflineEarnings", icon = Icons.Offline, a = Color3.fromRGB(130, 160, 255), b = Color3.fromRGB(70, 60, 210) },
 }
 local featuredCard = make("TextButton", {
 	Name = "FeaturedOffer", Size = UDim2.fromOffset(170, 170), BackgroundTransparency = 1, Text = "", LayoutOrder = 2, Parent = offers,
@@ -339,9 +347,9 @@ for _, f in FEATURED do
 		Text = pass.title, ZIndex = 2, Parent = p,
 	})
 	Style.text(title, 3)
-	make("TextLabel", {
+	make("ImageLabel", {
 		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 34), Size = UDim2.fromOffset(84, 84),
-		BackgroundTransparency = 1, TextScaled = true, Text = f.icon, ZIndex = 2, Parent = p,
+		BackgroundTransparency = 1, Image = f.icon, ScaleType = Enum.ScaleType.Fit, ZIndex = 2, Parent = p,
 	})
 	local price = make("TextLabel", {
 		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 1, -16), Size = UDim2.new(0.8, 0, 0, 36),

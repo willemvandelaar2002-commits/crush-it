@@ -13,6 +13,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local Format = require(ReplicatedStorage.Shared.Format)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
+local Icons = require(ReplicatedStorage.Shared.Icons)
 
 local player = Players.LocalPlayer
 local Claim = Net.event("ClaimReward")
@@ -36,7 +37,7 @@ end
 local gui = make("ScreenGui", { Name = "RewardsHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, player:WaitForChild("PlayerGui"))
 
 local button, badge = Style.iconButton(gui, {
-	name = "RewardsButton", icon = "🎁", art = "Rewards", label = "REWARDS", a = Color3.fromRGB(200, 120, 255), b = Color3.fromRGB(120, 50, 220),
+	name = "RewardsButton", icon = "🎁", image = Icons.Rewards, label = "REWARDS", a = Color3.fromRGB(200, 120, 255), b = Color3.fromRGB(120, 50, 220),
 })
 Style.placeHudButton(button, 2)
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() Style.placeHudButton(button, 2) end)
@@ -101,16 +102,10 @@ local function makeCard(parent: Frame, order: number, top: string, reward: any, 
 		Position = UDim2.fromOffset(6, 4), Size = UDim2.new(1, -12, 0, 20), BackgroundTransparency = 1, TextScaled = true, Text = top, ZIndex = 2,
 	}, frame)
 	Style.text(head, 2)
-	local icon = make("TextLabel", {
-		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 24), Size = UDim2.fromOffset(36, 36), BackgroundTransparency = 1,
-		TextScaled = true, Text = if golden then "★" else "", ZIndex = 2,
+	local icon = make("ImageLabel", {
+		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 24), Size = UDim2.fromOffset(44, 44), BackgroundTransparency = 1,
+		Image = if golden then Icons.Golden else Icons.Cash, ScaleType = Enum.ScaleType.Fit, ZIndex = 2,
 	}, frame)
-	if golden then
-		Style.text(icon, 2)
-		icon.TextColor3 = GOLD
-	else
-		Style.icon(icon, "Cash")
-	end
 	local amount = make("TextLabel", {
 		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 70), Size = UDim2.new(1, -12, 0, 22), BackgroundTransparency = 1,
 		TextScaled = true, Text = "", ZIndex = 2,
