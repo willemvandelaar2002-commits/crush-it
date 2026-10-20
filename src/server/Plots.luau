@@ -251,6 +251,7 @@ function Plots.create()
 		Moat.build(model, origin)
 		-- Scrap shop island behind the plot (water channel, bridge, gate, smelter, sell pad).
 		local shop = ScrapShop.build(model, origin, theme)
+		require(script.Parent.Helpers).build(model, origin)
 		local plot: Plot = { index = i, origin = origin, model = model, press = nil, ram = nil, bedTop = 0, ramRestY = 0, tier = 1, owner = nil, sign = label, shop = shop }
 		Plots.buildPress(plot, 1)
 		table.insert(plots, plot)
