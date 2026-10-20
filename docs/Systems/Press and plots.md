@@ -25,6 +25,7 @@
   juice splat for the apple, fluff for the teddy, electric zaps and glass
   shards for phone/TV, sparks and smoke for metal, dust for the house and
   statue, fire and an explosion for the planet.
+- Background music: `Music.client.luau` loops audio 113892640002952 in SoundService at 25% volume, continuing through respawns. Tune it in `Config.Music`.
 - Sounds: all ids in `Config.Sounds` (free Creator Store audio, preloaded on
   join). Every stroke: thud + the kind's hit sound + a short hydraulic hiss
   on your own press; crush: heavy thud + crush sound + coin; bigger press:

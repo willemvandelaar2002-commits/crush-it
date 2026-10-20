@@ -179,6 +179,12 @@ Config.Objects = {
 
 Config.MaxTier = #Config.Objects
 
+-- Background music plays locally and keeps looping through respawns.
+Config.Music = {
+	Id = 113892640002952,
+	Volume = 0.25,
+}
+
 -- Sound ids (all free Creator Store audio; swap freely, the client preloads them).
 Config.Sounds = {
 	Hiss = 9113052976, -- ram going back up
