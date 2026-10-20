@@ -356,7 +356,7 @@ Config.Helpers = {
 	},
 	-- cash a helper of `level` makes per tick, at your current press tier
 	Value = function(level: number, tier: number): number
-		return Config.Economy.ObjectValue(tier) * 0.25 * 2.6 ^ (level - 1)
+		return Config.Economy.ObjectValue(tier) * 2.6 ^ (level - 1)
 	end,
 	-- price of the next helper when you own `owned` of them
 	Cost = function(owned: number, tier: number): number

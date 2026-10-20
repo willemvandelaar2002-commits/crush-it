@@ -120,7 +120,7 @@ RunService.RenderStepped:Connect(function()
 			if (camPos - p.Position).Magnitude < 120 then
 				sparks(Vector3.new(p.Position.X, hit - 0.4, p.Position.Z))
 				if p:GetAttribute("Owner") == player.UserId then
-					pop(p.Position + Vector3.new(0, 3, 0), "+" .. Format.cash((p:GetAttribute("Value") :: number?) or 0))
+					pop(Vector3.new(p.Position.X, hit + 1.2, p.Position.Z), "+" .. Format.cash((p:GetAttribute("Value") :: number?) or 0))
 				end
 			end
 		end
