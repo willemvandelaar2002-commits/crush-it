@@ -104,7 +104,7 @@ function ScrapShop.build(plotModel: Model, origin: CFrame, theme: { [string]: Co
 	fluid.CFrame = at(0, -depth / 2 - 0.55, back - S.Gap / 2)
 	if lava then
 		fluid.Material = Enum.Material.CrackedLava
-		fluid.Color = C(255, 110, 30)
+		fluid.Color = C(200, 45, 15) -- deep red: bright orange read as yellow next to the yellow ground
 	else
 		fluid.Material = Enum.Material.Glass
 		fluid.Color = C(20, 18, 26)
@@ -120,8 +120,8 @@ function ScrapShop.build(plotModel: Model, origin: CFrame, theme: { [string]: Co
 	skin.Size = Vector3.new(F + 4, 0.1, S.Gap)
 	skin.CFrame = at(0, -0.5, back - S.Gap / 2)
 	skin.Material = if lava then Enum.Material.Neon else Enum.Material.Glass
-	skin.Color = if lava then C(255, 150, 40) else C(60, 40, 90)
-	skin.Transparency = if lava then 0.55 else 0.6
+	skin.Color = if lava then C(255, 70, 10) else C(60, 40, 90)
+	skin.Transparency = if lava then 0.7 else 0.6
 	skin.Reflectance = if lava then 0 else 0.5
 	skin.Parent = m
 	local tex = Instance.new("Texture")
@@ -129,8 +129,8 @@ function ScrapShop.build(plotModel: Model, origin: CFrame, theme: { [string]: Co
 	tex.Face = Enum.NormalId.Top
 	tex.StudsPerTileU = 6
 	tex.StudsPerTileV = 6
-	tex.Transparency = if lava then 0.6 else 0.75
-	tex.Color3 = if lava then C(255, 220, 120) else C(150, 110, 220)
+	tex.Transparency = if lava then 0.45 else 0.75
+	tex.Color3 = if lava then C(255, 170, 60) else C(150, 110, 220)
 	tex:SetAttribute("Flow", 2)
 	CollectionService:AddTag(tex, "FlowTexture")
 	tex.Parent = skin
