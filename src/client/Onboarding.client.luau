@@ -5,7 +5,7 @@
 -- and a "Nice! Next step." pop when a step is done.
 --   1. Crush Objects (n/3)          -> CRUSH button
 --   2. Pick Up The Scrap            -> the pile (arrows)
---   3. Sell Your Scrap              -> the sell pad of your scrap shop (arrows)
+--   3. Deposit Your Scrap, then Collect Your Cash -> the smelter pads (arrows)
 --   4. Buy An Upgrade               -> the Power pad (arrows) / Power row
 --   5. Buy A Bigger Press           -> the Bigger Press pad / row
 -- Gone for good once the press is bigger than the first one (or after a rebirth).
@@ -40,8 +40,8 @@ local touch = UserInputService.TouchEnabled and not UserInputService.KeyboardEna
 -- "Tutorial" + the step, under the goal bar
 local holder = Instance.new("Frame")
 holder.AnchorPoint = Vector2.new(0.5, 0)
-holder.Position = UDim2.new(0.5, 0, 0, if touch then 190 else 160)
-holder.Size = UDim2.fromOffset(if touch then 340 else 560, if touch then 64 else 92)
+holder.Position = UDim2.new(0.5, 0, 0, if touch then 190 else 168)
+holder.Size = UDim2.fromOffset(if touch then 320 else 480, if touch then 58 else 76)
 holder.BackgroundTransparency = 1
 holder.Visible = false
 holder.Parent = gui
@@ -130,7 +130,10 @@ local function current(): (number, string?, GuiObject?, string?)
 	end
 	if not sold and attr("Cash") <= 0 then
 		if attr("Scrap") > 0 then
-			return 3, "Sell Your Scrap (0/1)"
+			return 3, "Deposit Your Scrap (0/1)"
+		end
+		if attr("SmeltQueue") > 0 or attr("SmeltReady") > 0 then
+			return 3, "Collect Your Cash (0/1)"
 		end
 		return 2, "Pick Up The Scrap (0/1)"
 	end

@@ -101,6 +101,7 @@ function PlotDecor.gate(parent: Instance, cf: CFrame, width: number, accent: Col
 	local plate = Build.block(m, "NamePlate", Vector3.new(width + 1, 3.2, 0.6), cf * CFrame.new(0, h - 2.6, 0), accent, {})
 	Build.block(m, "PlateFrame", Vector3.new(width + 1.8, 4, 0.4), cf * CFrame.new(0, h - 2.6, 0), BLACK, {})
 	local label = surfaceText(plate, Enum.NormalId.Back, "Free plot", Color3.new(1, 1, 1))
+	label.Name = "OwnerName" -- Zone.client reads it
 	local back = surfaceText(plate, Enum.NormalId.Front, "Free plot", Color3.new(1, 1, 1))
 	label:GetPropertyChangedSignal("Text"):Connect(function()
 		back.Text = label.Text

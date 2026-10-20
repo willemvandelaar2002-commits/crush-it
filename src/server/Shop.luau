@@ -105,7 +105,10 @@ end
 
 local function grant(player: Player, productId: string)
 	local data = api.getData(player)
-	if productId == "GoldenRush" then
+	if productId == "FinishSmelt" then
+		require(script.Parent.Scrap).finishSmelt(player, data)
+		Purchased:FireClient(player, { id = productId, text = "Smelting done!" })
+	elseif productId == "GoldenRush" then
 		data.goldenRush = (data.goldenRush or 0) + Store.GoldenRushCount
 		player:SetAttribute("GoldenRush", data.goldenRush)
 		Purchased:FireClient(player, { id = productId, text = Store.GoldenRushCount .. " Golden objects coming up!" })

@@ -1,7 +1,7 @@
 --!strict
 -- Scrap HUD and effects:
 --   * a pill at the bottom centre: how much scrap you carry (worth in cash) and
---     "Sell it at your Scrap Shop!" (hidden at 0)
+--     "Deposit it at your Scrap Shop!" (hidden at 0)
 --   * picking scrap up: a quick high "clink" and the pill pops
 --   * selling (anyone's shop): the furnace flares, coins sound, big "+$X" over the
 --     smelter; for your own sale also a toast near the cash
@@ -65,7 +65,7 @@ hint.Size = UDim2.new(1, -72, 0, 20)
 hint.BackgroundTransparency = 1
 hint.TextScaled = true
 hint.TextXAlignment = Enum.TextXAlignment.Left
-hint.Text = "Sell it at your Scrap Shop!"
+hint.Text = "Deposit it at your Scrap Shop!"
 hint.ZIndex = 2
 hint.Parent = pill
 Style.text(hint, 2)
@@ -138,6 +138,69 @@ Net.event("ScrapPicked").OnClientEvent:Connect(function(msg)
 	pop(1.12)
 end)
 
+-- A small chunk that flies along an arc (local only, no physics).
+local function arc(from: Vector3, to: Vector3, size: Vector3, color: Color3, material: Enum.Material, duration: number, delay: number, height: number)
+	task.delay(delay, function()
+		local p = Instance.new("Part")
+		p.Anchored = true
+		p.CanCollide = false
+		p.CanQuery = false
+		p.CanTouch = false
+		p.CastShadow = false
+		p.Size = size
+		p.Color = color
+		p.Material = material
+		p.CFrame = CFrame.new(from)
+		p.Parent = Workspace
+		local spin = CFrame.Angles(math.random() * 6, math.random() * 6, math.random() * 6)
+		local t = 0
+		local conn
+		conn = game:GetService("RunService").RenderStepped:Connect(function(dt)
+			t += dt / duration
+			if t >= 1 then
+				conn:Disconnect()
+				p:Destroy()
+				return
+			end
+			local pos = from:Lerp(to, t) + Vector3.new(0, math.sin(t * math.pi) * height, 0)
+			p.CFrame = CFrame.new(pos) * spin * CFrame.Angles(t * 8, t * 5, 0)
+		end)
+	end)
+end
+
+-- Depositing: chunks of scrap arc from you into the smelter's hopper.
+Net.event("ScrapDeposited").OnClientEvent:Connect(function(msg)
+	local mine = msg.owner == player
+	local n = if mine then 10 else 5
+	for i = 1, n do
+		local tint = ({ Color3.fromRGB(150, 155, 165), Color3.fromRGB(120, 125, 135), Color3.fromRGB(190, 140, 90) })[(i % 3) + 1]
+		local jitter = Vector3.new(math.random() - 0.5, 0, math.random() - 0.5) * 3
+		arc(msg.from + Vector3.new(0, 2, 0) + jitter, msg.to + jitter * 0.4, Vector3.new(1, 0.7, 0.8) * (0.8 + math.random() * 0.6),
+			tint, Enum.Material.Metal, 0.55, i * 0.04, 6)
+	end
+	if mine then
+		sound(Config.Sounds.MetalHit, 0.5, 1.4)
+		task.delay(0.6, function()
+			sound(Config.Sounds.Hiss, 0.4, 1.2, msg.to)
+		end)
+	end
+end)
+
+-- Collecting cash: green bills burst out of the pad and fly into you.
+local function cashBurst(at: Vector3)
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	for i = 1, 14 do
+		local a = math.random() * math.pi * 2
+		local out = at + Vector3.new(math.cos(a), 0, math.sin(a)) * (2 + math.random() * 3) + Vector3.new(0, 1, 0)
+		arc(at + Vector3.new(0, 1, 0), out, Vector3.new(1.4, 0.35, 0.8), Color3.fromRGB(90, 220, 80), Enum.Material.SmoothPlastic, 0.35, i * 0.02, 3)
+		task.delay(0.37 + i * 0.02, function()
+			local target = if root and root.Parent then root.Position else at + Vector3.new(0, 3, 0)
+			arc(out, target, Vector3.new(1.4, 0.35, 0.8), Color3.fromRGB(110, 240, 90), Enum.Material.SmoothPlastic, 0.3, 0, 2)
+		end)
+	end
+end
+
 Net.event("ScrapSold").OnClientEvent:Connect(function(msg)
 	local mine = msg.owner == player
 	-- furnace flare on that shop
@@ -166,6 +229,9 @@ Net.event("ScrapSold").OnClientEvent:Connect(function(msg)
 		return
 	end
 	floatText(msg.position + Vector3.new(0, 3, 0), "+" .. Format.cash(msg.amount), Color3.fromRGB(150, 255, 110), if mine then 12 else 8)
+	if mine then
+		cashBurst(msg.position)
+	end
 	sound(Config.Sounds.Coin, if mine then 0.8 else 0.4, 1, msg.position)
 	if mine then
 		task.delay(0.12, function()

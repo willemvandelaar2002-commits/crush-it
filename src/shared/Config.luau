@@ -329,6 +329,19 @@ Config.ScrapShop = {
 	Width = 48,
 }
 
+-- The smelter (Yuzu stand / Destroy a Vault "Smelt"): deposited scrap is smelted
+-- into cash over time and waits on the green Collect Cash pad.
+-- Everything deposited at once takes SmeltSeconds(level) to finish.
+Config.Smelter = {
+	SmeltSeconds = function(level: number): number
+		return math.max(1, 8 * 0.88 ^ level)
+	end,
+	SpeedCost = function(level: number): number
+		return 20 * 1.7 ^ level
+	end,
+	SpeedMax = 17,
+}
+
 -- Friend boost: extra cash for every Roblox friend in your server (server/FriendBoost.luau).
 Config.FriendBoost = { Per = 0.1, Max = 0.5 }
 

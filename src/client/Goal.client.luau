@@ -33,7 +33,7 @@ gui.Parent = player:WaitForChild("PlayerGui")
 local bar = Instance.new("TextButton")
 bar.Name = "GoalBar"
 bar.AnchorPoint = Vector2.new(0.5, 0)
-bar.Position = UDim2.new(0.5, 0, 0, 8)
+bar.Position = UDim2.new(0.5, 0, 0, 44)
 bar.Size = UDim2.new(if TOUCH then 0.5 else 0.42, 0, 0, if TOUCH then 32 else 42)
 bar.BackgroundColor3 = Color3.fromRGB(25, 30, 28)
 bar.AutoButtonColor = false
@@ -55,7 +55,7 @@ scale.Parent = bar
 local function fitBar()
 	local compact = Style.compact()
 	bar.AnchorPoint = if compact then Vector2.new(1, 0) else Vector2.new(0.5, 0)
-	bar.Position = if compact then UDim2.new(1, -14, 0, 8) else UDim2.new(0.5, 0, 0, 8)
+	bar.Position = if compact then UDim2.new(1, -14, 0, 8) else UDim2.new(0.5, 0, 0, 44) -- the zone label (Zone.client) sits above it
 	bar.Size = if compact then UDim2.new(1, -220, 0, 32) else UDim2.new(0.38, 0, 0, 44)
 end
 workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitBar)

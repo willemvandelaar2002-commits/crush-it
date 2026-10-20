@@ -72,22 +72,60 @@ local function billboard(adornee: BasePart): (TextLabel, TextLabel)
 	return title, price
 end
 
+-- One walk-on pad: dark frame, coloured studded top ("Pad_<id>", attribute
+-- Rest = its resting CFrame for the press-down bounce), a glossy shine and a
+-- floating two-line label (PadLabel.Title / PadLabel.Price). cf = ground centre.
+function Pads.make(parent: Instance, cf: CFrame, id: string, color: Color3, titleText: string, size: number?): BasePart
+	local s = size or SIZE
+	Build.block(parent, "PadFrame", Vector3.new(s + 1, 0.3, s + 1), cf * CFrame.new(0, 0.15, 0), BLACK, {})
+	local top = Build.block(parent, "Pad_" .. id, Vector3.new(s, 0.5, s), cf * CFrame.new(0, 0.25, 0), color)
+	top:SetAttribute("PadId", id)
+	top:SetAttribute("Rest", top.CFrame)
+	local shine = Build.block(parent, "PadShine", Vector3.new(s - 2, 0.06, s - 2), cf * CFrame.new(0, 0.53, 0), Style.lighten(color, 0.35), {})
+	shine.Material = Enum.Material.Neon
+	shine.Transparency = 0.55
+	local title, price = billboard(top)
+	title.Text = titleText
+	price.Text = ""
+	return top
+end
+
+-- Is `root` standing on pad `top`?
+function Pads.on(top: BasePart, root: BasePart): boolean
+	local rel = top.CFrame:PointToObjectSpace(root.Position)
+	local half = top.Size.X / 2 + 0.5
+	return math.abs(rel.X) <= half and math.abs(rel.Z) <= half and rel.Y > 0 and rel.Y < 6
+end
+
+-- Sets a pad's label (only writes when it changed).
+function Pads.label(top: BasePart, title: string, price: string, color: Color3?)
+	local gui = top:FindFirstChild("PadLabel") :: any
+	if not gui then
+		return
+	end
+	if gui.Title.Text ~= title then
+		gui.Title.Text = title
+	end
+	if gui.Price.Text ~= price then
+		gui.Price.Text = price
+	end
+	if color then
+		gui.Price.TextColor3 = color
+	end
+end
+
+Pads.press = function(top: BasePart)
+	local rest = top:GetAttribute("Rest") :: CFrame
+	top.CFrame = rest * CFrame.new(0, -0.22, 0)
+	TweenService:Create(top, TweenInfo.new(0.25, Enum.EasingStyle.Back), { CFrame = rest }):Play()
+end
+
 -- Builds the pads + stats board into plotModel ("Pads" model).
 function Pads.build(plotModel: Model, origin: CFrame)
 	local m = Instance.new("Model")
 	m.Name = "Pads"
 	for _, def in Pads.Defs do
-		local cf = origin * CFrame.new(def.x, 0, PAD_Z)
-		Build.block(m, "PadFrame", Vector3.new(SIZE + 1, 0.3, SIZE + 1), cf * CFrame.new(0, 0.15, 0), BLACK, {})
-		local top = Build.block(m, "Pad_" .. def.id, Vector3.new(SIZE, 0.5, SIZE), cf * CFrame.new(0, 0.25, 0), def.color)
-		top:SetAttribute("PadId", def.id)
-		top:SetAttribute("Rest", top.CFrame)
-		local shine = Build.block(m, "PadShine", Vector3.new(SIZE - 2, 0.06, SIZE - 2), cf * CFrame.new(0, 0.53, 0), Style.lighten(def.color, 0.35), {})
-		shine.Material = Enum.Material.Neon
-		shine.Transparency = 0.55
-		local title, price = billboard(top)
-		title.Text = def.id
-		price.Text = ""
+		Pads.make(m, origin * CFrame.new(def.x, 0, PAD_Z), def.id, def.color, NAMES[def.id] or def.id)
 	end
 	-- stats board (back left, turned toward the spawn)
 	local boardCf = origin * CFrame.new(-36, 0, -34) * CFrame.Angles(0, math.rad(30), 0)

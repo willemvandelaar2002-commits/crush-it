@@ -13,7 +13,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Build = require(script.Parent.Kit.Build)
-local RobuxSigns = require(script.Parent.RobuxSigns)
+local Pads = require(script.Parent.Pads)
 local Moat = require(script.Parent.Moat)
 
 local ScrapShop = {}
@@ -28,9 +28,13 @@ local ALL = { Enum.NormalId.Top, Enum.NormalId.Front, Enum.NormalId.Back, Enum.N
 
 export type Shop = {
 	model: Model,
-	pad: BasePart, -- the sell pad's fill (stand on it)
-	furnace: BasePart, -- glowing mouth (flares when you sell)
-	hopper: BasePart, -- top of the smelter (sold scrap flies in here)
+	pad: BasePart, -- Deposit Scrap pad (stand on it: your scrap goes into the smelter)
+	collect: BasePart, -- Collect Cash pad (smelted cash waits here)
+	speed: BasePart, -- + Smelt Speed pad (cash upgrade)
+	finish: BasePart, -- Finish Now pad (Robux product)
+	board: Instance, -- SurfaceGui "Smelting" with labels Head / Amount / Rate and Bar.Fill
+	furnace: BasePart, -- glowing mouth (flares when you collect)
+	hopper: BasePart, -- top of the smelter (deposited scrap flies in here)
 }
 
 local function cylinder(parent: Instance, name: string, length: number, d: number, cf: CFrame, color: Color3, mat: Enum.Material?): Part
@@ -120,14 +124,15 @@ function ScrapShop.build(plotModel: Model, origin: CFrame, theme: { [string]: Co
 	signText(beam, Enum.NormalId.Back, "SCRAP SHOP", C(255, 255, 255))
 	signText(beam, Enum.NormalId.Front, "SCRAP SHOP", C(255, 255, 255))
 
-	-- Sell pad (yellow, framed) with a floating label.
-	local padZ = islandFront - 7.5 -- right behind the gate
-	local padModel = Build.inset(m, "SellPad", at(0, 0, padZ), 8, 8, C(255, 210, 60), theme.dark)
-	local pad = padModel:FindFirstChild("Fill") :: BasePart
-	pad.Name = "SellPadFill"
-	pad.Material = Enum.Material.Neon
-	pad.Transparency = 0.25
-	Build.label(pad, "SELL SCRAP", C(255, 220, 90), 3, Vector2.new(12, 2.8))
+	-- Pads (Yuzu stand style): Deposit right behind the gate, Collect Cash left,
+	-- + Smelt Speed right, Finish Now next to the smelter.
+	local padZ = islandFront - 7.5
+	local pad = Pads.make(m, at(0, 0, padZ), "Deposit", C(255, 214, 70), "Deposit Scrap")
+	pad.Name = "SellPadFill" -- (name kept: the guide arrows look for it)
+	local collect = Pads.make(m, at(-13, 0, padZ), "Collect", C(110, 230, 80), "Collect Cash")
+	collect.Name = "CollectPadFill"
+	local speed = Pads.make(m, at(13, 0, padZ), "SmeltSpeed", C(255, 120, 60), "+ Smelt Speed")
+	local finish = Pads.make(m, at(-16.5, 0, islandFront - 19), "FinishSmelt", C(255, 160, 40), "Finish Now", 6)
 
 	-- Smelter at the back of the island.
 	local machineZ = islandMid - 6
@@ -189,12 +194,52 @@ function ScrapShop.build(plotModel: Model, origin: CFrame, theme: { [string]: Co
 		Build.block(m, "ShopBeltRail", Vector3.new(0.6, 0.8, beltLen), at(x * 2.5, 0.4, (beltStart + beltEnd) / 2), YELLOW, ALL)
 	end
 
-	-- Auto Collect sign next to the pad
-	local signs = RobuxSigns.build(m, theme.edge, { "AutoCollect" })
-	signs:PivotTo(at(14, 0, padZ + 1) * CFrame.Angles(0, math.rad(-25), 0))
+	-- "Smelting" board (the Yuzu stand's "Selling Yuzu 9.98K / 1 Yuzu/Sec" sign)
+	local boardModel, face = Build.signFrame(m, at(16, 0, islandFront - 20) * CFrame.Angles(0, math.rad(-20), 0), 11, 7, theme.dark)
+	boardModel.Name = "SmeltBoard"
+	face.Color = C(250, 236, 190)
+	local gui = Instance.new("SurfaceGui")
+	gui.Name = "Smelting"
+	gui.Face = Enum.NormalId.Back
+	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	gui.PixelsPerStud = 40
+	gui.LightInfluence = 0
+	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	gui.Parent = face
+	local function line(name: string, y: number, h: number, color: Color3, stroke: number, text: string)
+		local l = Instance.new("TextLabel")
+		l.Name = name
+		l.Position = UDim2.fromScale(0.05, y)
+		l.Size = UDim2.fromScale(0.9, h)
+		l.BackgroundTransparency = 1
+		l.TextScaled = true
+		l.Text = text
+		l.Parent = gui
+		Style.text(l, stroke)
+		l.TextColor3 = color
+	end
+	line("Head", 0.04, 0.22, C(255, 196, 60), 4, "Smelting Scrap")
+	line("Amount", 0.27, 0.3, C(130, 255, 90), 5, "$0")
+	line("Rate", 0.58, 0.16, C(120, 200, 255), 3, "Deposit scrap to smelt it")
+	local bar = Instance.new("Frame")
+	bar.Name = "Bar"
+	bar.Position = UDim2.fromScale(0.08, 0.8)
+	bar.Size = UDim2.fromScale(0.84, 0.12)
+	bar.BackgroundColor3 = C(40, 40, 48)
+	bar.Parent = gui
+	local barCorner = Instance.new("UICorner")
+	barCorner.CornerRadius = UDim.new(0.5, 0)
+	barCorner.Parent = bar
+	local fill = Instance.new("Frame")
+	fill.Name = "Fill"
+	fill.Size = UDim2.fromScale(0, 1)
+	fill.BackgroundColor3 = C(255, 150, 40)
+	fill.Parent = bar
+	local fillCorner = barCorner:Clone()
+	fillCorner.Parent = fill
 
 	m.Parent = plotModel
-	return { model = m, pad = pad, furnace = furnace, hopper = hopper }
+	return { model = m, pad = pad, collect = collect, speed = speed, finish = finish, board = gui, furnace = furnace, hopper = hopper }
 end
 
 return ScrapShop

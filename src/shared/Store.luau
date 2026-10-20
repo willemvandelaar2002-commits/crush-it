@@ -25,6 +25,7 @@ Store.Products = {
 	{ id = "CashSmall", productId = 0, price = 29, title = "Cash Pile", desc = "25% of your next press", color = Color3.fromRGB(80, 200, 110) },
 	{ id = "CashMedium", productId = 0, price = 79, title = "Cash Stack", desc = "A whole next press", color = Color3.fromRGB(60, 180, 90) },
 	{ id = "CashLarge", productId = 0, price = 199, title = "Cash Vault", desc = "4x your next press", color = Color3.fromRGB(40, 160, 80) },
+	{ id = "FinishSmelt", productId = 0, price = 19, title = "Finish Now", desc = "Your smelter finishes all its scrap at once", color = Color3.fromRGB(255, 140, 40) },
 	{ id = "GoldenRush", productId = 0, price = 49, title = "Golden Rush", desc = "Your next 10 objects are Golden", color = Color3.fromRGB(255, 200, 50) },
 } :: { Product }
 

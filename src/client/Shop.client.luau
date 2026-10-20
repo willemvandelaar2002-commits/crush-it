@@ -244,7 +244,7 @@ for i, product in Store.Products do
 		if Store.CashPackShare[product.id] then
 			desc.Text = "+" .. Format.cash(Store.cashPackAmount(product.id, tier)) .. " cash\n(" .. product.desc .. ")"
 		else
-			local left = (player:GetAttribute("GoldenRush") :: number?) or 0
+			local left = if product.id == "GoldenRush" then (player:GetAttribute("GoldenRush") :: number?) or 0 else 0
 			desc.Text = product.desc .. (if left > 0 then "\n(" .. left .. " left)" else "")
 		end
 		button.Text = if product.productId == 0 then "SOON" else "R$ " .. product.price
