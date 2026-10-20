@@ -8,12 +8,38 @@ and require them.
 - `Style.studs(part, faces?, perTile?)` stud texture (free image 7447638591, 2 studs/tile)
 - `Style.theme("Teal" | "Scrap")` world colours: ground, platform, edge, path, dark, pad, light
 - `Style.panel(frame, colorA, colorB?)` gradient panel, dark outline, white inner border, studs
-- `Style.button(button, color?)` glossy green (or any colour) button; `Style.setButtonColor`
+- `Style.button(button, color?)` glossy green (or any colour) button, with hover, press and gamepad-focus feedback; `Style.setButtonColor` retains the gloss
 - `Style.text(label, stroke?)` white Fredoka text with dark outline
 - `Style.studsImage(gui, tile, transparency)` stud pattern in UI
-- `Style.iconButton(parent, {name, icon, label, a, b?, size?})` -> (button, badge): big tilted gradient tile with an emoji, outlined label and a red "!" badge; grows on hover, squishes on click
+- `Style.iconButton(parent, {name, icon, label, a, b?, size?, art?})` -> (button, badge): tilted gradient tile, outlined label and red "!" badge; optional `art` selects the vector artwork below, otherwise the original `icon` text still works
+- `Style.icon(parent, "Book" | "Shop" | "Rewards" | "Cash")` -> Frame: reusable cartoony vector artwork built from GUI shapes, without uploaded image dependencies
+- `Style.feedback(button)` hover/press/gamepad-focus scale feedback for an otherwise custom button
+- `Style.compact()` and `Style.placeHudButton(button, slot)` compact-layout check and consistent top-left navigation slots (0-based)
+- `Style.grid(container, minWidth, height, gap?)` reflows an existing UIGridLayout to fill the available width
+- `Style.scroll(scrollingFrame)` consistent scrollbar and padding to leave room for card outlines
+- `Style.modal(panel)` adds a click-outside backdrop, raises its ScreenGui while open, and closes any previous modal; `Style.setOpen(panel, open)` animates opening/closing and protects against stale close callbacks; `Style.hasModal()` lets tutorials/input pause while a panel has focus
 - `Style.rainbow(gui, speed?)` moving rainbow gradient (client only)
 - `Style.wobble(gui, degrees?, speed?)` gentle tilt back and forth (client only)
+
+The original Style helper names and arguments are unchanged. Panel, button and
+text decorations are named and updated in place, so repeated styling does not
+stack effects. Use Sibling ZIndexBehavior for ScreenGuis and SurfaceGuis;
+decorations sit beneath content. Keep panel decorations outside list/grid
+layouts (the leaderboard uses a separate content frame).
+
+Crush It's book, shop, rewards and offline card share modal focus and studded
+colour panels. Book/shop/rewards grids adapt to narrow screens. The HUD and
+world board use the same wider upgrade rows; phone HUD rows have a full-row
+tap target and scroll above the thumbstick. Compact HUDs collapse the
+leaderboard initially and hide offers; all passes remain available in Shop.
+The cash label animates increases and snaps to the new balance after spending.
+
+Validation for the 20 Oct polish: tested in Studio Play (1080p-ish window). Fixes
+after that test: CRUSH and AUTO stay solid colours (a Style.button gradient tints the
+label text too), the leaderboard only starts collapsed on phones (the viewport isn't
+final when the script starts), the "+$X" pop sits next to the cash, offers shrink
+a bit more to clear the taller leaderboard, and the server-built Robux signs use
+Sibling ZIndex. Phone layouts are still untested on a real device.
 
 ## server/Kit/Leaderboard.luau
 - `Leaderboard.start({ store, score = fn(player) -> number, top? = 50, every? = 120 })`

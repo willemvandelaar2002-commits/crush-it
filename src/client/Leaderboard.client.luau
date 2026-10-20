@@ -12,6 +12,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
+local UserInputService = game:GetService("UserInputService")
 
 local Format = require(ReplicatedStorage.Shared.Format)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
@@ -44,28 +45,30 @@ local function make(class: string, props: { [string]: any }, parent: Instance?):
 	return i
 end
 
-local gui = make("ScreenGui", { Name = "LeaderboardHud", ResetOnSpawn = false, DisplayOrder = 1 }, player:WaitForChild("PlayerGui"))
+local gui = make("ScreenGui", { Name = "LeaderboardHud", ResetOnSpawn = false, DisplayOrder = 1, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, player:WaitForChild("PlayerGui"))
 
 local panel = make("Frame", {
 	Name = "Leaderboard", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 8),
-	Size = UDim2.fromOffset(WIDTH, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundColor3 = BG, BackgroundTransparency = 0.25,
+	Size = UDim2.fromOffset(WIDTH, 226), BackgroundColor3 = BG,
 }, gui)
-make("UICorner", { CornerRadius = UDim.new(0, 10) }, panel)
-make("UIStroke", { Thickness = 2, Color = Color3.fromRGB(0, 0, 0), Transparency = 0.4 }, panel)
-make("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder }, panel)
-make("UIPadding", { PaddingBottom = UDim.new(0, 6) }, panel)
+Style.panel(panel, Color3.fromRGB(55, 104, 159), Color3.fromRGB(30, 47, 84))
+-- Keep decorations outside the list layout so studs/borders cannot become rows.
+local content = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1 }, panel)
+make("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder }, content)
+make("UIPadding", { PaddingBottom = UDim.new(0, 6) }, content)
 
 -- Tabs + close -------------------------------------------------------------------
-local tabBar = make("Frame", { Name = "Tabs", Size = UDim2.new(1, 0, 0, 34), BackgroundTransparency = 1, LayoutOrder = 1 }, panel)
+local tabBar = make("Frame", { Name = "Tabs", Size = UDim2.new(1, 0, 0, 38), BackgroundTransparency = 1, LayoutOrder = 1 }, content)
 local TABS = { "Here", "Friends", "Global" }
 local tabButtons: { [string]: TextButton } = {}
 local current = "Here"
 for i, name in TABS do
 	local b = make("TextButton", {
-		Name = name, Position = UDim2.new((i - 1) * 0.3, 4, 0, 4), Size = UDim2.new(0.3, -4, 1, -8), BackgroundColor3 = BG,
+		Name = name, Position = UDim2.new((i - 1) * 0.28, 6, 0, 4), Size = UDim2.new(0.28, -4, 1, -8), BackgroundColor3 = BG,
 		BackgroundTransparency = 1, Text = name, TextScaled = true, AutoButtonColor = false,
 	}, tabBar)
 	Style.text(b, 1.5)
+	Style.feedback(b)
 	make("UIPadding", { PaddingTop = UDim.new(0, 3), PaddingBottom = UDim.new(0, 3) }, b)
 	make("Frame", {
 		Name = "Underline", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, 2), Size = UDim2.new(0.8, 0, 0, 3),
@@ -77,8 +80,9 @@ local closeButton = make("TextButton", {
 	AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -6, 0.5, 0), Size = UDim2.fromOffset(24, 24), BackgroundTransparency = 1,
 	Text = "X", TextScaled = true, TextColor3 = Color3.fromRGB(200, 200, 210), Font = Enum.Font.FredokaOne,
 }, tabBar)
+Style.button(closeButton, Color3.fromRGB(235, 77, 85))
 
-local header = make("Frame", { Size = UDim2.new(1, 0, 0, 18), BackgroundTransparency = 1, LayoutOrder = 2 }, panel)
+local header = make("Frame", { Size = UDim2.new(1, 0, 0, 18), BackgroundTransparency = 1, LayoutOrder = 2 }, content)
 local function headerText(text: string, x: number, align: Enum.TextXAlignment)
 	make("TextLabel", {
 		Position = UDim2.new(x, if x == 0 then 10 else -10, 0, 0), Size = UDim2.new(0.5, 0, 1, 0), AnchorPoint = Vector2.new(x, 0),
@@ -92,23 +96,35 @@ headerText("Cash", 1, Enum.TextXAlignment.Right)
 local list = make("ScrollingFrame", {
 	Name = "Rows", Size = UDim2.new(1, 0, 0, ROWS * ROW_H), BackgroundTransparency = 1, BorderSizePixel = 0, LayoutOrder = 3,
 	ScrollBarThickness = 4, CanvasSize = UDim2.new(), AutomaticCanvasSize = Enum.AutomaticSize.Y,
-}, panel)
+}, content)
 make("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder }, list)
 
 local pinned = make("Frame", {
 	Name = "You", Size = UDim2.new(1, 0, 0, ROW_H), BackgroundTransparency = 1, LayoutOrder = 4, Visible = false,
-}, panel)
+}, content)
 local statusLabel = make("TextLabel", {
 	Size = UDim2.new(1, -20, 0, 34), BackgroundTransparency = 1, LayoutOrder = 5, Visible = false, TextWrapped = true,
 	Font = Enum.Font.GothamMedium, TextSize = 12, TextColor3 = Color3.fromRGB(170, 175, 185), Position = UDim2.fromOffset(10, 0),
-}, panel)
+}, content)
 
 -- Collapsed button.
 local openButton = make("TextButton", {
 	AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 8), Size = UDim2.fromOffset(46, 46),
 	BackgroundColor3 = BG, BackgroundTransparency = 0.25, Text = "🏆", TextScaled = true, Visible = false,
 }, gui)
-make("UICorner", { CornerRadius = UDim.new(0, 10) }, openButton)
+Style.button(openButton, Color3.fromRGB(71, 145, 239))
+local function fitLeaderboard()
+	local compact = Style.compact()
+	panel.Position = UDim2.new(1, -10, 0, if compact then 86 else 8)
+	openButton.Position = UDim2.new(1, -12, 0, if compact then 146 else 8)
+end
+-- Start collapsed on phones only (the camera's viewport isn't final yet when this runs).
+if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
+	panel.Visible = false
+	openButton.Visible = true
+end
+workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitLeaderboard)
+fitLeaderboard()
 closeButton.Activated:Connect(function()
 	panel.Visible = false
 	openButton.Visible = true

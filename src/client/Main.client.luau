@@ -53,13 +53,13 @@ local function stroke(t: number): UIStroke
 	return make("UIStroke", { Thickness = t, Color = Color3.new(0, 0, 0), Transparency = 0.2 })
 end
 
-local gui = make("ScreenGui", { Name = "CrushHud", ResetOnSpawn = false, IgnoreGuiInset = false, Parent = player:WaitForChild("PlayerGui") })
+local gui = make("ScreenGui", { Name = "CrushHud", ResetOnSpawn = false, IgnoreGuiInset = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, Parent = player:WaitForChild("PlayerGui") })
 
 -- Cash: big in the bottom-left corner like Destroy a Vault (top centre on
 -- phones, where the thumbstick lives bottom-left). The goal bar is top centre
 -- (Goal.client.luau).
 local TOUCH = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
-local CASH_SIZE = if TOUCH then Vector2.new(220, 40) else Vector2.new(320, 64)
+local CASH_SIZE = if TOUCH then Vector2.new(180, 40) else Vector2.new(320, 64)
 local cashLabel = make("TextLabel", {
 	Name = "Cash",
 	AnchorPoint = if TOUCH then Vector2.new(0.5, 0) else Vector2.new(0, 1),
@@ -69,16 +69,17 @@ local cashLabel = make("TextLabel", {
 	TextColor3 = Color3.fromRGB(110, 255, 90), Text = "$0", Parent = gui,
 }, { make("UIStroke", { Thickness = 4, Color = Color3.fromRGB(20, 40, 15) }) })
 if not TOUCH then
-	make("TextLabel", {
+	local cashIcon = make("Frame", {
 		Name = "CashIcon", AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 12, 1, -40), Size = UDim2.fromOffset(66, 66),
-		BackgroundTransparency = 1, Font = FONT, TextScaled = true, Text = "💵", Rotation = -10, Parent = gui,
+		BackgroundTransparency = 1, Rotation = -10, Parent = gui,
 	})
+	Style.icon(cashIcon, "Cash")
 end
 
 local multLabel = make("TextLabel", {
 	AnchorPoint = if TOUCH then Vector2.new(0, 0.5) else Vector2.new(0, 1),
 	Position = if TOUCH then UDim2.new(1, 4, 0.5, 0) else UDim2.new(0, 2, 0, 2),
-	Size = UDim2.fromOffset(110, 24),
+	Size = UDim2.fromOffset(if TOUCH then 52 else 110, 24),
 	BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left,
 	TextColor3 = GOLD, Text = "", Parent = cashLabel,
 }, { stroke(2) })
@@ -87,7 +88,7 @@ local multLabel = make("TextLabel", {
 -- Roblox's invite dialog. The server sets FriendBoost (server/FriendBoost.luau).
 local friendRow = make("Frame", {
 	Name = "FriendBoost", AnchorPoint = Vector2.new(0, 1),
-	Position = if TOUCH then UDim2.fromOffset(12, 150) else UDim2.new(0, 14, 1, -10), Size = UDim2.fromOffset(if TOUCH then 200 else 260, if TOUCH then 24 else 30),
+	Position = if TOUCH then UDim2.new(0.5, -96, 0, 145) else UDim2.new(0, 14, 1, -10), Size = UDim2.fromOffset(if TOUCH then 192 else 260, if TOUCH then 26 else 30),
 	BackgroundTransparency = 1, Parent = gui,
 })
 local friendLabel = make("TextLabel", {
@@ -124,7 +125,7 @@ end)
 
 -- Object + HP bar (under the cash) -------------------------------------------
 local objFrame = make("Frame", {
-	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, if TOUCH then 118 else 80), Size = UDim2.fromOffset(260, 44),
+	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, if TOUCH then 154 else 80), Size = UDim2.fromOffset(if TOUCH then 220 else 280, 48),
 	BackgroundTransparency = 1, Parent = gui,
 })
 local objName = make("TextLabel", {
@@ -135,6 +136,9 @@ local hpBack = make("Frame", {
 	Position = UDim2.fromOffset(0, 24), Size = UDim2.new(1, 0, 0, 16), BackgroundColor3 = DARK, Parent = objFrame,
 }, { corner(8), stroke(2) })
 local hpFill = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = RED, Parent = hpBack }, { corner(8) })
+hpFill.BackgroundColor3 = Color3.new(1, 1, 1)
+make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(255, 149, 130), RED), Parent = hpFill })
+Style.studsImage(hpFill, 18, 0.85)
 
 -- CRUSH button (bottom right) -------------------------------------------------
 local crushButton = make("TextButton", {
@@ -143,6 +147,8 @@ local crushButton = make("TextButton", {
 	BackgroundColor3 = RED, Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "CRUSH",
 	AutoButtonColor = false, Parent = gui,
 }, { make("UICorner", { CornerRadius = UDim.new(1, 0) }), make("UIStroke", { Thickness = 5, Color = Color3.fromRGB(120, 20, 20) }), make("UIPadding", { PaddingLeft = UDim.new(0, 18), PaddingRight = UDim.new(0, 18) }) })
+-- Solid red with white text (a Style.button gradient would tint the text too); press feedback only.
+Style.feedback(crushButton)
 local keyHint = make("TextLabel", {
 	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 1, 4), Size = UDim2.fromOffset(150, 18),
 	BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "hold  [F]",
@@ -157,6 +163,7 @@ end
 -- Holding ---------------------------------------------------------------------
 local holds = 0 -- button / key / gamepad can all hold at once
 local function setHold(delta: number)
+	if Style.hasModal() then delta = 0; holds = 0 end
 	holds = math.max(0, holds + delta)
 	crushButton.BackgroundColor3 = if holds > 0 then Color3.fromRGB(190, 50, 45) else RED
 end
@@ -191,6 +198,7 @@ UserInputService.WindowFocusReleased:Connect(function()
 end)
 task.spawn(function()
 	while true do
+		if Style.hasModal() then setHold(0) end
 		if holds > 0 then
 			CrushRemote:FireServer() -- the server enforces the Speed cooldown
 		end
@@ -199,15 +207,28 @@ task.spawn(function()
 end)
 
 -- Upgrades (left side) ------------------------------------------------------
-local panel = make("Frame", {
+local panel = make("ScrollingFrame", {
 	Name = "Upgrades",
-	AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(262, 0),
-	AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = gui,
+	AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(300, 0),
+	AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(), BackgroundTransparency = 1,
+	BorderSizePixel = 0, Parent = gui,
 }, { make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }) })
+Style.scroll(panel)
 local panelScale = make("UIScale", { Parent = panel })
 local function fitPanel()
-	local h = Workspace.CurrentCamera.ViewportSize.Y
-	panelScale.Scale = math.clamp((h - 150) / 400, 0.55, 0.9)
+	local viewport = Workspace.CurrentCamera.ViewportSize
+	panelScale.Scale = if Style.compact() then 0.64 else math.clamp((viewport.Y - 250) / 444, 0.65, 0.95)
+	panel.Position = UDim2.new(0, 10, 0.5, 18)
+	panel.AnchorPoint = Vector2.new(0, 0.5)
+	panel.Size = UDim2.fromOffset(316, 444)
+	-- On landscape phones the rows scroll in the space above the thumbstick.
+	if TOUCH then
+		local top = if viewport.Y > viewport.X then 246 else 88
+		local height = math.clamp(viewport.Y - top - 170, 72, 444 * panelScale.Scale)
+		panel.Position = UDim2.fromOffset(10, top)
+		panel.AnchorPoint = Vector2.zero
+		panel.Size = UDim2.fromOffset(316, height / panelScale.Scale)
+	end
 end
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitPanel)
 fitPanel()
@@ -234,33 +255,31 @@ end
 local function makeCard(id: string, order: number, parent: Instance?): Card
 	local style = ROW_STYLE[id] or { a = DARK, b = DARK, icon = "" }
 	local frame = make("Frame", {
-		Name = "Card_" .. id, Size = UDim2.fromOffset(262, 66), LayoutOrder = order, Parent = parent or panel,
+		Name = "Card_" .. id, Size = UDim2.fromOffset(300, 80), LayoutOrder = order, Parent = parent or panel,
 	})
 	Style.panel(frame, style.a, style.b)
 	make("TextLabel", {
-		Position = UDim2.fromOffset(4, 3), Size = UDim2.fromOffset(60, 60), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
+		Position = UDim2.fromOffset(4, 8), Size = UDim2.fromOffset(52, 58), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
 		Text = style.icon, Parent = frame,
 	})
 	local title = make("TextLabel", {
-		Position = UDim2.fromOffset(66, 5), Size = UDim2.new(1, -146, 0, 27), BackgroundTransparency = 1, TextScaled = true, TextWrapped = false,
+		Position = UDim2.fromOffset(62, 6), Size = UDim2.new(1, -72, 0, 27), BackgroundTransparency = 1, TextScaled = true, TextWrapped = false,
 		TextXAlignment = Enum.TextXAlignment.Left, Parent = frame,
 	})
 	Style.text(title, 2.5)
 	local info = make("TextLabel", {
-		Position = UDim2.fromOffset(66, 35), Size = UDim2.new(1, -146, 0, 23), BackgroundTransparency = 1, TextScaled = true, TextWrapped = false,
+		Position = UDim2.fromOffset(62, 42), Size = UDim2.new(1, -164, 0, 25), BackgroundTransparency = 1, TextScaled = true, TextWrapped = false,
 		TextXAlignment = Enum.TextXAlignment.Left, Parent = frame,
 	})
 	Style.text(info, 2)
 	info.TextColor3 = Color3.fromRGB(255, 250, 200)
 	local buy = make("TextButton", {
-		AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -8, 0.5, 0), Size = UDim2.fromOffset(74, 44), TextScaled = true, Parent = frame,
+		AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -8, 1, -8), Size = UDim2.fromOffset(88, 36), TextScaled = true, Parent = frame,
 	}, { make("UIPadding", { PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 5), PaddingTop = UDim.new(0, 7), PaddingBottom = UDim.new(0, 7) }) })
 	Style.button(buy)
 	local confirmUntil = 0
-	buy.Activated:Connect(function()
-		-- a little squish on press
-		buy.Size = UDim2.fromOffset(66, 38)
-		TweenService:Create(buy, TweenInfo.new(0.15, Enum.EasingStyle.Back), { Size = UDim2.fromOffset(74, 44) }):Play()
+	local function onBuy()
+		if not buy.Active then return end
 		if id == "Rebirth" then
 			-- Two taps: the first one asks "SURE?".
 			if os.clock() > confirmUntil then
@@ -278,7 +297,14 @@ local function makeCard(id: string, order: number, parent: Instance?): Card
 			buy.Text = ""
 		end
 		BuyRemote:FireServer(id)
-	end)
+	end
+	buy.Activated:Connect(onBuy)
+	if TOUCH and not parent then
+		-- The whole HUD row is a comfortable tap target; the board keeps its price button.
+		local tap = make("TextButton", { Name = "TapRow", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
+			Text = "", AutoButtonColor = false, Selectable = false, ZIndex = 2, Parent = frame })
+		tap.Activated:Connect(onBuy)
+	end
 	local card = { frame = frame, title = title, info = info, buy = buy, id = id }
 	table.insert(cards, card)
 	return card
@@ -303,7 +329,6 @@ end
 local function refresh()
 	local cash = (player:GetAttribute("Cash") :: number?) or 0
 	local tier = (player:GetAttribute("Tier") :: number?) or 1
-	cashLabel.Text = Format.cash(cash)
 	for _, card in cards do
 		local cost: number?
 		if card.id == "Rebirth" then
@@ -388,18 +413,18 @@ task.spawn(function()
 	end
 	local surface = make("SurfaceGui", {
 		Name = "UpgradeBoardGui", Adornee = boardPart, Face = Enum.NormalId.Back, SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud,
-		PixelsPerStud = 30, ZOffset = 1, LightInfluence = 0, ResetOnSpawn = false, Parent = player.PlayerGui,
+		PixelsPerStud = 30, ZOffset = 1, LightInfluence = 0, ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, Parent = player.PlayerGui,
 	})
 	local bg = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(40, 46, 60), Parent = surface }, { corner(16) })
 	studsOverlay(bg, 40, 0.45)
 	local list = make("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(262, 362), BackgroundTransparency = 1, Parent = bg,
+		AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(300, 432), BackgroundTransparency = 1, Parent = bg,
 	}, { make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }) })
 	local listScale = make("UIScale", { Parent = list })
 	local function fit()
 		-- fill the board's width
 		local size = surface.AbsoluteSize
-		listScale.Scale = math.min((size.X * 0.94) / 262, (size.Y * 0.95) / 362)
+		listScale.Scale = math.min((size.X * 0.94) / 300, (size.Y * 0.95) / 432)
 	end
 	surface:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
 	fit()
@@ -412,29 +437,65 @@ task.spawn(function()
 	refresh()
 end)
 
--- Cash pop when it goes up
+-- Smooth cash display; purchases snap down so the visible balance never lags a spend.
+local displayedCash = make("NumberValue", { Value = (player:GetAttribute("Cash") :: number?) or 0, Parent = gui })
+local cashTween: Tween? = nil
+displayedCash.Changed:Connect(function(value)
+	cashLabel.Text = Format.cash(math.floor(value + 0.5))
+end)
+cashLabel.Text = Format.cash(displayedCash.Value)
 local lastCash = (player:GetAttribute("Cash") :: number?) or 0
+local cashPop = make("TextLabel", {
+	Name = "CashGain", AnchorPoint = if TOUCH then Vector2.new(1, 0.5) else Vector2.new(0, 0.5),
+	Position = if TOUCH then UDim2.new(0, -8, 0.5, 0) else UDim2.new(0, cashLabel.TextBounds.X + 90, 0.5, 0),
+	Size = UDim2.fromOffset(if TOUCH then 72 else 160, if TOUCH then 22 else 28),
+	BackgroundTransparency = 1, TextScaled = true, Text = "", Visible = false, ZIndex = 3, Parent = cashLabel,
+})
+Style.text(cashPop, 2)
+cashPop.TextColor3 = Color3.fromRGB(169, 255, 117)
+local popToken = 0
 player:GetAttributeChangedSignal("Cash"):Connect(function()
 	local cash = (player:GetAttribute("Cash") :: number?) or 0
+	if cashTween then cashTween:Cancel() end
 	if cash > lastCash then
-		cashLabel.Size = UDim2.fromOffset(CASH_SIZE.X * 1.12, CASH_SIZE.Y * 1.12)
-		TweenService:Create(cashLabel, TweenInfo.new(0.25, Enum.EasingStyle.Back), { Size = UDim2.fromOffset(CASH_SIZE.X, CASH_SIZE.Y) }):Play()
+		local tween = TweenService:Create(displayedCash, TweenInfo.new(0.35, Enum.EasingStyle.Quad), { Value = cash })
+		cashTween = tween
+		tween:Play()
+	else
+		displayedCash.Value = cash
+	end
+	if cash > lastCash then
+		popToken += 1
+		local token = popToken
+		cashPop.Text = "+" .. Format.cash(cash - lastCash)
+		if not TOUCH then
+			-- just right of the (new) cash text, on the same line
+			cashPop.Position = UDim2.new(0, Format.cash(cash):len() * CASH_SIZE.Y * 0.5 + 12, 0.5, 0)
+		end
+		cashPop.Visible = true
+		task.delay(0.9, function() if token == popToken then cashPop.Visible = false end end)
 	end
 	lastCash = cash
 end)
 
 -- Notices -------------------------------------------------------------------
 local noticeLabel = make("TextLabel", {
-	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, if TOUCH then 166 else 128), Size = UDim2.fromOffset(320, 30),
+	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, if TOUCH then 205 else 136), Size = UDim2.new(0.65, 0, 0, 30),
 	BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextColor3 = Color3.fromRGB(255, 220, 90), Text = "",
 	TextTransparency = 1, Parent = gui,
 }, { stroke(2) })
 local noticeStroke = noticeLabel:FindFirstChildOfClass("UIStroke") :: UIStroke
+local noticeToken = 0
 Net.event("Notice").OnClientEvent:Connect(function(msg)
+	noticeToken += 1
+	local token = noticeToken
+	gui:SetAttribute("NoticeActive", true)
 	noticeLabel.Text = msg.text
 	noticeLabel.TextTransparency = 0
 	noticeStroke.Transparency = 0.2
 	task.delay(1.5, function()
+		if token ~= noticeToken then return end
+		gui:SetAttribute("NoticeActive", false)
 		TweenService:Create(noticeLabel, TweenInfo.new(0.4), { TextTransparency = 1 }):Play()
 		TweenService:Create(noticeStroke, TweenInfo.new(0.4), { Transparency = 1 }):Play()
 	end)
@@ -883,38 +944,47 @@ end)
 local collection: { [string]: { [string]: number } } = {}
 
 local bookButton, bookDot = Style.iconButton(gui, {
-	name = "BookButton", icon = "📖", label = "BOOK", a = Color3.fromRGB(90, 160, 255), b = Color3.fromRGB(60, 70, 220),
+	name = "BookButton", icon = "📖", art = "Book", label = "BOOK", a = Color3.fromRGB(90, 160, 255), b = Color3.fromRGB(60, 70, 220),
 })
-bookButton.Position = UDim2.fromOffset(12, 8)
+Style.placeHudButton(bookButton, 0)
+Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() Style.placeHudButton(bookButton, 0) end)
 
 local book = make("Frame", {
 	Name = "Book", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0.8, 0),
 	BackgroundColor3 = DARK, BackgroundTransparency = 0.05, Visible = false, ZIndex = 10, Parent = gui,
-}, { corner(14), stroke(3), make("UISizeConstraint", { MaxSize = Vector2.new(820, 560) }) })
+}, { make("UISizeConstraint", { MaxSize = Vector2.new(820, 560) }) })
+Style.panel(book, Color3.fromRGB(70, 145, 249), Color3.fromRGB(43, 62, 154))
+Style.modal(book)
 local bookTitle = make("TextLabel", {
 	Position = UDim2.fromOffset(16, 8), Size = UDim2.new(1, -80, 0, 34), BackgroundTransparency = 1, Font = FONT,
 	TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.new(1, 1, 1), Text = "Collection", ZIndex = 11, Parent = book,
 })
 local bookSub = make("TextLabel", {
-	Position = UDim2.fromOffset(16, 42), Size = UDim2.new(1, -32, 0, 20), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium,
-	TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(200, 200, 210), ZIndex = 11, Parent = book,
+	Position = UDim2.fromOffset(16, 44), Size = UDim2.new(1, -32, 0, 48), BackgroundTransparency = 1, Font = FONT,
+	TextSize = 13, TextWrapped = true, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(225, 240, 255), ZIndex = 11, Parent = book,
 	Text = string.format("First crush of each version: Normal +%d%%, Golden +%d%%, Diamond +%d%% cash forever",
 		Config.CollectionBonus.Normal * 100, Config.CollectionBonus.Golden * 100, Config.CollectionBonus.Diamond * 100),
 })
+Style.text(bookTitle, 2.5)
+Style.text(bookSub, 1)
 local closeButton = make("TextButton", {
 	AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 10), Size = UDim2.fromOffset(40, 40), BackgroundColor3 = RED,
 	Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "X", ZIndex = 11, Parent = book,
-}, { corner(8), stroke(2) })
+})
+Style.button(closeButton, RED)
 local grid = make("ScrollingFrame", {
-	Position = UDim2.fromOffset(12, 70), Size = UDim2.new(1, -24, 1, -82), BackgroundTransparency = 1, BorderSizePixel = 0,
+	Position = UDim2.fromOffset(12, 102), Size = UDim2.new(1, -24, 1, -114), BackgroundTransparency = 1, BorderSizePixel = 0,
 	ScrollBarThickness = 6, AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(), ZIndex = 11, Parent = book,
 }, { make("UIGridLayout", { CellSize = UDim2.fromOffset(140, 170), CellPadding = UDim2.fromOffset(10, 10), SortOrder = Enum.SortOrder.LayoutOrder }) })
+Style.scroll(grid)
+Style.grid(grid, 130, 170)
 
 type BookCell = { frame: Frame, view: ViewportFrame, name: TextLabel, counts: { [string]: TextLabel }, shown: string? }
 local cells: { BookCell } = {}
 
 for tier, def in Config.Objects do
-	local frame = make("Frame", { BackgroundColor3 = Color3.fromRGB(45, 48, 60), LayoutOrder = tier, ZIndex = 12, Parent = grid }, { corner(10) })
+	local frame = make("Frame", { LayoutOrder = tier, ZIndex = 12, Parent = grid })
+	Style.panel(frame, Color3.fromRGB(93, 134, 214), Color3.fromRGB(46, 64, 126))
 	local view = make("ViewportFrame", {
 		Position = UDim2.fromOffset(6, 6), Size = UDim2.new(1, -12, 0, 100), BackgroundColor3 = Color3.fromRGB(70, 75, 95),
 		Ambient = Color3.fromRGB(170, 170, 180), LightDirection = Vector3.new(-1, -2, -1), ZIndex = 12, Parent = frame,
@@ -924,6 +994,7 @@ for tier, def in Config.Objects do
 		TextColor3 = Color3.new(1, 1, 1), Text = "???", ZIndex = 12, Parent = frame,
 	})
 	local counts = {}
+	Style.text(name, 2)
 	for i, v in Config.Variants do
 		counts[v.id] = make("TextLabel", {
 			Position = UDim2.new((i - 1) / 3, 4, 0, 136), Size = UDim2.new(1 / 3, -8, 0, 26), BackgroundColor3 = Color3.fromRGB(30, 32, 40),
@@ -980,16 +1051,18 @@ local function refreshBook()
 		end
 	end
 	local mult = Config.collectionMult(collection)
-	bookTitle.Text = string.format("Collection  %d/%d   bonus x%.2f", found, total, mult)
+	bookTitle.Text = string.format("Collection  %d/%d", found, total)
+	bookSub.Text = string.format("Cash bonus x%.2f\nNormal +%d%% / Golden +%d%% / Diamond +%d%% per first crush",
+		mult, Config.CollectionBonus.Normal * 100, Config.CollectionBonus.Golden * 100, Config.CollectionBonus.Diamond * 100)
 end
 
 bookButton.Activated:Connect(function()
-	book.Visible = not book.Visible
+	Style.setOpen(book, not book.Visible)
 	bookDot.Visible = false
 	refreshBook()
 end)
 closeButton.Activated:Connect(function()
-	book.Visible = false
+	Style.setOpen(book, false)
 end)
 
 local gotFirst = false
