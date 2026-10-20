@@ -89,6 +89,7 @@ Plots.create()
 FriendBoost.start()
 require(script.Parent.RobuxSigns).start(Plots.all)
 require(script.Parent.Decor).create()
+require(script.Parent.World).create()
 require(script.Parent.Kit.Leaderboard).start({
 	store = "CashBoard_v1",
 	score = function(player: Player): number
@@ -129,6 +130,9 @@ local function syncAttributes(player: Player, data: any)
 	player:SetAttribute("Scrap", data.scrap)
 	player:SetAttribute("Rebirths", data.rebirths)
 	player:SetAttribute("CashMult", cashMult(data))
+	-- what one normal crush of the current object is worth (stats board)
+	player:SetAttribute("CrushValue", Config.Economy.ObjectValue(data.tier) * UPGRADE_BY_ID.Value.effect(data.levels.Value or 0) * cashMult(data)
+		* (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player))
 	player:SetAttribute("Crushed", data.crushed)
 	player:SetAttribute("GoldenRush", data.goldenRush)
 	player:SetAttribute("AutoOn", data.autoCrush)
@@ -623,6 +627,7 @@ local function cashPerSecond(player: Player): number
 	return value / seconds
 end
 
+require(script.Parent.Pads).start({ buy = onBuy, plots = Plots.all })
 Scrap.start({
 	getData = DataService.get,
 	sync = function(player: Player)

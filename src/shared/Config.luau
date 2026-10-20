@@ -315,7 +315,7 @@ end
 Config.Scrap = {
 	PiecesMin = 3, -- pieces per crush (more for bigger objects)
 	PiecesMax = 6,
-	MaxOnFloor = 40, -- per plot; extra value merges into pieces already lying there
+	MaxOnFloor = 60, -- per plot; extra value merges into pieces already lying there
 	PickupRadius = 5.5, -- studs (horizontal) from your character
 	-- Pieces land on one pile behind the press (between the press and the shop);
 	-- walk into the pile and you take all of it.
@@ -363,7 +363,7 @@ Config.Rewards = {
 
 -- Look: the classic Roblox stud pattern on floors, pads and boards.
 Config.Look = {
-	Theme = "Teal", -- see shared/Kit/Style.luau (Teal, Scrap)
+	Theme = "Factory", -- see shared/Kit/Style.luau (Factory, Teal, Scrap)
 	Props = true, -- trees, rocks, fences and lamps round the plots (server/Decor.luau)
 	Sky = "Sunset", -- Build.lighting preset: "Day", "Sunset", "GoldenHour", "Dusk" or "Smog"
 	PropSeed = 7, -- change for a different (but still fixed) layout

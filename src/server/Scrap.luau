@@ -13,6 +13,8 @@ local RunService = game:GetService("RunService")
 local Config = require(ReplicatedStorage.Shared.Config)
 local Store = require(ReplicatedStorage.Shared.Store)
 local Net = require(ReplicatedStorage.Shared.Net)
+local Format = require(ReplicatedStorage.Shared.Format)
+local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Build = require(script.Parent.Kit.Build)
 
 export type Api = {
@@ -71,6 +73,60 @@ local function pileSpot(plot: any, tier: number): CFrame
 	return spot
 end
 
+-- Big floating "$X" over the pile (what's lying there), like the gold pile counter.
+local function updateLabel(plot: any)
+	local folder = plot.model:FindFirstChild("Scrap")
+	local anchor = plot.model:FindFirstChild("PileAnchor") :: BasePart?
+	local total, top = 0, 0
+	if folder then
+		for _, p in folder:GetChildren() do
+			if p:IsA("BasePart") and not p:GetAttribute("Taken") then
+				total += (p:GetAttribute("Value") :: number?) or 0
+				top = math.max(top, p.Position.Y - plot.origin.Position.Y)
+			end
+		end
+	end
+	if total <= 0 then
+		if anchor then
+			anchor:Destroy()
+		end
+		return
+	end
+	if not anchor then
+		local a = Instance.new("Part")
+		a.Name = "PileAnchor"
+		a.Anchored = true
+		a.CanCollide = false
+		a.CanQuery = false
+		a.CanTouch = false
+		a.Transparency = 1
+		a.Size = Vector3.one
+		a.Parent = plot.model
+		local gui = Instance.new("BillboardGui")
+		gui.Size = UDim2.fromScale(14, 3.6)
+		gui.LightInfluence = 0
+		gui.MaxDistance = 160
+		gui.Parent = a
+		local label = Instance.new("TextLabel")
+		label.Name = "Value"
+		label.Size = UDim2.fromScale(1, 1)
+		label.BackgroundTransparency = 1
+		label.TextScaled = true
+		label.Parent = gui
+		Style.text(label, 5)
+		label.TextColor3 = Color3.fromRGB(130, 255, 90)
+		anchor = a
+	end
+	assert(anchor)
+	local folderAttrX = folder and folder:GetAttribute("PileX") :: number?
+	local folderAttrZ = folder and folder:GetAttribute("PileZ") :: number?
+	if folderAttrX and folderAttrZ then
+		anchor.CFrame = CFrame.new(folderAttrX, plot.origin.Position.Y + top + 4, folderAttrZ)
+	end
+	((anchor:FindFirstChildOfClass("BillboardGui") :: any).Value :: TextLabel).Text = Format.cash(total)
+end
+Scrap.updateLabel = updateLabel
+
 -- Drops `value` worth of scrap from `from` (the bed) onto the pile behind the press.
 function Scrap.drop(player: Player, plot: any, from: Vector3, value: number, tier: number, variant: string)
 	local S = Config.Scrap
@@ -84,6 +140,7 @@ function Scrap.drop(player: Player, plot: any, from: Vector3, value: number, tie
 			p:SetAttribute("Value", ((p:GetAttribute("Value") :: number?) or 0) + value / count)
 			p.Size = (p.Size * 1.04):Min(Vector3.new(3, 3, 3))
 		end
+		updateLabel(plot)
 		return
 	end
 	local width = Config.pressWidth(tier)
@@ -91,8 +148,9 @@ function Scrap.drop(player: Player, plot: any, from: Vector3, value: number, tie
 	for i = 1, count do
 		-- the pile grows wider and taller with every piece on it
 		local n = #existing + i
-		local radius = 2.2 + math.sqrt(n) * 0.75
-		local height = 0.6 + math.sqrt(n) * 0.75
+		-- a tall stack, Destroy a Vault gold-pile style
+		local radius = 2.4 + math.sqrt(n) * 0.45
+		local height = 0.8 + math.sqrt(n) * 1.5
 		folder:SetAttribute("PileX", spot.Position.X)
 		folder:SetAttribute("PileZ", spot.Position.Z)
 		folder:SetAttribute("PileR", radius)
@@ -129,6 +187,7 @@ function Scrap.drop(player: Player, plot: any, from: Vector3, value: number, tie
 				{ CFrame = land * CFrame.Angles(0, math.random() * 6, 0) })
 			down.Completed:Once(function()
 				p:SetAttribute("LandedAt", os.clock())
+				updateLabel(plot)
 			end)
 			down:Play()
 		end)
@@ -142,6 +201,10 @@ function Scrap.clear(plot: any)
 	if f then
 		f:ClearAllChildren()
 		f:SetAttribute("PileR", nil)
+	end
+	local anchor = plot.model:FindFirstChild("PileAnchor")
+	if anchor then
+		anchor:Destroy()
 	end
 	local tray = plot.model:FindFirstChild("PileTray")
 	if tray then
@@ -212,6 +275,7 @@ local function step()
 			end
 		end
 		if picked > 0 then
+			updateLabel(plot)
 			if auto then
 				sell(owner, data, plot, true)
 			else

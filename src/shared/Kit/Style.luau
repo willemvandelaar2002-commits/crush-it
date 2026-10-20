@@ -40,6 +40,14 @@ Style.Themes = {
 		-- props (Build.tree/bush/rock/fence/lamp)
 		leaf = C(86, 190, 70), trunk = C(120, 78, 46), rock = C(140, 146, 160), fence = C(235, 235, 240), lamp = C(255, 214, 120),
 	},
+	-- dark studded steel plots on bright green grass, yellow paving and trims
+	-- (Destroy a Vault's plots + the Yuzu game's lawns)
+	Factory = {
+		ground = C(118, 206, 78), platform = C(74, 78, 90), edge = C(40, 42, 50), path = C(236, 186, 64),
+		dark = C(32, 34, 42), pad = C(56, 59, 68), light = C(170, 176, 190), trim = C(250, 196, 46),
+		leaf = C(96, 200, 72), trunk = C(118, 78, 48), rock = C(132, 128, 136), fence = C(236, 236, 242), lamp = C(255, 206, 110),
+		cliff = C(120, 116, 124), cliffDark = C(92, 88, 98), grass = C(110, 200, 70),
+	},
 	-- orange/grey scrapyard
 	Scrap = {
 		ground = C(120, 200, 90), platform = C(96, 100, 116), edge = C(60, 62, 74), path = C(130, 134, 150),

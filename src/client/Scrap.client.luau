@@ -182,8 +182,14 @@ local CollectionService = game:GetService("CollectionService")
 game:GetService("RunService").RenderStepped:Connect(function(dt)
 	for _, t in CollectionService:GetTagged("FlowTexture") do
 		if t:IsA("Texture") then
-			local speed = (t:GetAttribute("Flow") :: number?) or 1
-			t.OffsetStudsU = (t.OffsetStudsU + speed * dt) % t.StudsPerTileU
+			local u = t:GetAttribute("Flow") :: number?
+			local v = t:GetAttribute("FlowV") :: number?
+			if u then
+				t.OffsetStudsU = (t.OffsetStudsU + u * dt) % t.StudsPerTileU
+			end
+			if v then
+				t.OffsetStudsV = (t.OffsetStudsV + v * dt) % t.StudsPerTileV
+			end
 		end
 	end
 end)
