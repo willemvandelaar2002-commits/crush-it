@@ -174,36 +174,37 @@ function Plots.create()
 			end
 		end
 	end
-	Build.block(root, "Ground", Vector3.new(1600, 1, 1600), CFrame.new(0, 0.05 - 0.5, 0), theme.ground)
-	-- Walkway down the middle: a lower platform with an edge.
-	local walkW = P.Spacing * 4 + 30
-	local walkD = P.RowOffset * 2 - F - 2 * P.Moat -- stops at the lava moat in front of each row
-	local walkway = Build.platform(root, "Walkway", CFrame.new(0, 0.7, 0), walkW, walkD, 0.65, theme.path, theme.edge, 1.5)
-	-- orange brick road (Destroy a Vault style) instead of plain studs
-	local walkTop = walkway:FindFirstChild("Top") :: BasePart
-	walkTop.Material = Enum.Material.Brick
-	walkTop.Color = Color3.fromRGB(236, 150, 62)
-	for _, t in walkTop:GetChildren() do
-		if t:IsA("Texture") then
-			t:Destroy()
-		end
+	if base and base:IsA("BasePart") then
+		base.CanCollide = false -- no invisible floor in the lava sea
 	end
+	-- Hub island in the middle; every plot's bridge lands on it.
+	local landings = {}
+	for i = 1, P.Count do
+		local o = Plots.originFor(i)
+		local p = (o * CFrame.new(Moat.FRONT_BRIDGE_X, 0, 0)).Position
+		table.insert(landings, { x = p.X, side = if p.Z > 0 then 1 else -1 })
+	end
+	require(script.Parent.Hub).create(root, landings)
 
 	for i = 1, P.Count do
 		local origin = Plots.originFor(i)
 		local model = Instance.new("Model")
 		model.Name = "Plot" .. i
 		model:SetAttribute("Index", i)
-		model:SetAttribute("Origin", origin) -- floor centre, +Z to the walkway (Zone.client)
+		model:SetAttribute("Origin", origin) -- floor centre, +Z to the hub (Zone.client)
 		-- Raised platform; its top is the plot floor (origin).
-		Build.platform(model, "Floor", origin, F, F, origin.Position.Y - 0.05, theme.platform, theme.edge, 2)
+		Build.platform(model, "Floor", origin, F, F, origin.Position.Y - 0.05, theme.platform, theme.grassEdge or theme.edge, 2)
+		-- dark asphalt zones with stepped edges (Destroy a Vault): under the buy pads and round the scrap pile
+		local zr = Random.new(300 + i)
+		Build.patch(model, origin * CFrame.new(-6, 0, 47), 108, 12, theme.pad, zr, "PadZone")
+		Build.patch(model, origin * CFrame.new(0, 0, -38), 36, 26, theme.pad, zr, "PileZone")
 		-- Yellow trim just inside the edge (Destroy a Vault style); the plot's own
 		-- colour goes on its gate (PlotDecor).
 		local trim = theme.trim or FLOOR_COLORS[i]
-		for _, z in { -1, 1 } do
+		for _, z in (if theme.grass then {} else { -1, 1 }) :: { number } do
 			Build.block(model, "Trim", Vector3.new(F - 4, 0.15, 0.8), origin * CFrame.new(0, 0.075, z * (F / 2 - 2.4)), trim)
 		end
-		for _, x in { -1, 1 } do
+		for _, x in (if theme.grass then {} else { -1, 1 }) :: { number } do
 			Build.block(model, "Trim", Vector3.new(0.8, 0.15, F - 5.6), origin * CFrame.new(x * (F / 2 - 2.4), 0.075, 0), trim)
 		end
 		-- Framed pad under the press (resized with the press).

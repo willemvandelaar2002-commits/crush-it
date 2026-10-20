@@ -96,7 +96,15 @@ require(script.Parent.Kit.Build).lighting(Config.Look.Sky)
 Plots.create()
 FriendBoost.start()
 require(script.Parent.RobuxSigns).start(Plots.all)
-require(script.Parent.Decor).create()
+require(script.Parent.Moat).start(function(player: Player): CFrame
+	local index = player:GetAttribute("Plot")
+	for _, plot in Plots.all() do
+		if plot.index == index then
+			return Plots.spawnFor(plot)
+		end
+	end
+	return CFrame.new(0, 5, 14) -- the hub
+end)
 require(script.Parent.World).create()
 require(script.Parent.Kit.Leaderboard).start({
 	store = "CashBoard_v1",

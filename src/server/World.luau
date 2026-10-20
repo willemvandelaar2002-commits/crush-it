@@ -15,7 +15,7 @@ local Build = require(script.Parent.Kit.Build)
 local World = {}
 
 local C = Color3.fromRGB
-local GROUND_Y = 0.05
+local GROUND_Y = Config.World.SeaY - 3 -- cliffs and mountains rise out of the lava sea
 local ALL = { Enum.NormalId.Top, Enum.NormalId.Front, Enum.NormalId.Back, Enum.NormalId.Left, Enum.NormalId.Right }
 
 local function lavaFall(parent: Instance, top: Vector3, bottomY: number, facing: CFrame, width: number)
@@ -98,11 +98,70 @@ local function cliff(parent: Instance, cf: CFrame, width: number, rng: Random, t
 	if fall then
 		-- pours over the front edge of the lowest tier
 		local top = (cf * CFrame.new(rng:NextNumber(-width / 4, width / 4), firstH, -0.7)).Position
-		lavaFall(parent, top, GROUND_Y, cf - cf.Position, rng:NextNumber(5, 8))
+		lavaFall(parent, top, Config.World.SeaY, cf - cf.Position, rng:NextNumber(5, 8))
 	end
 	-- a tree or two on the top
 	if rng:NextNumber() < 0.6 then
 		Build.tree(parent, cf * CFrame.new(rng:NextNumber(-width / 3, width / 3), topY + 1.2, topZ - back / 2 + 4), rng:NextNumber(2, 3), theme, rng)
+	end
+end
+
+-- The lava sea: one big cracked crust over a glowing layer, drifting bright blobs
+-- and crust plates in lanes (tag LavaDrift, moved on the client), embers.
+local function sea(parent: Instance, rng: Random)
+	local y = Config.World.SeaY
+	local function part(name: string, size: Vector3, cf: CFrame, color: Color3, material: Enum.Material): Part
+		local p = Instance.new("Part")
+		p.Name = name
+		p.Anchored = true
+		p.CanCollide = false
+		p.CanQuery = false
+		p.CastShadow = false
+		p.Size = size
+		p.CFrame = cf
+		p.Color = color
+		p.Material = material
+		p.TopSurface = Enum.SurfaceType.Smooth
+		p.BottomSurface = Enum.SurfaceType.Smooth
+		p.Parent = parent
+		return p
+	end
+	local size = 2048
+	part("LavaGlow", Vector3.new(size, 1, size), CFrame.new(0, y - 1.2, 0), C(255, 110, 20), Enum.Material.Neon)
+	local crust = part("LavaSea", Vector3.new(size, 1, size), CFrame.new(0, y - 0.5, 0), C(205, 70, 22), Enum.Material.CrackedLava)
+	crust.CanCollide = true -- you land on it, then Moat.start puts you back on your plot
+	-- drifting blobs and plates along X lanes over the playable area
+	local L = 900
+	for i = 1, 260 do
+		local z = rng:NextNumber(-360, 360)
+		local bright = rng:NextNumber() < 0.65
+		local d = rng:NextNumber(2, 5)
+		local p = part(if bright then "Blob" else "Plate", Vector3.new(d * 1.7, if bright then 0.15 else 0.3, d),
+			CFrame.new(0, y + 0.02, z) * CFrame.Angles(0, rng:NextNumber() * 6, 0),
+			if bright then (if rng:NextNumber() < 0.4 then C(255, 210, 80) else C(255, 130, 30)) else C(80, 34, 22),
+			if bright then Enum.Material.Neon else Enum.Material.Basalt)
+		p:SetAttribute("Len", L)
+		p:SetAttribute("Start", rng:NextNumber(0, L))
+		p:SetAttribute("Speed", rng:NextNumber(1.2, 2.6))
+		p:SetAttribute("Origin", Vector3.new(-L / 2, y + 0.02, z))
+		p:SetAttribute("Axis", Vector3.new(1, 0, 0))
+		CollectionService:AddTag(p, "LavaDrift")
+	end
+	-- embers here and there
+	for i = 1, 24 do
+		local holder = part("Embers", Vector3.new(60, 0.1, 60), CFrame.new(rng:NextNumber(-380, 380), y, rng:NextNumber(-330, 330)), C(255, 120, 30), Enum.Material.SmoothPlastic)
+		holder.Transparency = 1
+		local e = Instance.new("ParticleEmitter")
+		e.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		e.Rate = 6
+		e.Lifetime = NumberRange.new(1.5, 2.5)
+		e.Speed = NumberRange.new(3, 6)
+		e.SpreadAngle = Vector2.new(15, 15)
+		e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(1, 0) })
+		e.Color = ColorSequence.new(C(255, 220, 100), C(255, 90, 20))
+		e.LightEmission = 1
+		e.EmissionDirection = Enum.NormalId.Top
+		e.Parent = holder
 	end
 end
 
@@ -116,6 +175,7 @@ function World.create()
 	local folder = Instance.new("Model")
 	folder.Name = "World"
 	folder.ModelStreamingMode = Enum.ModelStreamingMode.Persistent
+	sea(folder, Random.new(91))
 	local X, Z = 400, 340 -- inner faces of the cliff ring
 	-- each side: walk along it placing cliffs of random width
 	local sides = {

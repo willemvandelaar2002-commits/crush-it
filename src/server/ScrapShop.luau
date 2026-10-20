@@ -99,10 +99,14 @@ function ScrapShop.build(plotModel: Model, origin: CFrame, theme: { [string]: Co
 	m.Name = "ScrapShop"
 
 	-- Bridge over the lava moat (Moat.luau builds the lava itself).
-	Moat.bridge(m, at(0, 0, back - S.Gap / 2), S.Gap + 3)
+	Moat.bridge(m, at(0, 0, back - S.Gap / 2), S.Gap + 3.5)
 
 	-- The island: a raised slab like the plots, in darker steel.
 	Build.platform(m, "Island", at(0, 0, islandMid), S.Width, S.Depth, floorY - 0.05, theme.pad, theme.edge, 2)
+	Build.island(m, at(0, 0, islandMid), S.Width, S.Depth, Config.World.SeaY, theme, {
+		rng = Random.new(400),
+		gaps = { { side = "front", at = 0, width = Moat.BRIDGE_WIDTH + 1 } },
+	})
 	-- hazard edge along the island front
 	for i = 0, 11 do
 		local w = S.Width - 4

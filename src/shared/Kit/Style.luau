@@ -42,6 +42,15 @@ Style.Themes = {
 	},
 	-- dark studded steel plots on bright green grass, yellow paving and trims
 	-- (Destroy a Vault's plots + the Yuzu game's lawns)
+	-- floating islands in a lava sea (after the Yuzu onsen + Destroy a Vault islands)
+	Island = {
+		ground = C(110, 200, 70), platform = C(108, 202, 72), edge = C(48, 50, 58), path = C(236, 150, 62),
+		dark = C(32, 34, 42), pad = C(58, 60, 70), light = C(170, 176, 190),
+		grass = C(108, 202, 72), grassEdge = C(84, 168, 56), dirt = C(138, 96, 60), stone = C(132, 130, 140), stoneDark = C(102, 100, 110),
+		wood = C(168, 116, 66), woodDark = C(120, 80, 46),
+		leaf = C(96, 200, 72), trunk = C(118, 78, 48), rock = C(132, 128, 136), fence = C(236, 236, 242), lamp = C(255, 206, 110),
+		cliff = C(150, 146, 136), cliffDark = C(118, 112, 104),
+	},
 	Factory = {
 		ground = C(118, 206, 78), platform = C(96, 100, 110), edge = C(48, 50, 58), path = C(236, 186, 64),
 		dark = C(32, 34, 42), pad = C(56, 59, 68), light = C(170, 176, 190), trim = C(250, 196, 46),

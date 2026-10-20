@@ -1,6 +1,6 @@
 --!strict
 -- Zone label at the top of the screen (Destroy a Vault's "Base" / "Market"):
--- "Your Plot", "<Name>'s Plot", "Free Plot", "Scrap Shop" or "Walkway",
+-- "Your Plot", "<Name>'s Plot", "Free Plot", "Scrap Shop" or "Hub",
 -- in a chunky green pill that pops when it changes. Plots carry their
 -- floor-centre CFrame as the attribute "Origin" (server/Plots.luau).
 
@@ -50,7 +50,7 @@ pad.Parent = label
 local function zone(pos: Vector3): string
 	local plots = Workspace:FindFirstChild("Plots")
 	if not plots then
-		return "Walkway"
+		return "Hub"
 	end
 	local half = Config.Plots.FloorSize / 2
 	local moat = Config.Plots.Moat
@@ -74,7 +74,7 @@ local function zone(pos: Vector3): string
 			return if mine then "Your Scrap Shop" else "Scrap Shop"
 		end
 	end
-	return "Walkway"
+	return "Hub"
 end
 
 local current = ""
@@ -82,7 +82,7 @@ task.spawn(function()
 	while true do
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
-		local z = if root then zone(root.Position) else "Walkway"
+		local z = if root then zone(root.Position) else "Hub"
 		if z ~= current then
 			current = z
 			label.Text = z
