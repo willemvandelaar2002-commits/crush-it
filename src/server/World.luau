@@ -128,8 +128,20 @@ local function sea(parent: Instance, rng: Random)
 	end
 	local size = 2048
 	part("LavaGlow", Vector3.new(size, 1, size), CFrame.new(0, y - 1.2, 0), C(255, 110, 20), Enum.Material.Neon)
-	local crust = part("LavaSea", Vector3.new(size, 1, size), CFrame.new(0, y - 0.5, 0), C(205, 70, 22), Enum.Material.CrackedLava)
+	-- bright and flat with a slowly sliding stud pattern (like the bright seas in
+	-- the reference games): CrackedLava turned muddy brown from a distance
+	local crust = part("LavaSea", Vector3.new(size, 1, size), CFrame.new(0, y - 0.5, 0), C(255, 118, 30), Enum.Material.SmoothPlastic)
 	crust.CanCollide = true -- you land on it, then Moat.start puts you back on your plot
+	local tex = Instance.new("Texture")
+	tex.Texture = Style.Studs.Texture
+	tex.Face = Enum.NormalId.Top
+	tex.StudsPerTileU = 6
+	tex.StudsPerTileV = 6
+	tex.Color3 = C(255, 200, 80)
+	tex.Transparency = 0.35
+	tex:SetAttribute("Flow", 1.2)
+	CollectionService:AddTag(tex, "FlowTexture")
+	tex.Parent = crust
 	-- drifting blobs and plates along X lanes over the playable area
 	local L = 900
 	for i = 1, 260 do

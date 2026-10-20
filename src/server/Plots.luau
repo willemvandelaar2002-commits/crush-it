@@ -229,7 +229,7 @@ function Plots.create()
 			Build.path(model, pt(fx, F / 2 - 1), pt(fx, -F / 2 + 16), 7)
 			Build.path(model, pt(fx, -F / 2 + 16), pt(0, -F / 2 + 16), 7)
 			Build.path(model, pt(0, -F / 2 + 16), pt(0, -F / 2 + 1), 7)
-			Build.path(model, pt(-55, 47), pt(fx, 47), 9) -- under the buy pads
+			Build.path(model, pt(-8, 47), pt(fx, 47), 7) -- from the bridge path to the pads (asphalt under the pads)
 		end
 		-- Gate with the owner's name, boiler, crates, lamps.
 		local label = PlotDecor.build(model, origin, FLOOR_COLORS[i], theme, i)
