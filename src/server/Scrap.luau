@@ -13,6 +13,7 @@ local RunService = game:GetService("RunService")
 local Config = require(ReplicatedStorage.Shared.Config)
 local Store = require(ReplicatedStorage.Shared.Store)
 local Net = require(ReplicatedStorage.Shared.Net)
+local Build = require(script.Parent.Kit.Build)
 
 export type Api = {
 	getData: (Player) -> any,
@@ -52,7 +53,25 @@ local function pieceColor(tier: number, variant: string, i: number): (Color3, En
 	return base:Lerp(METAL_TINTS[(i % #METAL_TINTS) + 1], 0.35), Enum.Material.Metal
 end
 
--- Drops `value` worth of scrap from `from` (the bed) onto the plot.
+-- Where the pile goes for this press size: straight behind the press, between it
+-- and the scrap shop. Also places the steel tray under it.
+local function pileSpot(plot: any, tier: number): CFrame
+	local F = Config.Plots.FloorSize
+	local back = math.clamp(Config.pressWidth(tier) * 0.9 + 10, 14, F / 2 - 9)
+	local spot = plot.origin * CFrame.new(0, 0, -back)
+	local tray = plot.model:FindFirstChild("PileTray")
+	if tray and tray:GetAttribute("Tier") ~= tier then
+		tray:Destroy()
+		tray = nil
+	end
+	if not tray then
+		local t = Build.inset(plot.model, "PileTray", spot, 11, 11, Color3.fromRGB(60, 62, 72), Color3.fromRGB(245, 190, 40))
+		t:SetAttribute("Tier", tier)
+	end
+	return spot
+end
+
+-- Drops `value` worth of scrap from `from` (the bed) onto the pile behind the press.
 function Scrap.drop(player: Player, plot: any, from: Vector3, value: number, tier: number, variant: string)
 	local S = Config.Scrap
 	local folder = folderFor(plot)
@@ -67,9 +86,16 @@ function Scrap.drop(player: Player, plot: any, from: Vector3, value: number, tie
 		end
 		return
 	end
-	local origin: CFrame = plot.origin
 	local width = Config.pressWidth(tier)
+	local spot = pileSpot(plot, tier)
 	for i = 1, count do
+		-- the pile grows wider and taller with every piece on it
+		local n = #existing + i
+		local radius = 2.2 + math.sqrt(n) * 0.75
+		local height = 0.6 + math.sqrt(n) * 0.75
+		folder:SetAttribute("PileX", spot.Position.X)
+		folder:SetAttribute("PileZ", spot.Position.Z)
+		folder:SetAttribute("PileR", radius)
 		local size = 1.5 + math.random() * 0.8 + math.min(tier, 13) * 0.05
 		local color, material = pieceColor(tier, variant, i)
 		local p = Instance.new("Part")
@@ -87,15 +113,16 @@ function Scrap.drop(player: Player, plot: any, from: Vector3, value: number, tie
 		glint.SparkleColor = Color3.fromRGB(255, 240, 180)
 		glint.Parent = p
 		p:SetAttribute("Owner", player.UserId)
-		-- land in a ring in front of / beside the press (+Z is toward the walkway)
-		local angle = math.rad(-110 + math.random() * 220) -- mostly the front half
-		local dist = width * 0.75 + 3 + math.random() * 7
-		local land = origin * CFrame.new(math.sin(angle) * dist, p.Size.Y / 2, math.cos(angle) * dist)
+		-- land on the heap: closer to the middle = higher up
+		local angle = math.random() * math.pi * 2
+		local dist = (math.random() ^ 0.7) * radius
+		local y = height * (1 - dist / radius) * (0.7 + math.random() * 0.3) + p.Size.Y * 0.4
+		local land = spot * CFrame.new(math.cos(angle) * dist, y, math.sin(angle) * dist)
 		local spin = CFrame.Angles(math.random() * 6, math.random() * 6, math.random() * 6)
 		p.CFrame = CFrame.new(from) * spin
 		p.Parent = folder
 		-- arc: up and out, then down with a little bounce
-		local mid = from:Lerp(land.Position, 0.5) + Vector3.new(0, 5 + math.random() * 3, 0)
+		local mid = from:Lerp(land.Position, 0.5) + Vector3.new(0, math.max(6, width * 1.5) + math.random() * 3, 0)
 		local up = TweenService:Create(p, TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { CFrame = CFrame.new(mid) * spin })
 		up.Completed:Once(function()
 			local down = TweenService:Create(p, TweenInfo.new(0.32, Enum.EasingStyle.Bounce, Enum.EasingDirection.Out),
@@ -114,6 +141,11 @@ function Scrap.clear(plot: any)
 	local f = plot.model:FindFirstChild("Scrap")
 	if f then
 		f:ClearAllChildren()
+		f:SetAttribute("PileR", nil)
+	end
+	local tray = plot.model:FindFirstChild("PileTray")
+	if tray then
+		tray:Destroy()
 	end
 end
 
@@ -146,6 +178,13 @@ local function step()
 		local auto = Store.hasPass(owner, "AutoCollect")
 		local picked = 0
 		local folder = plot.model:FindFirstChild("Scrap")
+		-- walking into the pile takes all of it
+		local onPile = false
+		if folder and folder:GetAttribute("PileR") then
+			local px, pz = folder:GetAttribute("PileX") :: number, folder:GetAttribute("PileZ") :: number
+			local d = Vector3.new(px - root.Position.X, 0, pz - root.Position.Z).Magnitude
+			onPile = d <= (folder:GetAttribute("PileR") :: number) + 2.5
+		end
 		if folder then
 			for _, p in folder:GetChildren() do
 				if not p:IsA("BasePart") or p:GetAttribute("Taken") then
@@ -156,7 +195,7 @@ local function step()
 					continue
 				end
 				local d = Vector3.new(p.Position.X - root.Position.X, 0, p.Position.Z - root.Position.Z).Magnitude
-				local near = d <= S.PickupRadius and math.abs(p.Position.Y - root.Position.Y) < 8
+				local near = (onPile or d <= S.PickupRadius) and math.abs(p.Position.Y - root.Position.Y) < 10
 				if near or (auto and now - landed >= S.AutoDelay) then
 					p:SetAttribute("Taken", true)
 					local value = (p:GetAttribute("Value") :: number?) or 0

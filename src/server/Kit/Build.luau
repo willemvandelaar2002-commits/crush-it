@@ -9,7 +9,7 @@
 --        chunky studded sign on two posts; draw on facePart's Back face (+Z)
 --   Build.label(adornee, text, color, offsetY, sizeStuds?) -> BillboardGui
 --        big floating outlined label ("Smelt" style)
---   Build.lighting(preset)                                    cartoon lighting: "Day" or "Sunset"
+--   Build.lighting(preset)                                    cartoon lighting: Day, Sunset, GoldenHour, Dusk, Smog
 --
 -- Props (blocky + studded; `palette` is Style.theme(...), `rng` a Random for variety):
 --   Build.tree(parent, baseCf, scale, palette, rng?)    trunk + stacked leaf cubes
@@ -107,15 +107,49 @@ function Build.label(adornee: BasePart, text: string, color: Color3, offsetY: nu
 	return gui
 end
 
--- presets: "Day" (bright noon) or "Sunset" (low warm sun, orange haze, long shadows)
+-- Presets (all cartoon-bright, they only change mood):
+--   "Day"        bright noon, blue sky
+--   "Sunset"     low warm sun, pink/orange haze, sun rays
+--   "GoldenHour" earlier and brighter than Sunset: everything golden
+--   "Dusk"       sun just down: purple-blue sky, warm horizon, stars, lamps glow
+--   "Smog"       hazy orange industrial sky, thick atmosphere
+local PRESETS = {
+	Day = {
+		clock = 13.5, lat = 41.7, brightness = 2.2, exposure = 0, ambient = Color3.fromRGB(90, 90, 105), outdoor = Color3.fromRGB(128, 128, 140),
+		sat = 0.08, contrast = 0.06, tint = Color3.new(1, 1, 1), bloom = 0.2, threshold = 2, rays = false,
+		density = 0.2, offset = 0, haze = 0.5, glare = 0.2, color = Color3.fromRGB(200, 230, 255), decay = Color3.fromRGB(120, 170, 220), stars = 3000, sun = 21,
+	},
+	Sunset = {
+		clock = 17.25, lat = 30, brightness = 3.2, exposure = 0.25, ambient = Color3.fromRGB(130, 112, 118), outdoor = Color3.fromRGB(200, 170, 160),
+		sat = 0.15, contrast = 0.08, tint = Color3.fromRGB(255, 236, 218), bloom = 0.35, threshold = 1.6, rays = true,
+		density = 0.26, offset = 0.15, haze = 1.6, glare = 0.8, color = Color3.fromRGB(255, 190, 150), decay = Color3.fromRGB(190, 95, 110), stars = 600, sun = 18,
+	},
+	GoldenHour = {
+		clock = 16.4, lat = 35, brightness = 3, exposure = 0.15, ambient = Color3.fromRGB(125, 110, 95), outdoor = Color3.fromRGB(190, 165, 130),
+		sat = 0.18, contrast = 0.08, tint = Color3.fromRGB(255, 240, 215), bloom = 0.3, threshold = 1.7, rays = true,
+		density = 0.22, offset = 0.1, haze = 1.1, glare = 0.6, color = Color3.fromRGB(255, 215, 160), decay = Color3.fromRGB(230, 150, 90), stars = 0, sun = 20,
+	},
+	Dusk = {
+		clock = 18.35, lat = 28, brightness = 2.4, exposure = 0.45, ambient = Color3.fromRGB(120, 105, 140), outdoor = Color3.fromRGB(150, 130, 175),
+		sat = 0.2, contrast = 0.1, tint = Color3.fromRGB(240, 230, 255), bloom = 0.5, threshold = 1.3, rays = false,
+		density = 0.3, offset = 0.2, haze = 2, glare = 0.4, color = Color3.fromRGB(255, 160, 140), decay = Color3.fromRGB(110, 80, 160), stars = 3000, sun = 14,
+	},
+	Smog = {
+		clock = 15.6, lat = 30, brightness = 2.7, exposure = 0.2, ambient = Color3.fromRGB(125, 105, 90), outdoor = Color3.fromRGB(180, 150, 120),
+		sat = 0.05, contrast = 0.1, tint = Color3.fromRGB(255, 228, 195), bloom = 0.25, threshold = 1.8, rays = true,
+		density = 0.4, offset = 0.05, haze = 2.6, glare = 0.3, color = Color3.fromRGB(230, 170, 110), decay = Color3.fromRGB(150, 100, 70), stars = 0, sun = 24,
+	},
+}
+Build.SkyPresets = PRESETS
+
 function Build.lighting(preset: string?)
-	local sunset = preset == "Sunset"
-	Lighting.ClockTime = if sunset then 17.25 else 13.5
-	Lighting.GeographicLatitude = if sunset then 30 else 41.7
-	Lighting.Brightness = if sunset then 3.2 else 2.2
-	Lighting.ExposureCompensation = if sunset then 0.25 else 0
-	Lighting.Ambient = if sunset then Color3.fromRGB(130, 112, 118) else Color3.fromRGB(90, 90, 105)
-	Lighting.OutdoorAmbient = if sunset then Color3.fromRGB(200, 170, 160) else Color3.fromRGB(128, 128, 140)
+	local p = PRESETS[preset or "Day"] or PRESETS.Day
+	Lighting.ClockTime = p.clock
+	Lighting.GeographicLatitude = p.lat
+	Lighting.Brightness = p.brightness
+	Lighting.ExposureCompensation = p.exposure
+	Lighting.Ambient = p.ambient
+	Lighting.OutdoorAmbient = p.outdoor
 	Lighting.EnvironmentDiffuseScale = 1
 	Lighting.EnvironmentSpecularScale = 0.4
 	Lighting.ShadowSoftness = 0.3
@@ -126,31 +160,31 @@ function Build.lighting(preset: string?)
 		return e
 	end
 	local cc = effect("ColorCorrectionEffect", "KitColor")
-	cc.Saturation = if sunset then 0.15 else 0.08
-	cc.Contrast = if sunset then 0.08 else 0.06
-	cc.Brightness = if sunset then 0.02 else 0
-	cc.TintColor = if sunset then Color3.fromRGB(255, 236, 218) else Color3.new(1, 1, 1)
+	cc.Saturation = p.sat
+	cc.Contrast = p.contrast
+	cc.Brightness = 0
+	cc.TintColor = p.tint
 	local bloom = effect("BloomEffect", "KitBloom")
-	bloom.Intensity = if sunset then 0.35 else 0.2
+	bloom.Intensity = p.bloom
 	bloom.Size = 24
-	bloom.Threshold = if sunset then 1.6 else 2
+	bloom.Threshold = p.threshold
 	local rays = effect("SunRaysEffect", "KitSunRays")
-	rays.Enabled = sunset
+	rays.Enabled = p.rays
 	rays.Intensity = 0.06
 	rays.Spread = 0.6
 	local atmo = Lighting:FindFirstChildOfClass("Atmosphere") or Instance.new("Atmosphere")
-	atmo.Density = if sunset then 0.26 else 0.2
-	atmo.Offset = if sunset then 0.15 else 0
-	atmo.Haze = if sunset then 1.6 else 0.5
-	atmo.Glare = if sunset then 0.8 else 0.2
-	atmo.Color = if sunset then Color3.fromRGB(255, 190, 150) else Color3.fromRGB(200, 230, 255)
-	atmo.Decay = if sunset then Color3.fromRGB(190, 95, 110) else Color3.fromRGB(120, 170, 220)
+	atmo.Density = p.density
+	atmo.Offset = p.offset
+	atmo.Haze = p.haze
+	atmo.Glare = p.glare
+	atmo.Color = p.color
+	atmo.Decay = p.decay
 	atmo.Parent = Lighting
 	local sky = Lighting:FindFirstChildOfClass("Sky") or Instance.new("Sky")
-	sky.SunAngularSize = if sunset then 18 else 21
+	sky.SunAngularSize = p.sun
 	sky.MoonAngularSize = 11
 	sky.CelestialBodiesShown = true
-	sky.StarCount = if sunset then 600 else 3000
+	sky.StarCount = p.stars
 	sky.Parent = Lighting
 end
 

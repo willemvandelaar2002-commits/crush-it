@@ -176,3 +176,14 @@ Net.event("ScrapSold").OnClientEvent:Connect(function(msg)
 		end)
 	end
 end)
+
+-- Lava/oil channels: slide their ripple textures slowly (tag "FlowTexture").
+local CollectionService = game:GetService("CollectionService")
+game:GetService("RunService").RenderStepped:Connect(function(dt)
+	for _, t in CollectionService:GetTagged("FlowTexture") do
+		if t:IsA("Texture") then
+			local speed = (t:GetAttribute("Flow") :: number?) or 1
+			t.OffsetStudsU = (t.OffsetStudsU + speed * dt) % t.StudsPerTileU
+		end
+	end
+end)
