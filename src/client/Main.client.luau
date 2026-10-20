@@ -239,13 +239,14 @@ local cards: { Card } = {}
 -- Upgrade rows in the "Destroy a Vault" style: a coloured row with an icon,
 -- the name, what the next level does and a big green price button. The same
 -- rows are used in the HUD panel and on the board next to your press.
-local ROW_STYLE: { [string]: { a: Color3, b: Color3, icon: string } } = {
+-- `image` (an uploaded icon) is used instead of the emoji `icon` when set.
+local ROW_STYLE: { [string]: { a: Color3, b: Color3, icon: string, image: string? } } = {
 	-- two-colour gradients like Destroy a Vault's boards (pink>purple, cyan>blue ...)
 	Power = { a = Color3.fromRGB(255, 95, 80), b = Color3.fromRGB(200, 30, 90), icon = "💥" },
 	Speed = { a = Color3.fromRGB(70, 220, 255), b = Color3.fromRGB(40, 90, 230), icon = "⚡" },
 	Value = { a = Color3.fromRGB(255, 225, 70), b = Color3.fromRGB(240, 140, 20), icon = "💰" },
 	Size = { a = Color3.fromRGB(240, 90, 255), b = Color3.fromRGB(120, 50, 220), icon = "🔨" },
-	Rebirth = { a = Color3.fromRGB(255, 170, 60), b = Color3.fromRGB(230, 70, 40), icon = "🔄" },
+	Rebirth = { a = Color3.fromRGB(255, 170, 60), b = Color3.fromRGB(230, 70, 40), icon = "🔄", image = "rbxassetid://119986205257706" }, -- WarChest rebirth icon
 }
 
 local function studsOverlay(parent: GuiObject, tile: number, transparency: number)
@@ -258,10 +259,17 @@ local function makeCard(id: string, order: number, parent: Instance?): Card
 		Name = "Card_" .. id, Size = UDim2.fromOffset(300, 80), LayoutOrder = order, Parent = parent or panel,
 	})
 	Style.panel(frame, style.a, style.b)
-	make("TextLabel", {
-		Position = UDim2.fromOffset(4, 8), Size = UDim2.fromOffset(52, 58), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
-		Text = style.icon, Parent = frame,
-	})
+	if style.image then
+		make("ImageLabel", {
+			Name = "Icon", Position = UDim2.fromOffset(4, 10), Size = UDim2.fromOffset(52, 52), BackgroundTransparency = 1,
+			Image = style.image, ScaleType = Enum.ScaleType.Fit, Parent = frame,
+		})
+	else
+		make("TextLabel", {
+			Position = UDim2.fromOffset(4, 8), Size = UDim2.fromOffset(52, 58), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
+			Text = style.icon, Parent = frame,
+		})
+	end
 	local title = make("TextLabel", {
 		Position = UDim2.fromOffset(62, 6), Size = UDim2.new(1, -72, 0, 27), BackgroundTransparency = 1, TextScaled = true, TextWrapped = false,
 		TextXAlignment = Enum.TextXAlignment.Left, Parent = frame,
