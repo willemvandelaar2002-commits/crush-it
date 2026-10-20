@@ -41,6 +41,13 @@ final when the script starts), the "+$X" pop sits next to the cash, offers shrin
 a bit more to clear the taller leaderboard, and the server-built Robux signs use
 Sibling ZIndex. Phone layouts are still untested on a real device.
 
+## shared/Kit/GuidePath.luau (client only)
+- `GuidePath.new({ color?, spacing?, speed?, stopDistance?, maxLength? })` then
+  `path:update(fromPos, targetPos?, label?)` every frame: glowing chevrons on
+  the ground (ray-cast so they follow floors and steps) scroll toward the
+  target, with a bobbing ▼ and label over it; nil target or close enough hides it.
+  Crush It uses it in `client/Guide.client.luau`.
+
 ## server/Kit/Leaderboard.luau
 - `Leaderboard.start({ store, score = fn(player) -> number, top? = 50, every? = 120 })`
   writes each player's score to an OrderedDataStore (as log10(score+1)*1e6 so huge

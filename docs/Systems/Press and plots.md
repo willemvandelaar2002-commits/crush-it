@@ -92,3 +92,11 @@ frame carry the classic stud pattern: a Texture with
 `Config.Look.StudTexture` (free "Stud Texture" image 7447638591), 2 studs
 per tile. UI rows and the board background get the same pattern as a tiled
 ImageLabel. The board frame is grey with white glowing edges.
+
+## Steel frame replaced (20 Oct)
+`PressMeshes.Stage2` is a new AI mesh: yellow painted steel pillars with chrome
+cylinders, a thick riveted top beam and black/yellow hazard feet, open between
+the legs (asset 136890182957615). The old beige arch and three other attempts
+are parked in `ServerStorage.GeneratedPresses` (Old_Stage2_Beige, Gen_Steel_2..4).
+Prompt tip for frames: say "connected ONLY at the top", "nothing between the
+legs", "no table, no lower crossbar", or the bed/object ends up inside a slab.
