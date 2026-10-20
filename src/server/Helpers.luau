@@ -36,7 +36,7 @@ local SLOT = 11
 local GREEN = C(130, 255, 90)
 local RED = C(255, 95, 85)
 
-local api: Api
+local api: Api = nil :: any
 
 -- Slot ground positions in plot-local space (behind the plot, on the shop island).
 function Helpers.slotOffsets(): { Vector3 }
@@ -148,6 +148,9 @@ function Helpers.refresh(plot: any)
 	if old then
 		old:Destroy()
 	end
+	if not api then
+		return -- Helpers.start refreshes every plot once it runs
+	end
 	local owner: Player? = plot.owner
 	local data = owner and api.getData(owner)
 	if not owner or not data then
@@ -211,6 +214,11 @@ end
 
 function Helpers.start(a: Api)
 	api = a
+	for _, plot in a.plots() do
+		if plot.owner then
+			Helpers.refresh(plot)
+		end
+	end
 	local Notice = Net.event("Notice")
 	local Purchased = Net.event("Purchased")
 	local standing: { [Player]: { id: string?, nextAt: number } } = {}
