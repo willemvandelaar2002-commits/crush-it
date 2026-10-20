@@ -1,9 +1,11 @@
 --!strict
--- Every uploaded icon (Image assets on Willem's account, 512x512 PNGs, 20 Oct).
+-- Every uploaded icon (Willem's account, 512x512 PNGs, 20 Oct).
 -- Swap an icon by changing its id here; nothing else needs to change.
+-- These ids don't load as plain rbxassetid:// in an ImageLabel (likely decal
+-- ids), but Roblox's thumbnail URL works for any asset type, so we use that.
 
 local function id(n: string): string
-	return "rbxassetid://" .. n
+	return "rbxthumb://type=Asset&id=" .. n .. "&w=420&h=420"
 end
 
 return {
@@ -15,7 +17,7 @@ return {
 	Speed = id("125971454243604"),
 	Value = id("80257410856032"),
 	Press = id("102684655405763"),
-	Rebirth = id("118805133054994"), -- WarChest's rebirth icon was 119986205257706
+	Rebirth = id("118805133054994"), -- WarChest's rebirth icon: 119986205257706
 	AutoCrush = id("105926085988328"),
 	DoubleCash = id("124084693349196"),
 	Offline = id("126844943827021"),
