@@ -282,7 +282,7 @@ local offersScale = make("UIScale", { Parent = offers })
 local function fitOffers()
 	local viewport = Workspace.CurrentCamera.ViewportSize
 	local h = viewport.Y
-	offersScale.Scale = math.clamp((h - 300) / 480, 0.5, 1) -- stays between the leaderboard and the CRUSH button
+	offersScale.Scale = math.clamp((h - 380) / 480, 0.5, 1) -- stays between the leaderboard and the CRUSH button
 	offers:SetAttribute("FitsScreen", not Style.compact() and h >= 650)
 	local book = hud:FindFirstChild("Book") :: GuiObject?
 	offers.Visible = offers:GetAttribute("FitsScreen") == true and not panel.Visible and not (book and book.Visible)

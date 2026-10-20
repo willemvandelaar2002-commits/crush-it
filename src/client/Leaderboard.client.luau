@@ -64,7 +64,7 @@ local tabButtons: { [string]: TextButton } = {}
 local current = "Here"
 for i, name in TABS do
 	local b = make("TextButton", {
-		Name = name, Position = UDim2.new((i - 1) * 0.3, 4, 0, 4), Size = UDim2.new(0.3, -4, 1, -8), BackgroundColor3 = BG,
+		Name = name, Position = UDim2.new((i - 1) * 0.28, 6, 0, 4), Size = UDim2.new(0.28, -4, 1, -8), BackgroundColor3 = BG,
 		BackgroundTransparency = 1, Text = name, TextScaled = true, AutoButtonColor = false,
 	}, tabBar)
 	Style.text(b, 1.5)
