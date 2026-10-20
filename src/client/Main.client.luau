@@ -146,12 +146,9 @@ local crushButton = make("TextButton", {
 	AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -20, 1, -20), Size = UDim2.fromOffset(150, 150),
 	BackgroundColor3 = RED, Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "CRUSH",
 	AutoButtonColor = false, Parent = gui,
-}, { make("UIPadding", { PaddingLeft = UDim.new(0, 18), PaddingRight = UDim.new(0, 18) }) })
-Style.button(crushButton, RED)
-local crushCorner = crushButton:FindFirstChild("Corner") :: UICorner
-local crushOutline = crushButton:FindFirstChild("Outline") :: UIStroke
-crushCorner.CornerRadius = UDim.new(1, 0)
-crushOutline.Thickness = 5
+}, { make("UICorner", { CornerRadius = UDim.new(1, 0) }), make("UIStroke", { Thickness = 5, Color = Color3.fromRGB(120, 20, 20) }), make("UIPadding", { PaddingLeft = UDim.new(0, 18), PaddingRight = UDim.new(0, 18) }) })
+-- Solid red with white text (a Style.button gradient would tint the text too); press feedback only.
+Style.feedback(crushButton)
 local keyHint = make("TextLabel", {
 	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 1, 4), Size = UDim2.fromOffset(150, 18),
 	BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "hold  [F]",
@@ -168,7 +165,7 @@ local holds = 0 -- button / key / gamepad can all hold at once
 local function setHold(delta: number)
 	if Style.hasModal() then delta = 0; holds = 0 end
 	holds = math.max(0, holds + delta)
-	Style.setButtonColor(crushButton, if holds > 0 then Color3.fromRGB(190, 50, 45) else RED)
+	crushButton.BackgroundColor3 = if holds > 0 then Color3.fromRGB(190, 50, 45) else RED
 end
 crushButton.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -449,8 +446,8 @@ end)
 cashLabel.Text = Format.cash(displayedCash.Value)
 local lastCash = (player:GetAttribute("Cash") :: number?) or 0
 local cashPop = make("TextLabel", {
-	Name = "CashGain", AnchorPoint = if TOUCH then Vector2.new(1, 0.5) else Vector2.new(0.5, 1),
-	Position = if TOUCH then UDim2.new(0, -8, 0.5, 0) else UDim2.new(0.5, 0, 0, -4),
+	Name = "CashGain", AnchorPoint = if TOUCH then Vector2.new(1, 0.5) else Vector2.new(0, 0.5),
+	Position = if TOUCH then UDim2.new(0, -8, 0.5, 0) else UDim2.new(0, cashLabel.TextBounds.X + 90, 0.5, 0),
 	Size = UDim2.fromOffset(if TOUCH then 72 else 160, if TOUCH then 22 else 28),
 	BackgroundTransparency = 1, TextScaled = true, Text = "", Visible = false, ZIndex = 3, Parent = cashLabel,
 })
@@ -471,6 +468,10 @@ player:GetAttributeChangedSignal("Cash"):Connect(function()
 		popToken += 1
 		local token = popToken
 		cashPop.Text = "+" .. Format.cash(cash - lastCash)
+		if not TOUCH then
+			-- just right of the (new) cash text, on the same line
+			cashPop.Position = UDim2.new(0, Format.cash(cash):len() * CASH_SIZE.Y * 0.5 + 12, 0.5, 0)
+		end
 		cashPop.Visible = true
 		task.delay(0.9, function() if token == popToken then cashPop.Visible = false end end)
 	end

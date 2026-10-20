@@ -12,6 +12,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
+local UserInputService = game:GetService("UserInputService")
 
 local Format = require(ReplicatedStorage.Shared.Format)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
@@ -117,7 +118,8 @@ local function fitLeaderboard()
 	panel.Position = UDim2.new(1, -10, 0, if compact then 86 else 8)
 	openButton.Position = UDim2.new(1, -12, 0, if compact then 146 else 8)
 end
-if Style.compact() then
+-- Start collapsed on phones only (the camera's viewport isn't final yet when this runs).
+if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
 	panel.Visible = false
 	openButton.Visible = true
 end

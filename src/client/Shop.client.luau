@@ -97,19 +97,19 @@ local crushButton = hud:WaitForChild("CrushButton") :: TextButton
 local autoButton = make("TextButton", {
 	Name = "AutoButton", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 0, -10), Size = UDim2.new(1, 0, 0, 40),
 	BackgroundColor3 = GREY, Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "AUTO", Parent = crushButton,
-}, { pad(5) })
-Style.button(autoButton, GREY)
+}, { corner(10), stroke(2), pad(5) })
+Style.feedback(autoButton) -- solid colours keep the label white
 
 local function refreshAuto()
 	if not Store.hasPass(player, "AutoCrush") then
 		autoButton.Text = "AUTO 🔒"
-		Style.setButtonColor(autoButton, GREY)
+		autoButton.BackgroundColor3 = GREY
 	elseif player:GetAttribute("AutoOn") == true then
 		autoButton.Text = "AUTO: ON"
-		Style.setButtonColor(autoButton, Style.GREEN)
+		autoButton.BackgroundColor3 = GREEN
 	else
 		autoButton.Text = "AUTO: OFF"
-		Style.setButtonColor(autoButton, RED)
+		autoButton.BackgroundColor3 = RED
 	end
 end
 autoButton.Activated:Connect(function()
