@@ -9,6 +9,8 @@
 --        chunky studded sign on two posts; draw on facePart's Back face (+Z)
 --   Build.label(adornee, text, color, offsetY, sizeStuds?) -> BillboardGui
 --        big floating outlined label ("Smelt" style)
+--   Build.lava(parent, surfaceCf, length, width, opts?)       lava strip (crust, glowing rims, drifting blobs, embers) -> (Model, floor)
+--   Build.bank(parent, cf, length, height, thickness?)        basalt curb along a lava strip
 --   Build.lighting(preset)                                    cartoon lighting: Day, Sunset, GoldenHour, Dusk, Smog
 --
 -- Props (blocky + studded; `palette` is Style.theme(...), `rng` a Random for variety):
@@ -20,6 +22,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lighting = game:GetService("Lighting")
+local CollectionService = game:GetService("CollectionService")
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
 
 local Build = {}
@@ -186,6 +189,121 @@ function Build.lighting(preset: string?)
 	sky.CelestialBodiesShown = true
 	sky.StarCount = p.stars
 	sky.Parent = Lighting
+end
+
+-- Lava -------------------------------------------------------------------------
+-- Build.lava(parent, surfaceCf, length, width, opts?) -> (Model, floor: Part)
+-- A strip of stylised lava whose top surface is at surfaceCf (its X axis runs
+-- along the strip): dark cracked crust, glowing edges where it meets the banks,
+-- drifting bright blobs and crust plates (tag "LavaDrift"; the client moves
+-- them, see Scrap.client.luau), rising embers and orange light. `floor` is an
+-- invisible solid part just under the surface: hook its Touched to bounce players.
+-- opts = { lights?: boolean (default true), drift?: number speed studs/s (default 1.6) }
+local LAVA_CRUST = Color3.fromRGB(110, 28, 10)
+local LAVA_GLOW = Color3.fromRGB(255, 120, 20)
+local LAVA_HOT = Color3.fromRGB(255, 200, 70)
+local BASALT = Color3.fromRGB(48, 44, 46)
+
+function Build.lava(parent: Instance, surface: CFrame, length: number, width: number, opts: { [string]: any }?): (Model, Part)
+	local o = opts or {}
+	local m = Instance.new("Model")
+	m.Name = "Lava"
+	local function part(name: string, size: Vector3, cf: CFrame, color: Color3, material: Enum.Material): Part
+		local p = Instance.new("Part")
+		p.Name = name
+		p.Anchored = true
+		p.CanCollide = false
+		p.CanQuery = false
+		p.CanTouch = false
+		p.CastShadow = false
+		p.TopSurface = Enum.SurfaceType.Smooth
+		p.BottomSurface = Enum.SurfaceType.Smooth
+		p.Size = size
+		p.CFrame = cf
+		p.Color = color
+		p.Material = material
+		p.Parent = m
+		return p
+	end
+	-- molten glow underneath, crust on top (CrackedLava draws its own glowing cracks)
+	part("Molten", Vector3.new(length, 0.3, width), surface * CFrame.new(0, -0.35, 0), LAVA_GLOW, Enum.Material.Neon)
+	part("Crust", Vector3.new(length, 0.4, width), surface * CFrame.new(0, -0.2, 0), LAVA_CRUST, Enum.Material.CrackedLava)
+	-- white-hot rims along both banks
+	for _, side in { -1, 1 } do
+		part("Rim", Vector3.new(length, 0.12, 0.45), surface * CFrame.new(0, 0.02, side * (width / 2 - 0.22)), LAVA_HOT, Enum.Material.Neon)
+		part("RimGlow", Vector3.new(length, 0.1, 1.1), surface * CFrame.new(0, 0.01, side * (width / 2 - 0.9)), LAVA_GLOW, Enum.Material.Neon).Transparency = 0.45
+	end
+	-- drifting blobs (bright) and crust plates (dark): the client slides them along X
+	local speed = o.drift or 1.6
+	local function drifter(name: string, size: Vector3, z: number, y: number, color: Color3, material: Enum.Material, start: number, v: number)
+		local p = part(name, size, surface * CFrame.new(-length / 2 + start, y, z) * CFrame.Angles(0, math.random() * 6, 0), color, material)
+		p:SetAttribute("Len", length)
+		p:SetAttribute("Start", start)
+		p:SetAttribute("Speed", v)
+		p:SetAttribute("Origin", (surface * CFrame.new(-length / 2, y, z)).Position)
+		p:SetAttribute("Axis", surface.XVector)
+		CollectionService:AddTag(p, "LavaDrift")
+	end
+	local n = math.max(2, math.floor(length / 9))
+	for i = 1, n do
+		local z = (math.random() - 0.5) * (width - 2.2)
+		local d = 1.2 + math.random() * 1.6
+		drifter("Blob", Vector3.new(d * 1.6, 0.14, d), z, 0.05, if math.random() < 0.4 then LAVA_HOT else LAVA_GLOW, Enum.Material.Neon,
+			(i - math.random()) * length / n, speed * (0.8 + math.random() * 0.4))
+	end
+	for i = 1, math.max(1, math.floor(length / 13)) do
+		local z = (math.random() - 0.5) * (width - 2.6)
+		local d = 1.4 + math.random() * 1.8
+		drifter("Plate", Vector3.new(d * 1.3, 0.25, d), z, 0.1, Color3.fromRGB(70, 34, 24), Enum.Material.Basalt,
+			math.random() * length, speed * (0.6 + math.random() * 0.3))
+	end
+	-- embers rising, and some orange light
+	local emitterPart = part("Embers", Vector3.new(length, 0.1, width), surface, LAVA_GLOW, Enum.Material.SmoothPlastic)
+	emitterPart.Transparency = 1
+	local embers = Instance.new("ParticleEmitter")
+	embers.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	embers.Rate = math.clamp(length / 4, 3, 30)
+	embers.Lifetime = NumberRange.new(1.2, 2.4)
+	embers.Speed = NumberRange.new(2.5, 5)
+	embers.SpreadAngle = Vector2.new(20, 20)
+	embers.Acceleration = Vector3.new(0, 1, 0)
+	embers.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.35), NumberSequenceKeypoint.new(1, 0) })
+	embers.Color = ColorSequence.new(LAVA_HOT, LAVA_GLOW)
+	embers.LightEmission = 1
+	embers.EmissionDirection = Enum.NormalId.Top
+	embers.Parent = emitterPart
+	if o.lights ~= false then
+		for i = 0, math.floor(length / 36) do
+			local a = Instance.new("Attachment")
+			a.Position = Vector3.new(-length / 2 + 18 + i * 36, 0.6, 0)
+			a.Parent = emitterPart
+			local light = Instance.new("PointLight")
+			light.Color = LAVA_GLOW
+			light.Range = 14
+			light.Brightness = 1.4
+			light.Shadows = false
+			light.Parent = a
+		end
+	end
+	-- solid floor just under the surface (for Touched)
+	local floor = Instance.new("Part")
+	floor.Name = "LavaFloor"
+	floor.Anchored = true
+	floor.Transparency = 1
+	floor.CanQuery = false
+	floor.Size = Vector3.new(length, 1, width)
+	floor.CFrame = surface * CFrame.new(0, -0.6, 0)
+	floor.Parent = m
+	m.Parent = parent
+	return m, floor
+end
+
+-- Basalt bank: a low dark rock curb (top at `height` above surfaceCf), studded.
+function Build.bank(parent: Instance, cf: CFrame, length: number, height: number, thickness: number?): Part
+	local t = thickness or 1.4
+	local p = Build.block(parent, "Bank", Vector3.new(length, height, t), cf * CFrame.new(0, height / 2, 0), BASALT, { Enum.NormalId.Top })
+	p.Material = Enum.Material.Basalt
+	return p
 end
 
 -- Props --------------------------------------------------------------------------

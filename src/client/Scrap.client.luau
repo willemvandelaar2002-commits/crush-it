@@ -187,3 +187,35 @@ game:GetService("RunService").RenderStepped:Connect(function(dt)
 		end
 	end
 end)
+
+-- Lava: slide the bright blobs and crust plates along their strip (tag
+-- "LavaDrift", built by Build.lava). Local only, one BulkMoveTo per frame.
+local drifters: { BasePart } = {}
+local function addDrifter(p: Instance)
+	if p:IsA("BasePart") then
+		table.insert(drifters, p)
+	end
+end
+for _, p in CollectionService:GetTagged("LavaDrift") do
+	addDrifter(p)
+end
+CollectionService:GetInstanceAddedSignal("LavaDrift"):Connect(addDrifter)
+local t0 = os.clock()
+game:GetService("RunService").RenderStepped:Connect(function()
+	local now = os.clock() - t0
+	local parts: { BasePart } = {}
+	local cfs: { CFrame } = {}
+	for _, p in drifters do
+		local len = p:GetAttribute("Len") :: number?
+		if not len or not p.Parent then
+			continue
+		end
+		local d = ((p:GetAttribute("Start") :: number) + now * (p:GetAttribute("Speed") :: number)) % len
+		local pos = (p:GetAttribute("Origin") :: Vector3) + (p:GetAttribute("Axis") :: Vector3) * d
+		table.insert(parts, p)
+		table.insert(cfs, CFrame.new(pos) * (p.CFrame - p.CFrame.Position))
+	end
+	if #parts > 0 then
+		Workspace:BulkMoveTo(parts, cfs, Enum.BulkMoveMode.FireCFrameChanged)
+	end
+end)

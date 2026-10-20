@@ -1,5 +1,5 @@
 --!strict
--- The scrap shop behind every plot: a lava/oil channel, a steel bridge, a
+-- The scrap shop behind every plot: across the lava moat (Moat.luau) over a steel bridge, a
 -- "SCRAP SHOP" gate and a small machinery island with a smelter (hopper,
 -- glowing furnace, smoking chimney, spinning gear), a conveyor and the
 -- yellow SELL pad. Stand on the pad to sell your scrap (server/Scrap.luau).
@@ -14,6 +14,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Build = require(script.Parent.Kit.Build)
 local RobuxSigns = require(script.Parent.RobuxSigns)
+local Moat = require(script.Parent.Moat)
 
 local ScrapShop = {}
 
@@ -80,7 +81,7 @@ local function signText(part: BasePart, face: Enum.NormalId, text: string, color
 end
 
 function ScrapShop.build(plotModel: Model, origin: CFrame, theme: { [string]: Color3 }): Shop
-	local S = Config.ScrapShop
+	local S = { Gap = Config.Plots.Moat, Depth = Config.ScrapShop.Depth, Width = Config.ScrapShop.Width }
 	local F = Config.Plots.FloorSize
 	local floorY = origin.Position.Y
 	local back = -F / 2
@@ -93,99 +94,8 @@ function ScrapShop.build(plotModel: Model, origin: CFrame, theme: { [string]: Co
 	local m = Instance.new("Model")
 	m.Name = "ScrapShop"
 
-	-- Channel along the whole back of the plot: glowing lava or black oil.
-	local lava = Config.ScrapShop.Channel ~= "Oil"
-	local depth = floorY - 0.6
-	local fluid = Instance.new("Part")
-	fluid.Name = "Channel"
-	fluid.Anchored = true
-	fluid.CanCollide = false
-	fluid.Size = Vector3.new(F + 4, depth, S.Gap)
-	fluid.CFrame = at(0, -depth / 2 - 0.55, back - S.Gap / 2)
-	if lava then
-		fluid.Material = Enum.Material.CrackedLava
-		fluid.Color = C(200, 45, 15) -- deep red: bright orange read as yellow next to the yellow ground
-	else
-		fluid.Material = Enum.Material.Glass
-		fluid.Color = C(20, 18, 26)
-		fluid.Reflectance = 0.35
-	end
-	fluid.Parent = m
-	-- a glowing (lava) or glossy (oil) skin on top, slightly moving
-	local skin = Instance.new("Part")
-	skin.Name = "ChannelSurface"
-	skin.Anchored = true
-	skin.CanCollide = false
-	skin.CanQuery = false
-	skin.Size = Vector3.new(F + 4, 0.1, S.Gap)
-	skin.CFrame = at(0, -0.5, back - S.Gap / 2)
-	skin.Material = if lava then Enum.Material.Neon else Enum.Material.Glass
-	skin.Color = if lava then C(255, 70, 10) else C(60, 40, 90)
-	skin.Transparency = if lava then 0.7 else 0.6
-	skin.Reflectance = if lava then 0 else 0.5
-	skin.Parent = m
-	local tex = Instance.new("Texture")
-	tex.Texture = "rbxassetid://7447638591" -- reuse the studs as a slow-moving ripple pattern
-	tex.Face = Enum.NormalId.Top
-	tex.StudsPerTileU = 6
-	tex.StudsPerTileV = 6
-	tex.Transparency = if lava then 0.45 else 0.75
-	tex.Color3 = if lava then C(255, 170, 60) else C(150, 110, 220)
-	tex:SetAttribute("Flow", 2)
-	CollectionService:AddTag(tex, "FlowTexture")
-	tex.Parent = skin
-	-- light, bubbles and heat (lava) / sheen (oil)
-	for i = -2, 2 do
-		local spot = Instance.new("Attachment")
-		spot.Position = Vector3.new(i * (F / 5), 0, 0)
-		spot.Parent = skin
-		if lava then
-			local light = Instance.new("PointLight")
-			light.Color = C(255, 120, 40)
-			light.Range = 14
-			light.Brightness = 1.2
-			light.Parent = spot
-		end
-	end
-	local bubbles = Instance.new("ParticleEmitter")
-	bubbles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-	bubbles.Rate = if lava then 14 else 4
-	bubbles.Lifetime = NumberRange.new(0.6, 1.2)
-	bubbles.Speed = NumberRange.new(1, 3)
-	bubbles.Size = NumberSequence.new(if lava then 0.6 else 0.4)
-	bubbles.Color = if lava then ColorSequence.new(C(255, 220, 90), C(255, 90, 20)) else ColorSequence.new(C(120, 80, 200), C(40, 30, 60))
-	bubbles.LightEmission = if lava then 1 else 0
-	bubbles.EmissionDirection = Enum.NormalId.Top
-	bubbles.Parent = skin
-	-- falling in puts you back on the plot side of the bridge
-	local floorPart = Instance.new("Part")
-	floorPart.Name = "ChannelFloor"
-	floorPart.Anchored = true
-	floorPart.Transparency = 1
-	floorPart.Size = Vector3.new(F + 4, 1, S.Gap)
-	floorPart.CFrame = at(0, -floorY + 0.5, back - S.Gap / 2)
-	floorPart.Parent = m
-	local safe = at(0, 3, back + 4)
-	floorPart.Touched:Connect(function(hit)
-		local character = hit.Parent
-		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
-		if humanoid and root then
-			root.AssemblyLinearVelocity = Vector3.zero
-			root.CFrame = safe
-		end
-	end)
-
-	-- Steel bridge with yellow rails and hazard ends.
-	local bridgeLen = S.Gap + 4
-	local bridge = Build.block(m, "Bridge", Vector3.new(10, 0.6, bridgeLen), at(0, -0.3, back - S.Gap / 2), STEEL)
-	local _ = bridge
-	for _, x in { -1, 1 } do
-		Build.block(m, "BridgeRail", Vector3.new(0.6, 1.4, bridgeLen), at(x * 4.9, 0.7, back - S.Gap / 2), YELLOW, ALL)
-		for _, z in { -1, 1 } do
-			Build.block(m, "RailPost", Vector3.new(1, 1.8, 1), at(x * 4.9, 0.9, back - S.Gap / 2 + z * (bridgeLen / 2 - 0.5)), BLACK, ALL)
-		end
-	end
+	-- Bridge over the lava moat (Moat.luau builds the lava itself).
+	Moat.bridge(m, at(0, 0, back - S.Gap / 2), S.Gap + 3)
 
 	-- The island: a raised slab like the plots, in darker steel.
 	Build.platform(m, "Island", at(0, 0, islandMid), S.Width, S.Depth, floorY - 0.05, theme.pad, theme.edge, 2)

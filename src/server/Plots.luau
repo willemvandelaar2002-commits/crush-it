@@ -16,6 +16,7 @@ local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Build = require(script.Parent.Kit.Build)
 local RobuxSigns = require(script.Parent.RobuxSigns)
 local ScrapShop = require(script.Parent.ScrapShop)
+local Moat = require(script.Parent.Moat)
 
 local Plots = {}
 
@@ -174,7 +175,7 @@ function Plots.create()
 	Build.block(root, "Ground", Vector3.new(1600, 1, 1600), CFrame.new(0, 0.05 - 0.5, 0), theme.ground)
 	-- Walkway down the middle: a lower platform with an edge.
 	local walkW = P.Spacing * 4 + 30
-	local walkD = P.RowOffset * 2 - F + 6
+	local walkD = P.RowOffset * 2 - F - 2 * P.Moat -- stops at the lava moat in front of each row
 	Build.platform(root, "Walkway", CFrame.new(0, 0.7, 0), walkW, walkD, 0.65, theme.path, theme.edge, 1.5)
 
 	for i = 1, P.Count do
@@ -229,6 +230,8 @@ function Plots.create()
 		-- Robux signs (moved next to the press like the board)
 		RobuxSigns.build(model, theme.edge)
 		model.Parent = root
+		-- Lava moat round the plot with a bridge from the walkway
+		Moat.build(model, origin)
 		-- Scrap shop island behind the plot (water channel, bridge, gate, smelter, sell pad).
 		local shop = ScrapShop.build(model, origin, theme)
 		local plot: Plot = { index = i, origin = origin, model = model, press = nil, ram = nil, bedTop = 0, ramRestY = 0, tier = 1, owner = nil, sign = label, shop = shop }

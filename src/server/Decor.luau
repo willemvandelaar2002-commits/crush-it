@@ -31,15 +31,15 @@ function Decor.create()
 	local rng = Random.new(Config.Look.PropSeed or 7)
 	local P = Config.Plots
 	local F = P.FloorSize
-	local halfX = P.Spacing * 1.5 + F / 2 -- outer side of the end plots
+	local halfX = P.Spacing * 1.5 + F / 2 + P.Moat -- outer side of the end plots' moats
 	local backZ = P.RowOffset + F / 2 -- back edge of each row
-	local walkZ = P.RowOffset - F / 2 + 3 -- edge of the walkway
+	local walkZ = P.RowOffset - F / 2 - P.Moat -- edge of the walkway (the moat starts here)
 
 	local root = Instance.new("Folder")
 	root.Name = "Decor"
 
 	-- Fences: behind the scrap shop islands of both rows and down both ends, leaving the walkway open.
-	local shopDepth = Config.ScrapShop.Gap + Config.ScrapShop.Depth
+	local shopDepth = Config.Plots.Moat + Config.ScrapShop.Depth
 	local fz = backZ + shopDepth + 7
 	local fx = halfX + 10
 	for _, side in { -1, 1 } do
