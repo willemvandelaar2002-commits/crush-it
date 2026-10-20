@@ -1,0 +1,70 @@
+--!strict
+-- Ground guide (Kit/GuidePath): glowing chevrons that lead the player to
+--   * the upgrade board while the tutorial says "Buy An Upgrade"
+--     (first session, enough cash, no upgrades yet), and
+--   * back to their own press whenever they wander more than RETURN_DISTANCE away.
+-- Otherwise hidden.
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+local Config = require(ReplicatedStorage.Shared.Config)
+local GuidePath = require(ReplicatedStorage.Shared.Kit.GuidePath)
+
+local player = Players.LocalPlayer
+local RETURN_DISTANCE = 40
+
+local path = GuidePath.new({ color = Color3.new(1, 1, 1) })
+
+local function attr(name: string): number
+	return (player:GetAttribute(name) :: number?) or 0
+end
+
+local function myPlot(): Model?
+	local index = player:GetAttribute("Plot")
+	local plots = Workspace:FindFirstChild("Plots")
+	return if index and plots then plots:FindFirstChild("Plot" .. tostring(index)) :: Model? else nil
+end
+
+-- (target position, label) or nil
+local function goal(root: BasePart): (Vector3?, string?)
+	local plot = myPlot()
+	if not plot then
+		return nil
+	end
+	local bed = plot:FindFirstChild("Bed", true) :: BasePart?
+	if not bed then
+		return nil
+	end
+	-- tutorial step: first upgrade
+	local firstSession = attr("Tier") <= 1 and attr("Rebirths") == 0
+	local noUpgrades = attr("PowerLv") + attr("SpeedLv") + attr("ValueLv") == 0
+	if firstSession and noUpgrades and attr("Crushed") > 0 and attr("Cash") >= Config.Upgrades[1].cost(0) then
+		local board = plot:FindFirstChild("Board") :: Model?
+		if board then
+			local pivot = board:GetPivot()
+			-- stand in front of the board (its face points +Z)
+			return (pivot * CFrame.new(0, 0, 6)).Position, "Upgrades!"
+		end
+	end
+	-- wandered off: back to the press
+	local flat = Vector3.new(bed.Position.X - root.Position.X, 0, bed.Position.Z - root.Position.Z)
+	if flat.Magnitude > RETURN_DISTANCE then
+		return bed.Position, "Your Press"
+	end
+	return nil
+end
+
+RunService.RenderStepped:Connect(function()
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not root then
+		path:update(Vector3.zero, nil)
+		return
+	end
+	local target, label = goal(root)
+	local feet = root.Position - Vector3.new(0, 3, 0)
+	path:update(feet, target, label)
+end)
