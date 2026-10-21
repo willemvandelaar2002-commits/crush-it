@@ -200,6 +200,7 @@ local function train(parent: Instance)
 	local engine = Instance.new("Model")
 	engine.Name = "Engine"
 	engine:SetAttribute("Offset", 0)
+	engine:SetAttribute("ChassisY", 2.25) -- chassis centre above the floor
 	Build.block(engine, "Chassis", Vector3.new(5.6, 1.2, 12), base * CFrame.new(0, 1.9, 0), DARK, ALL)
 	wheels(engine, { -4, 0, 4 }, RED)
 	local boiler = Instance.new("Part")
@@ -255,6 +256,7 @@ local function train(parent: Instance)
 		local car = Instance.new("Model")
 		car.Name = "Wagon" .. k
 		car:SetAttribute("Offset", 12 + (k - 1) * 10.5)
+		car:SetAttribute("ChassisY", 2.15)
 		local col = wagonColors[k]
 		Build.block(car, "Chassis", Vector3.new(5.4, 1, 9), base * CFrame.new(0, 1.8, 0), DARK, ALL)
 		wheels(car, { -2.8, 2.8 }, RED)
