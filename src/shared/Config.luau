@@ -419,7 +419,9 @@ Config.Loop = {
 	Inner = 172, -- the ring road runs from this radius ...
 	Outer = 198, -- ... to this one (26 wide)
 	TrainRadius = 185, -- the rails' centre line
-	TrainLap = 60, -- seconds for the toy train to go round once
+	TrainStop = 5, -- seconds a train stands at each plot's stop (shared/TrainRoute.luau)
+	TrainMove = 8, -- seconds to drive on to the next stop (45 degrees)
+	Trains = 2, -- toy trains on the loop, spread evenly
 }
 
 -- World layout: 8 plots round the loop (Plots.originFor).

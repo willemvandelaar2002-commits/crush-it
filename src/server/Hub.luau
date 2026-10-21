@@ -1,9 +1,10 @@
 --!strict
 -- The Toy Train Loop (Config.Loop): a round station hub in the middle with the
--- scrap display, the entrance landmark and workshop props; 4 walkways (at 0, 90,
--- 180 and 270 degrees) out to a ring road with rails and a toy train going round
--- (built here, driven by client/Train.client.luau); the plots stand round the
--- outside, their bridges landing on the loop (Plots.originFor, Moat.build).
+-- Mega Crusher (MegaCrusher.luau), the entrance landmark and workshop props; 4
+-- walkways (at 0, 90, 180 and 270 degrees) out to a ring road with rails, a train
+-- stop at every plot and toy trains you can ride (built here; the timetable is
+-- shared/TrainRoute.luau, client/Train.client.luau drives and rides them); the
+-- plots stand round the outside, their bridges landing on the loop.
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -12,6 +13,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Build = require(script.Parent.Kit.Build)
 local YardProps = require(script.Parent.Kit.YardProps)
+local TrainRoute = require(ReplicatedStorage.Shared.TrainRoute)
 
 local Hub = {}
 
@@ -85,17 +87,19 @@ local function station(m: Model, pal: { [string]: Color3 }, rng: Random)
 	-- roads across the hub to the 4 walkways
 	Build.path(m, Vector3.new(-L.Hub + 2, FLOOR_Y, 0), Vector3.new(L.Hub - 2, FLOOR_Y, 0), 12)
 	Build.path(m, Vector3.new(0, FLOOR_Y, -L.Hub + 2), Vector3.new(0, FLOOR_Y, L.Hub - 2), 12)
-	-- scrap display in the middle (Willem's world pass)
-	local basin = CFrame.new(0, FLOOR_Y, 0)
+	-- the Mega Crusher in the middle, the scrap display (Willem's world pass) by the west road
+	require(script.Parent.MegaCrusher).build(m, CFrame.new(0, FLOOR_Y, 0))
+	local basin = CFrame.new(-36, FLOOR_Y, -18)
 	Build.block(m, "DisplayPlinth", Vector3.new(18, 2, 18), basin * CFrame.new(0, 1, 0), pal.edge, ALL)
 	Build.block(m, "DisplayInset", Vector3.new(15, 0.3, 15), basin * CFrame.new(0, 2.05, 0), pal.platform, {})
 	Build.block(m, "DisplayTrim", Vector3.new(15.2, 0.2, 15.2), basin * CFrame.new(0, 1.95, 0), pal.edge, {})
 	Build.block(m, "DisplayPillar", Vector3.new(4, 7, 4), basin * CFrame.new(0, 5.5, 0), pal.edge, ALL)
 	Build.block(m, "DisplayTop", Vector3.new(6, 1.2, 6), basin * CFrame.new(0, 9.6, 0), C(47, 111, 201), {})
 	YardProps.bales(m, basin * CFrame.new(0, 10.2, 0), 0.8)
-	YardProps.entrance(m, CFrame.new(-30, FLOOR_Y, 0) * CFrame.Angles(0, -math.pi / 2, 0))
+	-- the CRUSH IT entrance over the south road (the 0-degree walkway)
+	YardProps.entrance(m, CFrame.new(0, FLOOR_Y, 44))
 	-- workshop props in the four quarters between the roads
-	for k, deg in { 45, 135, 225, 315 } do
+	for k, deg in { 45, 135, 315 } do
 		local a = math.rad(deg)
 		if k % 2 == 1 then
 			YardProps.cluster(m, at(a, 36, FLOOR_Y), k, 1.3)
@@ -110,7 +114,7 @@ local function station(m: Model, pal: { [string]: Color3 }, rng: Random)
 	spawn.Name = "HubSpawn"
 	spawn.Anchored = true
 	spawn.Size = Vector3.new(10, 0.2, 10)
-	spawn.CFrame = CFrame.new(0, FLOOR_Y + 0.1, 14)
+	spawn.CFrame = CFrame.new(0, FLOOR_Y + 0.1, 30)
 	spawn.Transparency = 1
 	spawn.CanCollide = false
 	spawn.Duration = 0
@@ -164,16 +168,47 @@ local function loop(m: Model, pal: { [string]: Color3 }, rng: Random)
 			Build.block(m, "Sleeper", Vector3.new(1.2, 0.16, 8.4), at(a + off * step, L.TrainRadius, FLOOR_Y + 0.08), sleeper, {})
 		end
 	end
+	-- a train stop at every plot: a little shelter on the strip between the rails and
+	-- the plot's bridge, roof in toy colours, "TRAIN STOP" sign facing the track
+	local roofs = { C(232, 86, 74), C(244, 190, 46), C(62, 143, 230), C(77, 184, 106) }
+	for i = 1, Config.Plots.Count do
+		local a = math.rad(22.5 + (i - 1) * 45)
+		local stopM = Instance.new("Model")
+		stopM.Name = "TrainStop" .. i
+		local r = L.Outer - 4
+		for _, side in { -1, 1 } do
+			local pa = a + side * 8 / r
+			Build.block(stopM, "Post", Vector3.new(0.8, 9, 0.8), at(pa, r + 1.5, FLOOR_Y + 4.5), C(40, 44, 56), {})
+			Build.block(stopM, "Bench", Vector3.new(4, 0.6, 1.6), at(a + side * 4.5 / r, r + 1.5, FLOOR_Y + 1.4), C(176, 128, 74), {})
+		end
+		Build.block(stopM, "Roof", Vector3.new(19, 0.8, 7), at(a, r, FLOOR_Y + 9.4), roofs[(i - 1) % #roofs + 1], ALL)
+		local sign = Build.block(stopM, "StopSign", Vector3.new(10, 2.2, 0.4), at(a, r - 3.3, FLOOR_Y + 8), C(250, 246, 235), {})
+		local gui = Instance.new("SurfaceGui")
+		gui.Face = Enum.NormalId.Front
+		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		gui.PixelsPerStud = 30
+		gui.LightInfluence = 0
+		gui.Parent = sign
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.fromScale(1, 1)
+		label.BackgroundTransparency = 1
+		label.TextScaled = true
+		label.Text = "TRAIN STOP"
+		label.Parent = gui
+		Style.text(label, 3)
+		label.TextColor3 = C(62, 143, 230)
+		scenery(stopM)
+		stopM.Parent = m
+	end
 end
 
 -- Toy train: an engine and four wagons with toys. Built facing -Z round a pivot
 -- on the floor; the client moves every car along the rails each frame.
-local function train(parent: Instance)
+local function train(parent: Instance, number: number, phaseLegs: number)
 	local L = Config.Loop
 	local m = Instance.new("Model")
-	m.Name = "ToyTrain"
-	m:SetAttribute("Radius", L.TrainRadius)
-	m:SetAttribute("Lap", L.TrainLap)
+	m.Name = "ToyTrain" .. number
+	m:SetAttribute("Phase", phaseLegs) -- legs ahead in the timetable (shared/TrainRoute.luau)
 	m:SetAttribute("FloorY", FLOOR_Y)
 	local RED, YELLOW, BLUE, DARK = C(232, 86, 74), C(244, 190, 46), C(62, 143, 230), C(40, 44, 56)
 	local base = CFrame.new(0, FLOOR_Y + 0.35, 0)
@@ -260,7 +295,17 @@ local function train(parent: Instance)
 		local col = wagonColors[k]
 		Build.block(car, "Chassis", Vector3.new(5.4, 1, 9), base * CFrame.new(0, 1.8, 0), DARK, ALL)
 		wheels(car, { -2.8, 2.8 }, RED)
-		Build.block(car, "Floor", Vector3.new(5.2, 0.5, 8.6), base * CFrame.new(0, 2.55, 0), col, {})
+		local floor = Build.block(car, "Floor", Vector3.new(5.2, 0.5, 8.6), base * CFrame.new(0, 2.55, 0), col, {})
+		-- press E to ride (Train.client.luau seats you and moves you with the wagon)
+		local prompt = Instance.new("ProximityPrompt")
+		prompt.Name = "RidePrompt"
+		prompt.ActionText = "Ride"
+		prompt.ObjectText = "Toy Train"
+		prompt.KeyboardKeyCode = Enum.KeyCode.E
+		prompt.HoldDuration = 0
+		prompt.MaxActivationDistance = 12
+		prompt.RequiresLineOfSight = false
+		prompt.Parent = floor
 		for _, x in { -2.45, 2.45 } do
 			Build.block(car, "Side", Vector3.new(0.3, 1.8, 8.6), base * CFrame.new(x, 3.6, 0), col, ALL)
 		end
@@ -288,13 +333,12 @@ local function train(parent: Instance)
 			p.BottomSurface = Enum.SurfaceType.Smooth
 		end
 	end
-	-- start on the rails (the client takes over from here)
+	-- start on the rails at its first stop (the client takes over from here)
+	local head = TrainRoute.at(0, phaseLegs)
 	for _, car in m:GetChildren() do
 		if car:IsA("Model") then
-			local r = L.TrainRadius
-			local a = -((car:GetAttribute("Offset") :: number?) or 0) / r
-			local pos = Vector3.new(math.sin(a) * r, FLOOR_Y, math.cos(a) * r)
-			car:PivotTo(CFrame.lookAt(pos, pos + Vector3.new(math.cos(a), 0, -math.sin(a))))
+			local a = head - ((car:GetAttribute("Offset") :: number?) or 0) / L.TrainRadius
+			car:PivotTo(TrainRoute.frame(a, FLOOR_Y))
 		end
 	end
 	CollectionService:AddTag(m, "ToyTrain")
@@ -315,7 +359,9 @@ function Hub.create(parent: Instance)
 		local dir = Vector3.new(math.sin(a), 0, math.cos(a))
 		Build.bridge(m, Vector3.new(0, FLOOR_Y, 0) + dir * (L.Hub - 1.5), Vector3.new(0, FLOOR_Y, 0) + dir * (L.Inner + 1.5), 12, pal, Config.World.SeaY)
 	end
-	train(m)
+	for i = 1, L.Trains do
+		train(m, i, (i - 1) * 8 / L.Trains)
+	end
 	m.Parent = parent
 end
 

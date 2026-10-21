@@ -182,3 +182,17 @@ Willem picked option C from the layout canvas. Numbers in `Config.Loop` / `Confi
   facing the centre; their bridges (12 long) land on the loop.
 - World (Willem's sand yard): cliff walls moved out to ±440, yard scenes and the
   workshop in the sand wedges between plots at radius 330.
+
+## Mega Crusher + rideable trains (21 Oct)
+- **Mega Crusher** (`server/MegaCrusher.luau`, `client/Mega.client.luau`): a tier-9
+  press frame in the middle of the hub over a stack of 3 giant toy blocks. Every 6 s
+  the ram slams: toys squash, sparks, "CRUSH!" pop-up, screen shake within 100 studs;
+  then the toys bounce back. Scenery, pays nothing. The scrap display moved to the
+  west side of the hub, the CRUSH IT entrance over the south road, spawn at z 30.
+- **Train timetable** (`shared/TrainRoute.luau`): a lap = 8 legs, one per plot: stand
+  `Config.Loop.TrainStop` (5) s at the plot's stop, drive 45 degrees in `TrainMove` (8) s
+  with a smooth start/stop. `Trains` = 2, half a lap apart. A **train stop** shelter
+  (posts, bench, toy-colour roof, "TRAIN STOP" sign) at every plot.
+- **Riding** (`client/Train.client.luau`): E on a wagon ("Ride") seats you in it; you
+  move with the wagon; the hint shows the stop ("Stop: <owner> / Your plot!"). Jump
+  to hop off: at a stop you land on that plot's bridge, between stops beside the track.
