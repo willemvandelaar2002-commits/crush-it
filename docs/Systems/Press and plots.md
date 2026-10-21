@@ -1,5 +1,10 @@
 # Press and plots
 
+21 Oct movement update: Config.PlayerWalkSpeed is 28 studs/second for every
+player. The server applies it in placeCharacter on initial spawn and respawn.
+The spawn/respawn application was verified in Studio at 24; the subsequent
+increase to 28 uses the same server setting.
+
 21 Oct: environment builders now provide the bright scrapyard described in [[Scrapyard environment]]. Press logic and meshes remain unchanged. The 20 Oct limitation below is historical.
 
 20 Oct visual update: shared Island colours now use blue-grey platforms,

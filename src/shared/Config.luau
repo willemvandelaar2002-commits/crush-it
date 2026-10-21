@@ -6,6 +6,9 @@
 
 local Config = {}
 
+-- Faster travel between presses, shops and the train loop for every player.
+Config.PlayerWalkSpeed = 28 -- studs per second (Roblox default: 16)
+
 export type PartSpec = {
 	shape: string, -- "block" | "sphere" | "cylinder" | "wedge"
 	size: Vector3, -- studs, before the object's own scale

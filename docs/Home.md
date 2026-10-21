@@ -1,5 +1,9 @@
 # Crush It
 
+Imported material trial (21 Oct): [[Systems/Stud material comparison]] documents
+the opt-in world helper and temporary A/B floor rig. Existing world and UI
+studs remain on textures; MaterialService variants must be saved with the place.
+
 Latest world art pass (21 Oct): golden sand, charcoal routes, larger grouped
 perimeter yards, yellow crane landmarks, a striped-awning workshop, substantial
 green cliff terraces and warmer daylight. See [[Systems/Scrapyard environment]]

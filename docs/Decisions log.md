@@ -1,5 +1,11 @@
 # Decisions log
 
+- 2026-10-21: Added opt-in Style.materialStuds for imported place-only Studs, retaining legacy face-specific textures and unchanged UI. Explicit whole-part material uses the variant's Plastic base, archives only kit overlays for lossless rollback, falls back when missing and is safe to repeat. Compared matching floor samples in Studio at player height/shallow/detail angles without modifying shared variant settings, world builders, presses or lighting. Temporary Studio setup and place-save/Rojo requirements documented in Systems/Stud material comparison; no global rollout.
+
+- 2026-10-21: Increased everyone's movement speed again, from 24 to 28 studs/second, at Willem's request. The existing initial-spawn and respawn application is retained.
+
+- 2026-10-21: All players now walk at 24 studs/second (50% above Roblox's default 16). Config.PlayerWalkSpeed controls the shared setting; the server applies it when placing each character on initial spawn and respawn.
+
 - 2026-10-21: Second world art pass establishes golden-tan sand, charcoal lanes with light kerbs, saturated container groups and substantial green cliff terraces. Reviewed a finished crane/container corner at player height and overview before extending it into six perimeter yards and one striped-awning workshop. Reused the entrance; added warm YardDay lighting, fewer larger hub groups and scalable static prop helpers. Presses, UI, gameplay, Config/Store/Net and place-only meshes unchanged. Studio Play walking/crushing, footprint clearance, desktop/phone views and Output checks passed; physical-phone performance remains a device test.
 
 - 2026-10-21: Approved environment-only server exception implemented: sandy scrapyard exterior, green-capped stepped cliffs, concrete lanes/bridges, reusable static workshop props, sparse container yards/cranes and CRUSH IT entrance. Presses, UI, gameplay and Studio meshes preserved. Desktop and phone Play checks, largest-press prop parking/restoration and music loading verified; remaining touch/progression/smelt checks documented in Systems/Scrapyard environment.

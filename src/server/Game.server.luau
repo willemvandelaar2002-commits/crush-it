@@ -553,6 +553,10 @@ local function placeCharacter(player: Player, plot: Plots.Plot)
 	if not character then
 		return
 	end
+	local humanoid = character:WaitForChild("Humanoid", 10)
+	if humanoid and humanoid:IsA("Humanoid") then
+		humanoid.WalkSpeed = Config.PlayerWalkSpeed
+	end
 	local root = character:WaitForChild("HumanoidRootPart", 10)
 	if root and slots[player] then
 		local spawnCf = Plots.spawnFor(plot)
