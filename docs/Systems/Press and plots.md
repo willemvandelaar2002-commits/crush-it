@@ -152,3 +152,19 @@ place you hand stuff in is on your own plot. Plot-local, +Z toward the hub:
   (`Plots.buildPress` -> clearProps). Helper yards (z >= 33.5) and the pad row stay clear.
 - Known: at the top tiers the Upgrades board and Robux signs still sit partly
   inside the big press frame (as before).
+
+## Plot layout v3 (21 Oct): toy factory island
+Willem: shop and buttons by the bridge, Mini Presses at the far end, more space
+between plots, a little toy factory island. Plot-local, origin = press centre,
++Z toward the hub; the island runs z -80 .. +92 (`Config.Plots.Back/Front`), 120 wide.
+- **Entrance** (bridge lands at x = 0): gate, spawn, scrap shop on the left
+  (opens toward the centre path, `Config.Plots.ShopX/ShopZ`, built in its own
+  frame by `ScrapShop.build`), upgrade pads on the right (two rows, `Pads.ROW_Z` = 58),
+  stats board, scrap pile in front of the press (`Scrap.pileSpot`, z 14..40).
+- **Back**: conveyor out of the **toy factory hall** door (`PlotDecor.factory`:
+  windows, striped door, colourful sawtooth roof, chimneys, "TOY FACTORY" sign),
+  Mini Press yards either side of the belt with Buy / Merge pads.
+- Sides of the press: heap + swinging crane (left), boiler + bales/forklift (right).
+- Spacing 190 (70 studs between islands), RowOffset 146; hub only reaches just
+  past the outer bridges. Pad under the press capped at 76.
+- Built on Willem's world art pass (sand yard, YardProps, blue-grey plots).

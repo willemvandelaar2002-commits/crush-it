@@ -60,12 +60,13 @@ local function pieceColor(tier: number, variant: string, i: number): (Color3, En
 	return base:Lerp(METAL_TINTS[(i % #METAL_TINTS) + 1], 0.35), Enum.Material.Metal
 end
 
--- Where the pile goes for this press size: straight behind the press, between it
--- and the scrap shop. Also places the steel tray under it.
+-- Where the pile goes for this press size: straight in front of the press, between
+-- it and the entrance with the scrap shop. Also places the steel tray under it.
 local function pileSpot(plot: any, tier: number): CFrame
 	local F = Config.Plots.FloorSize
-	local back = math.clamp(Config.pressWidth(tier) * 0.9 + 10, 14, F / 2 - 9)
-	local spot = plot.origin * CFrame.new(0, 0, -back)
+	local _ = F
+	local front = math.clamp(Config.pressWidth(tier) * 0.9 + 10, 14, 40) -- the biggest press reaches z = 33
+	local spot = plot.origin * CFrame.new(0, 0, front)
 	local tray = plot.model:FindFirstChild("PileTray")
 	if tray and tray:GetAttribute("Tier") ~= tier then
 		tray:Destroy()

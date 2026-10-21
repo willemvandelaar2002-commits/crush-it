@@ -4,8 +4,10 @@
 -- player's current tier (Config.pressWidth). Plots.buildPress rebuilds the
 -- press when the tier changes, so it visibly grows.
 --
--- Plot local space: origin at floor centre, +Z points to the walkway (the
--- front, where the conveyor starts), press bed at the plot centre.
+-- Plot local space: origin at the press centre (floor height), +Z points to the
+-- hub. The island runs from z = -Config.Plots.Back (toy factory hall, conveyor
+-- start, Mini Press yards) to z = +Config.Plots.Front (bridge, gate, scrap shop,
+-- upgrade pads, scrap pile).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -33,7 +35,7 @@ export type Plot = {
 	tier: number,
 	owner: Player?,
 	sign: TextLabel,
-	shop: ScrapShop.Shop, -- the scrap shop on the tab behind the plot
+	shop: ScrapShop.Shop, -- the scrap shop inside the gate
 }
 
 local FLOOR_Y = 1.6 -- top of the raised plot platforms (the ground sits at y = 0.05)
@@ -134,7 +136,7 @@ function Plots.buildPress(plot: Plot, tier: number)
 	local pad = plot.model:FindFirstChild("Pad") :: BasePart?
 	if pad then
 		local F = Config.Plots.FloorSize
-		local size = math.clamp(Config.pressWidth(tier) * 1.9 + 14, 34, F - 16)
+		local size = math.clamp(Config.pressWidth(tier) * 1.9 + 14, 34, math.min(F - 16, 76))
 		pad.Size = Vector3.new(size, 0.12, size)
 		pad.CFrame = plot.origin * CFrame.new(0, 0.06, 0)
 		-- framed edge round the pad
@@ -232,7 +234,7 @@ function Plots.create()
 	local landings = {}
 	for i = 1, P.Count do
 		local o = Plots.originFor(i)
-		local p = (o * CFrame.new(Moat.FRONT_BRIDGE_X, 0, 0)).Position
+		local p = (o * CFrame.new(Moat.FRONT_BRIDGE_X, 0, P.Front)).Position
 		table.insert(landings, { x = p.X, side = if p.Z > 0 then 1 else -1 })
 	end
 	require(script.Parent.Hub).create(root, landings)
@@ -242,44 +244,47 @@ function Plots.create()
 		local model = Instance.new("Model")
 		model.Name = "Plot" .. i
 		model:SetAttribute("Index", i)
-		model:SetAttribute("Origin", origin) -- floor centre, +Z to the hub (Zone.client)
+		model:SetAttribute("Origin", origin) -- press centre, +Z to the hub (Zone.client)
+		local depth = P.Front + P.Back
+		local mid = origin * CFrame.new(0, 0, (P.Front - P.Back) / 2)
 		-- Raised platform; its top is the plot floor (origin).
-		Build.platform(model, "Floor", origin, F, F, origin.Position.Y - 0.05, theme.platform, theme.grassEdge or theme.edge, 2)
-		-- dark asphalt zones with stepped edges (Destroy a Vault): under the buy pads and round the scrap pile
+		Build.platform(model, "Floor", mid, F, depth, origin.Position.Y - 0.05, theme.platform, theme.grassEdge or theme.edge, 2)
+		-- dark asphalt zones (Destroy a Vault): under the upgrade pads and round the scrap pile
 		local zr = Random.new(300 + i)
-		Build.block(model, "PadZone", Vector3.new(90, 0.1, 11), origin * CFrame.new(-14, 0.05, Pads.ROW_Z), theme.pad).CanCollide = false
-		Build.patch(model, origin * CFrame.new(0, 0, -36), 36, 24, theme.pad, zr, "PileZone")
+		Build.block(model, "PadZone", Vector3.new(48, 0.1, 30), origin * CFrame.new(35, 0.05, Pads.ROW_Z + 7), theme.pad).CanCollide = false
+		Build.patch(model, origin * CFrame.new(0, 0, 30), 30, 30, theme.pad, zr, "PileZone")
 		-- Yellow trim just inside the edge (Destroy a Vault style); the plot's own
 		-- colour goes on its gate (PlotDecor).
 		local trim = theme.trim or FLOOR_COLORS[i]
 		for _, z in (if theme.grass then {} else { -1, 1 }) :: { number } do
-			Build.block(model, "Trim", Vector3.new(F - 4, 0.15, 0.8), origin * CFrame.new(0, 0.075, z * (F / 2 - 2.4)), trim)
+			Build.block(model, "Trim", Vector3.new(F - 4, 0.15, 0.8), mid * CFrame.new(0, 0.075, z * (depth / 2 - 2.4)), trim)
 		end
 		for _, x in (if theme.grass then {} else { -1, 1 }) :: { number } do
-			Build.block(model, "Trim", Vector3.new(0.8, 0.15, F - 5.6), origin * CFrame.new(x * (F / 2 - 2.4), 0.075, 0), trim)
+			Build.block(model, "Trim", Vector3.new(0.8, 0.15, depth - 5.6), mid * CFrame.new(x * (F / 2 - 2.4), 0.075, 0), trim)
 		end
 		-- Framed pad under the press (resized with the press).
-		local pad = Build.block(model, "Pad", Vector3.new(F - 16, 0.12, F - 16), origin * CFrame.new(0, 0.06, 0), theme.pad)
+		local pad = Build.block(model, "Pad", Vector3.new(34, 0.12, 34), origin * CFrame.new(0, 0.06, 0), theme.pad)
 		local padEdge = Instance.new("Model")
 		padEdge.Name = "PadEdge"
 		padEdge.Parent = model
 		local _ = pad
-		-- Conveyor from the front edge to the bed.
-		local beltLen = F / 2 - 4
-		local belt = Build.block(model, "Conveyor", Vector3.new(8, 0.6, beltLen), origin * CFrame.new(0, 0.3, F / 2 - beltLen / 2), theme.dark)
+		-- Conveyor from the toy factory hall at the back to the bed.
+		local beltFrom, beltTo = -(P.Back - 10), -4
+		local beltLen = beltTo - beltFrom
+		local belt = Build.block(model, "Conveyor", Vector3.new(8, 0.6, beltLen), origin * CFrame.new(0, 0.3, (beltFrom + beltTo) / 2), theme.dark)
 		local _ = belt
 		for _, x in { -1, 1 } do
-			Build.block(model, "ConveyorRail", Vector3.new(0.8, 0.9, beltLen), origin * CFrame.new(x * 4.4, 0.45, F / 2 - beltLen / 2), Color3.fromRGB(255, 200, 60))
+			Build.block(model, "ConveyorRail", Vector3.new(0.8, 0.9, beltLen), origin * CFrame.new(x * 4.4, 0.45, (beltFrom + beltTo) / 2), Color3.fromRGB(255, 200, 60))
 		end
-		-- Brick paths: hub bridge -> past the press -> scrap pile -> scrap shop gate
+		-- Brick paths: hub bridge -> gate -> scrap pile, with branches into the shop and to the pads
 		do
 			local fx = Moat.FRONT_BRIDGE_X
 			local function pt(x: number, z: number): Vector3
 				return (origin * CFrame.new(x, 0, z)).Position
 			end
-			Build.path(model, pt(fx, F / 2 - 1), pt(fx, -F / 2 + 16), 7)
-			Build.path(model, pt(fx, -F / 2 + 16), pt(0, -F / 2 + 16), 7)
-			Build.path(model, pt(0, -F / 2 + 16), pt(0, -F / 2 - 1), 7)
+			Build.path(model, pt(fx, P.Front - 1), pt(fx, 44), 7)
+			Build.path(model, pt(fx, P.ShopZ), pt(P.ShopX - 1, P.ShopZ), 7)
+			Build.path(model, pt(fx, Pads.ROW_Z), pt(12, Pads.ROW_Z), 7)
 		end
 		-- Gate with the owner's name, boiler, crates, lamps.
 		local label = PlotDecor.build(model, origin, FLOOR_COLORS[i], theme, i)
@@ -293,10 +298,11 @@ function Plots.create()
 		-- Robux signs (moved next to the press like the board)
 		RobuxSigns.build(model, theme.edge)
 		model.Parent = root
-		-- Island body (plot + shop tab) and the bridge to the hub
+		-- Island body and the bridge to the hub
 		Moat.build(model, origin)
-		-- Scrap shop on the tab behind the scrap pile (gate, smelter, its pads, board).
-		local shop = ScrapShop.build(model, origin, theme)
+		-- Scrap shop just inside the gate on the left, opening toward the centre path
+		local shopFrame = origin * CFrame.new(P.ShopX, 0, P.ShopZ) * CFrame.Angles(0, math.rad(90), 0)
+		local shop = ScrapShop.build(model, shopFrame, theme)
 		require(script.Parent.Helpers).build(model, origin)
 		local plot: Plot = { index = i, origin = origin, model = model, press = nil, ram = nil, bedTop = 0, ramRestY = 0, tier = 1, owner = nil, sign = label, shop = shop }
 		Plots.buildPress(plot, 1)
@@ -304,10 +310,9 @@ function Plots.create()
 	end
 end
 
--- Where the conveyor starts / where objects wait, in world space.
+-- Where the conveyor starts (at the factory hall door), in world space.
 function Plots.beltStart(plot: Plot): CFrame
-	local F = Config.Plots.FloorSize
-	return plot.origin * CFrame.new(0, 0.6, F / 2 - 4)
+	return plot.origin * CFrame.new(0, 0.6, -(Config.Plots.Back - 12))
 end
 
 -- The bed's top centre (an object's base sits here).
@@ -315,10 +320,9 @@ function Plots.bedBase(plot: Plot): CFrame
 	return CFrame.new(plot.origin.Position.X, plot.bedTop, plot.origin.Position.Z) * (plot.origin - plot.origin.Position)
 end
 
--- Spawn point in front of the plot, facing the press.
+-- Spawn point just inside the gate, facing the press.
 function Plots.spawnFor(plot: Plot): CFrame
-	local F = Config.Plots.FloorSize
-	return plot.origin * CFrame.new(8, 3, math.min(F / 2 - 10, 14 + Config.pressWidth(plot.tier)))
+	return plot.origin * CFrame.new(Moat.FRONT_BRIDGE_X + 6, 3, Config.Plots.Front - 12)
 end
 
 return Plots

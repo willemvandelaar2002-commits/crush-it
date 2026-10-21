@@ -96,10 +96,11 @@ local function skyline(parent: Instance)
 	-- The south-west corner established the scale. Rotate the same builder
 	-- around the apron, alternating crane landmarks and lower storage groups.
 	local stations = {
-		{ x = -300, z = 252, angle = 0, variant = 0, crane = true },
-		{ x = 300, z = 252, angle = 0, variant = 1, crane = false },
-		{ x = 300, z = -252, angle = math.pi, variant = 2, crane = true },
-		{ x = -300, z = -252, angle = math.pi, variant = 1, crane = false },
+		-- (z 272: the plot islands' back edges are at z = 226 since the 21 Oct layout)
+		{ x = -300, z = 272, angle = 0, variant = 0, crane = true },
+		{ x = 300, z = 272, angle = 0, variant = 1, crane = false },
+		{ x = 300, z = -272, angle = math.pi, variant = 2, crane = true },
+		{ x = -300, z = -272, angle = math.pi, variant = 1, crane = false },
 		{ x = -340, z = 0, angle = -math.pi / 2, variant = 2, crane = false },
 		{ x = 340, z = 0, angle = math.pi / 2, variant = 0, crane = false },
 	}
