@@ -1,5 +1,11 @@
 # Crush It
 
+21 Oct toy-factory patch: the reference picture is the visual target. A bright
+skylit hall, colourful beams, oversized toy shelves, mascot displays and a
+gantry now surround the existing Toy Train Loop. Imported studs, the raised
+commons and island gaps are retained. See [[Systems/Toy factory environment]]
+for integration details and Studio checks.
+
 Reference-led land update (21 Oct): a broad raised workshop commons joins
 the centre to the train loop, with wider lanes, four work bays, contained
 planting and framed storage aprons. Its outer shoulder has been pulled back
@@ -29,6 +35,7 @@ Small, quick game to test alongside WarChest: one loop, few systems, out fast.
 - [[Systems/Style kit]] — reusable studded look (Style + Build) for this and future games
 - [[Systems/Toy workshop]] — blue-grey workshop theme and earlier UI Play checks
 - [[Systems/Scrapyard environment]] — completed environment pass, Studio checks and remaining manual tests
+- [[Systems/Toy factory environment]] — reference-led toy-factory patch and Studio review
 - [[Decisions log]]
 - [[Backlog]]
 

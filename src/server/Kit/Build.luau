@@ -115,6 +115,7 @@ function Build.label(adornee: BasePart, text: string, color: Color3, offsetY: nu
 end
 
 -- Presets (all cartoon-bright, they only change mood):
+--   "FactoryDay" sunny skylit interior, clear colour and soft ambient fill
 --   "YardDay"    warm clear daylight, soft shadows, restrained bloom and haze
 --   "Day"        bright noon, blue sky
 --   "Sunset"     low warm sun, pink/orange haze, sun rays
@@ -122,6 +123,11 @@ end
 --   "Dusk"       sun just down: purple-blue sky, warm horizon, stars, lamps glow
 --   "Smog"       hazy orange industrial sky, thick atmosphere
 local PRESETS = {
+	FactoryDay = {
+		clock = 13.5, lat = 25, brightness = 2.3, exposure = 0, ambient = Color3.fromRGB(132, 129, 121), outdoor = Color3.fromRGB(157, 166, 179),
+		sat = 0.08, contrast = 0.04, tint = Color3.fromRGB(255, 252, 246), bloom = 0.06, threshold = 2.6, rays = false,
+		density = 0.08, offset = 0, haze = 0.12, glare = 0, color = Color3.fromRGB(222, 238, 250), decay = Color3.fromRGB(185, 207, 226), stars = 0, sun = 12,
+	},
 	YardDay = {
 		clock = 14, lat = 35, brightness = 2, exposure = -0.12, ambient = Color3.fromRGB(110, 104, 94), outdoor = Color3.fromRGB(145, 142, 130),
 		sat = 0.04, contrast = 0.03, tint = Color3.fromRGB(255, 252, 246), bloom = 0.08, threshold = 2.4, rays = false,
@@ -165,7 +171,7 @@ function Build.lighting(preset: string?)
 	Lighting.OutdoorAmbient = p.outdoor
 	Lighting.EnvironmentDiffuseScale = 1
 	Lighting.EnvironmentSpecularScale = 0.4
-	Lighting.ShadowSoftness = if preset == "YardDay" then 0.65 else 0.3
+	Lighting.ShadowSoftness = if preset == "YardDay" or preset == "FactoryDay" then 0.65 else 0.3
 	local function effect(class: string, name: string): any
 		local e = Lighting:FindFirstChild(name) or Instance.new(class)
 		e.Name = name
@@ -194,7 +200,7 @@ function Build.lighting(preset: string?)
 	atmo.Decay = p.decay
 	atmo.Parent = Lighting
 	local sky = Lighting:FindFirstChildOfClass("Sky") or Instance.new("Sky")
-	if preset == "YardDay" then
+	if preset == "YardDay" or preset == "FactoryDay" then
 		-- Engine-bundled cloudy blue sky: proper cube faces instead of the
 		-- place's repeated flat side image, with no new uploaded asset dependency.
 		sky.SkyboxBk = "rbxasset://textures/sky/sky512_bk.tex"
