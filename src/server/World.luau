@@ -165,6 +165,8 @@ function World.create()
 			Build.block(folder, "HillCap", V(w + 2, 4, d + 2), cf * CFrame.new(0, top, 0), GRASS)
 		end
 	end
+	-- Apply the approved material finish only after environment parts are built.
+	require(script.Parent.Kit.WorldStuds).apply()
 end
 
 return World

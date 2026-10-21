@@ -36,6 +36,7 @@ Style.Studs = {
 	Texture = "rbxassetid://7447638591", -- free "Stud Texture" (decal 7447638611)
 	PerTile = 2,
 	MaterialVariant = "Studs", -- place-only asset; never used by UI or legacy calls
+	UseWorldMaterials = true, -- world builder rollout; false restores legacy on next Play
 }
 Style.Font = Enum.Font.FredokaOne
 
@@ -106,6 +107,7 @@ local function restoreStudMaterial(p: BasePart): boolean
 		p.Material = (Enum.Material :: any)[originalMaterial]
 	end
 	if typeof(originalVariant) == "string" then p.MaterialVariant = originalVariant end
+	if backup:GetAttribute("RestoreDefaultPhysics") == true then p.CustomPhysicalProperties = nil end
 	local restored = false
 	for _, texture in backup:GetChildren() do
 		-- Restore the exact originals, including face, spacing, offsets and tint.
@@ -144,7 +146,11 @@ function Style.materialStuds(p: BasePart, enabled: boolean, fallbackFaces: { Enu
 	local variant = MaterialService:FindFirstChild(Style.Studs.MaterialVariant)
 	if not enabled or not variant or not variant:IsA("MaterialVariant") then
 		local restored = restoreStudMaterial(p)
-		if not restored or fallbackFaces ~= nil or fallbackPerTile ~= nil then
+		local hasLegacy = false
+		for _, item in p:GetChildren() do
+			if isStudTexture(item) then hasLegacy = true; break end
+		end
+		if (not restored and not hasLegacy) or fallbackFaces ~= nil or fallbackPerTile ~= nil then
 			Style.studs(p, fallbackFaces, fallbackPerTile)
 		end
 		return false
@@ -156,6 +162,10 @@ function Style.materialStuds(p: BasePart, enabled: boolean, fallbackFaces: { Enu
 		backup:SetAttribute("StyleStudMaterialBackup", true)
 		backup:SetAttribute("Material", p.Material.Name)
 		backup:SetAttribute("MaterialVariant", p.MaterialVariant)
+		if p.CustomPhysicalProperties == nil then
+			backup:SetAttribute("RestoreDefaultPhysics", true)
+			p.CustomPhysicalProperties = p.CurrentPhysicalProperties
+		end
 		backup.Parent = p
 	end
 	for _, item in p:GetChildren() do

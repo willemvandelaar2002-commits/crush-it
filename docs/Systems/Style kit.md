@@ -5,6 +5,7 @@ copy `src/shared/Kit/` and `src/server/Kit/` (DataService, Analytics, Build)
 and require them.
 
 ## shared/Kit/Style.luau (client + server)
+- Approved world adoption (21 Oct): `Style.Studs.UseWorldMaterials = true` drives `server/Kit/WorldStuds.luau`, called after world construction. Set false and restart Play for legacy textures. Only selected plastic scenery opts in; press builders and UI remain unchanged. Material conversion preserves effective physics and restores default physics on rollback.
 - `Style.materialStuds(part, enabled, fallbackFaces?, fallbackPerTile?)` explicit whole-part world-material opt-in, with lossless texture/material rollback and missing-variant fallback. Default variant is the place-only `MaterialService.Studs`; legacy world calls and UI remain on image textures. See [[Stud material comparison]] for the temporary Studio rig and all-face versus selected-face distinction.
 - Current Crush It theme (20 Oct): `Island` keeps its legacy keys but now supplies blue-grey platforms, navy borders and steel bridge finishes. See [[Toy workshop]] for the permitted changes and remaining world work; the earlier Teal/Decor description below is historical.
 - `Style.workshopPanel(frame, accent?)` opt-in bolted blue-grey casing for panels without direct list/grid layouts; decorations stay behind content and do not intercept input.

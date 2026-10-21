@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-21: Willem approved using the imported studs after the visible comparison. World creation now applies Studs to selected plastic plot floors, hub and scenery via Kit/WorldStuds; presses, Mega Crusher and helpers are excluded. Style.Studs.UseWorldMaterials switches back on next Play. Preserve effective physics when changing the base material, and preserve exact legacy faces when the variant is absent. Verified 3,695 converted parts and 814 unchanged press/helper parts, including geometry/colour/collision/physics rollback checks. Imported maps/tiling, UI, lighting and game numbers remain unchanged.
+
 - 2026-10-21: Added opt-in Style.materialStuds for imported place-only Studs, retaining legacy face-specific textures and unchanged UI. Explicit whole-part material uses the variant's Plastic base, archives only kit overlays for lossless rollback, falls back when missing and is safe to repeat. Compared matching floor samples in Studio at player height/shallow/detail angles without modifying shared variant settings, world builders, presses or lighting. Temporary Studio setup and place-save/Rojo requirements documented in Systems/Stud material comparison; no global rollout.
 
 - 2026-10-21: Increased everyone's movement speed again, from 24 to 28 studs/second, at Willem's request. The existing initial-spawn and respawn application is retained.

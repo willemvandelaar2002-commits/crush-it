@@ -1,5 +1,50 @@
 # Imported stud material comparison
 
+## Adopted after approval, 2026-10-21
+
+Willem reviewed the visible comparison and asked to use the imported studs.
+The former comparison-only restriction is superseded for this environment
+rollout: a small server module and one world-startup call now make it visible
+in the real game on every Play. The comparison below remains available as a
+diagnostic, but is no longer the only place using the material.
+
+`Style.Studs.UseWorldMaterials = true` is the production switch in
+`src/shared/Kit/Style.luau`. Set it to **false and restart Play** to restore
+the legacy world treatment. Variant absence also falls back automatically.
+
+`server/Kit/WorldStuds.luau` visits explicit environment roots after
+`World.create` finishes: World scenery; Hub; and each plot's Floor, Island,
+Decor and PileZone. It converts only Plastic/SmoothPlastic parts already
+carrying the kit's stud textures. It prunes Press, MegaCrusher and HelperYard
+subtrees. Concrete, metal, sand, glass, neon and untextured surfaces stay as
+they are. This is an existing-part material pass, not a duplicate map or a
+change to every Style.studs call. The imported finish deliberately wraps all
+surfaces of the chosen parts; the archived textures retain their old face lists.
+
+Plastic's default friction differs from SmoothPlastic. Material conversion
+now pins the original effective PhysicalProperties when no custom properties
+were set, and records that state for exact rollback. Existing custom physics
+are left alone. Returning to the original base material restores default
+physics when appropriate. Missing-variant fallback leaves existing legacy
+face lists intact, including the hub cylinder's Right-face texture.
+
+Studio Play verification: all eight Floor.Top parts use Studs with their
+original #7791A9 colour. 3,695 environment parts converted; no checked press,
+Mega Crusher or helper part converted. Disable/re-enable checks preserved
+size, CFrame, colour, collision/touch/query flags, anchoring and effective
+physics for all 3,695; materials on 814 press/helper parts were unchanged.
+No active kit texture overlays remain on converted surfaces. Legacy rollback
+and reapplication worked, as did missing-variant single-face fallback.
+Holding F still crushed an object, and client Output remained error-free.
+Only the existing disabled Studio DataStore API errors remain on the server.
+
+The comparison rig was removed and the normal camera/HUD restored. Studio
+is left in Play showing the actual converted map. Save the imported materials
+with the place and Publish to deploy this appearance; no Publish was performed.
+Physical-phone rendering/performance remains a device check.
+
+The following sections record the initial comparison and its reusable setup.
+
 ## Opt-in only, 2026-10-21
 
 All existing world builders still call `Style.studs(part, faces?, perTile?)`.

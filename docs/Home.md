@@ -1,8 +1,9 @@
 # Crush It
 
-Imported material trial (21 Oct): [[Systems/Stud material comparison]] documents
-the opt-in world helper and temporary A/B floor rig. Existing world and UI
-studs remain on textures; MaterialService variants must be saved with the place.
+Imported studs adopted (21 Oct): plot floors, the hub and plastic scenery now
+use the approved MaterialService.Studs finish. Presses and UI keep their
+existing treatment. See [[Systems/Stud material comparison]] for the switch
+back and place-save requirements.
 
 Latest world art pass (21 Oct): golden sand, charcoal routes, larger grouped
 perimeter yards, yellow crane landmarks, a striped-awning workshop, substantial
