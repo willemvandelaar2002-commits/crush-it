@@ -6,10 +6,11 @@
 --     plot colour, lamps on top          -> returns the name TextLabel
 --   * a big boiler tank (back right): banded tank, porthole glow, gauge,
 --     valve wheel, pipes into the floor, steam
+--   * the toy factory hall at the far end (the conveyor comes out of its door)
 --   * beside the press: a scrap heap with a slowly swinging magnet crane, crates,
---     bales of crushed scrap with a forklift, an overhead steam pipe to the shop
---   * a lamp post in the front-left corner
--- Plot local space: +Z to the walkway, floor top at origin.
+--     bales of crushed scrap with a forklift
+--   (PlotDecor.pipe is unused since the 21 Oct layout but kept for later)
+-- Plot local space: origin at the press centre, +Z to the hub, floor top at origin.
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -344,6 +345,84 @@ function PlotDecor.pipe(parent: Instance, points: { Vector3 }, y: number, color:
 	m.Parent = parent
 end
 
+-- The toy factory hall at the far end of the plot: the conveyor comes out of its
+-- door, so everything you crush is "made" here. Cream walls with a dark base
+-- band, a row of windows, a striped door frame, a colourful sawtooth roof, two
+-- banded chimneys with smoke and a "TOY FACTORY" sign. `cf` = ground centre,
+-- facing +Z (toward the press).
+function PlotDecor.factory(parent: Instance, cf: CFrame, accent: Color3): Model
+	local m = Instance.new("Model")
+	m.Name = "FactoryHall"
+	local W, D, H = 72, 10, 12
+	local doorW, doorH = 12, 8
+	local WALL = C(242, 234, 216)
+	local side = (W - doorW) / 2
+	for _, sx in { -1, 1 } do
+		local x = sx * (doorW / 2 + side / 2)
+		Build.block(m, "Wall", Vector3.new(side, H, D), cf * CFrame.new(x, H / 2, 0), WALL, ALL)
+		Build.block(m, "BaseBand", Vector3.new(side + 0.1, 1.4, D + 0.1), cf * CFrame.new(x, 0.7, 0), C(70, 74, 88), {})
+		-- windows on the front face
+		for i = 0, 3 do
+			local wx = x - side / 2 + 4 + i * (side - 8) / 3
+			Build.block(m, "WindowFrame", Vector3.new(4.2, 4.2, 0.3), cf * CFrame.new(wx, 6.5, D / 2 + 0.1), C(70, 74, 88), {})
+			local glass = Build.block(m, "Window", Vector3.new(3.4, 3.4, 0.3), cf * CFrame.new(wx, 6.5, D / 2 + 0.2), C(120, 200, 255), {})
+			glass.Material = Enum.Material.Neon
+			glass.Transparency = 0.25
+		end
+	end
+	Build.block(m, "Lintel", Vector3.new(doorW, H - doorH, D), cf * CFrame.new(0, doorH + (H - doorH) / 2, 0), WALL, ALL)
+	Build.block(m, "DoorDark", Vector3.new(doorW, doorH, 0.5), cf * CFrame.new(0, doorH / 2, -D / 2 + 0.5), C(20, 20, 26), {})
+	-- black/yellow door frame
+	for _, sx in { -1, 1 } do
+		for i = 0, 5 do
+			Build.block(m, "DoorStripe", Vector3.new(1, doorH / 6, 1), cf * CFrame.new(sx * (doorW / 2 + 0.5), (i + 0.5) * doorH / 6, D / 2), if i % 2 == 0 then YELLOW else BLACK, {})
+		end
+	end
+	Build.block(m, "DoorTop", Vector3.new(doorW + 2, 1, 1), cf * CFrame.new(0, doorH + 0.5, D / 2), YELLOW, {})
+	-- sign over the door
+	local sign = Build.block(m, "FactorySign", Vector3.new(26, 4.6, 0.6), cf * CFrame.new(0, H + 2.6, D / 2 - 0.6), accent, {})
+	Build.block(m, "SignFrame", Vector3.new(27, 5.4, 0.4), cf * CFrame.new(0, H + 2.6, D / 2 - 0.9), BLACK, {})
+	surfaceText(sign, Enum.NormalId.Front, "TOY FACTORY", C(255, 255, 255), 5)
+	-- sawtooth roof: colourful teeth along the width
+	local teeth = { C(235, 80, 70), C(250, 196, 46), C(70, 150, 235), C(90, 190, 100) }
+	local n = 4
+	local tw = W / n
+	for i = 0, n - 1 do
+		local tooth = Instance.new("WedgePart")
+		tooth.Name = "RoofTooth"
+		tooth.Anchored = true
+		tooth.Size = Vector3.new(D, 5, tw)
+		tooth.CFrame = cf * CFrame.new(-W / 2 + (i + 0.5) * tw, H + 2.5, 0) * CFrame.Angles(0, math.rad(90), 0)
+		tooth.Color = teeth[i % #teeth + 1]
+		tooth.TopSurface = Enum.SurfaceType.Smooth
+		tooth.BottomSurface = Enum.SurfaceType.Smooth
+		tooth.Parent = m
+		Style.studs(tooth)
+	end
+	-- chimneys with red/white bands and smoke
+	for _, sx in { -1, 1 } do
+		local base = cf * CFrame.new(sx * (W / 2 - 8), 0, -1)
+		cyl(m, "Chimney", 9, 3.2, base * CFrame.new(0, H + 4.5 + 2, 0), C(200, 60, 55), Enum.Material.SmoothPlastic)
+		for _, y in { H + 4, H + 8 } do
+			cyl(m, "ChimneyBand", 1, 3.4, base * CFrame.new(0, y + 2, 0), C(245, 245, 245))
+		end
+		local top = cyl(m, "ChimneyTop", 0.8, 3.8, base * CFrame.new(0, H + 11.4, 0), C(60, 62, 70))
+		local smoke = Instance.new("ParticleEmitter")
+		smoke.Texture = "rbxasset://textures/particles/smoke_main.dds"
+		smoke.Rate = 5
+		smoke.Lifetime = NumberRange.new(3, 5)
+		smoke.Speed = NumberRange.new(3, 5)
+		smoke.SpreadAngle = Vector2.new(10, 10)
+		smoke.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 2), NumberSequenceKeypoint.new(1, 6) })
+		smoke.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(1, 1) })
+		smoke.Color = ColorSequence.new(C(235, 235, 240))
+		smoke.EmissionDirection = Enum.NormalId.Right -- the cylinder's X axis points up
+		smoke.Parent = top
+	end
+	m.Parent = parent
+	return m
+end
+
 -- Scales a prop model about its centre and stands it back on the floor (y = floorY).
 local function grow(model: Model, scale: number, floorY: number)
 	model:ScaleTo(scale)
@@ -363,23 +442,22 @@ function PlotDecor.build(plotModel: Model, origin: CFrame, accent: Color3, theme
 	local m = Instance.new("Model")
 	m.Name = "Decor"
 	local rng = Random.new(100 + index)
-	local label = PlotDecor.gate(m, origin * CFrame.new(16, 0, half - 2.2), 11, accent, theme)
-	PlotDecor.boiler(m, origin * CFrame.new(46, 0, -20) * CFrame.Angles(0, math.rad(-60), 0))
-	-- the free grass beside the press (kept clear of the biggest press, x < 38)
+	local P = Config.Plots
+	local label = PlotDecor.gate(m, origin * CFrame.new(0, 0, P.Front - 2.2), 11, accent, theme)
+	-- the toy factory hall at the far end (the conveyor comes out of its door)
+	PlotDecor.factory(m, origin * CFrame.new(0, 0, -(P.Back - 5)), accent)
+	-- beside the press (props the biggest press would overlap get parked: Plots.clearProps)
 	local floorY = origin.Position.Y
-	grow(PlotDecor.scrapHeap(m, origin * CFrame.new(-48, 0, -14), rng), 1.4, floorY)
-	local crane = PlotDecor.crane(m, origin * CFrame.new(-54, 0, -30) * CFrame.Angles(0, math.rad(60), 0))
+	PlotDecor.boiler(m, origin * CFrame.new(46, 0, 22) * CFrame.Angles(0, math.rad(-120), 0))
+	grow(PlotDecor.bales(m, origin * CFrame.new(49, 0, -6) * CFrame.Angles(0, math.rad(90), 0), rng), 1.5, floorY)
+	grow(PlotDecor.scrapHeap(m, origin * CFrame.new(-46, 0, -8), rng), 1.4, floorY)
+	local crane = PlotDecor.crane(m, origin * CFrame.new(-54, 0, -25) * CFrame.Angles(0, math.rad(60), 0))
 	grow(crane, 1.5, floorY)
 	local swing = crane:FindFirstChild("Swing") :: Model
 	swing:SetAttribute("Axis", (crane:FindFirstChild("CraneBase") :: BasePart).Position)
-	YardProps.cluster(m, origin * CFrame.new(-42, 0, -42) * CFrame.Angles(0, math.rad(90), 0), 1)
-	grow(PlotDecor.bales(m, origin * CFrame.new(49, 0, -4) * CFrame.Angles(0, math.rad(90), 0), rng), 1.5, floorY)
-	-- steam pipe from the boiler round to the scrap shop
-	local function pt(x: number, z: number): Vector3
-		return (origin * CFrame.new(x, 0, z)).Position
-	end
-	PlotDecor.pipe(m, { pt(53, -26), pt(55, -46), pt(55, -58), pt(30, -58) }, 7, STEEL)
-	YardProps.workLight(m, origin * CFrame.new(-(half - 5), 0, half - 5), true) -- front-left, clear of helper slots
+	YardProps.cluster(m, origin * CFrame.new(-50, 0, 28) * CFrame.Angles(0, math.rad(90), 0), 1)
+	YardProps.workLight(m, origin * CFrame.new(-9, 0, Config.Plots.Front - 8), true) -- by the entrance path
+	local _ = half
 	m.Parent = plotModel
 	return label
 end
