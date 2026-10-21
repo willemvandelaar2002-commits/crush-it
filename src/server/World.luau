@@ -28,7 +28,7 @@ local function sandyFloor(parent: Instance)
 	for i = 1, 24 do
 		local side = if i % 2 == 0 then 1 else -1
 		local p = Build.block(parent, "SandPatch", V(rng:NextNumber(20, 48), 0.04, rng:NextNumber(12, 26)),
-			CFrame.new(rng:NextNumber(-365, 365), Config.World.SeaY + 0.02, side * rng:NextNumber(235, 320))
+			CFrame.new(rng:NextNumber(-400, 400), Config.World.SeaY + 0.02, side * rng:NextNumber(20, 400))
 				* CFrame.Angles(0, rng:NextNumber(-0.3, 0.3), 0),
 			if i % 3 == 0 then C(183, 133, 57) else C(207, 158, 76), {})
 		p.Material = Enum.Material.Sand
@@ -95,25 +95,30 @@ end
 local function skyline(parent: Instance)
 	-- The south-west corner established the scale. Rotate the same builder
 	-- around the apron, alternating crane landmarks and lower storage groups.
+	-- Since the Toy Train Loop (21 Oct) the plots stand round a ring at 22.5 + 45 k
+	-- degrees; the scenes sit in the sand wedges between them, facing the centre.
+	local function facingCentre(deg: number, r: number): CFrame
+		local a = math.rad(deg)
+		return CFrame.new(math.sin(a) * r, Config.World.SeaY, math.cos(a) * r) * CFrame.Angles(0, a, 0)
+	end
 	local stations = {
-		-- (z 272: the plot islands' back edges are at z = 226 since the 21 Oct layout)
-		{ x = -300, z = 272, angle = 0, variant = 0, crane = true },
-		{ x = 300, z = 272, angle = 0, variant = 1, crane = false },
-		{ x = 300, z = -272, angle = math.pi, variant = 2, crane = true },
-		{ x = -300, z = -272, angle = math.pi, variant = 1, crane = false },
-		{ x = -340, z = 0, angle = -math.pi / 2, variant = 2, crane = false },
-		{ x = 340, z = 0, angle = math.pi / 2, variant = 0, crane = false },
+		{ deg = 0, variant = 0, crane = true },
+		{ deg = 90, variant = 1, crane = false },
+		{ deg = 180, variant = 2, crane = true },
+		{ deg = 270, variant = 1, crane = false },
+		{ deg = 45, variant = 2, crane = false },
+		{ deg = 225, variant = 0, crane = false },
 	}
 	for _, station in stations do
-		YardProps.yardScene(parent, CFrame.new(station.x, Config.World.SeaY, station.z)
-			* CFrame.Angles(0, station.angle, 0), station.variant, station.crane)
+		YardProps.yardScene(parent, facingCentre(station.deg, 330), station.variant, station.crane)
 		task.wait()
 	end
-	-- One workshop, facing the centre from beyond the shop tabs. Its crates
-	-- and awning form one silhouette rather than loose pieces in the lanes.
-	YardProps.workshop(parent, CFrame.new(0, Config.World.SeaY, 278))
-	YardProps.bales(parent, CFrame.new(-36, Config.World.SeaY, 276), 2.2)
-	YardProps.cableReel(parent, CFrame.new(38, Config.World.SeaY, 276), 1.5)
+	-- One workshop in another wedge. Its crates and awning form one silhouette
+	-- rather than loose pieces in the lanes.
+	local shop = facingCentre(135, 330)
+	YardProps.workshop(parent, shop)
+	YardProps.bales(parent, shop * CFrame.new(-36, 0, -2), 2.2)
+	YardProps.cableReel(parent, shop * CFrame.new(38, 0, -2), 1.5)
 end
 
 function World.create()
@@ -127,7 +132,7 @@ function World.create()
 	-- Parent while empty, then insert small batches to keep Studio responsive.
 	folder.Parent = Workspace
 	sandyFloor(folder)
-	local X, Z = 400, 340
+	local X, Z = 440, 440 -- clear of the plots' back corners (radius ~387)
 	local sides = {
 		{ from = V(-X, 0, -Z), dir = V(1, 0, 0), len = 2 * X, facing = 0 },
 		{ from = V(X, 0, Z), dir = V(-1, 0, 0), len = 2 * X, facing = math.pi },
