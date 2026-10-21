@@ -9,10 +9,10 @@
 --        chunky studded sign on two posts; draw on facePart's Back face (+Z)
 --   Build.label(adornee, text, color, offsetY, sizeStuds?) -> BillboardGui
 --        big floating outlined label ("Smelt" style)
---   Build.path(parent, a, b, width, color?)                   flat orange brick path with dark edging
+--   Build.path(parent, a, b, width, color?)                   concrete service lane with kerbs and painted markings
 --   Build.island(parent, topCf, w, d, seaY, palette, opts?)   island body under a floor: dirt, stone sides, rocks, curb
 --   Build.patch(parent, cf, w, d, color, rng?, name?)         stepped-outline asphalt patch on a floor
---   Build.bridge(parent, a, b, width, palette, seaY?)        chunky wooden plank bridge with block posts
+--   Build.bridge(parent, a, b, width, palette, seaY?)        chunky concrete bridge with block posts
 --   Build.lava(parent, surfaceCf, length, width, opts?)       lava strip (crust, glowing rims, drifting blobs, embers) -> (Model, floor)
 --   Build.bank(parent, cf, length, height, thickness?)        basalt curb along a lava strip
 --   Build.lighting(preset)                                    cartoon lighting: Day, Sunset, GoldenHour, Dusk, Smog
@@ -195,21 +195,42 @@ function Build.lighting(preset: string?)
 	sky.Parent = Lighting
 end
 
--- Brick path (Destroy a Vault's orange paths): a flat orange brick strip from
--- `a` to `b` (ground points, path top at their Y + 0.12) with darker edging.
+-- Concrete service lane. Existing widths, elevations and corner overlaps
+-- are retained; painted details cannot collide or participate in queries.
 function Build.path(parent: Instance, a: Vector3, b: Vector3, width: number, color: Color3?): Model
 	local m = Instance.new("Model")
 	m.Name = "Path"
-	local c = color or Color3.fromRGB(236, 150, 62)
+	local c = color or Color3.fromRGB(159, 169, 175)
 	local flat = Vector3.new(b.X - a.X, 0, b.Z - a.Z)
 	local len = flat.Magnitude + width -- overlap the corners
 	local mid = CFrame.lookAt(a:Lerp(b, 0.5), a:Lerp(b, 0.5) + flat)
 	local top = Build.block(m, "PathTop", Vector3.new(width, 0.12, len), mid * CFrame.new(0, 0.06, 0), c, {})
-	top.Material = Enum.Material.Brick
+	top.Material = Enum.Material.Concrete
 	top.CanCollide = false
 	for _, side in { -1, 1 } do
 		local edge = Build.block(m, "PathEdge", Vector3.new(0.6, 0.16, len), mid * CFrame.new(side * (width / 2 + 0.3), 0.08, 0), Style.darken(c, 0.35), {})
 		edge.CanCollide = false
+	end
+	local function paint(name: string, size: Vector3, cf: CFrame, tint: Color3)
+		local p = Build.block(m, name, size, cf, tint, {})
+		p.CanCollide = false
+		p.CanTouch = false
+		p.CanQuery = false
+		p.CastShadow = false
+	end
+	local white = Color3.fromRGB(234, 236, 224)
+	if width >= 8 and len < 100 then
+		for z = -2, 2, 2 do
+			paint("Crossing", Vector3.new(width * 0.8, 0.025, 0.8), mid * CFrame.new(0, 0.135, z), white)
+		end
+	elseif len > 50 then
+		paint("ArrowShaft", Vector3.new(0.5, 0.025, 3), mid * CFrame.new(0, 0.135, 0), white)
+		for _, side in { -1, 1 } do
+			paint("ArrowHead", Vector3.new(0.5, 0.025, 2), mid * CFrame.new(side * 0.6, 0.135, -0.9) * CFrame.Angles(0, side * math.pi / 4, 0), white)
+		end
+	end
+	for _, side in { -1, 1 } do
+		paint("SafetyEdge", Vector3.new(0.25, 0.025, 4), mid * CFrame.new(side * (width / 2 - 0.4), 0.135, 0), Color3.fromRGB(239, 200, 78))
 	end
 	m.Parent = parent
 	return m
@@ -336,9 +357,7 @@ function Build.patch(parent: Instance, cf: CFrame, w: number, d: number, color: 
 	return m
 end
 
--- Chunky wooden plank bridge (the Yuzu game's) from a to b (deck top at their Y):
--- studded planks in two tones, side beams, big block posts at both ends with a
--- low rail between, and stone legs down into the sea (seaY) under longer bridges.
+-- Concrete service bridge on the existing deck segments and collision shapes.
 function Build.bridge(parent: Instance, a: Vector3, b: Vector3, width: number, palette: { [string]: Color3 }, seaY: number?): Model
 	local m = Instance.new("Model")
 	m.Name = "Bridge"
@@ -351,7 +370,8 @@ function Build.bridge(parent: Instance, a: Vector3, b: Vector3, width: number, p
 	local n = math.max(2, math.floor(len / 2.5))
 	for i = 0, n - 1 do
 		local z = -(i + 0.5) * len / n
-		Build.block(m, "Plank", Vector3.new(width, 0.7, len / n - 0.15), base * CFrame.new(0, -0.35, z), if i % 2 == 0 then wood else Style.lighten(wood, 0.08), ALL4)
+		local deck = Build.block(m, "Plank", Vector3.new(width, 0.7, len / n - 0.15), base * CFrame.new(0, -0.35, z), if i % 2 == 0 then wood else Style.lighten(wood, 0.04), { Enum.NormalId.Top })
+		deck.Material = Enum.Material.Concrete
 	end
 	for _, x in { -1, 1 } do
 		Build.block(m, "Beam", Vector3.new(0.9, 1, len), base * CFrame.new(x * (width / 2 + 0.2), -0.6, -len / 2), woodDark, ALL4)

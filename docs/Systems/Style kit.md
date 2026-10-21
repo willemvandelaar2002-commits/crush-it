@@ -96,3 +96,7 @@ upgrade rows + board, cash counter, offers, shop cards, reward cards, the
 leaderboard button and the Robux signs. Change an icon by editing its id there.
 These ids don't load as `rbxassetid://` (they behave like decal ids), so the
 module builds `rbxthumb://type=Asset&id=<id>&w=420&h=420`, which works for any asset.
+
+## server/Kit/YardProps.luau (21 Oct)
+
+Reusable static environment builders: bales, container, vehicle, cluster, workLight, crane and entrance. Parts are anchored with collision/touch/query disabled; models carry EnvironmentProp. Parent plot clusters under Decor to retain press-clearance parking. See [[Scrapyard environment]]. Build.path and Build.bridge now use concrete finishes while retaining walking geometry and signatures.

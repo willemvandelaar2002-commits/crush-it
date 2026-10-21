@@ -1,65 +1,72 @@
 # Bright scrapyard island environment
 
-## Scope and completed work — 2026-10-20
+## Completed 2026-10-21
 
-The latest environment-only request supersedes the earlier suggestion to
-restyle hydraulic presses in [[Toy workshop]]. Press appearance, progression,
-animation and functionality are intentional and must remain unchanged.
-UI, gameplay, economy, layout, ownership and interaction positions are also
-outside this pass.
+Willem approved the scoped server exception ("yes you can do everything").
+The latest environment-only request supersedes the earlier press-restyling
+proposal. Press appearance, animation, gameplay, UI, economy, ownership and
+interaction positions remain unchanged.
 
-Completed within the existing permissions: the shared Island environment
-palette now has fresh green foliage, warm brown trunks and warm-grey rocks
-and cliffs. Blue-grey workshop platforms remain as they were. No UI helper
-or press code was changed.
+- World: muted sandy apron replaces the orange lava, glow, falls and embers.
+  Warm-grey stepped cliffs have separate green caps, grouped perimeter
+  trees and terraced distant hills. Eight sparse container/vehicle/scrap
+  stations and two static cranes frame the yard.
+- Build.path and Build.bridge: concrete finishes, existing kerbs and walking
+  geometry, painted arrows, crossings and restrained yellow edge marks.
+  Shared block/stud/lighting helpers are unchanged.
+- New server/Kit/YardProps: reusable containers, toy scrap cars, cable reels,
+  tool cabinets, crates, drums, scrap bins, banded cubes, short work lights,
+  cranes and a CRUSH IT gate. All new prop parts are anchored and disable
+  collision, touch and queries. No new animation loops or particle emitters.
+- Moat and PlotDecor: low workshop clusters replace most garden dressing.
+  Plot props remain under Decor so existing press-clearance parking works.
+- Hub: sparse workshop stations and short shadowless lights; the old fountain
+  becomes a scrap display with the same solid collision footprint. The cobalt
+  entrance frames the existing road; its posts and hanging cube are decoration.
+  The sign reads from either approach.
+- Existing blue-grey workshop surfaces, bright sky, presses and UI are retained.
+  The existing music 113892640002952 was confirmed loaded and playing.
 
-## Narrow server exception needed
+## Studio verification
 
-The pasted request explicitly says to request an exception before editing
-protected world builders. The following edits are proposed, not yet applied:
+- Rojo sync confirmed; project build and whitespace checks pass, LF endings.
+- Desktop Play: inspected normal-height and overview composition; spawned on
+  Plot 1, held F and crushed an object. Walked the service lane to both
+  scrap-shop pads, then across the existing bridge to the hub.
+- Unowned Plot 8: invoked the existing buildPress on its model at tier 13,
+  then restored tier 1. Six decorations parked; all 11 returned and the
+  parking folder was empty. No player progression was changed.
+- Every EnvironmentProp descendant checked: anchored, noncolliding,
+  nontouching and excluded from queries.
+- Fresh idle scene: 6,685 parts, 46 lights, 16 emitters versus the previous
+  scene's 7,078 / 105 / 77. Counts vary slightly during crushing. This is
+  an instance comparison, not a physical-phone frame-rate benchmark.
+- iPhone 17 Pro simulation: fresh landscape and portrait sessions inspected
+  (game orientation Sensor). Normal layout keeps the thumbstick area clear.
+  Book, Shop and Rewards open/close and fit landscape bounds through the
+  existing Style.setOpen helper; ShopHud.OpenShop opens the shop.
+  Mouse targeting in the notched simulator is offset, so this does not
+  establish successful physical touch/button activation.
+- Changing an already-running desktop session to phone size can retain the
+  open leaderboard over the crush area. A fresh phone session starts with
+  the leaderboard collapsed. UI is excluded from this environment pass.
+- Fresh Play: no client errors. Server Output only reports existing disabled
+  Studio API access for DataStore saving and global rankings. Temporary QA
+  command errors during an earlier session were not game-script errors.
+- Studio-only ObjectMeshes (13) and PressMeshes (5) remain intact.
+  Studio returned to Edit mode and default viewport; no publishing.
 
-| Protected file | Environment-only changes |
-| --- | --- |
-| `src/server/World.luau` | Replace `sea`/`lavaFall` visuals with a muted tan floor and sparse static surface variation; remove exterior glow, embers, flowing textures and lava-drift instances. Keep the existing exterior floor collision/elevation and enclosure. Vary stepped cliff heights/depths/ledges; use a separate green cliff-cap colour. Add grouped perimeter trees, sparse container/vehicle/scrap clusters and two low-detail static cranes below the cliff skyline. |
-| `src/server/Kit/Build.luau` | Update only environment helpers: concrete `path` and `bridge` finishes, kerbs and occasional flush crossings/edge markings at existing widths and connections. Add reusable simple anchored container, cable-reel, cabinet, barrel, crate, scrap-bin, cube-stack, vehicle and work-light helpers. Decorative additions disable collision, touch and query; retain existing walking-surface collisions. Do not change `block`, `studs`, global lighting or other helpers in a way that changes press appearance. |
-| `src/server/Moat.luau` | Replace most `edgeProps` trees/bushes with a few deliberate workshop clusters; retain greenery at selected edges. Keep island dimensions, bridge endpoints, opening widths and `Moat.start` rescue logic unchanged. |
-| `src/server/Hub.luau` | Replace most roadside garden clusters with sparse workshop props and short soft work lights. Remove the decorative lava fountain glow/particles. Use the existing sign/landmark area for a CRUSH IT entrance feature with a suspended cube only if a clearance check confirms it fits, retaining existing ground-level collision footprints and spawn/road positions. |
-| `src/server/PlotDecor.luau` | Reuse existing heap/bales/crates/pipe builders, add a few cable-reel/cabinet/bin clusters, and replace the decorative streetlamp with a short work light. Keep additions inside the `Decor` grouping so the existing largest-press clearance/parking logic continues to work. Preserve gate name labels, signs, stations and all interaction positions. |
+## Remaining checks and retained behaviour
 
-No exception is requested for `PressBuilder.luau`, `Plots.luau`, game logic,
-Config, Store or Net. Studio-only ObjectMeshes and PressMeshes are preserved.
-New props will use seeded placement and no per-frame scripts; lighting will
-be sparse and shadowless. A simple part/light count will accompany the full
-Play test after approval.
+Physical phone touch/performance, upgrade/rebirth transitions during real
+progression, and the complete pickup/deposit/smelt/collect loop remain manual
+checks. Paths and pad access were checked, but not a completed smelt sale.
+Saving/rankings require a suitable API-enabled test environment.
 
-Two dependencies explain why the palette alone cannot finish this task:
+The sandy lower apron still participates in the existing off-plot rescue:
+it is scenery below the playable routes. Its threshold/collision are retained.
+The existing "Ouch, hot lava!" rescue message is unchanged because player-facing
+UI text is excluded from this pass; it can be revised separately.
 
-- `World` uses `theme.grass` for cliff caps, while `Hub` uses the same key
-  for its workshop floor. A separate cliff-cap colour must be consumed in
-  `World` to make cliffs green without making the workshop green again.
-- The orange exterior is also the existing off-plot rescue surface.
-  Preserve its collisions and rescue threshold; sandy areas below the
-  playable platforms remain outside the routes. `Moat.start` currently
-  displays "Ouch, hot lava!". Changing that message would alter player-facing
-  text and is excluded from this environment-only exception; flag it for
-  a separate decision if desired.
-
-Full environment composition, new prop clearance and final normal-height/
-overview verification remain pending approval of the five-file exception.
-
-## Palette verification
-
-- Rojo build and whitespace checks passed. This pass changes only the
-  environment colours in `Style.luau` and documentation; protected-file
-  and client-script diffs are empty. Changed files use LF endings.
-- Studio Play: inspected the current palette at player height and from an
-  elevated overview. Fresh foliage is visible, but lava and blue-grey cliff
-  caps remain until the server exception is approved. Full composition is
-  not represented by this palette-only result.
-- Confirmed spawn on Plot 1, held F to crush an object, and walked across
-  the existing bridge to the hub. No new client script errors; server
-  Output still reports disabled Studio API access for saving and rankings.
-- Verified the palette used by the server: foliage `#69C14F`, cliff rock
-  `#ACA699`. ObjectMeshes still has 13 children and PressMeshes has 5.
-- Studio was already in Play mode and was left in Play for review. No
-  publishing was performed.
+Review and Publish from the existing Studio place, which contains the meshes
+that a standalone Rojo build does not include.

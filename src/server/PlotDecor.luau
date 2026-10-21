@@ -17,6 +17,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Build = require(script.Parent.Kit.Build)
+local YardProps = require(script.Parent.Kit.YardProps)
 
 local PlotDecor = {}
 
@@ -371,14 +372,14 @@ function PlotDecor.build(plotModel: Model, origin: CFrame, accent: Color3, theme
 	grow(crane, 1.5, floorY)
 	local swing = crane:FindFirstChild("Swing") :: Model
 	swing:SetAttribute("Axis", (crane:FindFirstChild("CraneBase") :: BasePart).Position)
-	PlotDecor.crates(m, origin * CFrame.new(-42, 0, -42) * CFrame.Angles(0, math.rad(90), 0), rng)
+	YardProps.cluster(m, origin * CFrame.new(-42, 0, -42) * CFrame.Angles(0, math.rad(90), 0), 1)
 	grow(PlotDecor.bales(m, origin * CFrame.new(49, 0, -4) * CFrame.Angles(0, math.rad(90), 0), rng), 1.5, floorY)
 	-- steam pipe from the boiler round to the scrap shop
 	local function pt(x: number, z: number): Vector3
 		return (origin * CFrame.new(x, 0, z)).Position
 	end
 	PlotDecor.pipe(m, { pt(53, -26), pt(55, -46), pt(55, -58), pt(30, -58) }, 7, STEEL)
-	Build.lamp(m, origin * CFrame.new(-(half - 5), 0, half - 5), theme, 11) -- front-left (front-right is the gate)
+	YardProps.workLight(m, origin * CFrame.new(-(half - 5), 0, half - 5), true) -- front-left, clear of helper slots
 	m.Parent = plotModel
 	return label
 end

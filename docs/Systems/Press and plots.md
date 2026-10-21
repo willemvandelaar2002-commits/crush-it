@@ -1,5 +1,7 @@
 # Press and plots
 
+21 Oct: environment builders now provide the bright scrapyard described in [[Scrapyard environment]]. Press logic and meshes remain unchanged. The 20 Oct limitation below is historical.
+
 20 Oct visual update: shared Island colours now use blue-grey platforms,
 navy borders and steel bridge finishes. All server geometry and gameplay
 are unchanged. See [[Toy workshop]] for the remaining garden/lava replacement

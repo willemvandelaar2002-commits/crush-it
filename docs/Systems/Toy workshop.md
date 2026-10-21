@@ -1,5 +1,7 @@
 # Toy workshop theme
 
+21 Oct: the approved environment pass is now implemented; see [[Scrapyard environment]]. The protected-server proposals below are historical, and press restyling remains excluded.
+
 Latest scope: see [[Scrapyard environment]]. Hydraulic press appearance is
 now explicitly excluded; the earlier PressBuilder suggestion below is
 superseded. The new pass concerns the environment only.

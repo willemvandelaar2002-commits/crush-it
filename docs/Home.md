@@ -10,8 +10,8 @@ Small, quick game to test alongside WarChest: one loop, few systems, out fast.
 - [[Systems/Scrap]] — crush -> scrap -> sell at your scrap shop (the core loop since 20 Oct)
 - [[Systems/Helpers]] — Mini Presses you buy and merge that crush for you
 - [[Systems/Style kit]] — reusable studded look (Style + Build) for this and future games
-- [[Systems/Toy workshop]] — blue-grey workshop theme, Play checks and remaining protected server changes
-- [[Systems/Scrapyard environment]] — environment-only landscape pass and narrowly scoped server exception
+- [[Systems/Toy workshop]] — blue-grey workshop theme and earlier UI Play checks
+- [[Systems/Scrapyard environment]] — completed environment pass, Studio checks and remaining manual tests
 - [[Decisions log]]
 - [[Backlog]]
 
@@ -31,3 +31,5 @@ Scrap loop: crushing drops scrap, pick it up, sell at the scrap shop island behi
 Reference-video pass (20 Oct): smelter with deposit/collect pads, buy pads, cliffs + lavafalls, factory look, brick paths, numbered tutorial, zone label.
 Islands: every plot is an island in a bright lava sea with wooden bridges to a hub island (20 Oct).
 Next ideas: helper units (like the capybaras/tanks), Halloween event; create the passes/products and fill Store ids; proper thumbnail.
+
+21 Oct environment update: approved server art pass replaces exterior lava with a sandy scrapyard, stepped green-capped cliffs, concrete routes, workshop prop clusters and a CRUSH IT entrance. See [[Systems/Scrapyard environment]] for checks and remaining manual tests.
