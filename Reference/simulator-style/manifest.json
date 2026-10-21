@@ -1,0 +1,678 @@
+{
+  "created": "2026-10-21",
+  "full_frames": [
+    {
+      "path": "industrial/industrial-01s-offline-earnings-panel.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 1,
+      "timestamp": "00:01",
+      "width": 1910,
+      "height": 1004,
+      "notes": "UI: two reward choices, warm panel header and outlined text."
+    },
+    {
+      "path": "industrial/industrial-03s-daily-rewards-panel.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 3,
+      "timestamp": "00:03",
+      "width": 1910,
+      "height": 1004,
+      "notes": "UI: coloured reward cells, thick panel border and icon sizing."
+    },
+    {
+      "path": "industrial/industrial-05s-daytime-market-overview.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 5,
+      "timestamp": "00:05",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: charcoal work area against golden ground; clustered signs and large landmarks."
+    },
+    {
+      "path": "industrial/industrial-07s-work-platforms-and-gold-landmark.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 7,
+      "timestamp": "00:07",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: platform outlines, ground colour contrast and oversized landmark."
+    },
+    {
+      "path": "industrial/industrial-09s-gold-landmark-close-view.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 9,
+      "timestamp": "00:09",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: exaggerated landmark scale, simple stepped shapes and a low raised base."
+    },
+    {
+      "path": "industrial/industrial-11s-smelter-and-gold-landmark.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 11,
+      "timestamp": "00:11",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: dark smelter, warm glow and gold landmark composition."
+    },
+    {
+      "path": "industrial/industrial-13s-portal-smelter-and-sign-cluster.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 13,
+      "timestamp": "00:13",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: a tall portal landmark behind lower functional stations."
+    },
+    {
+      "path": "industrial/industrial-15s-open-work-floor-and-stations.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 15,
+      "timestamp": "00:15",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: clear walking space framed by equipment and freestanding signs."
+    },
+    {
+      "path": "industrial/industrial-17s-upgrade-signs-and-tree-landmark.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 17,
+      "timestamp": "00:17",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: sign hierarchy, a large tree and grouped station props."
+    },
+    {
+      "path": "industrial/industrial-19s-vault-presentation-and-ground.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 19,
+      "timestamp": "00:19",
+      "width": 1910,
+      "height": 1004,
+      "notes": "Supplementary: isolated chunky object presentation and simple studded ground; do not redesign Crush It presses from this."
+    },
+    {
+      "path": "industrial/industrial-21s-daytime-signs-and-gold-stacks.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 21,
+      "timestamp": "00:21",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: bright upright signs supported by a dark floor and gold surroundings."
+    },
+    {
+      "path": "industrial/industrial-25s-upgrade-board-composition.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 25,
+      "timestamp": "00:25",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World/UI: two upgrade boards with readable colour bands and thick frames."
+    },
+    {
+      "path": "industrial/industrial-29s-daytime-floor-and-landmark-spacing.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 29,
+      "timestamp": "00:29",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: walking clearance around large gold shapes and signs."
+    },
+    {
+      "path": "industrial/industrial-33s-daytime-station-grouping.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 33,
+      "timestamp": "00:33",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: grouped stations surrounding an open floor."
+    },
+    {
+      "path": "industrial/industrial-35s-night-event-transition.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 35,
+      "timestamp": "00:35",
+      "width": 1910,
+      "height": 1004,
+      "notes": "Supplementary night reference: warm practical lights and event signage. Daytime is our target."
+    },
+    {
+      "path": "industrial/industrial-37s-night-work-lanes-and-markings.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 37,
+      "timestamp": "00:37",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: dark work lanes with clean white bay outlines."
+    },
+    {
+      "path": "industrial/industrial-39s-night-lane-and-object-card.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 39,
+      "timestamp": "00:39",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World/UI: lane borders, equipment placement and nearby object information."
+    },
+    {
+      "path": "industrial/industrial-43s-night-equipment-bay-close-view.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 43,
+      "timestamp": "00:43",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: raised base edges and white bay markings; supplementary night lighting."
+    },
+    {
+      "path": "industrial/industrial-45s-night-platform-overview.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 45,
+      "timestamp": "00:45",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: layout and scale relationships between work platforms and stations."
+    },
+    {
+      "path": "industrial/industrial-47s-boost-shop-building-and-props.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 47,
+      "timestamp": "00:47",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: striped awning, chunky booth construction, fence and surrounding props."
+    },
+    {
+      "path": "industrial/industrial-49s-perimeter-fence-and-event-landmarks.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 49,
+      "timestamp": "00:49",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: large background silhouettes, a low fence and scattered ground patches."
+    },
+    {
+      "path": "industrial/industrial-51s-night-station-signs.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 51,
+      "timestamp": "00:51",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: freestanding signs grouped around a functional station."
+    },
+    {
+      "path": "industrial/industrial-55s-event-area-and-water-edge.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 55,
+      "timestamp": "00:55",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: boundary fencing, water edge and grouped background silhouettes."
+    },
+    {
+      "path": "industrial/industrial-57s-perimeter-water-and-feedback-booth.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 57,
+      "timestamp": "00:57",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: layered terrain, water, fencing, booth and sparse ground detail."
+    },
+    {
+      "path": "industrial/industrial-59s-large-tree-and-fenced-water.jpg",
+      "group": "industrial",
+      "source_video": "Recording 2026-10-20 204142.mp4",
+      "timestamp_seconds": 59,
+      "timestamp": "00:59",
+      "width": 1910,
+      "height": 1004,
+      "notes": "World: large tree silhouette, water edge and boundary depth."
+    },
+    {
+      "path": "capybara/capybara-03s-plot-grid-and-cliff-overview.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 3,
+      "timestamp": "00:03",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: strong grass/water/stone colour blocks, plot repetition and green cliff terraces."
+    },
+    {
+      "path": "capybara/capybara-05s-shop-tank-and-path-arrows.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 5,
+      "timestamp": "00:05",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: a grouped shop/tank scene, coloured pads and large ground arrows."
+    },
+    {
+      "path": "capybara/capybara-07s-striped-awning-stall-and-trees.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 7,
+      "timestamp": "00:07",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: friendly market stall, gateway, pink trees and warm stone borders."
+    },
+    {
+      "path": "capybara/capybara-09s-gateway-and-wooden-bridge.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 9,
+      "timestamp": "00:09",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: large gateway pillars and a contrasting bridge route through water."
+    },
+    {
+      "path": "capybara/capybara-11s-waterfall-canals-and-market-stall.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 11,
+      "timestamp": "00:11",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: waterfall landmark, canal edges, bridge and small shop composition."
+    },
+    {
+      "path": "capybara/capybara-13s-raised-shop-platform-and-water.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 13,
+      "timestamp": "00:13",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: raised foundation, stone edging, arrows and canal layout."
+    },
+    {
+      "path": "capybara/capybara-15s-tank-stall-and-canal-composition.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 15,
+      "timestamp": "00:15",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: large cylinder landmark, smaller stall and a clear canal route."
+    },
+    {
+      "path": "capybara/capybara-17s-grassy-route-and-pink-tree.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 17,
+      "timestamp": "00:17",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: open grass, contrasting water, grouped trees and stepped cliffs."
+    },
+    {
+      "path": "capybara/capybara-19s-bridge-and-blue-banner-gateway.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 19,
+      "timestamp": "00:19",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: layered gateway shapes, bridge studs and waterside lanterns."
+    },
+    {
+      "path": "capybara/capybara-21s-return-view-to-production-plots.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 21,
+      "timestamp": "00:21",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: clear approach to repeated plots and perimeter sign placement."
+    },
+    {
+      "path": "capybara/capybara-25s-tank-market-and-merge-pad.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 25,
+      "timestamp": "00:25",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: landmark scale beside a low interaction pad and small shop."
+    },
+    {
+      "path": "capybara/capybara-27s-market-stall-close-view.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 27,
+      "timestamp": "00:27",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World/UI: awning colours, stall frame, nearby props and reward effects."
+    },
+    {
+      "path": "capybara/capybara-31s-purchase-pads-and-sign-cluster.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 31,
+      "timestamp": "00:31",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: coloured purchase pads placed in front of a repeated production grid."
+    },
+    {
+      "path": "capybara/capybara-33s-production-pools-and-stone-borders.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 33,
+      "timestamp": "00:33",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: repeated stone-edged pools, small bridges and consistent surface scale."
+    },
+    {
+      "path": "capybara/capybara-37s-pool-divider-and-stud-close-view.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 37,
+      "timestamp": "00:37",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: stud scale, raised stone borders and small wooden bridge details."
+    },
+    {
+      "path": "capybara/capybara-39s-tank-shop-and-selling-board.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 39,
+      "timestamp": "00:39",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: several complementary landmarks sharing one bright environment palette."
+    },
+    {
+      "path": "capybara/capybara-41s-wide-grass-and-production-grid.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 41,
+      "timestamp": "00:41",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: open usable foreground with dense but ordered activity behind it."
+    },
+    {
+      "path": "capybara/capybara-43s-production-grid-and-bamboo-edge.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 43,
+      "timestamp": "00:43",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: bamboo, stone borders and repeating water channels."
+    },
+    {
+      "path": "capybara/capybara-45s-merge-pad-and-station-spacing.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 45,
+      "timestamp": "00:45",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: spacing between coloured pads, canals and large landmarks."
+    },
+    {
+      "path": "capybara/capybara-47s-upgrade-station-and-tank.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 47,
+      "timestamp": "00:47",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World/UI: a large station sign with nearby purchase pads and tank silhouette."
+    },
+    {
+      "path": "capybara/capybara-49s-selling-board-and-lantern.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 49,
+      "timestamp": "00:49",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: chunky sign construction, a warm lantern and planting at its base."
+    },
+    {
+      "path": "capybara/capybara-51s-sign-lantern-and-character-display.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 51,
+      "timestamp": "00:51",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: layered sign frame, decorative base and nearby pedestal/display."
+    },
+    {
+      "path": "capybara/capybara-53s-central-route-and-plot-sightline.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 53,
+      "timestamp": "00:53",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: long sightline across plots with gateways, trees and perimeter cliffs."
+    },
+    {
+      "path": "capybara/capybara-55s-market-gateway-and-cliff-skyline.jpg",
+      "group": "capybara",
+      "source_video": "Recording 2026-10-20 204002.mp4",
+      "timestamp_seconds": 55,
+      "timestamp": "00:55",
+      "width": 1918,
+      "height": 1034,
+      "notes": "World: stall, gate, pink foliage and varied cliff heights in one readable scene."
+    }
+  ],
+  "detail_crops": [
+    {
+      "path": "details/industrial-05s-detail-daytime-floor-colour-and-studs.jpg",
+      "group": "industrial",
+      "timestamp_seconds": 5,
+      "timestamp": "00:05",
+      "crop_pixels": [
+        100,
+        350,
+        1530,
+        930
+      ],
+      "width": 1430,
+      "height": 580,
+      "notes": "Charcoal stud floor contrasted with golden ground."
+    },
+    {
+      "path": "details/industrial-11s-detail-smelter-and-landmark-materials.jpg",
+      "group": "industrial",
+      "timestamp_seconds": 11,
+      "timestamp": "00:11",
+      "crop_pixels": [
+        380,
+        120,
+        1560,
+        850
+      ],
+      "width": 1180,
+      "height": 730,
+      "notes": "Dark smelter silhouette, warm glow and chunky gold blocks."
+    },
+    {
+      "path": "details/industrial-13s-detail-portal-and-station-scale.jpg",
+      "group": "industrial",
+      "timestamp_seconds": 13,
+      "timestamp": "00:13",
+      "crop_pixels": [
+        550,
+        90,
+        1590,
+        820
+      ],
+      "width": 1040,
+      "height": 730,
+      "notes": "Tall portal behind lower stations; relative landmark scale."
+    },
+    {
+      "path": "details/industrial-17s-detail-tree-signs-and-ground-grouping.jpg",
+      "group": "industrial",
+      "timestamp_seconds": 17,
+      "timestamp": "00:17",
+      "crop_pixels": [
+        370,
+        70,
+        1520,
+        850
+      ],
+      "width": 1150,
+      "height": 780,
+      "notes": "Large tree and layered sign/station cluster."
+    },
+    {
+      "path": "details/industrial-47s-detail-striped-shop-booth.jpg",
+      "group": "industrial",
+      "timestamp_seconds": 47,
+      "timestamp": "00:47",
+      "crop_pixels": [
+        500,
+        230,
+        1540,
+        880
+      ],
+      "width": 1040,
+      "height": 650,
+      "notes": "Striped awning and simple shop construction; night reference."
+    },
+    {
+      "path": "details/industrial-57s-detail-water-fence-and-perimeter.jpg",
+      "group": "industrial",
+      "timestamp_seconds": 57,
+      "timestamp": "00:57",
+      "crop_pixels": [
+        560,
+        220,
+        1610,
+        890
+      ],
+      "width": 1050,
+      "height": 670,
+      "notes": "Water boundary, dark fence, terrain and small booth; night reference."
+    },
+    {
+      "path": "details/capybara-07s-detail-market-awning-gateway-and-trees.jpg",
+      "group": "capybara",
+      "timestamp_seconds": 7,
+      "timestamp": "00:07",
+      "crop_pixels": [
+        290,
+        120,
+        1610,
+        880
+      ],
+      "width": 1320,
+      "height": 760,
+      "notes": "Chunky market architecture and grouped pink trees."
+    },
+    {
+      "path": "details/capybara-11s-detail-waterfall-and-canal-layout.jpg",
+      "group": "capybara",
+      "timestamp_seconds": 11,
+      "timestamp": "00:11",
+      "crop_pixels": [
+        180,
+        110,
+        1690,
+        880
+      ],
+      "width": 1510,
+      "height": 770,
+      "notes": "Waterfall landmark, bridges, canals and clear colour separation."
+    },
+    {
+      "path": "details/capybara-15s-detail-tank-and-market-group.jpg",
+      "group": "capybara",
+      "timestamp_seconds": 15,
+      "timestamp": "00:15",
+      "crop_pixels": [
+        520,
+        110,
+        1740,
+        880
+      ],
+      "width": 1220,
+      "height": 770,
+      "notes": "Large orange tank beside a smaller stall and stone-edged route."
+    },
+    {
+      "path": "details/capybara-17s-detail-cliffs-grass-and-pink-tree.jpg",
+      "group": "capybara",
+      "timestamp_seconds": 17,
+      "timestamp": "00:17",
+      "crop_pixels": [
+        190,
+        80,
+        1640,
+        810
+      ],
+      "width": 1450,
+      "height": 730,
+      "notes": "Green cliff ledges, pink foliage and broad grassy routes."
+    },
+    {
+      "path": "details/capybara-37s-detail-pool-studs-bridges-and-borders.jpg",
+      "group": "capybara",
+      "timestamp_seconds": 37,
+      "timestamp": "00:37",
+      "crop_pixels": [
+        550,
+        330,
+        1770,
+        940
+      ],
+      "width": 1220,
+      "height": 610,
+      "notes": "Stud scale and repeating pools with contrasting stone and wood."
+    },
+    {
+      "path": "details/capybara-51s-detail-chunky-sign-lantern-and-display.jpg",
+      "group": "capybara",
+      "timestamp_seconds": 51,
+      "timestamp": "00:51",
+      "crop_pixels": [
+        170,
+        150,
+        1700,
+        950
+      ],
+      "width": 1530,
+      "height": 800,
+      "notes": "Sign border construction, small warm light and a nearby display."
+    }
+  ],
+  "source_note": "Extracted from the two user-supplied recordings. Full frames preserve source pixel dimensions. JPEG stills are compressed; crops are unaltered rectangular excerpts with no enlargement. Approximate displayed time is rounded to seconds; selected source frame indices are 30 + 60*k at 30 fps."
+}

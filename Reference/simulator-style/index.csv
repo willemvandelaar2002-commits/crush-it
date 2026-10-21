@@ -1,0 +1,62 @@
+path,source_video,timestamp,kind,notes
+industrial/industrial-01s-offline-earnings-panel.jpg,Recording 2026-10-20 204142.mp4,00:01,full frame,"UI: two reward choices, warm panel header and outlined text."
+industrial/industrial-03s-daily-rewards-panel.jpg,Recording 2026-10-20 204142.mp4,00:03,full frame,"UI: coloured reward cells, thick panel border and icon sizing."
+industrial/industrial-05s-daytime-market-overview.jpg,Recording 2026-10-20 204142.mp4,00:05,full frame,World: charcoal work area against golden ground; clustered signs and large landmarks.
+industrial/industrial-07s-work-platforms-and-gold-landmark.jpg,Recording 2026-10-20 204142.mp4,00:07,full frame,"World: platform outlines, ground colour contrast and oversized landmark."
+industrial/industrial-09s-gold-landmark-close-view.jpg,Recording 2026-10-20 204142.mp4,00:09,full frame,"World: exaggerated landmark scale, simple stepped shapes and a low raised base."
+industrial/industrial-11s-smelter-and-gold-landmark.jpg,Recording 2026-10-20 204142.mp4,00:11,full frame,"World: dark smelter, warm glow and gold landmark composition."
+industrial/industrial-13s-portal-smelter-and-sign-cluster.jpg,Recording 2026-10-20 204142.mp4,00:13,full frame,World: a tall portal landmark behind lower functional stations.
+industrial/industrial-15s-open-work-floor-and-stations.jpg,Recording 2026-10-20 204142.mp4,00:15,full frame,World: clear walking space framed by equipment and freestanding signs.
+industrial/industrial-17s-upgrade-signs-and-tree-landmark.jpg,Recording 2026-10-20 204142.mp4,00:17,full frame,"World: sign hierarchy, a large tree and grouped station props."
+industrial/industrial-19s-vault-presentation-and-ground.jpg,Recording 2026-10-20 204142.mp4,00:19,full frame,Supplementary: isolated chunky object presentation and simple studded ground; do not redesign Crush It presses from this.
+industrial/industrial-21s-daytime-signs-and-gold-stacks.jpg,Recording 2026-10-20 204142.mp4,00:21,full frame,World: bright upright signs supported by a dark floor and gold surroundings.
+industrial/industrial-25s-upgrade-board-composition.jpg,Recording 2026-10-20 204142.mp4,00:25,full frame,World/UI: two upgrade boards with readable colour bands and thick frames.
+industrial/industrial-29s-daytime-floor-and-landmark-spacing.jpg,Recording 2026-10-20 204142.mp4,00:29,full frame,World: walking clearance around large gold shapes and signs.
+industrial/industrial-33s-daytime-station-grouping.jpg,Recording 2026-10-20 204142.mp4,00:33,full frame,World: grouped stations surrounding an open floor.
+industrial/industrial-35s-night-event-transition.jpg,Recording 2026-10-20 204142.mp4,00:35,full frame,Supplementary night reference: warm practical lights and event signage. Daytime is our target.
+industrial/industrial-37s-night-work-lanes-and-markings.jpg,Recording 2026-10-20 204142.mp4,00:37,full frame,World: dark work lanes with clean white bay outlines.
+industrial/industrial-39s-night-lane-and-object-card.jpg,Recording 2026-10-20 204142.mp4,00:39,full frame,"World/UI: lane borders, equipment placement and nearby object information."
+industrial/industrial-43s-night-equipment-bay-close-view.jpg,Recording 2026-10-20 204142.mp4,00:43,full frame,World: raised base edges and white bay markings; supplementary night lighting.
+industrial/industrial-45s-night-platform-overview.jpg,Recording 2026-10-20 204142.mp4,00:45,full frame,World: layout and scale relationships between work platforms and stations.
+industrial/industrial-47s-boost-shop-building-and-props.jpg,Recording 2026-10-20 204142.mp4,00:47,full frame,"World: striped awning, chunky booth construction, fence and surrounding props."
+industrial/industrial-49s-perimeter-fence-and-event-landmarks.jpg,Recording 2026-10-20 204142.mp4,00:49,full frame,"World: large background silhouettes, a low fence and scattered ground patches."
+industrial/industrial-51s-night-station-signs.jpg,Recording 2026-10-20 204142.mp4,00:51,full frame,World: freestanding signs grouped around a functional station.
+industrial/industrial-55s-event-area-and-water-edge.jpg,Recording 2026-10-20 204142.mp4,00:55,full frame,"World: boundary fencing, water edge and grouped background silhouettes."
+industrial/industrial-57s-perimeter-water-and-feedback-booth.jpg,Recording 2026-10-20 204142.mp4,00:57,full frame,"World: layered terrain, water, fencing, booth and sparse ground detail."
+industrial/industrial-59s-large-tree-and-fenced-water.jpg,Recording 2026-10-20 204142.mp4,00:59,full frame,"World: large tree silhouette, water edge and boundary depth."
+capybara/capybara-03s-plot-grid-and-cliff-overview.jpg,Recording 2026-10-20 204002.mp4,00:03,full frame,"World: strong grass/water/stone colour blocks, plot repetition and green cliff terraces."
+capybara/capybara-05s-shop-tank-and-path-arrows.jpg,Recording 2026-10-20 204002.mp4,00:05,full frame,"World: a grouped shop/tank scene, coloured pads and large ground arrows."
+capybara/capybara-07s-striped-awning-stall-and-trees.jpg,Recording 2026-10-20 204002.mp4,00:07,full frame,"World: friendly market stall, gateway, pink trees and warm stone borders."
+capybara/capybara-09s-gateway-and-wooden-bridge.jpg,Recording 2026-10-20 204002.mp4,00:09,full frame,World: large gateway pillars and a contrasting bridge route through water.
+capybara/capybara-11s-waterfall-canals-and-market-stall.jpg,Recording 2026-10-20 204002.mp4,00:11,full frame,"World: waterfall landmark, canal edges, bridge and small shop composition."
+capybara/capybara-13s-raised-shop-platform-and-water.jpg,Recording 2026-10-20 204002.mp4,00:13,full frame,"World: raised foundation, stone edging, arrows and canal layout."
+capybara/capybara-15s-tank-stall-and-canal-composition.jpg,Recording 2026-10-20 204002.mp4,00:15,full frame,"World: large cylinder landmark, smaller stall and a clear canal route."
+capybara/capybara-17s-grassy-route-and-pink-tree.jpg,Recording 2026-10-20 204002.mp4,00:17,full frame,"World: open grass, contrasting water, grouped trees and stepped cliffs."
+capybara/capybara-19s-bridge-and-blue-banner-gateway.jpg,Recording 2026-10-20 204002.mp4,00:19,full frame,"World: layered gateway shapes, bridge studs and waterside lanterns."
+capybara/capybara-21s-return-view-to-production-plots.jpg,Recording 2026-10-20 204002.mp4,00:21,full frame,World: clear approach to repeated plots and perimeter sign placement.
+capybara/capybara-25s-tank-market-and-merge-pad.jpg,Recording 2026-10-20 204002.mp4,00:25,full frame,World: landmark scale beside a low interaction pad and small shop.
+capybara/capybara-27s-market-stall-close-view.jpg,Recording 2026-10-20 204002.mp4,00:27,full frame,"World/UI: awning colours, stall frame, nearby props and reward effects."
+capybara/capybara-31s-purchase-pads-and-sign-cluster.jpg,Recording 2026-10-20 204002.mp4,00:31,full frame,World: coloured purchase pads placed in front of a repeated production grid.
+capybara/capybara-33s-production-pools-and-stone-borders.jpg,Recording 2026-10-20 204002.mp4,00:33,full frame,"World: repeated stone-edged pools, small bridges and consistent surface scale."
+capybara/capybara-37s-pool-divider-and-stud-close-view.jpg,Recording 2026-10-20 204002.mp4,00:37,full frame,"World: stud scale, raised stone borders and small wooden bridge details."
+capybara/capybara-39s-tank-shop-and-selling-board.jpg,Recording 2026-10-20 204002.mp4,00:39,full frame,World: several complementary landmarks sharing one bright environment palette.
+capybara/capybara-41s-wide-grass-and-production-grid.jpg,Recording 2026-10-20 204002.mp4,00:41,full frame,World: open usable foreground with dense but ordered activity behind it.
+capybara/capybara-43s-production-grid-and-bamboo-edge.jpg,Recording 2026-10-20 204002.mp4,00:43,full frame,"World: bamboo, stone borders and repeating water channels."
+capybara/capybara-45s-merge-pad-and-station-spacing.jpg,Recording 2026-10-20 204002.mp4,00:45,full frame,"World: spacing between coloured pads, canals and large landmarks."
+capybara/capybara-47s-upgrade-station-and-tank.jpg,Recording 2026-10-20 204002.mp4,00:47,full frame,World/UI: a large station sign with nearby purchase pads and tank silhouette.
+capybara/capybara-49s-selling-board-and-lantern.jpg,Recording 2026-10-20 204002.mp4,00:49,full frame,"World: chunky sign construction, a warm lantern and planting at its base."
+capybara/capybara-51s-sign-lantern-and-character-display.jpg,Recording 2026-10-20 204002.mp4,00:51,full frame,"World: layered sign frame, decorative base and nearby pedestal/display."
+capybara/capybara-53s-central-route-and-plot-sightline.jpg,Recording 2026-10-20 204002.mp4,00:53,full frame,"World: long sightline across plots with gateways, trees and perimeter cliffs."
+capybara/capybara-55s-market-gateway-and-cliff-skyline.jpg,Recording 2026-10-20 204002.mp4,00:55,full frame,"World: stall, gate, pink foliage and varied cliff heights in one readable scene."
+details/industrial-05s-detail-daytime-floor-colour-and-studs.jpg,Recording 2026-10-20 204142.mp4,00:05,detail crop,Charcoal stud floor contrasted with golden ground.
+details/industrial-11s-detail-smelter-and-landmark-materials.jpg,Recording 2026-10-20 204142.mp4,00:11,detail crop,"Dark smelter silhouette, warm glow and chunky gold blocks."
+details/industrial-13s-detail-portal-and-station-scale.jpg,Recording 2026-10-20 204142.mp4,00:13,detail crop,Tall portal behind lower stations; relative landmark scale.
+details/industrial-17s-detail-tree-signs-and-ground-grouping.jpg,Recording 2026-10-20 204142.mp4,00:17,detail crop,Large tree and layered sign/station cluster.
+details/industrial-47s-detail-striped-shop-booth.jpg,Recording 2026-10-20 204142.mp4,00:47,detail crop,Striped awning and simple shop construction; night reference.
+details/industrial-57s-detail-water-fence-and-perimeter.jpg,Recording 2026-10-20 204142.mp4,00:57,detail crop,"Water boundary, dark fence, terrain and small booth; night reference."
+details/capybara-07s-detail-market-awning-gateway-and-trees.jpg,Recording 2026-10-20 204002.mp4,00:07,detail crop,Chunky market architecture and grouped pink trees.
+details/capybara-11s-detail-waterfall-and-canal-layout.jpg,Recording 2026-10-20 204002.mp4,00:11,detail crop,"Waterfall landmark, bridges, canals and clear colour separation."
+details/capybara-15s-detail-tank-and-market-group.jpg,Recording 2026-10-20 204002.mp4,00:15,detail crop,Large orange tank beside a smaller stall and stone-edged route.
+details/capybara-17s-detail-cliffs-grass-and-pink-tree.jpg,Recording 2026-10-20 204002.mp4,00:17,detail crop,"Green cliff ledges, pink foliage and broad grassy routes."
+details/capybara-37s-detail-pool-studs-bridges-and-borders.jpg,Recording 2026-10-20 204002.mp4,00:37,detail crop,Stud scale and repeating pools with contrasting stone and wood.
+details/capybara-51s-detail-chunky-sign-lantern-and-display.jpg,Recording 2026-10-20 204002.mp4,00:51,detail crop,"Sign border construction, small warm light and a nearby display."
