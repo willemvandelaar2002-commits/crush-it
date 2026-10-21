@@ -99,4 +99,11 @@ module builds `rbxthumb://type=Asset&id=<id>&w=420&h=420`, which works for any a
 
 ## server/Kit/YardProps.luau (21 Oct)
 
+Second art pass adds cableReel, yardScene (a complete container/scrap scene)
+and workshop (striped awning and tool crates). Container, vehicle, cluster
+and crane accept optional scale arguments, preserving earlier signatures.
+Scaling uses the supplied ground CFrame as pivot. Crane optionally carries
+a static scrap car. Build.lighting also exposes YardDay, selected by World
+for the existing Day setting, with warmer ambient light and restrained haze.
+
 Reusable static environment builders: bales, container, vehicle, cluster, workLight, crane and entrance. Parts are anchored with collision/touch/query disabled; models carry EnvironmentProp. Parent plot clusters under Decor to retain press-clearance parking. See [[Scrapyard environment]]. Build.path and Build.bridge now use concrete finishes while retaining walking geometry and signatures.

@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-21: Second world art pass establishes golden-tan sand, charcoal lanes with light kerbs, saturated container groups and substantial green cliff terraces. Reviewed a finished crane/container corner at player height and overview before extending it into six perimeter yards and one striped-awning workshop. Reused the entrance; added warm YardDay lighting, fewer larger hub groups and scalable static prop helpers. Presses, UI, gameplay, Config/Store/Net and place-only meshes unchanged. Studio Play walking/crushing, footprint clearance, desktop/phone views and Output checks passed; physical-phone performance remains a device test.
+
 - 2026-10-21: Approved environment-only server exception implemented: sandy scrapyard exterior, green-capped stepped cliffs, concrete lanes/bridges, reusable static workshop props, sparse container yards/cranes and CRUSH IT entrance. Presses, UI, gameplay and Studio meshes preserved. Desktop and phone Play checks, largest-press prop parking/restoration and music loading verified; remaining touch/progression/smelt checks documented in Systems/Scrapyard environment.
 
 - 2026-10-20: New environment-only scrapyard direction: restored fresh green foliage and warm-grey rock/cliff colours through the shared Island palette. Press appearance and UI are explicitly excluded. Sandy surroundings, cliff caps, paths and prop placement require the five-file environment exception detailed in Systems/Scrapyard environment; protected server files remain untouched pending approval.

@@ -41,11 +41,11 @@ function Hub.create(parent: Instance, bridges: { { x: number, side: number } })
 	end
 	Build.island(m, top, hx * 2, hz * 2, Config.World.SeaY, pal, { rng = rng, gaps = gaps })
 
-	-- brick road down the middle, branches to every bridge
+	-- Charcoal service road down the middle, branches to every bridge.
 	Build.path(m, Vector3.new(-hx + 6, floorY, 0), Vector3.new(hx - 6, floorY, 0), 12)
 	for _, b in bridges do
 		Build.path(m, Vector3.new(b.x, floorY, 0), Vector3.new(b.x, floorY, b.side * (hz - 1)), 8)
-		Build.patch(m, top * CFrame.new(b.x, 0, b.side * (hz - 9)), 18, 12, pal.pad, rng, "Landing")
+		Build.patch(m, top * CFrame.new(b.x, 0, b.side * (hz - 9)), 18, 12, C(77, 83, 88), rng, "Landing")
 	end
 
 	-- Sparse roadside stations, with bridge mouths and the central approach clear.
@@ -56,7 +56,7 @@ function Hub.create(parent: Instance, bridges: { { x: number, side: number } })
 		return false
 	end
 	local station = 0
-	for x = -hx + 22, hx - 22, 58 do
+	for x = -hx + 22, hx - 22, 82 do
 		for _, side in { -1, 1 } do
 			if not nearBridge(x, side) and math.abs(x) > 44 then
 				station += 1
@@ -68,7 +68,7 @@ function Hub.create(parent: Instance, bridges: { { x: number, side: number } })
 						if p:IsA("BasePart") then p.CanCollide = false; p.CanTouch = false; p.CanQuery = false end
 					end
 				else
-					YardProps.cluster(m, cf, station)
+					YardProps.cluster(m, cf, station, 1.5)
 				end
 				YardProps.workLight(m, top * CFrame.new(x, 0, side * 9)
 					* CFrame.Angles(0, if side > 0 then 0 else math.pi, 0), station % 2 == 0)

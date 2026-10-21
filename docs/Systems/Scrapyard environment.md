@@ -1,5 +1,64 @@
 # Bright scrapyard island environment
 
+## Second art pass, 2026-10-21
+
+The existing environment-only server exception applies to this follow-up.
+Edits are confined to World, Hub, Kit/Build and Kit/YardProps plus docs.
+
+- Clear colour blocks: sand #C49342, lane #4D5358, light kerbs #B8BCB6,
+  existing blue-grey plot platforms, green #5AB633 cliff caps. Containers
+  use saturated cobalt, teal and red; cranes are yellow with orange accents
+  on the new workshop. Existing plot and press colours are unchanged.
+- Built and inspected the south-west crane/container scene first, at player
+  height and from above, then reused its scale around the perimeter. Six
+  grouped yards replace eight smaller scattered stations. Two large static
+  yellow cranes carry toy scrap cars; stacked containers, large banded scrap
+  blocks and cable reels make readable silhouettes. All remain on the apron.
+- Added one compact teal workshop with yellow/cream striped awning and
+  grouped tool crates. The existing hub entrance is reused with small yellow
+  collars, rather than adding another gate. Hub stations are fewer and their
+  workshop groups are 1.5 times the previous scale, clear of bridge mouths.
+- Cliff base modules still overlap to enclose the map. Upper tiers vary in
+  height and retreat 15-22 studs, exposing broad terraces. Grass caps are
+  3.5 studs thick, with tree groves on low and high ledges, bushes and rock
+  outcrops. Distant hill caps are thicker too. Greenery remains at the edges.
+- New YardDay preset: warmer ambient daylight, softer shadows, exposure
+  -0.12, reduced bloom/haze and no sun rays. World maps the existing Day
+  choice to YardDay; other lighting presets retain their previous settings.
+  Config and shared UI helpers are unchanged.
+- YardProps adds cableReel, yardScene and workshop helpers; container,
+  vehicle, cluster and crane accept optional scale arguments. Existing calls
+  remain valid. New scenery is anchored with collision/touch/query disabled,
+  has no scripts or emitters, and adds no decorative lights.
+
+Verification for this pass:
+
+- Studio Play: inspected the initial corner, complete overview, normal plot
+  camera and workshop approach. Sand/lanes/plots read distinctly, neighbouring
+  plots remain visible, and the perimeter groups fit outside functional areas.
+- Bounding-box checks found no perimeter yard/workshop overlap with any plot,
+  scrap-shop tab or hub footprint. All EnvironmentProp parts passed anchored,
+  noncolliding, nontouching and nonquerying checks. Solid floor and boundary
+  collisions and all bridge/path geometry remain in place.
+- Spawned on Plot 1, held F and crushed an object, walked to both scrap-shop
+  pads, then crossed the bridge to the hub. No press or gameplay source edits.
+- iPhone 17 Pro landscape simulation (750 x 381 viewport): normal HUD and
+  crane-corner views inspected. Controls/thumbstick remain clear; UI is
+  unchanged. This is visual emulation, not a physical-device FPS benchmark.
+- Approximately 7,094 parts versus the previous idle scene's 6,685 (+6.1%),
+  44 lights versus 46, and 16 emitters unchanged. Counts fluctuate during Play.
+- No new game-script errors: client Output clear; server only existing
+  StudioAccessToApisNotAllowed messages for saving/global rankings. Place-only
+  ObjectMeshes (13) and PressMeshes (5) retained. Rojo build and diff checks
+  passed; changed files use LF. Studio returned to Edit/default viewport.
+
+Remaining: review on a physical phone for frame rate and touch usability, then
+Publish from the existing place. This pass does not verify persistence or the
+full progression/smelting cycle. The earlier rescue-message limitation below
+is unchanged.
+
+The following notes record the first completed environment pass.
+
 ## Completed 2026-10-21
 
 Willem approved the scoped server exception ("yes you can do everything").

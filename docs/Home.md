@@ -1,5 +1,10 @@
 # Crush It
 
+Latest world art pass (21 Oct): golden sand, charcoal routes, larger grouped
+perimeter yards, yellow crane landmarks, a striped-awning workshop, substantial
+green cliff terraces and warmer daylight. See [[Systems/Scrapyard environment]]
+for the current Studio verification and remaining device checks.
+
 Small, quick game to test alongside WarChest: one loop, few systems, out fast.
 
 - [[Plan]] — the idea and the milestones

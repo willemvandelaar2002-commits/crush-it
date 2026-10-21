@@ -115,12 +115,18 @@ function Build.label(adornee: BasePart, text: string, color: Color3, offsetY: nu
 end
 
 -- Presets (all cartoon-bright, they only change mood):
+--   "YardDay"    warm clear daylight, soft shadows, restrained bloom and haze
 --   "Day"        bright noon, blue sky
 --   "Sunset"     low warm sun, pink/orange haze, sun rays
 --   "GoldenHour" earlier and brighter than Sunset: everything golden
 --   "Dusk"       sun just down: purple-blue sky, warm horizon, stars, lamps glow
 --   "Smog"       hazy orange industrial sky, thick atmosphere
 local PRESETS = {
+	YardDay = {
+		clock = 14, lat = 35, brightness = 2, exposure = -0.12, ambient = Color3.fromRGB(110, 104, 94), outdoor = Color3.fromRGB(145, 142, 130),
+		sat = 0.04, contrast = 0.03, tint = Color3.fromRGB(255, 252, 246), bloom = 0.08, threshold = 2.4, rays = false,
+		density = 0.14, offset = 0, haze = 0.25, glare = 0.03, color = Color3.fromRGB(225, 234, 240), decay = Color3.fromRGB(174, 187, 198), stars = 0, sun = 12,
+	},
 	Day = {
 		clock = 13.5, lat = 41.7, brightness = 2.2, exposure = 0, ambient = Color3.fromRGB(90, 90, 105), outdoor = Color3.fromRGB(128, 128, 140),
 		sat = 0.08, contrast = 0.06, tint = Color3.new(1, 1, 1), bloom = 0.2, threshold = 2, rays = false,
@@ -159,7 +165,7 @@ function Build.lighting(preset: string?)
 	Lighting.OutdoorAmbient = p.outdoor
 	Lighting.EnvironmentDiffuseScale = 1
 	Lighting.EnvironmentSpecularScale = 0.4
-	Lighting.ShadowSoftness = 0.3
+	Lighting.ShadowSoftness = if preset == "YardDay" then 0.65 else 0.3
 	local function effect(class: string, name: string): any
 		local e = Lighting:FindFirstChild(name) or Instance.new(class)
 		e.Name = name
@@ -200,7 +206,7 @@ end
 function Build.path(parent: Instance, a: Vector3, b: Vector3, width: number, color: Color3?): Model
 	local m = Instance.new("Model")
 	m.Name = "Path"
-	local c = color or Color3.fromRGB(159, 169, 175)
+	local c = color or Color3.fromRGB(77, 83, 88)
 	local flat = Vector3.new(b.X - a.X, 0, b.Z - a.Z)
 	local len = flat.Magnitude + width -- overlap the corners
 	local mid = CFrame.lookAt(a:Lerp(b, 0.5), a:Lerp(b, 0.5) + flat)
@@ -208,7 +214,7 @@ function Build.path(parent: Instance, a: Vector3, b: Vector3, width: number, col
 	top.Material = Enum.Material.Concrete
 	top.CanCollide = false
 	for _, side in { -1, 1 } do
-		local edge = Build.block(m, "PathEdge", Vector3.new(0.6, 0.16, len), mid * CFrame.new(side * (width / 2 + 0.3), 0.08, 0), Style.darken(c, 0.35), {})
+		local edge = Build.block(m, "PathEdge", Vector3.new(0.6, 0.16, len), mid * CFrame.new(side * (width / 2 + 0.3), 0.08, 0), Color3.fromRGB(184, 188, 182), {})
 		edge.CanCollide = false
 	end
 	local function paint(name: string, size: Vector3, cf: CFrame, tint: Color3)
@@ -361,8 +367,8 @@ end
 function Build.bridge(parent: Instance, a: Vector3, b: Vector3, width: number, palette: { [string]: Color3 }, seaY: number?): Model
 	local m = Instance.new("Model")
 	m.Name = "Bridge"
-	local wood = palette.wood or Color3.fromRGB(168, 116, 66)
-	local woodDark = palette.woodDark or Color3.fromRGB(120, 80, 46)
+	local wood = Color3.fromRGB(82, 88, 93)
+	local woodDark = palette.woodDark or Color3.fromRGB(48, 67, 94)
 	local ALL4 = { Enum.NormalId.Top, Enum.NormalId.Front, Enum.NormalId.Back, Enum.NormalId.Left, Enum.NormalId.Right }
 	local flat = Vector3.new(b.X - a.X, 0, b.Z - a.Z)
 	local len = flat.Magnitude
@@ -376,7 +382,7 @@ function Build.bridge(parent: Instance, a: Vector3, b: Vector3, width: number, p
 	for _, x in { -1, 1 } do
 		Build.block(m, "Beam", Vector3.new(0.9, 1, len), base * CFrame.new(x * (width / 2 + 0.2), -0.6, -len / 2), woodDark, ALL4)
 		for _, z in { -0.6, -len + 0.6 } do
-			Build.block(m, "Post", Vector3.new(2.2, 2.6, 2.2), base * CFrame.new(x * (width / 2 + 0.3), 1.3, z), wood, ALL4)
+			Build.block(m, "Post", Vector3.new(2.2, 2.6, 2.2), base * CFrame.new(x * (width / 2 + 0.3), 1.3, z), Color3.fromRGB(184, 188, 182), ALL4)
 		end
 		Build.block(m, "Rail", Vector3.new(0.6, 0.6, len - 2.4), base * CFrame.new(x * (width / 2 + 0.3), 1.6, -len / 2), woodDark, ALL4)
 	end
