@@ -2,10 +2,10 @@
 -- Helpers: Mini Presses round the big press (after the Yuzu game's
 -- capybaras and Destroy a Vault's tanks). data.helpers = { level, ... } (one per
 -- slot, max Config.Helpers.Slots). Every Tick seconds each one "crushes" and its
--- value goes into the owner's smelter (Scrap.feed). Two yards of 4 on the front
--- half of the plot, either side of the conveyor; pads next to them:
+-- value goes into the owner's smelter (Scrap.feed). Two yards of 4 at the back
+-- of the plot (the far end from the bridge), either side of the conveyor; pads next to them:
 --   Buy Mini Press  -> a level 1 helper in the next free slot (cash)
---   Merge           -> 3 helpers of the same level become 1 of the next level
+--   Merge           -> 2 helpers of the same level become 1 of the next level (up to Rainbow)
 -- Models are rebuilt whenever the list changes; the client animates the rams
 -- (tag "HelperRam", Helpers.client.luau).
 
@@ -39,11 +39,11 @@ local RED = C(255, 95, 85)
 
 local api: Api = nil :: any
 
--- Slot ground positions in plot-local space: front half of the plot, clear of
--- the biggest press (its bed reaches z = 30.5), the conveyor (x = 0) and the
--- path from the hub bridge (x = 16). Inner row first, so new ones sit by the press.
-local YARDS = { { x = { -30, -44 } }, { x = { 34, 48 } } }
-local ROWS = { 39, 52 }
+-- Slot ground positions in plot-local space: behind the press (the biggest one
+-- reaches z = -31.5), either side of the conveyor (x = 0), in front of the
+-- factory hall. Inner row first, so new ones sit by the press.
+local YARDS = { { x = { -18, -32 } }, { x = { 18, 32 } } }
+local ROWS = { -45, -58 }
 function Helpers.slotOffsets(): { Vector3 }
 	local out = {}
 	for _, yard in YARDS do
@@ -57,7 +57,7 @@ function Helpers.slotOffsets(): { Vector3 }
 end
 
 local function padOffsets(): (Vector3, Vector3)
-	return Vector3.new(-15, 0, 45.5), Vector3.new(23.5, 0, 45.5)
+	return Vector3.new(-46, 0, -51.5), Vector3.new(46, 0, -51.5)
 end
 
 -- The yards: slot bases with white corner brackets, and the Buy / Merge pads.
@@ -66,8 +66,8 @@ function Helpers.build(plotModel: Model, origin: CFrame)
 	m.Name = "HelperYard"
 	local pal = Style.theme(Config.Look.Theme)
 	-- dark asphalt under each yard (Destroy a Vault's unit zones)
-	for _, x in { -37, 41 } do
-		Build.block(m, "YardZone", Vector3.new(27, 0.1, 26), origin * CFrame.new(x, 0.05, 45.5), pal.pad or C(52, 54, 62)).CanCollide = false
+	for _, x in { -25, 25 } do
+		Build.block(m, "YardZone", Vector3.new(29, 0.1, 28), origin * CFrame.new(x, 0.05, -51.5), pal.pad or C(52, 54, 62)).CanCollide = false
 	end
 	for i, off in Helpers.slotOffsets() do
 		local cf = origin * CFrame.new(off)
@@ -172,7 +172,7 @@ function Helpers.refresh(plot: any)
 	folder.Parent = plot.model
 end
 
--- Which level can merge (lowest level with 3+), or nil.
+-- Which level can merge (lowest level with MergeCount+, below the top level), or nil.
 local function mergeable(list: { number }): number?
 	local counts: { [number]: number } = {}
 	for _, l in list do
@@ -180,7 +180,7 @@ local function mergeable(list: { number }): number?
 	end
 	local best: number? = nil
 	for l, n in counts do
-		if n >= 3 and (best == nil or l < best) then
+		if n >= Config.Helpers.MergeCount and l < #Config.Helpers.Names and (best == nil or l < best) then
 			best = l
 		end
 	end
@@ -211,9 +211,9 @@ local function labels(plot: any, owner: Player?, data: any)
 	end
 	local lv = mergeable(data.helpers)
 	if lv then
-		Pads.label(merge, "Merge!", "3x Lv " .. lv .. " > Lv " .. (lv + 1), GREEN)
+		Pads.label(merge, "Merge!", Config.Helpers.MergeCount .. "x Lv " .. lv .. " > Lv " .. (lv + 1), GREEN)
 	else
-		Pads.label(merge, "Merge!", "Need 3 the same", RED)
+		Pads.label(merge, "Merge!", "Need " .. Config.Helpers.MergeCount .. " the same", RED)
 	end
 end
 
@@ -284,7 +284,7 @@ function Helpers.start(a: Api)
 				local n = #data.helpers
 				local cost = Config.Helpers.Cost(n, data.tier)
 				if n >= Config.Helpers.Slots then
-					Notice:FireClient(owner, { text = "All slots full: merge 3 the same!" })
+					Notice:FireClient(owner, { text = "All slots full: merge " .. Config.Helpers.MergeCount .. " the same!" })
 					state.nextAt = math.huge
 				elseif data.cash < cost then
 					Notice:FireClient(owner, { text = "Not enough cash!" })
@@ -303,7 +303,7 @@ function Helpers.start(a: Api)
 					local removed = 0
 					local keep = {}
 					for _, l in data.helpers do
-						if l == lv and removed < 3 then
+						if l == lv and removed < Config.Helpers.MergeCount then
 							removed += 1
 						else
 							table.insert(keep, l)
@@ -319,7 +319,7 @@ function Helpers.start(a: Api)
 					Purchased:FireClient(owner, { id = "Helper", text = "MERGED! " .. Config.Helpers.Names[math.min(lv + 1, #Config.Helpers.Names)] })
 					state.nextAt = now + 0.8
 				else
-					Notice:FireClient(owner, { text = "You need 3 Mini Presses of the same level" })
+					Notice:FireClient(owner, { text = "You need " .. Config.Helpers.MergeCount .. " Mini Presses of the same level" })
 					state.nextAt = math.huge
 				end
 			end

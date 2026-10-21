@@ -22,7 +22,7 @@ local ALL = { Enum.NormalId.Top, Enum.NormalId.Front, Enum.NormalId.Back, Enum.N
 function Hub.size(): (number, number)
 	local P = Config.Plots
 	local hx = P.Spacing * 1.5 + P.FloorSize / 2 + 20
-	local hz = P.RowOffset - P.FloorSize / 2 - Config.World.HubGap
+	local hz = P.RowOffset - P.Front - Config.World.HubGap
 	return hx, hz
 end
 

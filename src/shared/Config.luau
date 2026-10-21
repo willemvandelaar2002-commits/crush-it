@@ -325,8 +325,8 @@ Config.Scrap = {
 
 -- The scrap shop island behind every plot (server/ScrapShop.luau).
 Config.ScrapShop = {
-	Depth = 34, -- the shop's tab at the back of the plot island, front to back
-	Width = 48, -- tab width (smelter, its four pads and the board)
+	Depth = 34, -- the shop's floor, entrance to back wall
+	Width = 48, -- and along its entrance (smelter, its four pads and the board)
 }
 
 -- The smelter (Yuzu stand / Destroy a Vault "Smelt"): deposited scrap is smelted
@@ -345,9 +345,10 @@ Config.Smelter = {
 -- Helpers (Mini Presses, after the Yuzu capybaras / tank game tanks): small presses
 -- on the slots of the scrap shop island that crush by themselves every Tick seconds
 -- and feed what they make straight into your smelter. Buy them on the Buy pad,
--- merge 3 of the same level into 1 of the next on the Merge pad (server/Helpers.luau).
+-- merge 2 of the same level into 1 of the next on the Merge pad (server/Helpers.luau).
 Config.Helpers = {
 	Slots = 8,
+	MergeCount = 2, -- this many of one level -> one of the next (with 2 you can never get stuck)
 	Tick = 3,
 	Names = { "Mini Press", "Bronze Press", "Silver Press", "Gold Press", "Ruby Press", "Emerald Press", "Diamond Press", "Rainbow Press" },
 	Colors = {
@@ -356,7 +357,7 @@ Config.Helpers = {
 	},
 	-- cash a helper of `level` makes per tick, at your current press tier
 	Value = function(level: number, tier: number): number
-		return Config.Economy.ObjectValue(tier) * 2.6 ^ (level - 1)
+		return Config.Economy.ObjectValue(tier) * 2.2 ^ (level - 1)
 	end,
 	-- price of the next helper when you own `owned` of them
 	Cost = function(owned: number, tier: number): number
@@ -414,9 +415,16 @@ Config.World = {
 -- World layout: 8 plots in two rows of 4 facing the hub island.
 Config.Plots = {
 	Count = 8,
-	Spacing = 140, -- along X
-	RowOffset = 115, -- each row's distance from the hub island's centre line (Z)
-	FloorSize = 120, -- big enough for the widest (Cosmic) press frame
+	Spacing = 190, -- along X (70 studs of lava between neighbouring islands)
+	RowOffset = 146, -- each row's press centre, measured from the hub's centre line (Z)
+	FloorSize = 120, -- plot width (X); big enough for the widest (Cosmic) press frame
+	-- Plot depth, measured from the press centre (plot-local +Z points to the hub):
+	--   Front: entrance from the hub bridge, scrap shop (left), upgrade pads (right), scrap pile
+	--   Back:  the conveyor from the toy factory hall, Mini Press yards
+	Front = 92,
+	Back = 80,
+	ShopX = -12, -- scrap shop entrance line (it opens toward the centre path) ...
+	ShopZ = 66, -- ... and its centre along Z
 }
 
 -- Every press tier has its own name and paint; the look changes per stage:

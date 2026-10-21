@@ -52,7 +52,8 @@ local function zone(pos: Vector3): string
 	if not plots then
 		return "Hub"
 	end
-	local half = Config.Plots.FloorSize / 2
+	local P = Config.Plots
+	local half = P.FloorSize / 2
 	local shop = Config.ScrapShop
 	for _, plot in plots:GetChildren() do
 		local origin = plot:GetAttribute("Origin") :: CFrame?
@@ -61,16 +62,17 @@ local function zone(pos: Vector3): string
 		end
 		local p = origin:PointToObjectSpace(pos)
 		local mine = plot:GetAttribute("Index") == player:GetAttribute("Plot")
-		if math.abs(p.X) <= half and math.abs(p.Z) <= half then
+		if math.abs(p.X) <= half and p.Z <= P.Front and p.Z >= -P.Back then
+			-- the scrap shop: just inside the gate on the left (Plots.luau)
+			if p.X <= P.ShopX and p.X >= P.ShopX - shop.Depth and math.abs(p.Z - P.ShopZ) <= shop.Width / 2 then
+				return if mine then "Your Scrap Shop" else "Scrap Shop"
+			end
 			if mine then
 				return "Your Plot"
 			end
 			local sign = plot:FindFirstChild("OwnerName", true) :: TextLabel?
 			local name = sign and sign.Text or ""
 			return if name ~= "" and name ~= "Free plot" then name else "Free Plot"
-		end
-		if math.abs(p.X) <= shop.Width / 2 and p.Z < -half and p.Z >= -half - shop.Depth then
-			return if mine then "Your Scrap Shop" else "Scrap Shop"
 		end
 	end
 	return "Hub"
