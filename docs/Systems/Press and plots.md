@@ -168,3 +168,17 @@ between plots, a little toy factory island. Plot-local, origin = press centre,
 - Spacing 190 (70 studs between islands), RowOffset 146; hub only reaches just
   past the outer bridges. Pad under the press capped at 76.
 - Built on Willem's world art pass (sand yard, YardProps, blue-grey plots).
+
+## Map v4 (21 Oct): the Toy Train Loop
+Willem picked option C from the layout canvas. Numbers in `Config.Loop` / `Config.Plots.Ring`:
+- Round **station hub** in the middle (radius 56): scrap display, CRUSH IT entrance,
+  workshop props, spawn. Roads across it to **4 walkways** (0/90/180/270 degrees).
+- **Ring road** from radius 172 to 198 (48 straight pieces, kerbs, painted edge lines)
+  with **rails** at radius 182/188 and the **toy train** (engine + 4 wagons with toys,
+  smoke) going round once a minute. Built in `Hub.luau`, driven by `client/Train.client.luau`
+  from the server clock (cars moved part by part from their Chassis; pivots don't stream).
+  Scenery only for now: no collisions, not rideable yet.
+- **8 plots** at 22.5 + 45 k degrees (`Plots.originFor`), entrance edge at radius 210,
+  facing the centre; their bridges (12 long) land on the loop.
+- World (Willem's sand yard): cliff walls moved out to ±440, yard scenes and the
+  workshop in the sand wedges between plots at radius 330.

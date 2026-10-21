@@ -68,15 +68,18 @@ function Plots.studs(p: BasePart, faces: { Enum.NormalId }?)
 	Style.studs(p, faces)
 end
 
+-- Plots stand round the toy train loop, between the 4 hub walkways (at 0/90/180/270
+-- degrees), each one's +Z pointing at the centre.
+function Plots.angleFor(index: number): number
+	return math.rad(22.5 + (index - 1) * 45)
+end
+
 function Plots.originFor(index: number): CFrame
 	local P = Config.Plots
-	local col = (index - 1) % 4 -- 0..3
-	local row = if index <= 4 then 1 else -1 -- +Z row faces -Z (toward the walkway), and vice versa
-	local x = (col - 1.5) * P.Spacing
-	local z = row * P.RowOffset
-	-- +Z of the plot points at the walkway (z = 0).
-	local facing = if row == 1 then CFrame.Angles(0, math.pi, 0) else CFrame.identity
-	return CFrame.new(x, FLOOR_Y, z) * facing
+	local a = Plots.angleFor(index)
+	local out = Vector3.new(math.sin(a), 0, math.cos(a))
+	local pos = Vector3.new(0, FLOOR_Y, 0) + out * (P.Ring + P.Front)
+	return CFrame.lookAt(pos, pos + out) -- -Z points away from the centre, so +Z faces the hub
 end
 
 -- Props (Decor children: heap, crane, bales, boiler, crates, pipe) that the
@@ -230,14 +233,8 @@ function Plots.create()
 		base.CanTouch = false
 		base.CFrame = CFrame.new(0, -500, 0)
 	end
-	-- Hub island in the middle; every plot's bridge lands on it.
-	local landings = {}
-	for i = 1, P.Count do
-		local o = Plots.originFor(i)
-		local p = (o * CFrame.new(Moat.FRONT_BRIDGE_X, 0, P.Front)).Position
-		table.insert(landings, { x = p.X, side = if p.Z > 0 then 1 else -1 })
-	end
-	require(script.Parent.Hub).create(root, landings)
+	-- Station hub, walkways, the loop road and the toy train (every plot's bridge lands on the loop).
+	require(script.Parent.Hub).create(root)
 
 	for i = 1, P.Count do
 		local origin = Plots.originFor(i)

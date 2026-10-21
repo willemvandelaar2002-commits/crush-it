@@ -405,18 +405,27 @@ Config.Look = {
 	PropSeed = 7, -- change for a different (but still fixed) layout
 }
 
--- Islands in a lava sea (server/Moat.luau, Hub.luau, World.luau): the plots stand in
--- two rows of 4 facing the hub island in the middle, each joined to it by a bridge.
+-- The world (server/Hub.luau, Moat.luau, World.luau): the Toy Train Loop. A round
+-- station hub in the middle, 4 walkways out to a ring road with a toy train on it,
+-- and the 8 plot islands round the outside, each facing the centre with a short
+-- bridge onto the loop.
 Config.World = {
-	SeaY = -3, -- lava surface (just under the island edges, like the water in the reference games); falling in puts you back on your plot
-	HubGap = 18, -- lava between a plot island and the hub island (the bridge length)
+	SeaY = -3, -- the yard floor under the islands; falling down there puts you back on your plot
+	HubGap = 12, -- gap between a plot island and the loop road (the plot's bridge)
 }
 
--- World layout: 8 plots in two rows of 4 facing the hub island.
+Config.Loop = {
+	Hub = 56, -- radius of the station hub
+	Inner = 172, -- the ring road runs from this radius ...
+	Outer = 198, -- ... to this one (26 wide)
+	TrainRadius = 185, -- the rails' centre line
+	TrainLap = 60, -- seconds for the toy train to go round once
+}
+
+-- World layout: 8 plots round the loop (Plots.originFor).
 Config.Plots = {
 	Count = 8,
-	Spacing = 190, -- along X (70 studs of lava between neighbouring islands)
-	RowOffset = 146, -- each row's press centre, measured from the hub's centre line (Z)
+	Ring = 210, -- distance from the centre to a plot's entrance edge (Loop.Outer + World.HubGap)
 	FloorSize = 120, -- plot width (X); big enough for the widest (Cosmic) press frame
 	-- Plot depth, measured from the press centre (plot-local +Z points to the hub):
 	--   Front: entrance from the hub bridge, scrap shop (left), upgrade pads (right), scrap pile
