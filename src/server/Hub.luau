@@ -64,6 +64,90 @@ local function scenery(m: Instance)
 	end
 end
 
+-- Fill the centre while keeping the plot islands separate. The foundation's
+-- outermost edge stops at the road; only the existing bridges cross the gap.
+local function commons(parent: Model, pal: { [string]: Color3 })
+	local m = Instance.new("Model")
+	m.Name = "WorkshopCommons"
+	local radius = Config.Loop.Outer - 2
+	local topY = FLOOR_Y - 0.16
+	local floor = cylinder(m, "CommonsFloor", 1.55, radius * 2,
+		Vector3.new(0, topY - 1.55 / 2, 0), C(92, 119, 122))
+	Style.studs(floor, { Enum.NormalId.Right })
+	floor.CanTouch = false
+	local rim = cylinder(m, "CommonsRim", 1.8, radius * 2 + 2,
+		Vector3.new(0, topY - 0.14 - 0.9, 0), pal.edge)
+	rim.CanTouch = false
+	local h = topY - 1.55 - (Config.World.SeaY - 3)
+	local base = cylinder(m, "CommonsFoundation", h, radius * 2 + 4,
+		Vector3.new(0, topY - 1.55 - h / 2, 0), pal.stoneDark or pal.edge)
+	base.CanTouch = false
+
+	local function paint(p: BasePart)
+		p.CanCollide = false
+		p.CanTouch = false
+		p.CanQuery = false
+		p.CastShadow = false
+	end
+	local rng = Random.new(291)
+	for i, deg in { 45, 135, 225, 315 } do
+		local a = math.rad(deg)
+		local cf = at(a, 118, topY)
+		local bay = Instance.new("Model")
+		bay.Name = "CommonsBay" .. i
+		local deck = Build.block(bay, "BayFloor", Vector3.new(60, 0.1, 44),
+			cf * CFrame.new(0, 0.05, 0), C(64, 86, 102))
+		paint(deck)
+		-- Corner markings leave an open front toward the central landmark.
+		for _, x in { -1, 1 } do
+			for _, z in { -1, 1 } do
+				paint(Build.block(bay, "BayCorner", Vector3.new(7, 0.025, 0.35),
+					cf * CFrame.new(x * 25, 0.115, z * 20), C(211, 222, 219), {}))
+				paint(Build.block(bay, "BayCorner", Vector3.new(0.35, 0.025, 5),
+					cf * CFrame.new(x * 28.5, 0.115, z * 17.7), C(211, 222, 219), {}))
+			end
+		end
+		local props = Instance.new("Model")
+		props.Name = "CommonsProps"
+		props:SetAttribute("EnvironmentProp", true)
+		local ground = cf * CFrame.new(0, 0.1, 0)
+		if i == 1 then
+			YardProps.vehicle(props, ground * CFrame.new(-13, 0, 4), C(216, 62, 49), 1.45)
+			YardProps.cluster(props, ground * CFrame.new(-19, 0, -11), 1, 1.6)
+			YardProps.cableReel(props, ground * CFrame.new(19, 0, 6), 1.35)
+		elseif i == 2 then
+			-- Reuse the existing striped workshop landmark, moved from the sand.
+			YardProps.workshop(props, ground)
+		elseif i == 3 then
+			YardProps.bales(props, ground * CFrame.new(-13, 0, 6), 2.5)
+			YardProps.bales(props, ground * CFrame.new(13, 0, 6), 2.1)
+			YardProps.cluster(props, ground * CFrame.new(17, 0, -11), 2, 1.8)
+		else
+			YardProps.container(props, ground * CFrame.new(0, 0, 9), C(25, 155, 142), 1.7)
+			YardProps.cluster(props, ground * CFrame.new(-18, 0, -10), 0, 1.7)
+			YardProps.cableReel(props, ground * CFrame.new(19, 0, -9), 1.2)
+		end
+		scenery(props)
+		props.Parent = bay
+		bay.Parent = m
+
+		-- Small contained planting frames the courts without blocking the roads.
+		local planter = Instance.new("Model")
+		planter.Name = "CommonsPlanter" .. i
+		planter:SetAttribute("EnvironmentProp", true)
+		local pc = at(a, 154, topY)
+		Build.block(planter, "PlanterBase", Vector3.new(34, 1.6, 10), pc * CFrame.new(0, 0.8, 0), pal.edge)
+		Build.block(planter, "Grass", Vector3.new(31, 0.7, 7), pc * CFrame.new(0, 1.6, 0), C(103, 181, 64))
+		if i % 2 == 1 then
+			Build.tree(planter, pc * CFrame.new(-7, 1.95, 0), 1.45, pal, rng)
+		end
+		Build.bush(planter, pc * CFrame.new(9, 1.95, 0), 1.8, pal, rng)
+		scenery(planter)
+		planter.Parent = m
+	end
+	m.Parent = parent
+end
+
 -- Round station hub.
 local function station(m: Model, pal: { [string]: Color3 }, rng: Random)
 	local L = Config.Loop
@@ -351,13 +435,15 @@ function Hub.create(parent: Instance)
 	local rng = Random.new(77)
 	local m = Instance.new("Model")
 	m.Name = "Hub"
+	commons(m, pal)
 	station(m, pal, rng)
 	loop(m, pal, rng)
 	-- walkways from the hub to the loop
 	for _, deg in SPOKES do
 		local a = math.rad(deg)
 		local dir = Vector3.new(math.sin(a), 0, math.cos(a))
-		Build.bridge(m, Vector3.new(0, FLOOR_Y, 0) + dir * (L.Hub - 1.5), Vector3.new(0, FLOOR_Y, 0) + dir * (L.Inner + 1.5), 12, pal, Config.World.SeaY)
+		-- These spokes now run across solid land, so use wide flush lanes.
+		Build.path(m, Vector3.new(0, FLOOR_Y, 0) + dir * (L.Hub - 1.5), Vector3.new(0, FLOOR_Y, 0) + dir * (L.Inner + 1.5), 18)
 	end
 	for i = 1, L.Trains do
 		train(m, i, (i - 1) * 8 / L.Trains)

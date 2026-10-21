@@ -110,15 +110,15 @@ local function skyline(parent: Instance)
 		{ deg = 225, variant = 0, crane = false },
 	}
 	for _, station in stations do
+		-- Broad framed storage aprons anchor the scenery groups in the sand.
+		-- They remain noncolliding scenery below the playable island level.
+		local apron = Build.platform(parent, "StorageApron", facingCentre(station.deg, 345) * CFrame.new(0, 0.08, 0),
+			110, 94, 0.5, C(83, 104, 115), C(42, 57, 76), 1.5)
+		scenery(apron)
 		YardProps.yardScene(parent, facingCentre(station.deg, 330), station.variant, station.crane)
 		task.wait()
 	end
-	-- One workshop in another wedge. Its crates and awning form one silhouette
-	-- rather than loose pieces in the lanes.
-	local shop = facingCentre(135, 330)
-	YardProps.workshop(parent, shop)
-	YardProps.bales(parent, shop * CFrame.new(-36, 0, -2), 2.2)
-	YardProps.cableReel(parent, shop * CFrame.new(38, 0, -2), 1.5)
+	-- The striped workshop is now part of the walkable commons in Hub.
 end
 
 function World.create()

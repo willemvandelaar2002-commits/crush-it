@@ -1,5 +1,12 @@
 # Crush It
 
+Reference-led land update (21 Oct): a broad raised workshop commons joins
+the centre to the train loop, with wider lanes, four work bays, contained
+planting and framed storage aprons. Its outer shoulder has been pulled back
+to restore the sandy separation from the plot islands. Background visibility
+was verified at higher preview quality; low graphics still culls distant
+scenery. See [[Systems/Scrapyard environment]].
+
 Imported studs adopted (21 Oct): plot floors, the hub and plastic scenery now
 use the approved MaterialService.Studs finish. Presses and UI keep their
 existing treatment. See [[Systems/Stud material comparison]] for the switch

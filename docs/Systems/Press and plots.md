@@ -1,5 +1,12 @@
 # Press and plots
 
+21 Oct connected-land update: the hub now sits on a broad raised commons
+that reaches beneath the train loop. Its foundation now stops at the road,
+restoring the 12-stud sandy gap to the plot islands. Four wider
+spoke lanes keep the old connections. Plot footprints, owned areas, presses,
+spawn/interaction positions and the train route are unchanged. See
+[[Scrapyard environment]] for reference images and Play checks.
+
 21 Oct movement update: Config.PlayerWalkSpeed is 28 studs/second for every
 player. The server applies it in placeCharacter on initial spawn and respawn.
 The spawn/respawn application was verified in Studio at 24; the subsequent

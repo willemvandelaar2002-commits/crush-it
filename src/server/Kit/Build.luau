@@ -194,6 +194,16 @@ function Build.lighting(preset: string?)
 	atmo.Decay = p.decay
 	atmo.Parent = Lighting
 	local sky = Lighting:FindFirstChildOfClass("Sky") or Instance.new("Sky")
+	if preset == "YardDay" then
+		-- Engine-bundled cloudy blue sky: proper cube faces instead of the
+		-- place's repeated flat side image, with no new uploaded asset dependency.
+		sky.SkyboxBk = "rbxasset://textures/sky/sky512_bk.tex"
+		sky.SkyboxDn = "rbxasset://textures/sky/sky512_dn.tex"
+		sky.SkyboxFt = "rbxasset://textures/sky/sky512_ft.tex"
+		sky.SkyboxLf = "rbxasset://textures/sky/sky512_lf.tex"
+		sky.SkyboxRt = "rbxasset://textures/sky/sky512_rt.tex"
+		sky.SkyboxUp = "rbxasset://textures/sky/sky512_up.tex"
+	end
 	sky.SunAngularSize = p.sun
 	sky.MoonAngularSize = 11
 	sky.CelestialBodiesShown = true

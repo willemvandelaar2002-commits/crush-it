@@ -1,5 +1,120 @@
 # Bright scrapyard island environment
 
+## Restored island gaps and background diagnosis, 2026-10-21
+
+The commons shoulder was filling the original bridge gap. CommonsFloor now
+has radius Loop.Outer - 2 = 196 (diameter 392); its rim has radius 197 and
+foundation radius 198. The central land stops beneath the train road, leaving
+the original 12-stud sandy channel to the plot entrance radius 210. Only the
+existing bridges cross it. The filled centre, work bays and planting remain;
+plot positions, rail route, bridges, presses, interactions and Config are unchanged.
+This supersedes the 208-radius shoulder described in the earlier pass below.
+
+Background diagnosis and remaining limitation:
+
+- The place has streaming enabled, and World is already Persistent. All 76
+  GrassyCliff models were present on the client even when the backdrop vanished.
+- At the same camera position, explicitly selecting Studio render Level01
+  reproduced the missing cliffs, cranes and opposite plots. Level21 restored
+  them. This is graphics-distance culling, not missing source or place assets.
+- Enlarged backing geometry and disabled model LOD did not solve Level01
+  culling. Those temporary tests were discarded; no proxy map or extra walls
+  remain. Streaming radius and players' graphics preferences were not changed.
+- Studio EditQualityLevel and the current Play rendering preview were raised
+  to Level21. The current Play view is corrected, but starting Play again can
+  reset rendering to Automatic. Setting SavedQualityLevel through the plugin
+  is blocked by Roblox's capability permissions. In the Roblox Play settings,
+  use manual Graphics Quality and raise it if distant scenery disappears.
+  This is still a limitation for players who choose very low graphics; the
+  repository change does not claim to override Roblox's rendering distance.
+- Roblox documents this relationship in its [QualityLevel reference](https://create.roblox.com/docs/reference/engine/enums/QualityLevel).
+
+Verification: fresh Play confirmed diameters 392/394/396, floor top Y=1.44,
+and all 76 cliff models loaded. Compared desktop views at the same camera
+before/after and checked the exposed gap in phone landscape simulation.
+Walked Plot 1's bridge in both directions with health 100, then reached the
+press and held F: Crushed increased to 1. WalkSpeed remains 28. No game-script
+errors were observed; Output includes existing DataStore API warnings, Roblox
+CorePackages UI warnings, the existing asset-type warning for 203785492, and
+the diagnostic SavedQualityLevel permission warning. Normal desktop camera
+and device simulation were restored after testing. UI source is untouched.
+
+## Cloudy daytime sky, 2026-10-21
+
+YardDay now assigns all six engine-bundled sky512 cube faces, replacing the
+place's repeated flat side image. The cloudy blue sky gives the new commons
+a more cheerful horizon without changing the existing clock, warm lighting,
+exposure, atmosphere, bloom, colours or game settings. No external sky upload
+or dynamic Clouds instance is required. Other Build presets are unchanged.
+The skybox is applied by Build.lighting during normal world creation, so it
+persists across Play sessions. Save/Publish the existing place to deploy it.
+Fresh Studio Play verified all six sky faces and rendered the clouds above
+the yard. Clock 14, brightness 2, exposure -0.12 and haze 0.25 are unchanged.
+Build/LF checks passed; Output only shows the existing DataStore API warnings.
+
+## Connected land from the new references, 2026-10-21
+
+Inspected both first contact sheets, the industrial daytime floor close-up,
+and the capybara green route/cliff close-up in Reference/simulator-style.
+Applied their broad connected ground, framed work areas, grouped stations
+and contained planting to the existing scrapyard and toy train loop.
+
+- Hub now has WorkshopCommons: a 416-stud circular ground slab, navy rim and
+  chunky foundation. Its radius is Loop.Outer + World.HubGap - 2 (208).
+  This fills the former central sandy annulus and adds a 10-stud shoulder
+  outside the road. About 90,000 square studs of sand become connected land,
+  accounting approximately for the hub/loop/spokes that already occupied it.
+- Commons top is 0.16 studs below the existing floors, preventing coplanar
+  surfaces. Its collider supports players above the existing rescue threshold.
+  The 210-stud plot entry radius and plot footprints remain unchanged.
+- The four former 12-stud spoke bridges become 18-stud charcoal service
+  lanes across solid ground, at the same endpoints. Train rails, stops,
+  timetable, ring road and each plot's bridge remain as before.
+- Four low dark work bays at diagonal angles and radius 118 frame the
+  open centre. They suggest incoming scrap, a maintenance workshop, sorted
+  cubes and container storage. White corner markings keep their entrances
+  legible. All new props reuse YardProps and disable collision/touch/query.
+- Moved the existing striped-awning workshop from the outer sand into one
+  bay, rather than duplicating it. Four contained planters at radius 154
+  add two chunky trees and low bushes, clear of the lanes and rail corridor.
+- Six framed storage aprons beneath the outer container/crane groups make
+  those scenes read as yards rather than scattered props. They sit 0.08
+  studs above the sand to avoid z-fighting, and remain noncolliding scenery
+  below the playable level. Main circulation stays on the raised island.
+- Imported studs still apply through the existing WorldStuds pass. No new
+  lights, emitters, animation loops, UI, gameplay rules or material assets.
+  Source changes are limited to Hub and World; all other source hashes
+  are checked against the start of this pass.
+
+Verification:
+
+- Desktop Play: inspected a full centre overview and player-height court
+  view against the reference principles. Roads, plot platforms and commons
+  remain distinct; neighbouring presses and their signs remain visible.
+- Walked from Plot 1 over its existing bridge onto the loop, down the south
+  lane and across several commons positions. Reached the east spoke with
+  full health, retained Plot 1 and WalkSpeed 28, and stayed on the new ground
+  without rescue teleportation. Held F and crushed an object successfully.
+- All new CommonsProps/planters and storage aprons are anchored and have
+  collision/touch/query disabled. CommonsFloor is collidable and queryable,
+  uses Studs, and retains SmoothPlastic's effective friction of 0.2.
+- All 64 radial raycast samples hit solid commons ground at Y=1.44, above
+  the rescue threshold. Six aprons sit at Y=-2.92, clear of the sand plane;
+  exactly one striped workshop remains in the scene.
+- Fresh iPhone 17 Pro landscape simulation inspected for readable ground,
+  clear controls and the unchanged lower-left thumbstick area. This does
+  not establish physical-phone frame rate or touch quality.
+- Fresh Output checked: client clear; server only existing disabled Studio
+  DataStore API messages. Place-only material variants and both mesh folders
+  retained. Build and scoped whitespace checks pass; changed files use LF.
+- Studio is left in Play at the default desktop viewport, with normal
+  camera/HUD and the player standing on the new commons for review.
+
+Review on a physical phone, then save and Publish the existing place. Saving
+and online rankings remain outside this visual pass's checks.
+
+Earlier environment passes are recorded below.
+
 ## Second art pass, 2026-10-21
 
 The existing environment-only server exception applies to this follow-up.
