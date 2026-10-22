@@ -285,7 +285,7 @@ end)
 -- featured pass card under it. Each hides once owned; the card moves on to the
 -- next pass you don't have yet.
 local offers = make("Frame", {
-	Name = "Offers", AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -14, 1, -240), Size = UDim2.fromOffset(200, 0),
+	Name = "Offers", AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -14, 1, if Config.Crushers.Enabled then -24 else -240), Size = UDim2.fromOffset(200, 0),
 	AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = gui,
 }, { make("UIListLayout", { Padding = UDim.new(0, 26), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Right }) })
 local offersScale = make("UIScale", { Parent = offers })
@@ -293,7 +293,7 @@ local function fitOffers()
 	local viewport = Workspace.CurrentCamera.ViewportSize
 	local h = viewport.Y
 	offersScale.Scale = math.clamp((h - 380) / 480, 0.5, 1) -- stays between the leaderboard and the CRUSH button
-	offers:SetAttribute("FitsScreen", not Config.Crushers.Enabled and not Style.compact() and h >= 650)
+	offers:SetAttribute("FitsScreen", not Style.compact() and h >= (if Config.Crushers.Enabled then 560 else 650))
 	local book = hud:FindFirstChild("Book") :: GuiObject?
 	offers.Visible = offers:GetAttribute("FitsScreen") == true and not panel.Visible and not (book and book.Visible)
 end

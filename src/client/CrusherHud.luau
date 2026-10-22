@@ -24,6 +24,7 @@ function H.start()
  local gui=make("ScreenGui",{Name="CrushHud",ResetOnSpawn=false,DisplayOrder=2,ZIndexBehavior=Enum.ZIndexBehavior.Sibling},p:WaitForChild("PlayerGui"))
  local tutorial=text(gui,"Tutorial","Loading factory...",UDim2.new(.5,0,0,18),UDim2.fromOffset(650,46)) tutorial.AnchorPoint=Vector2.new(.5,0)
  local balances=text(gui,"FactoryBalances","",UDim2.new(.5,0,0,72),UDim2.fromOffset(650,30)) balances.AnchorPoint=Vector2.new(.5,0)
+ require(script.Parent.CashHud).start(gui)
  local function fitDesktopHeader()
   local width=math.clamp(workspace.CurrentCamera.ViewportSize.X-580,300,650)
   tutorial.Size=UDim2.fromOffset(width,46) balances.Size=UDim2.fromOffset(width,30)
@@ -51,7 +52,7 @@ function H.start()
  redraw=function()
   if not state then return end
   selectedBay=math.clamp(selectedBay,1,state.unlocked)
-  balances.Text="CASH "..Format.cash(state.cash).."  |  CARRIED "..Format.cash(state.carried).."  |  READY "..Format.cash(state.available)
+  balances.Text="CARRIED "..Format.cash(state.carried).."  |  READY "..Format.cash(state.available)
   tutorial.Text=C.Tutorial[state.tutorial]
   selector.Text="BAY "..selectedBay.." / "..state.unlocked.."   "..C.bayName(selectedBay)
   local key={tostring(selectedBay),tostring(state.unlocked),state.lastRoll or ""}
