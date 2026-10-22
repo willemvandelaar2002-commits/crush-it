@@ -18,6 +18,7 @@ local function banks(parent,o)
  local riserFront=L.BayZ-L.BayDepth/2 -- back face of the ground bays
  local deckDepth=L.WalkFront-back
  for _,side in {-1,1} do
+  local o=o*C.wingFrame(side) -- build the whole wing in its turned frame
   local x=side*L.WingX local inner=x-side*width/2 local stairX=side*L.StairX
   -- Back wall behind the upper row, capped with a yellow trim line.
   W.part(m,"BankBackWall",V(width,2*T+2,1.2),o*CFrame.new(x,T+1,back-.6),W.Blue,true)
@@ -100,16 +101,16 @@ function P.create(root,Plots)
   banks(m,o)
   local plot={index=i,origin=o,model=m,owner=nil,sign=sign,bays={},stations={}}
   for bay=1,C.MaxBays do
-   local l=C.bayLayout(bay) local cf=o*CFrame.new(l.x,l.y,l.z)*CFrame.Angles(0,l.yaw,0)
+   local l=C.bayLayout(bay) local cf=o*C.wingFrame(l.side)*CFrame.new(l.x,l.y,l.z)*CFrame.Angles(0,l.yaw,0)
    local holder=Instance.new("Model") holder.Name="WorkingBay"..bay holder:SetAttribute("Bay",bay) holder.Parent=m
    local panel,lock,strip,lockLabel=bayFrame(holder,cf)
    -- Low desk-style plaque in front of the bay: readable from above, never covers the press.
-   local face,text,buy,manage=W.plaque(holder,cf*CFrame.new(0,1.7,L.BayDepth/2+2)*CFrame.Angles(math.rad(-58),0,0),bay)
+   local face,text,buy,manage=W.plaque(holder,cf*CFrame.new(0,1.2,L.BayDepth/2+2.4)*CFrame.Angles(math.rad(-66),0,0),bay)
    plot.bays[bay]={model=holder,origin=cf*CFrame.new(0,.4+L.Pedestal,L.MachineZ),label=text,buy=buy,manage=manage,part=face,locked=panel,padlock=lock,strip=strip,lockLabel=lockLabel,
     prompt=P.prompt(face,"Manage",C.bayName(bay))}
   end
   -- Boards stand low and forward, turned toward the walkway, so the banks show over them.
-  for _,spec in {{id="Production",x=-22,z=79,yaw=.3},{id="Rolling",x=22,z=79,yaw=-.3},{id="Collect",x=-50,z=54},{id="Sell",x=-50,z=76},{id="Roll",x=50,z=76}} do
+  for _,spec in {{id="Production",x=-22,z=50,yaw=.3},{id="Rolling",x=22,z=50,yaw=-.3},{id="Collect",x=-56,z=66},{id="Sell",x=-30,z=80},{id="Roll",x=46,z=74}} do
    local cf=o*CFrame.new(spec.x,0,spec.z)*CFrame.Angles(0,spec.yaw or 0,0)
    local station=if spec.id=="Production" or spec.id=="Rolling" then W.board(m,cf,spec.id) else W.station(m,cf,spec.id)
    if not station.rows then station.prompt=P.prompt(station.part,spec.id,spec.id.." station") end
@@ -117,14 +118,13 @@ function P.create(root,Plots)
   end
   -- Toy bricks round the plaza, clear of paths, stations and stairs.
   local red=Color3.fromRGB(230,69,77) local orange=Color3.fromRGB(255,140,40)
-  for _,b in {{12,86,2,2,red,0},{16,88,2,1,W.Yellow,.4},{-12,86,2,2,W.Green,0},{-16,88,2,1,W.Blue,-.3},
-   {31,67,2,2,W.Yellow,.2},{-31,67,2,2,red,-.2},{33,69,1,1,W.Green,.6},{-33,69,1,1,orange,.5},
-   {-35,52,2,2,W.Yellow,.3},{35,50,2,2,W.Blue,-.4},{36,88,2,1,orange,0},{-36,88,2,2,W.Blue,.2},
-   {71,85,2,2,W.Green,.1},{-71,85,2,2,red,-.1},{71,88.5,1,1,W.Yellow,0},{-71,88.5,1,1,W.Yellow,0}} do
+  for _,b in {{12,87,2,2,red,0},{15,89.5,2,1,W.Yellow,.4},{-12,87,2,2,W.Green,0},{-14,89.5,1,1,W.Blue,-.3},
+   {-36,62,2,2,W.Yellow,.3},{36,60,2,2,W.Blue,-.4},{30,66,1,1,W.Green,.6},{-14,70,2,2,W.Blue,.2},
+   {22,72,2,1,orange,0},{-71,84,2,2,red,-.1},{71,86,2,2,W.Green,.1},{-71,88,1,1,W.Yellow,0},{68,89,1,1,W.Yellow,0}} do
    W.brick(decor,o*CFrame.new(b[1],0,b[2])*CFrame.Angles(0,b[6],0),b[3],b[4],b[5])
   end
-  W.brick(decor,o*CFrame.new(12,1.6,86)*CFrame.Angles(0,.5,0),1,1,W.Blue)
-  W.brick(decor,o*CFrame.new(-12,1.6,86)*CFrame.Angles(0,-.4,0),2,1,W.Yellow)
+  W.brick(decor,o*CFrame.new(12,1.6,87)*CFrame.Angles(0,.5,0),1,1,W.Blue)
+  W.brick(decor,o*CFrame.new(-12,1.6,87)*CFrame.Angles(0,-.4,0),2,1,W.Yellow)
   m.Parent=root Moat.build(m,o,true,rear) table.insert(Plots.all(),plot)
   task.wait()
  end

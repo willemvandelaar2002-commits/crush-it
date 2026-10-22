@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-22: Willem: toys on the presses were still hidden, banks should be angled and the plot longer like the reference, and the custom leaderboard can go. Presses on a higher stage with flatter plaques; banks moved back for a longer plaza and turned outward-forward; stations re-placed; custom leaderboard off, Roblox player list back. Checked: no overlaps inside or between plots, 117 checks, no errors.
+
 - 2026-10-22: Brought back the classic HUD pieces the crusher redesign had switched off: big cash bottom-left with count-up and "+$X" pop, Friend Boost line with invite button (new client/CashHud.luau), and the right-side 2X Cash / featured pass offers (now at the bottom right, since there is no CRUSH button). The top line now shows only CARRIED and READY.
 
 - 2026-10-22: Willem: upgrade boards blocked the crushers and the presses sat too deep in their bays. Following the reference: presses moved to the front of the bay on a raised stage with a coloured cap, plaques laid low in front like desk signs, boards made smaller and lower and moved forward beside the walkway, turned toward it. Checked: production runs, board purchases in range, 117 checks, no errors.

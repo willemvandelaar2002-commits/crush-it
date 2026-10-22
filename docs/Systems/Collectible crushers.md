@@ -72,6 +72,15 @@ the top beam is thinner and higher; plaques lie low in front of the bay
 (tilted 58°, like a desk sign). Boards are smaller (17 x 8 panel on 8.6 posts)
 and stand forward at (±22, 79), turned 0.3 rad toward the walkway.
 
+Reference pass 2 (22 Oct): banks moved back (BayZ 0, floor rear -22) so the
+plaza is ~85 studs deep, and each wing turns 0.25 rad about its inner front
+corner (`C.wingFrame(side)`), outer ends forward like the reference. Presses
+stand on a 2.4 stage (max height 9.4) so the toy on the bed is above the
+plaque; plaques lie flatter (66°). Stations: Production/Rolling boards
+(±22, 50), Collect (-56, 66), Sell (-30, 80), Roll (46, 74). The custom
+Here/Friends/Global leaderboard is switched off (Leaderboard.client returns
+early); Roblox's player list shows the leaderstats Cash again.
+
 World controls are SurfaceGuis copied into PlayerGui for the plot owner (mouse
 clicks are reliable there); purchases are server-checked for owner, distance
 (22 studs from the control) and cash.

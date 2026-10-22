@@ -16,10 +16,10 @@ local C = {
 -- top of them (its walkway is the ground bays' roof). Local plot coordinates,
 -- +Z points to the plot entrance. Bays alternate left/right so the plot fills
 -- symmetrically; ground floor first, then the upper row.
-C.Layout = { Wings=2, Tiers=2, PerWing=6, WingX=43, Pitch=10, BayWidth=9.6,
-	BayZ=30, BayDepth=12, UpperBack=12, TierHeight=14,
-	StairX=70, StairWidth=10, StairRun=34,
-	MachineWidth=8.6, MachineDepth=8, MachineHeight=10, MachineZ=2.5, Pedestal=1.2, InteractionDistance=22 }
+C.Layout = { Wings=2, Tiers=2, PerWing=6, WingX=40, Pitch=10, BayWidth=9.6,
+	BayZ=0, BayDepth=12, UpperBack=12, TierHeight=14, WingTilt=0.25,
+	StairX=67, StairWidth=10, StairRun=34,
+	MachineWidth=8.6, MachineDepth=8, MachineHeight=9.4, MachineZ=2.5, Pedestal=2.4, InteractionDistance=22 }
 C.Layout.WalkFront=C.Layout.BayZ+C.Layout.BayDepth/2+1 -- front edge of the upper walkway
 C.Layout.StairFront=C.Layout.WalkFront+C.Layout.StairRun
 C.MaxBays = C.Layout.Wings*C.Layout.Tiers*C.Layout.PerWing
@@ -32,6 +32,12 @@ function C.bayLayout(index)
 	-- row 1 sits next to the centre walkway, row PerWing at the outer stairs
 	local x=side*(l.WingX+(row-(l.PerWing-1)/2)*l.Pitch)
 	return {x=x,y=tier*l.TierHeight,z=l.BayZ-tier*l.UpperBack,yaw=0,tier=tier+1,wing=wing+1,row=row+1,side=side}
+end
+-- Each wing turns about its inner front corner so the outer end comes forward
+-- (an open "V" toward the entrance, like the reference). Plot-local CFrame.
+function C.wingFrame(side)
+	local l=C.Layout local ix=side*(l.WingX-(l.PerWing*l.Pitch+2)/2) local pz=l.BayZ+l.BayDepth/2
+	return CFrame.new(ix,0,pz)*CFrame.Angles(0,-side*l.WingTilt,0)*CFrame.new(-ix,0,-pz)
 end
 function C.bayName(index)
 	local v=C.bayLayout(index)

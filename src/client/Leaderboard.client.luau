@@ -7,6 +7,8 @@
 -- Four rows show at once (scroll for more); if you're not among them your own
 -- row is pinned underneath. X collapses it to a small 🏆 button.
 -- Replaces Roblox's own player list (same corner).
+-- 22 Oct: switched off; Willem prefers the normal Roblox player list.
+if true then return end
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
