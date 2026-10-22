@@ -28,6 +28,9 @@ function W.button(parent,name,value,pos,size,action,id,bay)
 	b.TextScaled=true b.TextWrapped=true b:SetAttribute("Action",action)
 	if id then b:SetAttribute("UpgradeId",id) end if bay then b:SetAttribute("Bay",bay) end
 	Style.button(b,W.Green) b.TextTransparency=1 b.Parent=parent
+	-- the visible text is the Caption below; hide the button's own text outline
+	-- (it still draws behind the caption as a dark second copy)
+	local outline=b:FindFirstChild("TextOutline") if outline then outline.Enabled=false end
 	-- A separate caption keeps the glossy green gradient off the white lettering.
 	local caption=W.text(b,"Caption",value,UDim2.fromScale(.02,.04),UDim2.fromScale(.96,.92))
 	b:GetPropertyChangedSignal("Text"):Connect(function() caption.Text=b.Text end)

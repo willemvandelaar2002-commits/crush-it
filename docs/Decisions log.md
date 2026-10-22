@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-23: Fixed world buttons: an upgrade no longer leaves the whole row enlarged (success only flashes), hover grows just the green button 8%, and the dark duplicate price text (the hidden button text's outline) is gone.
+
 - 2026-10-23: Willem: hover should grow only the price button, and the scrap tower sat on the back. Hover now scales just the button; scrap is held in front with both arms raised (carry pose), smaller tower.
 
 - 2026-10-23: Feedback from Willem's reference video: hover/click/success animations on the world upgrade rows and plaques, carried scrap shown as a block tower on the player's back with its value, blocks fly in on collect and out on sell, and cash bundles burst and fly into the cash counter on a sale.

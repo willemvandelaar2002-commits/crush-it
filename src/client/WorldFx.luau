@@ -41,6 +41,9 @@ end
 
 -- Hover and click animate only the button itself (the green price button).
 function Fx.bind(button: GuiButton)
+	-- one scale only: drop Style.button's own press scale
+	local own = button:FindFirstChild("FeedbackScale")
+	if own then own:Destroy() end
 	local scale = scaleOf(button)
 	local glow = Instance.new("UIStroke")
 	glow.Name = "HoverGlow"
@@ -49,24 +52,21 @@ function Fx.bind(button: GuiButton)
 	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	glow.Parent = button
 	button.MouseEnter:Connect(function()
-		TweenService:Create(scale, QUICK, { Scale = 1.12 }):Play()
-		TweenService:Create(glow, QUICK, { Thickness = 4 }):Play()
+		TweenService:Create(scale, QUICK, { Scale = 1.08 }):Play()
+		TweenService:Create(glow, QUICK, { Thickness = 3 }):Play()
 	end)
 	button.MouseLeave:Connect(function()
 		TweenService:Create(scale, QUICK, { Scale = 1 }):Play()
 		TweenService:Create(glow, QUICK, { Thickness = 0 }):Play()
 	end)
 	button.Activated:Connect(function()
-		scale.Scale = 0.9
-		TweenService:Create(scale, BOUNCE, { Scale = 1.12 }):Play()
+		scale.Scale = 0.92
+		TweenService:Create(scale, BOUNCE, { Scale = 1.08 }):Play()
 	end)
 end
 
 -- Server accepted the purchase.
 function Fx.success(row: GuiObject, text: string?)
-	local scale = scaleOf(row)
-	scale.Scale = 1.18
-	TweenService:Create(scale, BOUNCE, { Scale = 1.04 }):Play()
 	local flash = Instance.new("Frame")
 	flash.Name = "Flash"
 	flash.Size = UDim2.fromScale(1, 1)
