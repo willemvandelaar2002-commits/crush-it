@@ -348,6 +348,17 @@ local function train(parent: Instance, number: number, phaseLegs: number)
 			p.BottomSurface = Enum.SurfaceType.Smooth
 		end
 	end
+	-- Each part remembers where it sits relative to its car's chassis, so the
+	-- client can place parts that stream in late without guessing (it used to
+	-- measure them against an already-moved chassis, scattering the train).
+	for _, car in m:GetChildren() do
+		local chassis = car:FindFirstChild("Chassis") :: BasePart?
+		if chassis then
+			for _, p in car:GetDescendants() do
+				if p:IsA("BasePart") then p:SetAttribute("TrainOffset", chassis.CFrame:ToObjectSpace(p.CFrame)) end
+			end
+		end
+	end
 	-- start on the rails at its first stop (the client takes over from here)
 	local head = TrainRoute.at(0, phaseLegs)
 	for _, car in m:GetChildren() do

@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-23: Train looked scattered (wheels/boiler/wagon parts out of place): the client measured late-streamed parts against an already-moved chassis. Each train part now stores its offset to the chassis (attribute TrainOffset) and the client uses that. Not yet re-checked in Studio (Studio disconnected).
+
 - 2026-10-23: /credits (and /cash) works again in crusher mode (it lived in the old Game.server path that crusher mode skips). Studio or the place owner only; "/credits 5m", no amount gives 1M.
 
 - 2026-10-23: Willem: upper floor should be bought, not always there, and bays should fill the left side before the right. Upper floor per wing is now hidden, then a ghost with a NEW FLOOR / BUILD sign when it is next, and rises into place when bought. Unlock order: left ground, right ground, left upper, right upper.

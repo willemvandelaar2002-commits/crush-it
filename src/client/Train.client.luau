@@ -39,7 +39,8 @@ local function rig(car: Model): Rig?
 	for _, p in car:GetDescendants() do
 		if p:IsA("BasePart") then
 			table.insert(parts, p)
-			table.insert(offsets, chassis.CFrame:ToObjectSpace(p.CFrame))
+			local stored = p:GetAttribute("TrainOffset")
+			table.insert(offsets, if typeof(stored) == "CFrame" then stored else chassis.CFrame:ToObjectSpace(p.CFrame))
 		end
 	end
 	r = { chassis = chassis, lift = (car:GetAttribute("ChassisY") :: number?) or 2.2, parts = parts, offsets = offsets, count = count }
