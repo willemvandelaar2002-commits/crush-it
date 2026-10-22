@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-22: Willem: the code-built hub did not look like the reference. Switched the visible hub models to Roblox AI meshes (place-only, ServerStorage.HubMeshes), starting with the Mega Crusher frame, ram and toy dump truck; code keeps the layout and a part-built fallback.
+
 - 2026-10-22: Hub rebuilt after Willem's hub reference: blue factory plaza inside the train loop, stepped stage with a new big animated Mega Crusher, and placeholder stations (Daily Spin, Top Crushers, Quests, Boosts, Special Crushers) facing the road. Old commons props, scrap display and entrance arch removed. See Systems/Hub plaza.
 
 - 2026-10-22: Integrated the five imported SpecialCrusherMeshes into the existing collection and bay runtime. Inspected nested imports and supplied manifest; anchored all 11 source parts and moved the five Workspace templates into ServerStorage. Spawned clones normalise the 100x import units, uniformly fit the existing bay envelope, preserve imported pivots/materials/maps and face the plaza. Only Ram/Ram_L/Ram_R move, using scaled manifest strokes; TwinTitan alternates then finishes together without extra income. Existing stats/upgrades/rarity weights remain, with new choices within rarity pools and explicit legacy migration mapping. Desktop Studio fit/animation/frame/anchoring tests and mock-save upper-bay equipment verified. Place assets must be saved/published; no phone or live multiplayer test claimed. See Systems/Special crusher models.

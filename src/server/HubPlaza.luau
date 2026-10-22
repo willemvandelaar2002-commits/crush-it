@@ -18,6 +18,8 @@ local TOY = { W.Yellow, W.Green, W.Blue, C(230, 69, 77), ORANGE, W.Purple }
 
 HubPlaza.Stage = { 50, 43, 36 } -- tier radii; each tier is 1.4 high
 HubPlaza.MegaScale = 1.45
+HubPlaza.MegaMeshScale = 1.35 -- AI mesh version
+HubPlaza.TruckScale = 1.7
 HubPlaza.StationScale = 1.8
 HubPlaza.Stations = { -- angle in degrees (0 = south spoke), radius, scale
 	Boosts = { 35, 112 }, Quests = { 325, 112 }, Special = { 135, 114 },
@@ -91,7 +93,7 @@ end
 
 -- The Mega Crusher: navy towers, chrome guide pillars, orange hydraulics, a red
 -- top beam with a gear, a moving ram (tag MegaCrusher, client/Mega.client).
-local function megaCrusher(parent: Instance, o: CFrame): Model
+local function megaParts(parent: Instance, o: CFrame): Model
 	local m = Instance.new("Model")
 	m.Name = "MegaCrusher"
 	m.Parent = parent
@@ -178,6 +180,60 @@ local function megaCrusher(parent: Instance, o: CFrame): Model
 	m:SetAttribute("BedTop", bedTop)
 	m:SetAttribute("RestY", ram.Position.Y)
 	m:SetAttribute("HitY", bedTop + (toyTop - bedTop) * 0.3 + ram.Size.Y / 2 + 1.2)
+	m:SetAttribute("Period", 7)
+	CollectionService:AddTag(m, "MegaCrusher")
+	return m
+end
+
+-- Mesh version (place-only AI meshes in ServerStorage.HubMeshes: MegaFrame,
+-- MegaRam, MegaTruck; pivots at their bottom centre, fronts facing +Z). The
+-- frame carries BedTop / BarBottom attributes (studs above its bottom).
+local function megaCrusher(parent: Instance, o: CFrame): Model
+	local folder = game:GetService("ServerStorage"):FindFirstChild("HubMeshes")
+	local frameT = folder and folder:FindFirstChild("MegaFrame")
+	local ramT = folder and folder:FindFirstChild("MegaRam")
+	local truckT = folder and folder:FindFirstChild("MegaTruck")
+	if not (frameT and ramT and truckT) then return megaParts(parent, o) end
+	local m = Instance.new("Model")
+	m.Name = "MegaCrusher"
+	m.Parent = parent
+	local S = HubPlaza.MegaMeshScale
+	local bedOffset = ((frameT:GetAttribute("BedTop") :: number?) or 5) * S
+	local barOffset = ((frameT:GetAttribute("BarBottom") :: number?) or 37) * S
+	local frame = frameT:Clone()
+	frame.Name = "Frame"
+	frame:ScaleTo(S)
+	frame:PivotTo(o)
+	frame.Parent = m
+	-- the ram's single mesh part is the moving "Ram" the client animates
+	local ramModel = ramT:Clone()
+	ramModel:ScaleTo(S)
+	local _, ramSize = ramModel:GetBoundingBox()
+	ramModel:PivotTo(o * CFrame.new(0, barOffset - ramSize.Y - 0.3, 0))
+	local ram = ramModel:FindFirstChildWhichIsA("BasePart", true) :: BasePart
+	ram.Name = "Ram"
+	ram.CanCollide = false ram.CanTouch = false ram.CanQuery = false
+	ram.Parent = m
+	ramModel:Destroy()
+	local toy = Instance.new("Model")
+	toy.Name = "Toy"
+	toy.Parent = m
+	local truck = truckT:Clone()
+	truck:ScaleTo(S * HubPlaza.TruckScale)
+	truck:PivotTo(o * CFrame.new(0, bedOffset, 0) * CFrame.Angles(0, math.rad(-20), 0))
+	for _, p in truck:GetDescendants() do
+		if p:IsA("BasePart") then p.CanCollide = false p.CanTouch = false p.CanQuery = false p.Parent = toy end
+	end
+	truck:Destroy()
+	local bedTop = o.Position.Y + bedOffset
+	local toyTop = bedTop
+	for _, p in toy:GetChildren() do
+		if p:IsA("BasePart") then toyTop = math.max(toyTop, p.Position.Y + p.Size.Y / 2) end
+	end
+	m:SetAttribute("BedTop", bedTop)
+	m:SetAttribute("RestY", ram.Position.Y)
+	-- the ram's mesh includes its rod, so its bottom is RestY - Size.Y/2
+	m:SetAttribute("HitY", bedTop + (toyTop - bedTop) * 0.35 + ram.Size.Y / 2)
 	m:SetAttribute("Period", 7)
 	CollectionService:AddTag(m, "MegaCrusher")
 	return m

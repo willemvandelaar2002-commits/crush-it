@@ -15,6 +15,12 @@ sits inside the train loop (r < 172); +Z is the south spoke (spawn side).
   navy ram with hazard band. Parts in `RamParts` move with the ram
   (client/Mega.client picks them up as they stream in). A toy dump truck and
   bricks on the bed squash every 7 s. "MEGA CRUSHER" sign at the south foot.
+- **AI meshes (22 Oct):** when `ServerStorage.HubMeshes` has MegaFrame, MegaRam
+  and MegaTruck (Roblox AI generate_mesh, place-only: Publish to keep them),
+  the Mega Crusher uses them instead of parts: frame scaled 1.35 on the stage,
+  the ram's mesh (head + rod) is the moving "Ram", the truck (x1.7) squashes.
+  Frame attributes BedTop 5 / BarBottom 37.6 (studs above its bottom, unscaled).
+  Without the folder the part-built crusher is used.
 - **Stations** (placeholders, attribute `Placeholder`, sign + COMING SOON),
   facing out toward the road, scale 1.8 (Top Crushers 1.45):
   Boosts 35° r112 (purple vending machine, 3 cans) · Quests 325° r112 (booth,
