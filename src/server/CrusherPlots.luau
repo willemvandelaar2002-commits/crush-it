@@ -110,7 +110,7 @@ function P.create(root,Plots)
     prompt=P.prompt(face,"Manage",C.bayName(bay))}
   end
   -- Boards stand low and forward, turned toward the walkway, so the banks show over them.
-  for _,spec in {{id="Production",x=-22,z=42,yaw=.3},{id="Rolling",x=22,z=42,yaw=-.3},{id="Collect",x=-60,z=60,yaw=math.pi/2},{id="Sell",x=-26,z=80,yaw=math.pi},{id="Roll",x=46,z=72,yaw=math.pi}} do
+  for _,spec in {{id="Production",x=-22,z=42,yaw=.3},{id="Rolling",x=22,z=42,yaw=-.3},{id="Collect",x=-60,z=60,yaw=math.pi/2},{id="Sell",x=-26,z=80,yaw=math.pi},{id="Roll",x=52,z=66,yaw=-math.pi/2}} do
    local cf=o*CFrame.new(spec.x,0,spec.z)*CFrame.Angles(0,spec.yaw or 0,0)
    local station=if spec.id=="Production" or spec.id=="Rolling" then W.board(m,cf,spec.id) else W.station(m,cf,spec.id)
    if not station.rows then station.prompt=P.prompt(station.part,spec.id,spec.id.." station") end
