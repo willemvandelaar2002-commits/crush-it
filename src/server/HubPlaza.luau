@@ -7,6 +7,8 @@
 -- +Z is the south spoke (spawn side).
 local CollectionService = game:GetService("CollectionService")
 local W = require(script.Parent.Kit.CrusherWorkshop)
+local Style = require(game:GetService("ReplicatedStorage").Shared.Kit.Style)
+local Config = require(game:GetService("ReplicatedStorage").Shared.Config)
 local PressBuilder = require(script.Parent.PressBuilder)
 
 local HubPlaza = {}
@@ -486,6 +488,141 @@ local function special(m: Model, f: CFrame)
 	comingSoon(m, f * CFrame.new(0, 3.2, 9.7))
 end
 
+-- Extra props from the reference: stage stairs with rails and lamps, a yellow-
+-- outlined pad under every station, toy brick clusters, potted plants and
+-- crossing shelters where the spokes meet the railway.
+local BRICK_COLORS = { C(230, 60, 60), W.Yellow, W.Blue, W.Green, ORANGE, W.Purple }
+local function bigBrick(parent: Instance, cf: CFrame, nx: number, nz: number, color: Color3, scale: number)
+	local b = W.brick(parent, CFrame.new(), nx, nz, color)
+	b.WorldPivot = CFrame.new()
+	b:ScaleTo(scale)
+	b:PivotTo(cf)
+	return b
+end
+local function clear(o: CFrame, p: Vector3, pads: { { CFrame | Vector3 } }): boolean
+	local l = o:PointToObjectSpace(p)
+	local r = Vector3.new(l.X, 0, l.Z).Magnitude
+	if r < HubPlaza.Stage[1] + 4 or r > 160 then return false end
+	if math.abs(l.X) < 26 or math.abs(l.Z) < 26 then return false end -- spokes (clusters spread ~10)
+	for _, pad in pads do
+		local q = (pad[1] :: CFrame):PointToObjectSpace(p)
+		local half = (pad[2] :: Vector3) / 2 + Vector3.new(10, 0, 10)
+		if math.abs(q.X) < half.X and math.abs(q.Z) < half.Z then return false end
+	end
+	return true
+end
+function HubPlaza.dress(m: Model, o: CFrame, mega: Model)
+	local rng = Random.new(2210)
+	local deco = Instance.new("Model")
+	deco.Name = "PlazaDecor"
+	deco.Parent = m
+	-- 1) Stairs at the four stage openings: yellow nosing on every tier edge,
+	--    yellow side rails and lamp posts at the foot and top.
+	local outer, inner = HubPlaza.Stage[1], HubPlaza.Stage[#HubPlaza.Stage]
+	local topY = #HubPlaza.Stage * 1.4
+	for _, a in { 0, 90, 180, 270 } do
+		local f = o * CFrame.Angles(0, math.rad(a), 0)
+		for i, r in HubPlaza.Stage do
+			W.part(deco, "StairNose", V(20, 0.14, 0.8), f * CFrame.new(0, i * 1.4 + 0.07, r - 0.4), W.Yellow).CastShadow = false
+		end
+		for _, x in { -10.5, 10.5 } do
+			local bottom = (f * CFrame.new(x, 3, outer + 1)).Position
+			local top = (f * CFrame.new(x, topY + 3, inner - 1)).Position
+			W.part(deco, "StairRail", V(0.5, 0.5, (top - bottom).Magnitude), CFrame.lookAt((bottom + top) / 2, top), W.Yellow, true)
+			W.part(deco, "StairRailPost", V(0.7, 3, 0.7), f * CFrame.new(x, 1.5, outer + 1), W.Navy, true)
+			W.lamp(deco, f * CFrame.new(x, 0, outer + 2.4), 3.4)
+			W.lamp(deco, f * CFrame.new(x, topY, inner - 1), 3)
+		end
+	end
+	-- 2) A pad with a yellow outline under each station.
+	local pads = {}
+	for _, st in m:GetChildren() do
+		if st:IsA("Model") and st.Name:match("Station$") then
+			local cf, size = st:GetBoundingBox()
+			local pad = CFrame.new(cf.X, o.Position.Y, cf.Z) * cf.Rotation
+			local w, d = size.X + 8, size.Z + 8
+			W.part(deco, "StationPad", V(w, 0.1, d), pad * CFrame.new(0, 0.05, 0), C(84, 124, 196)).CastShadow = false
+			for _, side in { { V(w, 0.14, 0.8), CFrame.new(0, 0.07, d / 2) }, { V(w, 0.14, 0.8), CFrame.new(0, 0.07, -d / 2) },
+				{ V(0.8, 0.14, d), CFrame.new(w / 2, 0.07, 0) }, { V(0.8, 0.14, d), CFrame.new(-w / 2, 0.07, 0) } } do
+				W.part(deco, "PadEdge", side[1] :: Vector3, pad * (side[2] :: CFrame), W.Yellow).CastShadow = false
+			end
+			table.insert(pads, { pad, V(w, 0, d) })
+			-- a few bricks and plants hugging each pad's corners
+			for k, corner in { V(-1, 0, 1), V(1, 0, 1), V(-1, 0, -1), V(1, 0, -1) } do
+				local p = pad * CFrame.new(corner.X * (w / 2 + 5), 0, corner.Z * (d / 2 + 4))
+				bigBrick(deco, p * CFrame.Angles(0, rng:NextNumber(0, 3), 0), 2, if k % 2 == 0 then 2 else 1, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], 2.6)
+				if k <= 2 then
+					bigBrick(deco, p * CFrame.new(rng:NextNumber(-1, 1), 4.16, rng:NextNumber(-1, 1)) * CFrame.Angles(0, rng:NextNumber(0, 3), 0), 1, 1, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], 2.6)
+				end
+			end
+		end
+	end
+	-- 3) Brick clusters (2-4 big bricks, some stacked) spread over the plaza,
+	--    clear of the spokes, stage and pads.
+	local placed = 0
+	for _ = 1, 400 do
+		if placed >= 26 then break end
+		local a = rng:NextNumber(0, math.pi * 2)
+		local r = rng:NextNumber(HubPlaza.Stage[1] + 8, 156)
+		local p = (o * CFrame.new(math.sin(a) * r, 0, math.cos(a) * r)).Position
+		if clear(o, p, pads) then
+			placed += 1
+			local cf = CFrame.new(p) * CFrame.Angles(0, rng:NextNumber(0, 6), 0)
+			local S = rng:NextNumber(2.6, 3.2)
+			local h = 1.6 * S
+			bigBrick(deco, cf, 2, 2, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], S)
+			bigBrick(deco, cf * CFrame.new(3.4 * S, 0, rng:NextNumber(-1, 1)) * CFrame.Angles(0, rng:NextNumber(-0.5, 0.5), 0), 2, 1, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], S)
+			if rng:NextNumber() < 0.6 then
+				bigBrick(deco, cf * CFrame.new(rng:NextNumber(-0.5, 0.5), h, rng:NextNumber(-0.5, 0.5)) * CFrame.Angles(0, rng:NextNumber(0, 3), 0), 2, 1, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], S)
+			end
+			if rng:NextNumber() < 0.4 then
+				bigBrick(deco, cf * CFrame.new(-2.6 * S, 0, 1.4 * S) * CFrame.Angles(0, rng:NextNumber(0, 3), 0), 1, 1, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], S)
+			end
+		end
+	end
+	-- (4: no bricks on the stage top; the Mega Crusher platform covers it.)
+	-- 5) Potted plants (AI meshes) beside the stage stairs and stations.
+	local cactus, bush = hubMesh("Prop_Cactus"), hubMesh("Prop_Bush")
+	local function plant(t: Model?, cf: CFrame, scale: number)
+		if not t then return end
+		local c = t:Clone()
+		c:ScaleTo(c:GetScale() * scale)
+		c:PivotTo(cf)
+		for _, p in c:GetDescendants() do
+			if p:IsA("BasePart") then p.Anchored = true p.CanCollide = false p.CanTouch = false p.CanQuery = false end
+		end
+		c.Parent = deco
+	end
+	for _, a in { 0, 90, 180, 270 } do
+		local f = o * CFrame.Angles(0, math.rad(a), 0)
+		plant(cactus, f * CFrame.new(-15, 0, outer + 3), 2.2)
+		plant(bush, f * CFrame.new(15, 0, outer + 3), 2.2)
+	end
+	for _, pad in pads do
+		local cf, size = pad[1] :: CFrame, pad[2] :: Vector3
+		plant(cactus, cf * CFrame.new(size.X / 2 + 3, 0, 0), 2.2)
+		plant(bush, cf * CFrame.new(-size.X / 2 - 3, 0, 0), 2.2)
+	end
+	-- 6) Crossing shelters where each spoke meets the railway: yellow roof on
+	--    navy posts, hazard-striped barriers and lamps.
+	local rr = Config.Loop.Inner - 5
+	for _, a in { 0, 90, 180, 270 } do
+		local f = o * CFrame.Angles(0, math.rad(a), 0)
+		for _, side in { -1, 1 } do
+			local s = f * CFrame.new(side * 16, 0, rr)
+			for _, z in { -2.5, 2.5 } do W.part(deco, "ShelterPost", V(1, 7, 1), s * CFrame.new(side * 2.5, 3.5, z), W.Navy, true) end
+			for _, z in { -2.5, 2.5 } do W.part(deco, "ShelterPost", V(1, 7, 1), s * CFrame.new(-side * 2.5, 3.5, z), W.Navy, true) end
+			local roof = W.part(deco, "ShelterRoof", V(8, 1.2, 8), s * CFrame.new(0, 7.6, 0), W.Yellow, true)
+			Style.materialStuds(roof, true, { Enum.NormalId.Top }, 2)
+			W.beacon(deco, s * CFrame.new(side * 3.4, 8.2, 3.4))
+			W.hazard(deco, s * CFrame.new(-side * 5.5, 2.6, 0) * CFrame.Angles(0, math.pi / 2, 0), 9, 0.8, 0.5)
+			W.part(deco, "BarrierPost", V(1, 3, 1), s * CFrame.new(-side * 5.5, 1.5, 4.6), W.Navy, true)
+			W.lamp(deco, s * CFrame.new(-side * 5.5, 0, -4.6), 3)
+		end
+	end
+	local _ = mega
+end
+
 function HubPlaza.build(parent: Instance, floorY: number)
 	local m = Instance.new("Model")
 	m.Name = "FactoryPlaza"
@@ -529,7 +666,7 @@ function HubPlaza.build(parent: Instance, floorY: number)
 		task.wait()
 	end
 	-- Toy trees in planters and lamp posts round the plaza (AI meshes when present).
-	local tree, lamp = hubMesh("Prop_Tree"), hubMesh("Prop_Lamp")
+	local tree = hubMesh("Prop_Tree")
 	local function drop(t: Model?, a: number, r: number, scale: number)
 		if not t then return end
 		local c = t:Clone()
@@ -544,22 +681,15 @@ function HubPlaza.build(parent: Instance, floorY: number)
 		drop(tree, spec[1] - 13, spec[2] - 6, 1.6)
 		drop(tree, spec[1] + 13, spec[2] - 6, 1.6)
 	end
-	for _, a in { 0, 90, 180, 270 } do -- lamps line both sides of each spoke
-		for _, r in { 58, 80, 102, 124, 146 } do
+	-- Glowing yellow lamp posts along both sides of each spoke (like the reference).
+	for _, a in { 0, 90, 180, 270 } do
+		for _, r in { 60, 90, 120, 150 } do
 			for _, side in { -1, 1 } do
-				local x = side * 11
-				local c = if lamp then lamp:Clone() else nil
-				if c then
-					c:ScaleTo(c:GetScale() * 1.5)
-					c:PivotTo(o * CFrame.Angles(0, math.rad(a), 0) * CFrame.new(x, 0, r))
-					for _, p in c:GetDescendants() do
-						if p:IsA("BasePart") then p.Anchored = true p.CanCollide = false p.CanTouch = false p.CanQuery = false end
-					end
-					c.Parent = m
-				end
+				W.lamp(m, o * CFrame.Angles(0, math.rad(a), 0) * CFrame.new(side * 11, 0, r), 3.6)
 			end
 		end
 	end
+	HubPlaza.dress(m, o, mega)
 	return m, mega
 end
 

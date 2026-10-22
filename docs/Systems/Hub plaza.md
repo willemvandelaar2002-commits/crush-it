@@ -35,6 +35,14 @@ sits inside the train loop (r < 172); +Z is the south spoke (spawn side).
   (both sides of every spoke). Signs and COMING SOON plates stay code-built for
   sharp text. Stations face the nearest spoke walkway. Missing meshes fall back
   to the part-built versions.
+- **Props pass (23 Oct, `HubPlaza.dress`):** yellow stair nosing, rails and
+  lamps at the 4 stage openings; a pad with a yellow outline under every
+  station with bricks at its corners; 26 clusters of big studded toy bricks
+  (scale 2.6-3.2, some stacked) kept 26 studs off the spokes and 10 off the
+  pads; AI cactus/bush pots (Prop_Cactus, Prop_Bush) by the stairs and
+  stations; crossing shelters (yellow studded roof, hazard barrier, lamps) on
+  both sides of every spoke near the railway. Spoke lamps are now code lamps
+  (navy post, yellow light) like the reference.
 - **Stations** (placeholders, attribute `Placeholder`, sign + COMING SOON),
   facing out toward the road, scale 1.8 (Top Crushers 1.45):
   Boosts 35° r112 (purple vending machine, 3 cans) · Quests 325° r112 (booth,

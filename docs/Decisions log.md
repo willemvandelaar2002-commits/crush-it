@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-23: Hub props to match the reference: toy brick clusters, station pads with yellow outlines, stage stairs with rails and lamps, potted cacti and bushes (AI), crossing shelters at the spokes, yellow lamp posts.
+
 - 2026-10-23: Willem's own Mega Crusher model replaces the AI one in the hub (ram slams, piston rod stretches, toy truck squashes). Stored in ServerStorage.HubMeshes.MegaCrusherModel: Publish to keep it.
 
 - 2026-10-22: All hub stations now AI meshes (Daily Spin wheel, leaderboards + trophy, quest booth with foreman, boosts vending machine, display pedestal with GoldenKing under glass) plus toy trees and lamp posts; stations face the nearest spoke. Place-only meshes: Willem must Publish.
