@@ -19,7 +19,7 @@ local C = {
 C.Layout = { Wings=2, Tiers=2, PerWing=6, WingX=43, Pitch=10, BayWidth=9.6,
 	BayZ=30, BayDepth=12, UpperBack=12, TierHeight=14,
 	StairX=70, StairWidth=10, StairRun=34,
-	MachineWidth=8.6, MachineDepth=10, MachineHeight=11, InteractionDistance=22 }
+	MachineWidth=8.6, MachineDepth=8, MachineHeight=10, MachineZ=2.5, Pedestal=1.2, InteractionDistance=22 }
 C.Layout.WalkFront=C.Layout.BayZ+C.Layout.BayDepth/2+1 -- front edge of the upper walkway
 C.Layout.StairFront=C.Layout.WalkFront+C.Layout.StairRun
 C.MaxBays = C.Layout.Wings*C.Layout.Tiers*C.Layout.PerWing

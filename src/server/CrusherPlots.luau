@@ -67,8 +67,12 @@ local function bayFrame(holder,cf)
  local T=L.TierHeight local d=L.BayDepth local w=L.BayWidth
  W.part(holder,"BayPlatform",V(w,.4,d),cf*CFrame.new(0,.2,0),W.Navy,true)
  W.part(holder,"HazardEdge",V(w,.12,.7),cf*CFrame.new(0,.45,d/2-.4),W.Yellow)
- W.part(holder,"TopBeam",V(w,1.2,1),cf*CFrame.new(0,T-2,d/2-.5),W.Blue)
- local strip=W.part(holder,"StatusStrip",V(w-1,.3,.3),cf*CFrame.new(0,T-2.75,d/2-.5),Color3.fromRGB(255,244,214))
+ W.part(holder,"TopBeam",V(w,.8,1),cf*CFrame.new(0,T-1.3,d/2-.5),W.Blue)
+ local strip=W.part(holder,"StatusStrip",V(w-1,.3,.3),cf*CFrame.new(0,T-1.85,d/2-.5),Color3.fromRGB(255,244,214))
+ -- Raised stage at the front of the bay so the whole press is in view.
+ local P=L.Pedestal
+ W.part(holder,"BayPedestal",V(w-1.2,P,L.MachineDepth+1),cf*CFrame.new(0,.4+P/2,L.MachineZ),W.Navy,true)
+ W.part(holder,"PedestalEdge",V(w-1.2,.3,.4),cf*CFrame.new(0,.4+P-.15,L.MachineZ+(L.MachineDepth+1)/2-.1),W.Yellow)
  strip.Material=Enum.Material.Neon strip.CastShadow=false
  local panel=W.part(holder,"LockedInset",V(w-1.2,T-4.5,.4),cf*CFrame.new(0,(T-4.5)/2+.4,-d/2+.4),Color3.fromRGB(150,176,212))
  local lock=Instance.new("Model") lock.Name="Padlock" lock.Parent=holder
@@ -99,12 +103,14 @@ function P.create(root,Plots)
    local l=C.bayLayout(bay) local cf=o*CFrame.new(l.x,l.y,l.z)*CFrame.Angles(0,l.yaw,0)
    local holder=Instance.new("Model") holder.Name="WorkingBay"..bay holder:SetAttribute("Bay",bay) holder.Parent=m
    local panel,lock,strip,lockLabel=bayFrame(holder,cf)
-   local face,text,buy,manage=W.plaque(holder,cf*CFrame.new(0,2.4,8)*CFrame.Angles(math.rad(-25),0,0),bay)
-   plot.bays[bay]={model=holder,origin=cf*CFrame.new(0,.4,.5),label=text,buy=buy,manage=manage,part=face,locked=panel,padlock=lock,strip=strip,lockLabel=lockLabel,
+   -- Low desk-style plaque in front of the bay: readable from above, never covers the press.
+   local face,text,buy,manage=W.plaque(holder,cf*CFrame.new(0,1.7,L.BayDepth/2+2)*CFrame.Angles(math.rad(-58),0,0),bay)
+   plot.bays[bay]={model=holder,origin=cf*CFrame.new(0,.4+L.Pedestal,L.MachineZ),label=text,buy=buy,manage=manage,part=face,locked=panel,padlock=lock,strip=strip,lockLabel=lockLabel,
     prompt=P.prompt(face,"Manage",C.bayName(bay))}
   end
-  for _,spec in {{id="Production",x=-18,z=64},{id="Rolling",x=18,z=64},{id="Collect",x=-50,z=54},{id="Sell",x=-50,z=76},{id="Roll",x=50,z=76}} do
-   local cf=o*CFrame.new(spec.x,0,spec.z)
+  -- Boards stand low and forward, turned toward the walkway, so the banks show over them.
+  for _,spec in {{id="Production",x=-22,z=79,yaw=.3},{id="Rolling",x=22,z=79,yaw=-.3},{id="Collect",x=-50,z=54},{id="Sell",x=-50,z=76},{id="Roll",x=50,z=76}} do
+   local cf=o*CFrame.new(spec.x,0,spec.z)*CFrame.Angles(0,spec.yaw or 0,0)
    local station=if spec.id=="Production" or spec.id=="Rolling" then W.board(m,cf,spec.id) else W.station(m,cf,spec.id)
    if not station.rows then station.prompt=P.prompt(station.part,spec.id,spec.id.." station") end
    plot.stations[spec.id]=station

@@ -63,12 +63,12 @@ W.UpgradeColors={Damage=Color3.fromRGB(223,62,62),Speed=Color3.fromRGB(240,180,3
 function W.board(parent,cf,kind)
 	local color=if kind=="Production" then W.Blue else W.Purple
 	local m=Instance.new("Model") m.Name=kind.."Station" m.Parent=parent
-	for _,x in {-9,9} do
-		W.part(m,"Support",V(2,12,2),cf*CFrame.new(x,6,0),W.Navy)
-		W.part(m,"Foot",V(5,1,7),cf*CFrame.new(x,.5,0),W.Blue)
-		W.beacon(m,cf*CFrame.new(x,16,0))
+	for _,x in {-7.2,7.2} do
+		W.part(m,"Support",V(1.6,8.6,1.6),cf*CFrame.new(x,4.3,0),W.Navy)
+		W.part(m,"Foot",V(4,1,6),cf*CFrame.new(x,.5,0),W.Blue)
+		W.beacon(m,cf*CFrame.new(x,10.1,0))
 	end
-	local face,gui=W.panel(m,cf*CFrame.new(0,8.6,0),22,13,color)
+	local face,gui=W.panel(m,cf*CFrame.new(0,5.4,0),17,8,color)
 	W.text(gui,"Heading",string.upper(kind).." UPGRADES",UDim2.fromScale(.04,.025),UDim2.fromScale(.92,.15))
 	local rows={} local count=if kind=="Production" then 3 else 2 local rowIndex=0
 	local top,span=.2,.77

@@ -65,6 +65,13 @@ in (`W.walkway`), and toy bricks with round studs sit round the plaza clear of
 paths, stations and stairs (`W.brick`). `Config.Plots.Back` is unchanged, so
 the factory hall around the ring keeps its size.
 
+Visibility pass (22 Oct, Willem: boards blocked the crushers, presses sat too
+deep): presses stand on a 1.2-stud navy stage at the front of the bay
+(`Layout.MachineZ` 2.5, `Pedestal` 1.2, max 8.6 x 10 x 8) with a coloured cap;
+the top beam is thinner and higher; plaques lie low in front of the bay
+(tilted 58°, like a desk sign). Boards are smaller (17 x 8 panel on 8.6 posts)
+and stand forward at (±22, 79), turned 0.3 rad toward the walkway.
+
 World controls are SurfaceGuis copied into PlayerGui for the plot owner (mouse
 clicks are reliable there); purchases are server-checked for owner, distance
 (22 studs from the control) and cash.

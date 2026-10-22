@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-22: Willem: upgrade boards blocked the crushers and the presses sat too deep in their bays. Following the reference: presses moved to the front of the bay on a raised stage with a coloured cap, plaques laid low in front like desk signs, boards made smaller and lower and moved forward beside the walkway, turned toward it. Checked: production runs, board purchases in range, 117 checks, no errors.
+
 - 2026-10-22: Plaza and entrance like the reference: big blue gate replaced by a low yellow studded arch with hazard posts and the owner name plate; dark walkway with yellow dashes and arrows; random stone curbs/boulders replaced by a clean blue studded rim with lamp posts and blue plot sides; floor trimmed to end just behind the banks; toy bricks round the plaza. Checked: no plot overlaps, spawn + walking out over the bridge and back, trains, 117 rule checks, no errors.
 
 - 2026-10-22: Stations rebuilt like the reference: collect hopper with a scrap pile that grows with ready scrap, sell counter with register and SELL SCRAP sign, roll machine with rollers and a real six-faced die that spin while rolling, plus a reveal plinth showing a mini model of the rolled crusher. Checked in Studio: collect empties the pile, sell pays out, roll animation and reveal work, 117 rule checks, no errors.
