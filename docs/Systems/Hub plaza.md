@@ -1,0 +1,28 @@
+# Hub plaza (factory centre)
+
+22 Oct 2026, from Willem's "hub reference" (`Reference/Our goal/hub reference.png`).
+Built by `server/HubPlaza.luau`, called from `Hub.luau` (station). Everything
+sits inside the train loop (r < 172); +Z is the south spoke (spawn side).
+
+- **Floor:** plaza blue (inner disc r 56, rest of the commons to the road), dark
+  blue spokes from r 52 out to the road, yellow ring line at r 64. The old
+  commons work bays (vehicles, containers, workshop), scrap display, CRUSH IT
+  entrance arch, curbs and cross paths are gone; the planters at r 154 stay.
+- **Stage:** three walkable tiers (r 50 / 43 / 36, 1.4 high each) with yellow
+  edge lines, a yellow rail with beacons round the top, open at the 4 spokes.
+- **Mega Crusher** (tag `MegaCrusher`, scale 1.45): navy towers, chrome guide
+  pillars, orange hydraulics with blue hoses, red top beam with a yellow gear,
+  navy ram with hazard band. Parts in `RamParts` move with the ram
+  (client/Mega.client picks them up as they stream in). A toy dump truck and
+  bricks on the bed squash every 7 s. "MEGA CRUSHER" sign at the south foot.
+- **Stations** (placeholders, attribute `Placeholder`, sign + COMING SOON),
+  facing out toward the road, scale 1.8 (Top Crushers 1.45):
+  Boosts 35° r112 (purple vending machine, 3 cans) · Quests 325° r112 (booth,
+  foreman, notice board) · Special Crushers 135° r114 (press under a glass dome)
+  · Top Crushers 215° r116 (3 boards with crowns, trophy) · Daily Spin 250° r108
+  (red gear wheel with 6 coloured segments).
+- **Spawn:** HubSpawn moved to (0, 80) in front of the stage.
+
+Next: gameplay for the stations (daily spin rewards, quests, boosts, special
+crushers, leaderboards); a shared Mega Crusher server event.
+Known gap: the Special Crushers press keeps its normal colours (meant to be gold).

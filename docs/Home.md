@@ -1,5 +1,10 @@
 # Crush It
 
+22 Oct imported crusher integration: TwinTitan, RocketPress, Magnetron,
+GoldenKing and Toyzilla are collectible types using anchored place templates,
+manifest-fitted bays and separate moving rams. See [[Systems/Special crusher models]]
+for tested dimensions, animation, fallback and place-save requirements.
+
 22 Oct gameplay redesign: collect and level hydraulic crushers, equip them in
 three rear working bays, automatically crush inputs, collect scrap and sell
 directly for cash. Separate Production and Rolling boards, instance inventory
@@ -56,6 +61,8 @@ Small, quick game to test alongside WarChest: one loop, few systems, out fast.
 - [[Systems/Toy workshop]] — blue-grey workshop theme and earlier UI Play checks
 - [[Systems/Scrapyard environment]] — completed environment pass, Studio checks and remaining manual tests
 - [[Systems/Toy factory environment]] — reference-led toy-factory patch and Studio review
+- [[Systems/Collectible crushers]] — rolling, bays, boards, plot layout
+- [[Systems/Hub plaza]] — the factory centre: stage, Mega Crusher, hub stations
 - [[Decisions log]]
 - [[Backlog]]
 

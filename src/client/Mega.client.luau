@@ -17,7 +17,7 @@ local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local player = Players.LocalPlayer
 
 type ToyPart = { part: BasePart, size: Vector3, cf: CFrame }
-type Rig = { press: Model, ram: BasePart, toys: { ToyPart }, lastHit: number }
+type Rig = { press: Model, ram: BasePart, toys: { ToyPart }, lastHit: number, follow: { { part: BasePart, offset: CFrame } } }
 local rigs: { [Model]: Rig } = {}
 
 local function rig(press: Model): Rig?
@@ -36,7 +36,7 @@ local function rig(press: Model): Rig?
 			table.insert(toys, { part = p, size = p.Size, cf = p.CFrame })
 		end
 	end
-	r = { press = press, ram = ram, toys = toys, lastHit = -1 }
+	r = { press = press, ram = ram, toys = toys, lastHit = -1, follow = {} }
 	rigs[press] = r
 	return r
 end
@@ -124,6 +124,20 @@ RunService.RenderStepped:Connect(function()
 		end
 		local y = rest + (hit - rest) * f
 		r.ram.CFrame = CFrame.new(r.ram.Position.X, y, r.ram.Position.Z) * r.ram.CFrame.Rotation
+		-- Parts in "RamParts" (rod, plate, hazard band) ride along with the ram.
+		-- Picked up as they stream in; offsets are taken against the ram's rest pose.
+		local group = press:FindFirstChild("RamParts")
+		if group and #r.follow < #group:GetChildren() then
+			local seen = {}
+			for _, f in r.follow do seen[f.part] = true end
+			local restCf = CFrame.new(r.ram.Position.X, rest, r.ram.Position.Z) * r.ram.CFrame.Rotation
+			for _, p in group:GetChildren() do
+				if p:IsA("BasePart") and not seen[p] then
+					table.insert(r.follow, { part = p, offset = restCf:ToObjectSpace(p.CFrame) })
+				end
+			end
+		end
+		for _, f in r.follow do f.part.CFrame = r.ram.CFrame * f.offset end
 		-- toys: squashed while the ram is down, bounce back as it lifts off
 		local k: number
 		if t >= 0.9 then

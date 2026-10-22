@@ -72,7 +72,7 @@ local function commons(parent: Model, pal: { [string]: Color3 })
 	local radius = Config.Loop.Outer - 2
 	local topY = FLOOR_Y - 0.16
 	local floor = cylinder(m, "CommonsFloor", 1.55, radius * 2,
-		Vector3.new(0, topY - 1.55 / 2, 0), C(92, 119, 122))
+		Vector3.new(0, topY - 1.55 / 2, 0), C(128, 166, 220))
 	Style.studs(floor, { Enum.NormalId.Right })
 	floor.CanTouch = false
 	local rim = cylinder(m, "CommonsRim", 1.8, radius * 2 + 2,
@@ -93,44 +93,7 @@ local function commons(parent: Model, pal: { [string]: Color3 })
 	for i, deg in { 45, 135, 225, 315 } do
 		local a = math.rad(deg)
 		local cf = at(a, 118, topY)
-		local bay = Instance.new("Model")
-		bay.Name = "CommonsBay" .. i
-		local deck = Build.block(bay, "BayFloor", Vector3.new(60, 0.1, 44),
-			cf * CFrame.new(0, 0.05, 0), C(64, 86, 102))
-		paint(deck)
-		-- Corner markings leave an open front toward the central landmark.
-		for _, x in { -1, 1 } do
-			for _, z in { -1, 1 } do
-				paint(Build.block(bay, "BayCorner", Vector3.new(7, 0.025, 0.35),
-					cf * CFrame.new(x * 25, 0.115, z * 20), C(211, 222, 219), {}))
-				paint(Build.block(bay, "BayCorner", Vector3.new(0.35, 0.025, 5),
-					cf * CFrame.new(x * 28.5, 0.115, z * 17.7), C(211, 222, 219), {}))
-			end
-		end
-		local props = Instance.new("Model")
-		props.Name = "CommonsProps"
-		props:SetAttribute("EnvironmentProp", true)
-		local ground = cf * CFrame.new(0, 0.1, 0)
-		if i == 1 then
-			YardProps.vehicle(props, ground * CFrame.new(-13, 0, 4), C(216, 62, 49), 1.45)
-			YardProps.cluster(props, ground * CFrame.new(-19, 0, -11), 1, 1.6)
-			YardProps.cableReel(props, ground * CFrame.new(19, 0, 6), 1.35)
-		elseif i == 2 then
-			-- Reuse the existing striped workshop landmark, moved from the sand.
-			YardProps.workshop(props, ground)
-		elseif i == 3 then
-			YardProps.bales(props, ground * CFrame.new(-13, 0, 6), 2.5)
-			YardProps.bales(props, ground * CFrame.new(13, 0, 6), 2.1)
-			YardProps.cluster(props, ground * CFrame.new(17, 0, -11), 2, 1.8)
-		else
-			YardProps.container(props, ground * CFrame.new(0, 0, 9), C(25, 155, 142), 1.7)
-			YardProps.cluster(props, ground * CFrame.new(-18, 0, -10), 0, 1.7)
-			YardProps.cableReel(props, ground * CFrame.new(19, 0, -9), 1.2)
-		end
-		scenery(props)
-		props.Parent = bay
-		bay.Parent = m
-
+		-- (22 Oct: the work bays with vehicles/containers made way for the factory plaza stations.)
 		-- Small contained planting frames the courts without blocking the roads.
 		local planter = Instance.new("Model")
 		planter.Name = "CommonsPlanter" .. i
@@ -153,52 +116,20 @@ local function station(m: Model, pal: { [string]: Color3 }, rng: Random)
 	local L = Config.Loop
 	local seaY = Config.World.SeaY
 	local h = 1.55
-	local top = cylinder(m, "HubFloor", h, L.Hub * 2, Vector3.new(0, FLOOR_Y - h / 2, 0), pal.grass or pal.platform)
+	local top = cylinder(m, "HubFloor", h, L.Hub * 2, Vector3.new(0, FLOOR_Y - h / 2, 0), C(98, 140, 206))
 	Style.studs(top, { Enum.NormalId.Right })
 	cylinder(m, "HubRim", h + 0.35, L.Hub * 2 + 3, Vector3.new(0, FLOOR_Y - (h + 0.35) / 2 - 0.05, 0), pal.grassEdge or pal.edge)
 	cylinder(m, "HubDirt", 3, L.Hub * 2 + 3.8, Vector3.new(0, FLOOR_Y - 0.4 - 1.5 - 1.6, 0), pal.dirt or C(138, 96, 60))
 	local stoneTop = FLOOR_Y - 0.4 - 3 - 1.6
 	cylinder(m, "HubStone", stoneTop - (seaY - 6), L.Hub * 2 + 5, Vector3.new(0, (stoneTop + seaY - 6) / 2, 0), pal.stone or C(132, 130, 140))
-	-- curb round the edge, open at the walkways
-	for i = 0, 35 do
-		local a = (i + 0.5) / 36 * math.pi * 2
-		if not nearAngle(a, SPOKES, 9) then
-			local bh = rng:NextNumber(1.3, 2.2)
-			Build.block(m, "Curb", Vector3.new(L.Hub * 2 * math.pi / 36 + 0.4, bh, 1.8), at(a, L.Hub - 1, FLOOR_Y + bh / 2),
-				if rng:NextNumber() < 0.3 then (pal.stoneDark or C(102, 100, 110)) else (pal.stone or C(132, 130, 140)), ALL)
-		end
-	end
-	-- roads across the hub to the 4 walkways
-	Build.path(m, Vector3.new(-L.Hub + 2, FLOOR_Y, 0), Vector3.new(L.Hub - 2, FLOOR_Y, 0), 12)
-	Build.path(m, Vector3.new(0, FLOOR_Y, -L.Hub + 2), Vector3.new(0, FLOOR_Y, L.Hub - 2), 12)
-	-- the Mega Crusher in the middle, the scrap display (Willem's world pass) by the west road
-	require(script.Parent.MegaCrusher).build(m, CFrame.new(0, FLOOR_Y, 0))
-	local basin = CFrame.new(-36, FLOOR_Y, -18)
-	Build.block(m, "DisplayPlinth", Vector3.new(18, 2, 18), basin * CFrame.new(0, 1, 0), pal.edge, ALL)
-	Build.block(m, "DisplayInset", Vector3.new(15, 0.3, 15), basin * CFrame.new(0, 2.05, 0), pal.platform, {})
-	Build.block(m, "DisplayTrim", Vector3.new(15.2, 0.2, 15.2), basin * CFrame.new(0, 1.95, 0), pal.edge, {})
-	Build.block(m, "DisplayPillar", Vector3.new(4, 7, 4), basin * CFrame.new(0, 5.5, 0), pal.edge, ALL)
-	Build.block(m, "DisplayTop", Vector3.new(6, 1.2, 6), basin * CFrame.new(0, 9.6, 0), C(47, 111, 201), {})
-	YardProps.bales(m, basin * CFrame.new(0, 10.2, 0), 0.8)
-	-- the CRUSH IT entrance over the south road (the 0-degree walkway)
-	YardProps.entrance(m, CFrame.new(0, FLOOR_Y, 44))
-	-- workshop props in the four quarters between the roads
-	for k, deg in { 45, 135, 315 } do
-		local a = math.rad(deg)
-		if k % 2 == 1 then
-			YardProps.cluster(m, at(a, 36, FLOOR_Y), k, 1.3)
-		else
-			local tree = Build.tree(m, at(a, 36, FLOOR_Y), 0.85, pal, rng)
-			scenery(tree)
-		end
-		YardProps.workLight(m, at(a + math.rad(20), 46, FLOOR_Y), k % 2 == 0)
-	end
+	-- The factory plaza: stepped stage with the Mega Crusher and the hub stations (HubPlaza.luau).
+	require(script.Parent.HubPlaza).build(m, FLOOR_Y)
 	-- spawn on the hub (players are moved to their plot once it's assigned)
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Name = "HubSpawn"
 	spawn.Anchored = true
 	spawn.Size = Vector3.new(10, 0.2, 10)
-	spawn.CFrame = CFrame.new(0, FLOOR_Y + 0.1, 30)
+	spawn.CFrame = CFrame.new(0, FLOOR_Y + 0.1, 80)
 	spawn.Transparency = 1
 	spawn.CanCollide = false
 	spawn.Duration = 0
@@ -443,7 +374,7 @@ function Hub.create(parent: Instance)
 		local a = math.rad(deg)
 		local dir = Vector3.new(math.sin(a), 0, math.cos(a))
 		-- These spokes now run across solid land, so use wide flush lanes.
-		Build.path(m, Vector3.new(0, FLOOR_Y, 0) + dir * (L.Hub - 1.5), Vector3.new(0, FLOOR_Y, 0) + dir * (L.Inner + 1.5), 18)
+		Build.path(m, Vector3.new(0, FLOOR_Y, 0) + dir * 52, Vector3.new(0, FLOOR_Y, 0) + dir * (L.Inner + 1.5), 18, C(62, 96, 168))
 	end
 	for i = 1, L.Trains do
 		train(m, i, (i - 1) * 8 / L.Trains)
