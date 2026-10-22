@@ -21,6 +21,13 @@ sits inside the train loop (r < 172); +Z is the south spoke (spawn side).
   the ram's mesh (head + rod) is the moving "Ram", the truck (x1.7) squashes.
   Frame attributes BedTop 5 / BarBottom 37.6 (studs above its bottom, unscaled).
   Without the folder the part-built crusher is used.
+- **Station meshes (22 Oct):** HubMeshes also holds Station_DailySpin,
+  Station_TopCrushers, Station_Quests, Station_Boosts (scaled to their base
+  widths 14/27/17/14), Prop_Pedestal (Special Crushers display, glass dome and
+  the imported GoldenKing on top), Prop_Tree (2 per station) and Prop_Lamp
+  (both sides of every spoke). Signs and COMING SOON plates stay code-built for
+  sharp text. Stations face the nearest spoke walkway. Missing meshes fall back
+  to the part-built versions.
 - **Stations** (placeholders, attribute `Placeholder`, sign + COMING SOON),
   facing out toward the road, scale 1.8 (Top Crushers 1.45):
   Boosts 35° r112 (purple vending machine, 3 cans) · Quests 325° r112 (booth,

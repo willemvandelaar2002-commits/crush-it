@@ -239,8 +239,34 @@ local function megaCrusher(parent: Instance, o: CFrame): Model
 	return m
 end
 
+-- Station mesh (place-only, ServerStorage.HubMeshes.Station_<Name>, pivot at the
+-- bottom centre, front facing +Z) placed on frame f; nil when there is none.
+local Widths = { DailySpin = 14, TopCrushers = 27, Quests = 17, Boosts = 14 } -- fit to each base
+local function hubMesh(name: string): Model?
+	local folder = game:GetService("ServerStorage"):FindFirstChild("HubMeshes")
+	local t = folder and folder:FindFirstChild(name)
+	return if t and t:IsA("Model") then t else nil
+end
+local function stationMesh(m: Model, name: string, f: CFrame, offset: CFrame?): Model?
+	local t = hubMesh("Station_" .. name)
+	if not t then return nil end
+	local c = t:Clone()
+	c.Name = "Mesh"
+	local _, size = c:GetBoundingBox()
+	if Widths[name] then c:ScaleTo(c:GetScale() * Widths[name] / size.X) end
+	c:PivotTo(f * (offset or CFrame.new()))
+	for _, p in c:GetDescendants() do
+		if p:IsA("BasePart") then p.Anchored = true p.CanTouch = false end
+	end
+	c.Parent = m
+	return c
+end
+
 -- Station builders. f: frame on the plaza floor, +Z facing the centre.
 local function dailySpin(m: Model, f: CFrame)
+	if stationMesh(m, "DailySpin", f * CFrame.new(0, 1.2, 0)) then
+		base(m, f, 16, 10) header(m, f * CFrame.new(0, 23, 0), "DAILY SPIN", RED, 12) comingSoon(m, f * CFrame.new(0, 2.6, 5.1)) return
+	end
 	base(m, f, 16, 10)
 	W.part(m, "WheelStand", V(4, 6, 3), f * CFrame.new(0, 4, -1.5), W.Navy, true)
 	local hub = f * CFrame.new(0, 11, 0)
@@ -260,6 +286,9 @@ local function dailySpin(m: Model, f: CFrame)
 	comingSoon(m, f * CFrame.new(0, 2.6, 5.1))
 end
 local function topCrushers(m: Model, f: CFrame)
+	if stationMesh(m, "TopCrushers", f * CFrame.new(0, 1.2, -1)) then
+		base(m, f, 30, 11) header(m, f * CFrame.new(0, 18.5, -1), "TOP CRUSHERS", W.Navy, 16) comingSoon(m, f * CFrame.new(0, 2.6, 5.6)) return
+	end
 	base(m, f, 30, 9)
 	for i, x in { -9.5, 0, 9.5 } do
 		local b = f * CFrame.new(x, 0, -1)
@@ -289,6 +318,9 @@ local function topCrushers(m: Model, f: CFrame)
 	comingSoon(m, f * CFrame.new(0, 2.6, 4.6))
 end
 local function quests(m: Model, f: CFrame)
+	if stationMesh(m, "Quests", f * CFrame.new(0, 1.2, 0)) then
+		base(m, f, 20, 14) header(m, f * CFrame.new(0, 17, 1), "QUESTS", W.Blue, 12) comingSoon(m, f * CFrame.new(0, 2.6, 7.1)) return
+	end
 	base(m, f, 18, 12)
 	W.part(m, "Counter", V(14, 4, 4), f * CFrame.new(0, 3.1, 2), W.Blue, true)
 	W.part(m, "CounterTop", V(15, 0.6, 5), f * CFrame.new(0, 5.4, 2), W.Yellow, true)
@@ -309,6 +341,9 @@ local function quests(m: Model, f: CFrame)
 	comingSoon(m, f * CFrame.new(0, 3, 4.15))
 end
 local function boosts(m: Model, f: CFrame)
+	if stationMesh(m, "Boosts", f * CFrame.new(0, 1.2, -1)) then
+		base(m, f, 18, 10) header(m, f * CFrame.new(0, 18.4, -1), "BOOSTS", W.Purple, 12) comingSoon(m, f * CFrame.new(0, 2.6, 5.1)) return
+	end
 	base(m, f, 18, 10)
 	W.part(m, "Vending", V(15, 13, 6), f * CFrame.new(0, 7.6, -1), W.Purple, true)
 	W.part(m, "VendingTrim", V(15.6, 0.8, 6.6), f * CFrame.new(0, 14.4, -1), W.Navy, true)
@@ -324,34 +359,71 @@ local function boosts(m: Model, f: CFrame)
 	comingSoon(m, f * CFrame.new(0, 2.6, 5.1))
 end
 local function special(m: Model, f: CFrame)
-	upright(m, "DisplayBase", 2, 18, (f * CFrame.new(0, 1, 0)).Position, W.Navy, true)
-	upright(m, "DisplayRing", 0.4, 18.6, (f * CFrame.new(0, 2, 0)).Position, W.Yellow)
-	upright(m, "DisplayTop", 0.6, 15, (f * CFrame.new(0, 2.3, 0)).Position, C(70, 120, 200), true)
-	local built = PressBuilder.build(f * CFrame.new(0, 2.6, 0), 11)
-	local _, size = built.model:GetBoundingBox()
-	built.model:ScaleTo(math.min(1, 9 / size.X, 9 / size.Z, 11 / size.Y))
-	built.model:PivotTo(f * CFrame.new(0, 2.6, 0))
-	for _, p in built.model:GetDescendants() do
-		if p:IsA("BasePart") then
-			p.CanCollide = false p.CanTouch = false p.CanQuery = false
-			if p.Color.R > 0.3 or p.Color.G > 0.3 then p.Color = GOLD p.Material = Enum.Material.Metal end
-		elseif p:IsA("ParticleEmitter") or p:IsA("Light") then p.Enabled = false end
+	local pedestalTop = 2.6
+	local ped = hubMesh("Prop_Pedestal")
+	if ped then
+		local c = ped:Clone()
+		local _, size = c:GetBoundingBox()
+		c:ScaleTo(c:GetScale() * 18 / size.X)
+		local _, s2 = c:GetBoundingBox()
+		pedestalTop = s2.Y
+		c:PivotTo(f)
+		c.Parent = m
+		-- invisible collider so players can stand on the pedestal
+		local col = upright(m, "DisplayBase", pedestalTop, 17, (f * CFrame.new(0, pedestalTop / 2, 0)).Position, W.Navy, true)
+		col.Transparency = 1
+	else
+		upright(m, "DisplayBase", 2, 18, (f * CFrame.new(0, 1, 0)).Position, W.Navy, true)
+		upright(m, "DisplayRing", 0.4, 18.6, (f * CFrame.new(0, 2, 0)).Position, W.Yellow)
+		upright(m, "DisplayTop", 0.6, 15, (f * CFrame.new(0, 2.3, 0)).Position, C(70, 120, 200), true)
 	end
-	built.model.Parent = m
-	-- glass dome: a clear cylinder with a half-sunk ball on top
-	local glass = upright(m, "DomeGlass", 10, 15, (f * CFrame.new(0, 7.6, 0)).Position, C(200, 230, 255))
+	-- Show one of the imported special crushers (GoldenKing) when the place has them.
+	local specials = game:GetService("ServerStorage"):FindFirstChild("SpecialCrusherMeshes")
+	local king = specials and specials:FindFirstChild("GoldenKing")
+	if king then
+		local c = king:Clone()
+		c.Name = "ShowcaseCrusher"
+		local _, size = c:GetBoundingBox()
+		c:ScaleTo(c:GetScale() * math.min(10 / size.X, 11 / size.Y, 10 / size.Z))
+		-- these imports face -Z; turn to face out of the display, then sit the
+		-- bounding box's bottom centre on the display top
+		c:PivotTo(f * CFrame.new(0, pedestalTop, 0) * CFrame.Angles(0, math.pi, 0))
+		local cf, sz = c:GetBoundingBox()
+		c:PivotTo(c:GetPivot() + ((f * CFrame.new(0, pedestalTop + sz.Y / 2, 0)).Position - cf.Position))
+		for _, p in c:GetDescendants() do
+			if p:IsA("BasePart") then p.Anchored = true p.CanCollide = false p.CanTouch = false p.CanQuery = false end
+		end
+		c.Parent = m
+	else
+		local built = PressBuilder.build(f * CFrame.new(0, 2.6, 0), 11)
+		local _, size = built.model:GetBoundingBox()
+		built.model:ScaleTo(math.min(1, 9 / size.X, 9 / size.Z, 11 / size.Y))
+		built.model:PivotTo(f * CFrame.new(0, 2.6, 0))
+		for _, p in built.model:GetDescendants() do
+			if p:IsA("BasePart") then
+				p.CanCollide = false p.CanTouch = false p.CanQuery = false
+				if p.Color.R > 0.3 or p.Color.G > 0.3 then p.Color = GOLD p.Material = Enum.Material.Metal end
+			elseif p:IsA("ParticleEmitter") or p:IsA("Light") then p.Enabled = false end
+		end
+		built.model.Parent = m
+	end
+	-- glass dome: a clear cylinder with a half-sunk ball on top, standing on the pedestal
+	local dy = pedestalTop - 2.6
+	local glass = upright(m, "DomeGlass", 10, 15, (f * CFrame.new(0, 7.6 + dy, 0)).Position, C(200, 230, 255))
 	glass.Transparency = 0.75 glass.Material = Enum.Material.Glass glass.CastShadow = false
-	local cap = W.part(m, "DomeCap", V(15, 15, 15), f * CFrame.new(0, 12.6, 0), C(200, 230, 255))
+	local cap = W.part(m, "DomeCap", V(15, 15, 15), f * CFrame.new(0, 12.6 + dy, 0), C(200, 230, 255))
 	cap.Shape = Enum.PartType.Ball cap.Transparency = 0.8 cap.Material = Enum.Material.Glass cap.CastShadow = false
 	for k = 0, 15 do -- gold band where the dome meets the glass wall
-		W.part(m, "DomeRim", V(3.2, 0.6, 0.6), f * CFrame.Angles(0, k * math.pi / 8, 0) * CFrame.new(0, 12.6, 7.6), GOLD)
+		W.part(m, "DomeRim", V(3.2, 0.6, 0.6), f * CFrame.Angles(0, k * math.pi / 8, 0) * CFrame.new(0, 12.6 + dy, 7.6), GOLD)
 	end
-	for k = 0, 5 do
-		W.lamp(m, f * CFrame.Angles(0, k * math.pi / 3, 0) * CFrame.new(0, 2, 8.3), 1.6)
+	if not ped then
+		for k = 0, 5 do
+			W.lamp(m, f * CFrame.Angles(0, k * math.pi / 3, 0) * CFrame.new(0, 2, 8.3), 1.6)
+		end
 	end
 	-- header on posts in front of the dome
-	for _, x in { -6.5, 6.5 } do W.part(m, "SignPost", V(0.8, 16, 0.8), f * CFrame.new(x, 8, 9.8), W.Navy, true) end
-	header(m, f * CFrame.new(0, 21.5, 9.8), "SPECIAL CRUSHERS", W.Navy, 16)
+	for _, x in { -6.5, 6.5 } do W.part(m, "SignPost", V(0.8, 16 + dy, 0.8), f * CFrame.new(x, (16 + dy) / 2, 9.8), W.Navy, true) end
+	header(m, f * CFrame.new(0, 21.5 + dy, 9.8), "SPECIAL CRUSHERS", W.Navy, 16)
 	comingSoon(m, f * CFrame.new(0, 3.2, 9.7))
 end
 
@@ -380,8 +452,12 @@ function HubPlaza.build(parent: Instance, floorY: number)
 	for name, spec in HubPlaza.Stations do
 		local a = math.rad(spec[1])
 		local pos = (o * CFrame.new(math.sin(a) * spec[2], 0, math.cos(a) * spec[2])).Position
-		-- +Z faces out toward the ring road, where players arrive from their plots
-		local f = CFrame.lookAt(pos, Vector3.new(0, floorY, 0))
+		-- +Z (the model fronts) faces the nearest spoke walkway, so people walking
+		-- the spokes see the fronts (like the reference)
+		local spoke = math.rad(math.floor((spec[1] + 45) / 90) % 4 * 90)
+		local along = math.cos(a - spoke) * spec[2]
+		local target = Vector3.new(math.sin(spoke) * along, floorY, math.cos(spoke) * along)
+		local f = CFrame.lookAt(pos, target) * CFrame.Angles(0, math.pi, 0)
 		local sm = Instance.new("Model")
 		sm.Name = name .. "Station"
 		sm:SetAttribute("Placeholder", true)
@@ -390,6 +466,38 @@ function HubPlaza.build(parent: Instance, floorY: number)
 		sm:ScaleTo(spec[3] or HubPlaza.StationScale)
 		sm.Parent = m
 		task.wait()
+	end
+	-- Toy trees in planters and lamp posts round the plaza (AI meshes when present).
+	local tree, lamp = hubMesh("Prop_Tree"), hubMesh("Prop_Lamp")
+	local function drop(t: Model?, a: number, r: number, scale: number)
+		if not t then return end
+		local c = t:Clone()
+		c:ScaleTo(c:GetScale() * scale)
+		c:PivotTo(o * CFrame.new(math.sin(math.rad(a)) * r, 0, math.cos(math.rad(a)) * r) * CFrame.Angles(0, math.rad(a), 0))
+		for _, p in c:GetDescendants() do
+			if p:IsA("BasePart") then p.Anchored = true p.CanCollide = false p.CanTouch = false p.CanQuery = false end
+		end
+		c.Parent = m
+	end
+	for _, spec in HubPlaza.Stations do
+		drop(tree, spec[1] - 13, spec[2] - 6, 1.6)
+		drop(tree, spec[1] + 13, spec[2] - 6, 1.6)
+	end
+	for _, a in { 0, 90, 180, 270 } do -- lamps line both sides of each spoke
+		for _, r in { 58, 80, 102, 124, 146 } do
+			for _, side in { -1, 1 } do
+				local x = side * 11
+				local c = if lamp then lamp:Clone() else nil
+				if c then
+					c:ScaleTo(c:GetScale() * 1.5)
+					c:PivotTo(o * CFrame.Angles(0, math.rad(a), 0) * CFrame.new(x, 0, r))
+					for _, p in c:GetDescendants() do
+						if p:IsA("BasePart") then p.Anchored = true p.CanCollide = false p.CanTouch = false p.CanQuery = false end
+					end
+					c.Parent = m
+				end
+			end
+		end
 	end
 	return m, mega
 end
