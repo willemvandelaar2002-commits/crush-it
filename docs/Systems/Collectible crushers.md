@@ -1,5 +1,9 @@
 # Collectible hydraulic crushers
 
+22 Oct imported specials: five additional collectible types use the existing
+production bands and level/equipment rules. Named rams animate independently
+of anchored frames; see [[Special crusher models]] for asset integration and tests.
+
 ## Current loop — 2026-10-22
 
 Roll a crusher with earned cash, equip its unique instance in a bay, let it

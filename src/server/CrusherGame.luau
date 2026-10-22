@@ -16,6 +16,7 @@ local Data=require(script.Parent.Kit.DataService)
 local Plots=require(script.Parent.Plots)
 local PressBuilder=require(script.Parent.PressBuilder)
 local Workshop=require(script.Parent.Kit.CrusherWorkshop)
+local Special=require(script.Parent.SpecialCrushers)
 local Friend=require(script.Parent.FriendBoost)
 local G={}
 local sessions={}
@@ -111,6 +112,12 @@ local function buildBay(p,i,item)
 	if old then old.model:Destroy() ctx.visuals[i]=nil end
 	if not item then return end
 	local t=C.typeById(item.type) local o=bay.origin
+	local special=if t.template then Special.build(o,t.template) else nil
+	if special then
+		special.id=item.id special.tier=t.input special.model.Name="EquippedCrusher"
+		special.model:SetAttribute("InventoryId",item.id) special.model:SetAttribute("Rarity",item.rarity) special.model:SetAttribute("Modifier",item.modifier)
+		special.model.Parent=bay.model ctx.visuals[i]=special return
+	end
 	local built=PressBuilder.build(o,t.tier) built.model.WorldPivot=o
 	local _,size=built.model:GetBoundingBox() local l=C.Layout
 	local scale=math.min(1,l.MachineWidth/size.X,l.MachineDepth/size.Z,l.MachineHeight/size.Y)
@@ -130,7 +137,7 @@ local function buildBay(p,i,item)
 	built.model.Parent=bay.model
 	local colors={Bumper=Color3.fromRGB(235,69,67),Steel=Color3.fromRGB(35,126,235),Cobalt=Color3.fromRGB(52,193,87),Mega=Color3.fromRGB(171,68,228),Titan=Color3.fromRGB(248,194,40),Quantum=Color3.fromRGB(50,208,220)}
 	-- Coloured cap on top of the press (the light strip on the bay beam replaces the old beacon).
-	local header=Workshop.part(built.model,"ToyHeader",Vector3.new(8.4,1,2),o*CFrame.new(0,l.MachineHeight-.5,1),colors[item.type])
+	local header=Workshop.part(built.model,"ToyHeader",Vector3.new(8.4,1,2),o*CFrame.new(0,l.MachineHeight-.5,1),colors[item.type] or Config.Presses[t.tier].accent)
 	for _,x in {-3.3,3.3} do Workshop.part(built.model,"HeaderBolt",Vector3.new(.5,.5,.4),header.CFrame*CFrame.new(x,0,1.1),Color3.fromRGB(222,233,245)) end
 	local bed=(built.model:FindFirstChild("Bed") :: BasePart)
 	ctx.visuals[i]={id=item.id,model=built.model,ram=built.ram,rest=built.ram.CFrame,
@@ -199,6 +206,7 @@ local function visualEvent(p,event)
 		Objects.scale(v.input,v.base,scale) v.input:SetAttribute("Height",size.Y*scale)
 	else
 		if v.input then Objects.setSquash(v.input,v.base,event.fraction) end
+		if v.special then Special.strike(v,event) return end
 		local height=(if v.input then v.input:GetAttribute("Height") else Config.Objects[v.tier].height)*event.fraction
 		local down=CFrame.new(v.rest.Position.X,v.base.Position.Y+height+v.ram.Size.Y/2,v.rest.Position.Z)*(v.rest-v.rest.Position)
 		local duration=math.min(.45,event.cycle*.6)

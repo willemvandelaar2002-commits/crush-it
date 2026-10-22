@@ -21,7 +21,7 @@ function R.migrate(d, guid)
 			helpers=copy(d.helpers), collection=copy(d.collection), scrap=d.scrap, smeltQueue=d.smeltQueue, smeltReady=d.smeltReady, smeltLv=d.smeltLv }
 		local levels = if type(d.levels)=="table" then d.levels else {}
 		local oldTier=integer(d.tier,1,13)
-		local t=C.Types[math.clamp(math.ceil(oldTier/2),1,#C.Types)]
+		local t=C.typeById(C.LegacyTypes[math.clamp(math.ceil(oldTier/2),1,#C.LegacyTypes)])
 		local item={id=guid(),type=t.id,rarity=C.Rarities[math.clamp(math.ceil(oldTier/2)-1,1,#C.Rarities)].name,modifier="Standard",
 			level=math.clamp(1+math.floor((number(levels.Power,0,50)+number(levels.Value,0,50))/2),1,C.MaxLevel)}
 		local owned={item}

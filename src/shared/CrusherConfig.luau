@@ -23,6 +23,7 @@ C.Layout = { Wings=2, Tiers=2, PerWing=6, WingX=40, Pitch=10, BayWidth=9.6,
 C.Layout.WalkFront=C.Layout.BayZ+C.Layout.BayDepth/2+1 -- front edge of the upper walkway
 C.Layout.StairFront=C.Layout.WalkFront+C.Layout.StairRun
 C.MaxBays = C.Layout.Wings*C.Layout.Tiers*C.Layout.PerWing
+C.LegacyTypes={"Bumper","Steel","Cobalt","Mega","Titan","Quantum"}
 for i=4,C.MaxBays do C.BayCosts[i]=math.floor(900*1.45^(i-3)) end
 function C.bayLayout(index)
 	local l=C.Layout local n=index-1 local perTier=l.Wings*l.PerWing
@@ -67,13 +68,19 @@ C.Types = {
 	{ id = "Mega", name = "Mega Piston", tier = 7, input = 3, damage = 12, hp = 48, value = 48, cycle = 1.6 },
 	{ id = "Titan", name = "Titan Hydraulic", tier = 9, input = 3, damage = 22, hp = 80, value = 100, cycle = 1.7 },
 	{ id = "Quantum", name = "Quantum Press", tier = 11, input = 3, damage = 40, hp = 120, value = 220, cycle = 1.8 },
+	-- Imported specials use the same production bands and upgrade formulas.
+	{ id = "TwinTitan", name = "Twin Titan", template="TwinTitan", tier=9, input=3, damage=22, hp=80, value=100, cycle=1.7 },
+	{ id = "RocketPress", name = "Rocket Press", template="RocketPress", tier=5, input=2, damage=7, hp=28, value=24, cycle=1.5 },
+	{ id = "Magnetron", name = "Magnetron", template="Magnetron", tier=7, input=3, damage=12, hp=48, value=48, cycle=1.6 },
+	{ id = "GoldenKing", name = "Golden King", template="GoldenKing", tier=11, input=3, damage=40, hp=120, value=220, cycle=1.8 },
+	{ id = "Toyzilla", name = "Toyzilla", template="Toyzilla", tier=11, input=3, damage=40, hp=120, value=220, cycle=1.8 },
 }
 C.Rarities = {
 	{ name = "Common", weight = 70, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
-	{ name = "Uncommon", weight = 22, rank = 1, types = { "Cobalt" }, mult = 1.15, color = Color3.fromRGB(99, 210, 132) },
-	{ name = "Rare", weight = 6, rank = 2, types = { "Mega" }, mult = 1.35, color = Color3.fromRGB(75, 148, 255) },
-	{ name = "Epic", weight = 1.8, rank = 3, types = { "Titan" }, mult = 1.65, color = Color3.fromRGB(187, 105, 246) },
-	{ name = "Legendary", weight = 0.2, rank = 4, types = { "Quantum" }, mult = 2, color = Color3.fromRGB(255, 200, 55) },
+	{ name = "Uncommon", weight = 22, rank = 1, types = { "Cobalt", "RocketPress" }, mult = 1.15, color = Color3.fromRGB(99, 210, 132) },
+	{ name = "Rare", weight = 6, rank = 2, types = { "Mega", "Magnetron" }, mult = 1.35, color = Color3.fromRGB(75, 148, 255) },
+	{ name = "Epic", weight = 1.8, rank = 3, types = { "Titan", "TwinTitan" }, mult = 1.65, color = Color3.fromRGB(187, 105, 246) },
+	{ name = "Legendary", weight = 0.2, rank = 4, types = { "Quantum", "GoldenKing", "Toyzilla" }, mult = 2, color = Color3.fromRGB(255, 200, 55) },
 }
 C.Modifiers = {
 	{ name = "Standard", weight = 80, mult = 1 }, { name = "Rusty", weight = 14, mult = 1.15 },

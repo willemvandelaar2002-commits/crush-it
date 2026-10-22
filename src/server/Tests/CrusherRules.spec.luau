@@ -91,5 +91,20 @@ return function()
 		check(math.abs(layout.x)+C.Layout.MachineWidth/2<plotConfig.FloorSize/2 and layout.tier<=2,"bay fits the configured two-tier plot")
 	end
 	check(plotConfig.FloorSize/2+3<plotConfig.Ring*math.tan(math.pi/8),"eight radial plot footprints have a gap at the narrow entrance corners")
+	local finalLegacy=R.migrate({cash=500,tier=13},id)
+	check(finalLegacy.crushers.owned[1].type=="Quantum","new types cannot change legacy tier migration")
+	local special={id=id(),type="TwinTitan",rarity="Epic",modifier="Rusty",level=8}
+	table.insert(saved.crushers.owned,special)
+	saved=R.migrate(game.HttpService:JSONDecode(game.HttpService:JSONEncode(saved)),id)
+	check(R.find(saved,special.id).level==8 and R.find(saved,special.id).modifier=="Rusty","special collection instance survives reload")
+	for _,v in {{"TwinTitan","Titan",.99,.9},{"RocketPress","Cobalt",.8,.9},{"Magnetron","Mega",.95,.9},{"GoldenKing","Quantum",.999,.4},{"Toyzilla","Quantum",.999,.9}} do
+		local profile=fresh() local base=table.clone(profile.crushers.owned[1]) base.type=v[2]
+		local instance=table.clone(base) instance.type=v[1]
+		local a,b=R.stats(profile,base),R.stats(profile,instance)
+		check(a.damage==b.damage and a.cycle==b.cycle and a.value==b.value and a.hp==b.hp,"special keeps its existing production band")
+		local draws={v[3],.1,v[4]} local index=0
+		local result,_,rolled=R.act(profile,{},"Roll",{},0,function() index+=1 return draws[index] end,id,{})
+		check(result and rolled.type==v[1],"special is reachable through authoritative collection rolls")
+	end
 	return {passed=checks}
 end

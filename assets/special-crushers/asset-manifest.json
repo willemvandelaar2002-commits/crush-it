@@ -1,0 +1,329 @@
+{
+  "pack": "Crush It special crushers",
+  "version": "1.0",
+  "created": "2026-10-22",
+  "blender": "4.5.15 LTS",
+  "animation": "72-frame object-motion demos in runtime .blend files. Drive separate rams in Roblox code.",
+  "assets": [
+    {
+      "id": "TwinTitan",
+      "name": "Twin Titan",
+      "description": "Alternating independent rams, then a simultaneous finishing hit.",
+      "dimensions_blender_xyz": [
+        11.6,
+        8.2,
+        12.8
+      ],
+      "size_studs_width_depth_height": [
+        11.6,
+        8.2,
+        12.8
+      ],
+      "base_pivot_blender": [
+        0,
+        0,
+        0
+      ],
+      "front_blender": [
+        0,
+        -1,
+        0
+      ],
+      "recommended_bay_studs": {
+        "width": 14,
+        "depth": 12,
+        "height": 16
+      },
+      "bed_top_blender_z": 1.62,
+      "components": [
+        {
+          "name": "Frame",
+          "triangles": 10852,
+          "pivot_blender": [
+            0,
+            0,
+            0
+          ],
+          "moving": false
+        },
+        {
+          "name": "Ram_L",
+          "triangles": 1884,
+          "pivot_blender": [
+            -2.050000011920929,
+            0,
+            5.9
+          ],
+          "moving": true,
+          "stroke_studs": 3.525
+        },
+        {
+          "name": "Ram_R",
+          "triangles": 1884,
+          "pivot_blender": [
+            2.050000011920929,
+            0,
+            5.9
+          ],
+          "moving": true,
+          "stroke_studs": 3.525
+        }
+      ],
+      "fx_anchors_blender": {},
+      "total_triangles": 14620
+    },
+    {
+      "id": "RocketPress",
+      "name": "Rocket Press",
+      "description": "Charge pause followed by one fast powered slam; nozzle attachment points supplied.",
+      "dimensions_blender_xyz": [
+        11.1593,
+        8.3,
+        12.6
+      ],
+      "size_studs_width_depth_height": [
+        11.1593,
+        8.3,
+        12.6
+      ],
+      "base_pivot_blender": [
+        0,
+        0,
+        0
+      ],
+      "front_blender": [
+        0,
+        -1,
+        0
+      ],
+      "recommended_bay_studs": {
+        "width": 14,
+        "depth": 12,
+        "height": 16
+      },
+      "bed_top_blender_z": 1.62,
+      "components": [
+        {
+          "name": "Frame",
+          "triangles": 12340,
+          "pivot_blender": [
+            0,
+            0,
+            0
+          ],
+          "moving": false
+        },
+        {
+          "name": "Ram",
+          "triangles": 3068,
+          "pivot_blender": [
+            0.0,
+            0,
+            5.9
+          ],
+          "moving": true,
+          "stroke_studs": 3.525
+        }
+      ],
+      "fx_anchors_blender": {
+        "Exhaust_L": [
+          -2.25,
+          1.3,
+          5.9
+        ],
+        "Exhaust_R": [
+          2.25,
+          1.3,
+          5.9
+        ]
+      },
+      "total_triangles": 15408
+    },
+    {
+      "id": "Magnetron",
+      "name": "Magnetron",
+      "description": "A levitating magnetic platen and induction coils; optional object-lift VFX belong in game code.",
+      "dimensions_blender_xyz": [
+        10.8,
+        8.2,
+        11.7
+      ],
+      "size_studs_width_depth_height": [
+        10.8,
+        8.2,
+        11.7
+      ],
+      "base_pivot_blender": [
+        0,
+        0,
+        0
+      ],
+      "front_blender": [
+        0,
+        -1,
+        0
+      ],
+      "recommended_bay_studs": {
+        "width": 14,
+        "depth": 12,
+        "height": 16
+      },
+      "bed_top_blender_z": 1.62,
+      "components": [
+        {
+          "name": "Frame",
+          "triangles": 8592,
+          "pivot_blender": [
+            0,
+            0,
+            0
+          ],
+          "moving": false
+        },
+        {
+          "name": "Ram",
+          "triangles": 2716,
+          "pivot_blender": [
+            0.0,
+            0,
+            5.9
+          ],
+          "moving": true,
+          "stroke_studs": 3.525
+        }
+      ],
+      "fx_anchors_blender": {
+        "FieldCentre": [
+          0,
+          0,
+          3.2
+        ]
+      },
+      "total_triangles": 11308
+    },
+    {
+      "id": "GoldenKing",
+      "name": "Golden King",
+      "description": "A royal gold-and-emerald hydraulic press; golden-scrap rewards belong in server code.",
+      "dimensions_blender_xyz": [
+        10.8,
+        8.3,
+        13.4538
+      ],
+      "size_studs_width_depth_height": [
+        10.8,
+        8.3,
+        13.4538
+      ],
+      "base_pivot_blender": [
+        0,
+        0,
+        0
+      ],
+      "front_blender": [
+        0,
+        -1,
+        0
+      ],
+      "recommended_bay_studs": {
+        "width": 14,
+        "depth": 12,
+        "height": 16
+      },
+      "bed_top_blender_z": 1.62,
+      "components": [
+        {
+          "name": "Frame",
+          "triangles": 10300,
+          "pivot_blender": [
+            0,
+            0,
+            0
+          ],
+          "moving": false
+        },
+        {
+          "name": "Ram",
+          "triangles": 2424,
+          "pivot_blender": [
+            0.0,
+            0,
+            5.9
+          ],
+          "moving": true,
+          "stroke_studs": 3.525
+        }
+      ],
+      "fx_anchors_blender": {
+        "GoldenScrap": [
+          0,
+          -0.1,
+          2.1
+        ]
+      },
+      "total_triangles": 12724
+    },
+    {
+      "id": "Toyzilla",
+      "name": "Toyzilla",
+      "description": "A friendly mechanical dinosaur head is the moving ram; it closes against the fixed lower jaw.",
+      "dimensions_blender_xyz": [
+        11.8,
+        8.4,
+        13.2
+      ],
+      "size_studs_width_depth_height": [
+        11.8,
+        8.4,
+        13.2
+      ],
+      "base_pivot_blender": [
+        0,
+        0,
+        0
+      ],
+      "front_blender": [
+        0,
+        -1,
+        0
+      ],
+      "recommended_bay_studs": {
+        "width": 14,
+        "depth": 12,
+        "height": 16
+      },
+      "bed_top_blender_z": 2.5,
+      "components": [
+        {
+          "name": "Frame",
+          "triangles": 11944,
+          "pivot_blender": [
+            0,
+            0,
+            0
+          ],
+          "moving": false
+        },
+        {
+          "name": "Ram",
+          "triangles": 4100,
+          "pivot_blender": [
+            0.0,
+            0,
+            6.9
+          ],
+          "moving": true,
+          "stroke_studs": 2.63
+        }
+      ],
+      "fx_anchors_blender": {
+        "JawCentre": [
+          0,
+          -2.8,
+          4.7
+        ]
+      },
+      "total_triangles": 16044
+    }
+  ]
+}
