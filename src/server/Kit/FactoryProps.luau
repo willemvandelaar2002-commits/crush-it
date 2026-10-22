@@ -9,7 +9,7 @@ local FactoryProps = {}
 local V = Vector3.new
 local C = Color3.fromRGB
 local P = {
-	Cream = C(247, 231, 196), Floor = C(229, 186, 91), Blue = C(45, 114, 207),
+	Cream = C(247, 231, 196), Floor = C(218, 157, 48), Blue = C(45, 114, 207),
 	Navy = C(30, 54, 88), Red = C(232, 80, 66), Yellow = C(255, 202, 53),
 	Teal = C(37, 179, 183), Green = C(105, 196, 77), White = C(250, 248, 234),
 	Glass = C(154, 222, 244), Dark = C(34, 43, 59), Brown = C(172, 108, 59),
@@ -72,6 +72,94 @@ function FactoryProps.sign(parent: Instance, cf: CFrame, width: number, height: 
 	Style.text(label, 2)
 	label.Parent = gui
 	return face
+end
+
+-- Large environment floors have their own scale; never retile the imported
+-- shared Studs variant or change the UI/press finish.
+function FactoryProps.floorFinish(p: BasePart, faces: { Enum.NormalId })
+	local materials = game:GetService("MaterialService")
+	local source = materials:FindFirstChild(Style.Studs.MaterialVariant)
+	if Style.Studs.UseWorldMaterials and source and source:IsA("MaterialVariant") then
+		local name = "CrushItFactoryFloorStuds"
+		local variant = materials:FindFirstChild(name)
+		if not variant then
+			local copy = source:Clone()
+			copy.Name = name
+			copy:SetAttribute("FactoryFloorMaterial", true)
+			copy.StudsPerTile = 4
+			copy.Parent = materials
+			variant = copy
+		end
+		if variant:IsA("MaterialVariant") and variant:GetAttribute("FactoryFloorMaterial") == true then
+			variant.StudsPerTile = 4
+			-- The normal-only copy is prepared in Studio: texture-map writes
+			-- require plugin permissions. If absent, cloning Studs still gives
+			-- a working coarser finish with its original colour/normal maps.
+			Style.materialStuds(p, true)
+			p.Material = variant.BaseMaterial
+			p.MaterialVariant = variant.Name
+			return
+		end
+	end
+	Style.studs(p, faces, 4)
+	for _, t in p:GetChildren() do
+		if t:IsA("Texture") and t.Name == "Studs" and t.Texture == Style.Studs.Texture then t.Transparency = 0.5 end
+	end
+end
+
+function FactoryProps.workLight(parent: Instance, cf: CFrame, scale: number, lit: boolean)
+	part(parent, "LampBracket", V(10, 2, 9) * scale, cf, P.Blue)
+	local shade = cylinder(parent, "LampShade", 12 * scale, 4 * scale, cf * CFrame.new(0, -2 * scale, 0), P.Navy)
+	shade.CastShadow = false
+	local lens = cylinder(parent, "WarmLens", 10 * scale, 0.6 * scale, cf * CFrame.new(0, -4.1 * scale, 0), C(255, 222, 159))
+	lens.Material = Enum.Material.Neon
+	lens.CastShadow = false
+	if lit then
+		local light = Instance.new("PointLight")
+		light.Name = "FactoryWarmFill"
+		light.Color = C(255, 217, 158)
+		light.Range = math.min(60, 28 * scale)
+		light.Brightness = 0.65
+		light.Shadows = false
+		light.Parent = lens
+	end
+end
+
+function FactoryProps.brandSign(parent: Instance, cf: CFrame)
+	local m = model(parent, "CrushItMarquee")
+	-- Built-in geometry gives a chunky cog silhouette without a new mesh asset.
+	local cog = part(m, "Cog", V(5, 34, 34), cf * CFrame.new(-77, 2, 3) * CFrame.Angles(0, math.pi / 2, 0), P.Navy)
+	cog.Shape = Enum.PartType.Cylinder
+	for i = 0, 11 do
+		local a = i * math.pi / 6
+		part(m, "CogTooth", V(8, 8, 5), cf * CFrame.new(-77 + math.sin(a) * 17, 2 + math.cos(a) * 17, 3)
+			* CFrame.Angles(0, 0, -a), P.Navy)
+	end
+	part(m, "MarqueeOutline", V(180, 41, 7), cf, P.Navy)
+	local face = part(m, "MarqueeFace", V(174, 35, 2), cf * CFrame.new(0, 0, -4), P.Blue)
+	part(m, "MarqueeHighlight", V(166, 1.4, 0.6), cf * CFrame.new(0, 15.5, -5.3), P.Glass)
+	local gui = Instance.new("SurfaceGui")
+	gui.Name = "BrandLettering"
+	gui.Face = Enum.NormalId.Front
+	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	-- TextScaled has a pixel-size ceiling. A lower canvas density lets the
+	-- letters fill this large world sign instead of becoming tiny on its panel.
+	gui.PixelsPerStud = 3
+	gui.LightInfluence = 0
+	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	gui.Parent = face
+	for i, word in { "CRUSH", "IT" } do
+		local text = Instance.new("TextLabel")
+		text.Name = word
+		text.BackgroundTransparency = 1
+		text.Size = UDim2.fromScale(if i == 1 then 0.7 else 0.23, 0.94)
+		text.Position = UDim2.fromScale(if i == 1 then 0.025 else 0.74, 0.03)
+		text.Text = word
+		text.TextScaled = true
+		Style.text(text, 2.4)
+		text.TextColor3 = if i == 1 then P.White else P.Yellow
+		text.Parent = gui
+	end
 end
 
 -- A handful of physical knobs on large toy bricks; small-scale surfaces still
@@ -140,27 +228,36 @@ end
 
 function FactoryProps.shelf(parent: Instance, cf: CFrame, variant: number): Model
 	local m = model(parent, "ToyShelf")
-	for _, x in { -39, 39 } do
-		for _, z in { -10, 10 } do
-			part(m, "Upright", V(3.2, 69, 3.2), cf * CFrame.new(x, 34.5, z), P.Blue)
+	for _, x in { -53, 53 } do
+		for _, z in { -13, 13 } do
+			part(m, "Upright", V(6, 94, 6), cf * CFrame.new(x, 47, z), P.Navy)
+			part(m, "ShelfFoot", V(10, 5, 10), cf * CFrame.new(x, 2.5, z), P.Blue)
 		end
 	end
 	for level = 0, 2 do
-		local y = 4 + level * 23
-		part(m, "Shelf", V(84, 2.5, 24), cf * CFrame.new(0, y, 0), P.Navy)
-		part(m, "ShelfLip", V(84, 3, 1.3), cf * CFrame.new(0, y, -12), if level % 2 == 0 then P.Yellow else P.Red)
-		for slot = -1, 1 do
-			local anchor = cf * CFrame.new(slot * 26, y + 1.25, 0)
-			local kind = (variant + level + slot + 3) % 3
+		local y = 6 + level * 30
+		part(m, "Shelf", V(116, 4, 32), cf * CFrame.new(0, y, 0), P.Navy)
+		part(m, "ShelfLip", V(118, 5, 3), cf * CFrame.new(0, y, -16), if level % 2 == 0 then P.Yellow else P.Red)
+		part(m, "ShelfBack", V(110, 7, 2), cf * CFrame.new(0, y + 3.5, 15), P.Blue)
+		for slot = 0, 3 do
+			local anchor = cf * CFrame.new(-40.5 + slot * 27, y + 2, if slot % 2 == 0 then -1 else 1)
+			local kind = (variant + level + slot) % 3
+			local color = TOY_COLORS[(variant + level + math.floor(slot / 2)) % #TOY_COLORS + 1]
 			if kind == 0 then
-				FactoryProps.car(m, anchor, 2, TOY_COLORS[(variant + level) % #TOY_COLORS + 1])
+				FactoryProps.car(m, anchor, 2.65, color)
+				FactoryProps.brick(m, anchor * CFrame.new(0, 14.8, 0), V(12, 6, 10), P.Yellow)
 			elseif kind == 1 then
-				FactoryProps.duck(m, anchor, 1.8)
+				FactoryProps.duck(m, anchor, 2.6)
 			else
-				FactoryProps.brick(m, anchor, V(19, 9, 15), TOY_COLORS[(variant + slot + 5) % #TOY_COLORS + 1])
-				FactoryProps.brick(m, anchor * CFrame.new(2, 10.6, 0) * CFrame.Angles(0, 0.15, 0), V(12, 6, 11), P.Green)
+				FactoryProps.brick(m, anchor, V(23, 11, 21), color)
+				FactoryProps.brick(m, anchor * CFrame.new(2, 12.6, 0) * CFrame.Angles(0, 0.12, 0), V(17, 9, 16), P.Green)
 			end
 		end
+	end
+	for _, side in { -1, 1 } do
+		local base = cf * CFrame.new(side * 66, 0, -3)
+		FactoryProps.crate(m, base, 21, if side == 1 then P.Red else P.Teal, true)
+		FactoryProps.brick(m, base * CFrame.new(side * 2, 20, 1), V(18, 11, 17), P.Yellow)
 	end
 	return m
 end
@@ -213,22 +310,22 @@ end
 function FactoryProps.crane(parent: Instance, cf: CFrame): Model
 	local m = model(parent, "FactoryGantry")
 	for _, x in { -98, 98 } do
-		part(m, "Tower", V(5, 100, 7), cf * CFrame.new(x, 50, 0), P.Blue)
-		part(m, "Foot", V(14, 4, 17), cf * CFrame.new(x, 2, 0), P.Navy)
+		part(m, "Tower", V(10, 104, 12), cf * CFrame.new(x, 52, 0), P.Blue)
+		part(m, "Foot", V(22, 6, 24), cf * CFrame.new(x, 3, 0), P.Navy)
 	end
 	for _, y in { 93, 103 } do
-		part(m, "GantryBeam", V(210, 3, 8), cf * CFrame.new(0, y, 0), P.Yellow)
+		part(m, "GantryBeam", V(216, 6, 13), cf * CFrame.new(0, y, 0), P.Yellow)
 	end
 	for x = -98, 84, 14 do
 		FactoryProps.beam(m, "Truss", (cf * CFrame.new(x, 94, -3)).Position,
-			(cf * CFrame.new(x + 14, 102, -3)).Position, 1.3, P.Yellow)
+			(cf * CFrame.new(x + 14, 102, -3)).Position, 2.4, P.Yellow)
 	end
-	part(m, "Trolley", V(19, 6, 14), cf * CFrame.new(22, 91, 0), P.Blue)
+	part(m, "Trolley", V(25, 8, 20), cf * CFrame.new(22, 89, 0), P.Blue)
 	for _, x in { 19, 25 } do
-		part(m, "Cable", V(0.6, 35, 0.6), cf * CFrame.new(x, 70.5, 0), P.Dark)
+		part(m, "Cable", V(1.1, 35, 1.1), cf * CFrame.new(x, 67.5, 0), P.Dark)
 	end
-	part(m, "LiftingBar", V(24, 2, 3), cf * CFrame.new(22, 53, 0), P.Yellow)
-	FactoryProps.crate(m, cf * CFrame.new(22, 37, 0), 20, P.Red, true)
+	part(m, "LiftingBar", V(31, 3, 5), cf * CFrame.new(22, 50, 0), P.Yellow)
+	FactoryProps.crate(m, cf * CFrame.new(22, 30, 0), 26, P.Red, true)
 	return m
 end
 

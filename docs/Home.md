@@ -1,5 +1,11 @@
 # Crush It
 
+22 Oct factory polish: finished cream ceiling sections and framed skylights,
+heavier structural beams, larger stocked shelves and mascots, a readable rear
+marquee, golden floors with coarser studs, and cleaner lighting depth. Layout,
+presses, trains and UI are unchanged. Save the place's new derived floor
+material with the existing assets. See [[Systems/Toy factory environment]].
+
 21 Oct toy-factory patch: the reference picture is the visual target. A bright
 skylit hall, colourful beams, oversized toy shelves, mascot displays and a
 gantry now surround the existing Toy Train Loop. Imported studs, the raised

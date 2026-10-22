@@ -58,7 +58,7 @@ local function wall(parent: Instance, cf: CFrame, index: number)
 		panel.CanCollide = true
 		part(m, "BlueWainscot", V(width + 0.2, 19, 1), bay * CFrame.new(0, 9.5, -2.6), P.Blue)
 		part(m, "WallStripe", V(width + 0.2, 2, 1.2), bay * CFrame.new(0, 20, -2.8), P.Teal)
-		part(m, "WindowSill", V(width, 3, 9), bay * CFrame.new(0, 53, -2), P.Yellow)
+		part(m, "WindowSill", V(width, 6, 13), bay * CFrame.new(0, 53, -3), P.Yellow)
 		local window = part(m, "Window", V(width - 7, 66, 0.6), bay * CFrame.new(0, 88, 0), P.Glass)
 		window.Transparency = 0.72
 		window.CastShadow = false
@@ -68,14 +68,18 @@ local function wall(parent: Instance, cf: CFrame, index: number)
 		end
 		part(m, "WindowMullion", V(width - 4, 1.7, 2), bay * CFrame.new(0, 86, -0.8), P.Blue)
 		part(m, "UpperWall", V(width + 0.2, 28, 4), bay * CFrame.new(0, 136, 0), P.Cream)
-		part(m, "HighYellowBand", V(width + 0.2, 5, 2), bay * CFrame.new(0, 124, -3), P.Yellow)
+		part(m, "HighYellowBand", V(width + 0.2, 10, 9), bay * CFrame.new(0, 124, -4), P.Yellow)
 	end
 	for i = 0, 8 do
 		local x = -HALF + i * width
-		part(m, "RedColumn", V(7, HEIGHT, 9), cf * CFrame.new(x, HEIGHT / 2, -4), P.Red)
-		part(m, "ColumnBoot", V(10, 13, 12), cf * CFrame.new(x, 6.5, -4), P.Navy)
+		part(m, "RedColumn", V(14, HEIGHT, 16), cf * CFrame.new(x, HEIGHT / 2, -5), P.Red)
+		part(m, "ColumnBoot", V(22, 18, 24), cf * CFrame.new(x, 9, -5), P.Navy)
+		part(m, "ColumnJoint", V(20, 14, 22), cf * CFrame.new(x, HEIGHT - 14, -5), P.Yellow)
+		for _, dx in { -5, 5 } do
+			part(m, "JointBolt", V(2.3, 2.3, 1.5), cf * CFrame.new(x + dx, HEIGHT - 14, -17), P.Navy)
+		end
 		FactoryProps.beam(m, "RoofKnee", (cf * CFrame.new(x, HEIGHT - 27, -4)).Position,
-			(cf * CFrame.new(x, HEIGHT - 5, -28)).Position, 4, P.Red)
+			(cf * CFrame.new(x, HEIGHT - 5, -33)).Position, 8, P.Red)
 	end
 end
 
@@ -83,43 +87,58 @@ local function roof(parent: Instance)
 	local m = group(parent, "SkylightRoof")
 	local y = FLOOR_Y + HEIGHT
 	local bayWidth = HALF / 2
+	-- Roughly half solid cream ceiling and half framed skylights. These panels
+	-- provide a visible underside without blocking the daylight fill entirely.
 	for i = 0, 4 do
 		local x = -HALF + i * bayWidth
-		local rib = part(m, "CreamRoofRib", V(14, 3, HALF * 2 + 14), CFrame.new(x, y + 2, 0), P.Cream)
+		local rib = part(m, "CeilingPanel", V(40, 5, HALF * 2 + 40), CFrame.new(x, y + 2, 0), P.Cream)
 		rib.CastShadow = false
-		if i < 4 then
-			local glass = part(m, "Skylight", V(bayWidth - 14, 0.5, HALF * 2), CFrame.new(x + bayWidth / 2, y + 2, 0), P.Glass)
-			glass.Transparency = 0.86
-			glass.CastShadow = false
-		end
+		local cross = part(m, "CeilingPanel", V(HALF * 2 + 40, 5, 50), CFrame.new(0, y + 2, x), P.Cream)
+		cross.CastShadow = false
 	end
-	for i = 0, 8 do
-		local z = -HALF + i * HALF / 4
-		local beam = part(m, "RoofBeam", V(HALF * 2, 6, 6), CFrame.new(0, y - 2, z), P.Red)
-		-- The airy roof must not turn the playing area into a dark warehouse.
-		beam.CastShadow = false
+	for ix = 0, 3 do
+		for iz = 0, 3 do
+			local x, z = -HALF + (ix + 0.5) * bayWidth, -HALF + (iz + 0.5) * bayWidth
+			local w, d = bayWidth - 40, bayWidth - 50
+			local glass = part(m, "Skylight", V(w, 0.6, d), CFrame.new(x, y + 2, z), P.Glass)
+			glass.Transparency = 0.65
+			glass.CastShadow = false
+			for _, side in { -1, 1 } do
+				part(m, "SkylightFrame", V(w + 6, 5, 5), CFrame.new(x, y - 0.5, z + side * d / 2), P.White).CastShadow = false
+				part(m, "SkylightFrame", V(5, 5, d), CFrame.new(x + side * w / 2, y - 0.5, z), P.White).CastShadow = false
+				part(m, "SkylightMullion", V(3, 3, d), CFrame.new(x + side * w / 6, y, z), P.White).CastShadow = false
+			end
+		end
+		task.wait()
+	end
+	for i = 0, 4 do
+		local z = -HALF + i * bayWidth
+		part(m, "RoofBeam", V(HALF * 2, 12, 14), CFrame.new(0, y - 5, z), P.Red)
+		part(m, "YellowCrossbeam", V(14, 9, HALF * 2), CFrame.new(z, y - 5, 0), P.Yellow)
 		for _, x in { -HALF * 0.55, HALF * 0.55 } do
-			part(m, "LampCable", V(0.5, 11, 0.5), CFrame.new(x, y - 9, z), P.Navy)
-			part(m, "Pendant", V(9, 3, 9), CFrame.new(x, y - 16, z), P.Navy)
-			local lens = part(m, "PendantLens", V(7.5, 0.4, 7.5), CFrame.new(x, y - 17.6, z), P.White)
-			lens.Material = Enum.Material.Neon
-			lens.CastShadow = false
-			-- Emissive geometry only; no extra shadowed point lights over the plots.
+			part(m, "RoofJoint", V(23, 17, 23), CFrame.new(x, y - 5, z), P.Red)
+			part(m, "LampCable", V(1.2, 13, 1.2), CFrame.new(x, y - 15, z), P.Navy)
+			FactoryProps.workLight(m, CFrame.new(x, y - 23, z), 1.7, i == 1 or i == 3)
 		end
 	end
 end
 
 local function loadingBay(parent: Instance, cf: CFrame, text: string)
 	local m = group(parent, "LoadingBay")
-	part(m, "DoorFrame", V(61, 43, 3), cf * CFrame.new(0, 21.5, 0), P.Blue)
+	part(m, "DoorFrame", V(70, 48, 7), cf * CFrame.new(0, 24, 0), P.Blue)
 	part(m, "Shutter", V(53, 36, 1.2), cf * CFrame.new(0, 19, -2), P.Navy)
 	for y = 3, 36, 3 do
 		part(m, "ShutterSlat", V(52, 0.45, 0.5), cf * CFrame.new(0, y, -2.8), P.Blue)
 	end
 	for _, x in { -28.5, 28.5 } do
-		part(m, "SafetyPost", V(3.5, 19, 4), cf * CFrame.new(x, 9.5, -3), P.Yellow)
+		part(m, "SafetyPost", V(5, 25, 5), cf * CFrame.new(x, 12.5, -5), P.Yellow)
+		for y = 3, 23, 5 do
+			part(m, "SafetyStripe", V(5.8, 2.4, 0.4), cf * CFrame.new(x, y, -7.7) * CFrame.Angles(0, 0, -0.35), P.Dark)
+		end
 	end
-	FactoryProps.sign(m, cf * CFrame.new(0, 47, -2), 57, 7, text, P.Blue)
+	part(m, "DoorHeader", V(72, 8, 12), cf * CFrame.new(0, 44, -4), P.Blue)
+	FactoryProps.sign(m, cf * CFrame.new(0, 54, -5), 62, 9, text, P.Blue)
+	FactoryProps.workLight(m, cf * CFrame.new(0, 40, -11), 0.9, true)
 end
 
 local function displays(parent: Instance)
@@ -137,12 +156,15 @@ local function displays(parent: Instance)
 	-- Large mascots sit in outer corners, wholly beyond the plot envelope.
 	local bearPos = V(HALF - 91, FLOOR_Y, HALF - 91)
 	local bearCf = CFrame.lookAt(bearPos, V(0, FLOOR_Y, 0))
-	FactoryProps.crate(m, bearCf, 42, P.Yellow, false)
-	FactoryProps.bear(m, bearCf * CFrame.new(0, 31, 0), 3.3)
+	FactoryProps.crate(m, bearCf, 52, P.Red, false)
+	part(m, "MascotPlinth", V(55, 3, 55), bearCf * CFrame.new(0, 38, 0), P.Yellow)
+	FactoryProps.bear(m, bearCf * CFrame.new(0, 39.5, 0), 4)
+	FactoryProps.sign(m, bearCf * CFrame.new(0, 18, -27.5), 43, 18, "TOY TIME", P.Red)
 	local duckPos = V(-HALF + 89, FLOOR_Y, -HALF + 89)
 	local duckCf = CFrame.lookAt(duckPos, V(0, FLOOR_Y, 0))
-	FactoryProps.crate(m, duckCf, 38, P.Blue, false)
-	FactoryProps.duck(m, duckCf * CFrame.new(0, 28, 0), 6)
+	FactoryProps.crate(m, duckCf, 48, P.Blue, false)
+	part(m, "MascotPlinth", V(51, 3, 51), duckCf * CFrame.new(0, 35, 0), P.Yellow)
+	FactoryProps.duck(m, duckCf * CFrame.new(0, 36.5, 0), 8)
 	FactoryProps.packingBooth(m, CFrame.new(-HALF + 78, FLOOR_Y, HALF - 85) * CFrame.Angles(0, -math.pi / 4, 0))
 	FactoryProps.crane(m, CFrame.new(0, FLOOR_Y, HALF - 27))
 	-- Supply belts hug the other walls; they never cross the train or bridges.
@@ -150,7 +172,7 @@ local function displays(parent: Instance)
 	FactoryProps.conveyor(m, CFrame.new(HALF - 24, FLOOR_Y, 0) * CFrame.Angles(0, math.pi / 2, 0), 250)
 	loadingBay(m, CFrame.new(-63, FLOOR_Y, HALF - 4), "TOY STORAGE")
 	loadingBay(m, CFrame.new(63, FLOOR_Y, HALF - 4), "DISPATCH")
-	FactoryProps.sign(m, CFrame.new(0, FLOOR_Y + 125, HALF - 7), 180, 22, "CRUSH IT", P.Blue)
+	FactoryProps.brandSign(m, CFrame.new(0, FLOOR_Y + 124, HALF - 9))
 	FactoryProps.sign(m, CFrame.new(-HALF + 7, FLOOR_Y + 125, 0) * CFrame.Angles(0, -math.pi / 2, 0),
 		150, 17, "TOY FACTORY", P.Teal)
 end
@@ -197,6 +219,14 @@ function World.create()
 	toyBays(root)
 	-- Retain the approved imported-stud rollout and its legacy fallback.
 	require(script.Parent.Kit.WorldStuds).apply()
+	FactoryProps.floorFinish(root.YardFloor :: BasePart, { Enum.NormalId.Top })
+	local plots = Workspace:FindFirstChild("Plots")
+	local hub = plots and plots:FindFirstChild("Hub")
+	local commons = hub and hub:FindFirstChild("WorkshopCommons")
+	local commonsFloor = commons and commons:FindFirstChild("CommonsFloor")
+	if commonsFloor and commonsFloor:IsA("BasePart") then
+		FactoryProps.floorFinish(commonsFloor, { Enum.NormalId.Right })
+	end
 end
 
 return World

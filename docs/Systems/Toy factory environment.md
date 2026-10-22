@@ -1,5 +1,90 @@
 # Toy factory environment
 
+## Second visual polish, 2026-10-22
+
+The attached concept remains the art target. This pass addresses the thin roof,
+sparse shelves and flat lighting in the supplied current-state screenshots.
+Only World, FactoryProps and the lighting helper in Build change. Config,
+Store, Net, UI, Hub, Plots, press builders, progression and train code are intact.
+
+- Cream ceiling sections surround 16 individually framed skylights, occupying
+  approximately half the roof area. Red roof girders, yellow crossbeams,
+  columns, joints, brackets and column bases are substantially thicker. Roof
+  height remains 150 above the apron; opaque ceiling panels do not cast broad
+  shadows, while the beams and stocked displays add visible shadow depth.
+- Ten larger pendants have warm emissive undersides. Four pendants and the two
+  loading-door lights use modest, unshadowed PointLights: six actual lights total.
+- Eight shelves grow from 84 to 116 studs across, with 94-stud navy supports,
+  chunky shelf edges, four toy groups per level and three levels. Larger ducks,
+  cars carrying bricks, stacked bricks and base crates form grouped displays.
+  The giant teddy/duck grow onto larger capped toy plinths. All remain beyond
+  the playable plot envelope and use anchored, noncolliding built-in geometry.
+- A thick blue/navy rear marquee tightly frames white CRUSH and yellow IT
+  lettering with dark outlines and a simple cog silhouette. Its SurfaceGui
+  density is deliberately low enough for TextScaled to fill the physical sign.
+  Doors gain heavy surrounds, hazard accents and warm lamps; the gantry gains
+  thicker towers/beams, trolley, cables and a larger suspended toy crate.
+- Apron colour changes from (229,186,91) to richer gold (218,157,48). Only the
+  apron and WorkshopCommons.CommonsFloor use the coarser 4-stud floor finish.
+  The central blue-grey colour, geometry, physics and island gaps are retained;
+  press, rail, plot and UI materials keep their previous treatment.
+- FactoryDay uses cooler ambient shadows, warm outdoor fill, slightly stronger
+  contrast and restrained KitBloom. Inspection found an existing enabled Bloom
+  at intensity 1 as well as older SunRays. FactoryDay now disables those older
+  two effects while preserving/restoring their Enabled state for other presets.
+  Kit effects, Sky and Atmosphere are reused rather than stacked.
+
+### Place material that must be saved
+
+MaterialService.CrushItFactoryFloorStuds is a derived copy prepared in Studio:
+its NormalMap is copied from the imported Studs, ColorMap is empty, BaseMaterial
+is retained, StudsPerTile is 4, and boolean attribute FactoryFloorMaterial is
+true. This preserves normal-lit studs with the part's own colour, removing
+the baked colour contrast on broad floors. The five original variants and
+their map/tiling settings are untouched. Rojo does not manage MaterialService.
+**Save/Publish the existing place to retain this sixth material.**
+
+Game scripts cannot edit MaterialVariant texture maps (plugin capability is
+required), so the source only selects this prepared asset. If it is missing,
+the helper clones imported Studs at a separate 4-stud scale with its original
+maps; this remains functional, with stronger colour contrast. If Studs itself
+is absent or world materials are disabled, it uses subtle 4-stud legacy top
+textures (Right end face for the upright commons cylinder). Original shared
+variants are never retiled, duplicate variants are not created, and unrelated
+textures/decals remain intact. To recreate the exact finish manually, duplicate
+Studs in Studio, apply the name/settings/attribute above and save the place.
+
+### Verification and remaining visual gaps
+
+- Fresh Studio Play starts correctly with Plot=1, WalkSpeed=28 and functioning
+  player attributes. Final server Output errors are only the existing disabled
+  Studio DataStore APIs. A development-only ColorMap permission failure was
+  caught on restart and corrected before final verification.
+- Reviewed the final hall at player height and a high interior overview, then
+  inspected the environment in iPhone 17 Pro landscape simulation. Normal
+  desktop camera, HUD and device mode were restored after review.
+- Backdrop has 2,716 anchored parts and six unshadowed lights. All decorative
+  collision/touch/query flags remain off; only apron and enclosing wall/window
+  colliders are retained. The extra geometry is concentrated in large shelf
+  toys and architecture, without geometry per floor stud or new moving loops.
+- Checked 18,264 scenery/plot projection pairs at Y=1.6..110: no overlaps with
+  any of the eight plot rectangles. Walked the representative plot bridge
+  both ways and returned to the press; holding F increased Crushed to 1 with
+  health 100 and WalkSpeed 28. Boarded ToyTrain2 through its RidePrompt, rode
+  and jumped off; rail route and timetable source are unchanged.
+- Rebuilding World retains one root and the same 3,381 descendants/2,716 parts,
+  with six material variants total. Tested missing-derived-material fallback:
+  it creates one coarser clone safely, retaining the original source maps.
+  Original Studs remains tile 1 with its original colour/normal maps.
+- Rojo build and LF/whitespace checks pass. No gameplay or UI sources changed.
+
+The reference still has sculpted mascot detail, true extruded logo lettering
+and richer background dressing. This implementation uses built-in primitives
+for toys/cog and outlined SurfaceGui lettering on a thick sign instead of
+requiring unavailable meshes. Full train laps, high-tier progression and
+physical-phone FPS remain review items; phone simulation is not a device
+performance benchmark. Low graphics retains Roblox's distant-rendering limits.
+
 ## 2026-10-21 — factory hall around the Toy Train Loop
 
 The environment follows the approved bright toy-factory concept. The current

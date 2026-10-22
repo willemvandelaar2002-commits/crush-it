@@ -124,8 +124,8 @@ end
 --   "Smog"       hazy orange industrial sky, thick atmosphere
 local PRESETS = {
 	FactoryDay = {
-		clock = 13.5, lat = 25, brightness = 2.3, exposure = 0, ambient = Color3.fromRGB(132, 129, 121), outdoor = Color3.fromRGB(157, 166, 179),
-		sat = 0.08, contrast = 0.04, tint = Color3.fromRGB(255, 252, 246), bloom = 0.06, threshold = 2.6, rays = false,
+		clock = 13.5, lat = 25, brightness = 2.7, exposure = 0, ambient = Color3.fromRGB(105, 114, 137), outdoor = Color3.fromRGB(174, 168, 153),
+		sat = 0.06, contrast = 0.09, tint = Color3.fromRGB(255, 249, 236), bloom = 0.05, threshold = 2.6, rays = false,
 		density = 0.08, offset = 0, haze = 0.12, glare = 0, color = Color3.fromRGB(222, 238, 250), decay = Color3.fromRGB(185, 207, 226), stars = 0, sun = 12,
 	},
 	YardDay = {
@@ -163,6 +163,21 @@ Build.SkyPresets = PRESETS
 
 function Build.lighting(preset: string?)
 	local p = PRESETS[preset or "Day"] or PRESETS.Day
+	-- The place also contains older Bloom/SunRays effects. FactoryDay owns
+	-- those effects through KitBloom/KitSunRays, so avoid stacking them.
+	-- Retain their original state for callers that switch to another preset.
+	for _, e in Lighting:GetChildren() do
+		if (e:IsA("BloomEffect") and e.Name ~= "KitBloom") or (e:IsA("SunRaysEffect") and e.Name ~= "KitSunRays") then
+			local enabled = e:GetAttribute("FactoryPreviousEnabled")
+			if preset == "FactoryDay" then
+				if enabled == nil then e:SetAttribute("FactoryPreviousEnabled", e.Enabled) end
+				e.Enabled = false
+			elseif typeof(enabled) == "boolean" then
+				e.Enabled = enabled
+				e:SetAttribute("FactoryPreviousEnabled", nil)
+			end
+		end
+	end
 	Lighting.ClockTime = p.clock
 	Lighting.GeographicLatitude = p.lat
 	Lighting.Brightness = p.brightness
