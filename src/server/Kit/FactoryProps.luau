@@ -1,5 +1,5 @@
 --!strict
--- Reusable, static toy-factory scenery. Ground anchors use local -Z as front.
+-- Static scenery with ground anchors: +Y up, bear/duck front -Z, car front +X.
 -- Decoration never participates in train movement, collisions or raycasts.
 local Build = require(script.Parent.Build)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -10,7 +10,7 @@ local V = Vector3.new
 local C = Color3.fromRGB
 local P = {
 	Cream = C(247, 231, 196), Floor = C(218, 157, 48), Blue = C(45, 114, 207),
-	Navy = C(30, 54, 88), Red = C(232, 80, 66), Yellow = C(255, 202, 53),
+	Navy = C(30, 54, 88), Red = C(217, 85, 70), Yellow = C(241, 192, 72),
 	Teal = C(37, 179, 183), Green = C(105, 196, 77), White = C(250, 248, 234),
 	Glass = C(154, 222, 244), Dark = C(34, 43, 59), Brown = C(172, 108, 59),
 }
@@ -193,6 +193,9 @@ function FactoryProps.car(parent: Instance, cf: CFrame, scale: number, color: Co
 	for _, z in { -1.45, 1.45 } do
 		block("Headlight", V(0.15, 0.7, 1), V(4.55, 2.4, z), P.White)
 	end
+	m.WorldPivot = cf
+	m:SetAttribute("PropKind", "ToyCar")
+	m:SetAttribute("PropScale", scale)
 	return m
 end
 
@@ -205,6 +208,9 @@ function FactoryProps.duck(parent: Instance, cf: CFrame, scale: number): Model
 		ball(m, "Eye", V(0.65, 0.85, 0.65) * scale, cf * CFrame.new(side * 1.55 * scale, 6.45 * scale, -3.55 * scale), P.Dark)
 		ball(m, "Wing", V(1.2, 2.8, 4.5) * scale, cf * CFrame.new(side * 3.1 * scale, 2.8 * scale, 0.3 * scale), C(247, 179, 37))
 	end
+	m.WorldPivot = cf
+	m:SetAttribute("PropKind", "RubberDuck")
+	m:SetAttribute("PropScale", scale)
 	return m
 end
 
@@ -226,8 +232,9 @@ function FactoryProps.crate(parent: Instance, cf: CFrame, size: number, color: C
 	return m
 end
 
-function FactoryProps.shelf(parent: Instance, cf: CFrame, variant: number): Model
+function FactoryProps.shelf(parent: Instance, cf: CFrame, variant: number, theme: string?): Model
 	local m = model(parent, "ToyShelf")
+	m:SetAttribute("DisplayTheme", theme or "Mixed")
 	for _, x in { -53, 53 } do
 		for _, z in { -13, 13 } do
 			part(m, "Upright", V(6, 94, 6), cf * CFrame.new(x, 47, z), P.Navy)
@@ -239,11 +246,26 @@ function FactoryProps.shelf(parent: Instance, cf: CFrame, variant: number): Mode
 		part(m, "Shelf", V(116, 4, 32), cf * CFrame.new(0, y, 0), P.Navy)
 		part(m, "ShelfLip", V(118, 5, 3), cf * CFrame.new(0, y, -16), if level % 2 == 0 then P.Yellow else P.Red)
 		part(m, "ShelfBack", V(110, 7, 2), cf * CFrame.new(0, y + 3.5, 15), P.Blue)
-		for slot = 0, 3 do
-			local anchor = cf * CFrame.new(-40.5 + slot * 27, y + 2, if slot % 2 == 0 then -1 else 1)
+		local count = if theme == "Ducks" then 3 - level else if theme == "Cars" then 4 - level else if theme == "Packing" then 3 else 4
+		for slot = 0, count - 1 do
+			local spacing = if count > 1 then 81 / (count - 1) else 0
+			local anchor = cf * CFrame.new(if count == 1 then 0 else -40.5 + slot * spacing, y + 2, if slot % 2 == 0 then -1 else 1)
 			local kind = (variant + level + slot) % 3
 			local color = TOY_COLORS[(variant + level + math.floor(slot / 2)) % #TOY_COLORS + 1]
-			if kind == 0 then
+			if theme == "Cars" then
+				FactoryProps.car(m, anchor * CFrame.Angles(0, (slot % 3 - 1) * 0.16, 0), 2.2 + level * 0.4, TOY_COLORS[(variant + slot + level) % #TOY_COLORS + 1])
+			elseif theme == "Ducks" then
+				FactoryProps.duck(m, anchor * CFrame.Angles(0, (slot - 1) * 0.15, 0), if level == 2 then 4.2 else 2.2 + level * 0.8)
+			elseif theme == "Packing" then
+				FactoryProps.crate(m, anchor, 23, if slot % 2 == 0 then C(190, 151, 106) else P.Teal, level == 0)
+				if level == 2 and slot == 1 then FactoryProps.crate(m, anchor * CFrame.new(0, 18, 0), 17, P.Red, false) end
+			elseif theme == "Blocks" then
+				FactoryProps.brick(m, anchor, V(23, 9, 21), color)
+				if (slot + level) % 3 ~= 0 then
+					FactoryProps.brick(m, anchor * CFrame.new(0, 10.5, 0), V(20, 8, 18), TOY_COLORS[(variant + level + 1) % #TOY_COLORS + 1])
+				end
+				if level == 2 and slot == 1 then FactoryProps.brick(m, anchor * CFrame.new(2, 20, 0), V(16, 6, 15), P.Yellow) end
+			elseif kind == 0 then
 				FactoryProps.car(m, anchor, 2.65, color)
 				FactoryProps.brick(m, anchor * CFrame.new(0, 14.8, 0), V(12, 6, 10), P.Yellow)
 			elseif kind == 1 then
@@ -258,6 +280,11 @@ function FactoryProps.shelf(parent: Instance, cf: CFrame, variant: number): Mode
 		local base = cf * CFrame.new(side * 66, 0, -3)
 		FactoryProps.crate(m, base, 21, if side == 1 then P.Red else P.Teal, true)
 		FactoryProps.brick(m, base * CFrame.new(side * 2, 20, 1), V(18, 11, 17), P.Yellow)
+	end
+	local names = { Cars = "MOTOR WORKS", Ducks = "DUCK PARADE", Blocks = "BLOCK STORAGE", Packing = "PACK & SHIP" }
+	if theme then
+		local headerY = if theme == "Ducks" then 112 else if theme == "Packing" then 105 else if theme == "Blocks" then 104 else 99
+		FactoryProps.sign(m, cf * CFrame.new(0, headerY, -17), 74, 8, names[theme] or "TOY SUPPLY", P.Blue)
 	end
 	return m
 end
@@ -285,6 +312,9 @@ function FactoryProps.bear(parent: Instance, cf: CFrame, scale: number): Model
 			* CFrame.Angles(0, 0, side * 0.2), P.Red)
 	end
 	round("BowKnot", V(1.9, 2, 1.7), V(0, 12.2, -4.2), P.Red)
+	m.WorldPivot = cf
+	m:SetAttribute("PropKind", "TeddyBear")
+	m:SetAttribute("PropScale", scale)
 	return m
 end
 

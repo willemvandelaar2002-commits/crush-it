@@ -71,7 +71,7 @@ local function grant(player: Player, data: any, reward: any): string
 		data.goldenRush = (data.goldenRush or 0) + reward.count
 		player:SetAttribute("GoldenRush", data.goldenRush)
 		api.sync(player)
-		return reward.count .. " Golden objects!"
+		return reward.count .. " Golden production bonuses!"
 	end
 	local amount = math.max(Config.Rewards.MinCash, math.floor(api.cashPerSecond(player) * reward.seconds))
 	api.addCash(player, amount)

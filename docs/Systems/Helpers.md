@@ -1,5 +1,10 @@
 # Helpers (Mini Presses)
 
+22 Oct redesign: Mini Press helpers are retired. Each saved helper migrates
+into a separate owned Steel Stamp in [[Collectible crushers]], with its legacy
+level retained up to the new cap. Helper/smelter loops do not start in the new
+mode. The implementation below is historical and kept for recovery.
+
 The "units" from the reference games (capybaras in the onsen, tanks in Destroy a Vault):
 small presses you buy and place in two yards at the far end of your plot, either side
 of the conveyor, in front of the toy factory hall. They crush on their own and feed their value

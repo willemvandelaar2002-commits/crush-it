@@ -213,6 +213,7 @@ function Plots.all(): { Plot }
 end
 
 function Plots.create()
+	if Config.Crushers.Enabled then require(script.Parent.CrusherPlots).create(root, Plots) return end
 	local theme = Style.theme(Config.Look.Theme)
 	local F = Config.Plots.FloorSize
 	local P = Config.Plots

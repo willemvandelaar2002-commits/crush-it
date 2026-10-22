@@ -28,6 +28,9 @@ local NAMES = { "Crush", "BuyUpgrade", "Crushed", "Hit", "Notice", "Upgraded", "
 
 local Net = {}
 
+-- Collectible-crusher protocol; legacy names remain available for perks/rewards.
+for _, name in { "CrusherAction", "CrusherState", "CrusherOpen" } do table.insert(NAMES, name) end
+
 local folder: Instance
 if RunService:IsServer() then
 	folder = ReplicatedStorage:FindFirstChild("Remotes") or Instance.new("Folder")

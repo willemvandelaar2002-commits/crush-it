@@ -124,8 +124,8 @@ end
 --   "Smog"       hazy orange industrial sky, thick atmosphere
 local PRESETS = {
 	FactoryDay = {
-		clock = 13.5, lat = 25, brightness = 2.7, exposure = 0, ambient = Color3.fromRGB(105, 114, 137), outdoor = Color3.fromRGB(174, 168, 153),
-		sat = 0.06, contrast = 0.09, tint = Color3.fromRGB(255, 249, 236), bloom = 0.05, threshold = 2.6, rays = false,
+		clock = 13.5, lat = 25, brightness = 2.4, exposure = 0, ambient = Color3.fromRGB(121, 129, 145), outdoor = Color3.fromRGB(174, 171, 163),
+		sat = 0.02, contrast = 0.05, tint = Color3.fromRGB(255, 252, 245), bloom = 0.04, threshold = 2.6, rays = false,
 		density = 0.08, offset = 0, haze = 0.12, glare = 0, color = Color3.fromRGB(222, 238, 250), decay = Color3.fromRGB(185, 207, 226), stars = 0, sun = 12,
 	},
 	YardDay = {

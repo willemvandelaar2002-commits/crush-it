@@ -477,4 +477,5 @@ function Config.pressWidth(tier: number): number
 	return w
 end
 
+Config.Crushers = require(script.Parent.CrusherConfig)
 return Config

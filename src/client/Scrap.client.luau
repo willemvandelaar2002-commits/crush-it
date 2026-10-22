@@ -1,4 +1,6 @@
 --!strict
+-- Retired income/progression presentation is dormant in the crusher redesign.
+if require(game:GetService("ReplicatedStorage").Shared.Config).Crushers.Enabled then return end
 -- Scrap HUD and effects:
 --   * a pill at the bottom centre: how much scrap you carry (worth in cash) and
 --     "Deposit it at your Scrap Shop!" (hidden at 0)

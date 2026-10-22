@@ -1,5 +1,9 @@
 # Economy
 
+22 Oct redesign: the current economy is documented in [[Collectible crushers]]
+and configured in shared/CrusherConfig.luau (Config.Crushers). The object-tier
+prices below are historical and retained for recovery; that income loop is dormant.
+
 All numbers in `src/shared/Config.luau`. t = tier (1 = Apple), l = level.
 
 | Thing | Formula |

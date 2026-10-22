@@ -1,4 +1,6 @@
 --!strict
+-- Retired income/progression presentation is dormant in the crusher redesign.
+if require(game:GetService("ReplicatedStorage").Shared.Config).Crushers.Enabled then return end
 -- "Next up" goal bar, top centre (Destroy a Vault's "223.88K / 225.00K" bar):
 -- always shows the next thing to save for and what it gives.
 --   * not at the biggest press  -> cash / price of the Bigger Press, "Next up: <object>"

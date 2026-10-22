@@ -24,6 +24,7 @@ export type Api = {
 	addCash: (Player, number) -> (),
 	sync: (Player) -> (),
 	cashPerSecond: (Player) -> number, -- normal earning rate (for offline earnings)
+	finishLegacyProduct: ((Player) -> ())?,
 }
 
 local Shop = {}
@@ -106,12 +107,13 @@ end
 local function grant(player: Player, productId: string)
 	local data = api.getData(player)
 	if productId == "FinishSmelt" then
+		if api.finishLegacyProduct then api.finishLegacyProduct(player) Purchased:FireClient(player,{id=productId,text="All scrap sold!"}) return end
 		require(script.Parent.Scrap).finishSmelt(player, data)
 		Purchased:FireClient(player, { id = productId, text = "Smelting done!" })
 	elseif productId == "GoldenRush" then
 		data.goldenRush = (data.goldenRush or 0) + Store.GoldenRushCount
 		player:SetAttribute("GoldenRush", data.goldenRush)
-		Purchased:FireClient(player, { id = productId, text = Store.GoldenRushCount .. " Golden objects coming up!" })
+		Purchased:FireClient(player, { id = productId, text = Store.GoldenRushCount .. " Golden production bonuses!" })
 	else
 		local amount = Store.cashPackAmount(productId, data.tier)
 		api.addCash(player, amount)

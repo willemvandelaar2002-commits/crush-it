@@ -1,5 +1,12 @@
 # Shop, onboarding, analytics
 
+22 Oct redesign: [[Collectible crushers]] documents the current tutorial and
+perk mapping. Basic automatic crushing is free; AutoCrush owners gain +25%
+damage, Lucky improves crusher rarity weights, AutoCollect collects/sells,
+DoubleCash and OfflineEarnings use fleet production. IDs and ownership attribute
+contracts are retained. FinishSmelt now sells finished scrap, and GoldenRush
+keeps ten 10x completion bonuses. Legacy promotions are hidden during the new loop.
+
 ## Robux (`src/shared/Store.luau`)
 All ids are **0** until the passes/products exist on the Creator Dashboard;
 a 0 id shows "SOON" and can't be bought. Fill the ids in Store.luau only.

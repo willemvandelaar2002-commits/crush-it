@@ -1,4 +1,6 @@
 --!strict
+-- Retired income/progression presentation is dormant in the crusher redesign.
+if require(game:GetService("ReplicatedStorage").Shared.Config).Crushers.Enabled then return end
 -- Animates the Mini Presses (server/Helpers.luau): every Period seconds the
 -- ram (tag "HelperRam") slams down onto the object, which squashes, sparks
 -- fly and (for your own helpers) a small "+$X" floats up; then the ram rises

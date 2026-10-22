@@ -1,5 +1,77 @@
 # Toy factory environment
 
+22 Oct colour follow-up: restored the brighter golden apron (218,157,48) at
+Willem's request. The softer lighting, reduced overhead shadows, larger studs
+and themed displays remain. This supersedes the honey colour described below.
+
+## Ceiling, softer light and display identities, 2026-10-22
+
+This pass preserves the current thick structure, larger lettering and 4-stud
+floor treatment. Playable geometry, trains, press progression, UI and all
+Config/Store/Net values are unchanged. Source edits remain in World,
+FactoryProps and the FactoryDay lighting preset in Build.
+
+- The former 16 openings actually covered ~63% of the 880 x 880 roof, despite
+  the earlier approximate half-solid description. Four diagonal openings now
+  have broad opaque cream infills, including two above the centre. Twelve
+  skylights cover 47.4%; the remaining roof is solid cream and structure.
+  Existing thick borders, red/yellow girders and warm chunky pendants remain.
+- Inspection found 40 casting roof parts: five red beams, five yellow beams,
+  ten joints, ten cables and ten lamp brackets. Those high casters produced
+  the long stripes seen in the previous screenshots. The roof subtree now
+  has zero shadow-casting parts. Shelves, toys, crates, platforms and columns
+  keep their grounding shadows; global shadows have not been disabled.
+- FactoryDay brightness is 2.4, with ambient (121,129,145), warm neutral outdoor
+  fill (174,171,163), saturation 0.02, contrast 0.05 and bloom 0.04. Existing
+  Kit effects are reused; the previously handled older Bloom/SunRays stay
+  disabled only for this preset. ShadowSoftness was not used as the sole fix.
+- Apron colour is softer honey (203,166,104); red (217,85,70) and yellow
+  (241,192,72) accents are less intense. Central blue-grey colour is unchanged,
+  as are imported maps, the dedicated coarser floor variant and all UI textures.
+- The same eight perimeter rack anchors now have two examples of each theme:
+  Motor Works (coloured cars, varied yaw/scale and fewer cars on upper shelves),
+  Duck Parade (3/2/1 ducks per level, with a larger top duck), Block Storage
+  (colour-grouped stepped stacks), and Pack & Ship (shipping crates and a
+  top stack near the existing striped packing booth). Headers identify each
+  group; small repeated mixed-toy arrangements are removed. Existing giant
+  teddy/duck landmarks and their substantial display plinths remain.
+- Top-tier stacks and duck headers are raised/limited to avoid intersecting
+  the shelf above or obscuring the largest duck. All scenery remains anchored
+  and noncolliding, with clear plot entrances and the central Mega Crusher view.
+
+### Blender preparation
+
+[[Blender prop briefs]] documents the three replacement entry points, measured
+unit bounds, ground anchors, forward axes, display scales and modelling briefs.
+The bear/duck/car models now explicitly use the passed ground `cf` as WorldPivot
+and expose PropKind/PropScale for inspection. Bear/duck face -Z; the car's
+existing +X front is documented rather than silently rotated. Procedural
+builders remain active. No Blender assets, mesh IDs or speculative loader exist.
+
+### Verification
+
+- Fresh Play: 2,426 backdrop parts (down from 2,716), six lights, zero roof
+  casters, four opaque infills and 47.4% skylight coverage. No invalid
+  decorative anchor/collision/touch/query flags were found.
+- Compared rendered elevated views against the earlier pass: the long roof
+  shadow bars are absent and shadows remain under racks/props/platforms.
+  Inspected the ceiling and displays from the hub and Plot 1, Plot 3 and Plot 5
+  at player height; solid ceiling sections now read clearly between skylights.
+  Reviewed headers and shelf silhouettes without hiding the Mega Crusher.
+- Projection checks against all eight plot rectangles found no scenery overlap
+  at gameplay height. Walked Plot 1's bridge out and back, reached its press
+  and held F: Crushed increased to 1, health remained 100 and WalkSpeed 28.
+  Boarded ToyTrain1 with its actual RidePrompt, rode, then jumped off.
+- Fresh server Output errors are only the existing disabled Studio DataStore
+  APIs. Rojo build and LF/whitespace checks pass. No gameplay or UI source edits.
+  Normal desktop HUD/camera are restored after review.
+
+Remaining: custom sculpted toys and true extruded lettering still require
+future imported assets. Full train laps, high-tier progression and real-phone
+performance were not rerun for this environment-only pass. Low graphics still
+uses Roblox's rendering-distance limits. Keep the previously prepared floor
+material saved with the place; this pass adds no further place-only assets.
+
 ## Second visual polish, 2026-10-22
 
 The attached concept remains the art target. This pass addresses the thin roof,

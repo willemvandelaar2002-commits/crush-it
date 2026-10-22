@@ -1,4 +1,6 @@
 --!strict
+-- Retired income/progression presentation is dormant in the crusher redesign.
+if require(game:GetService("ReplicatedStorage").Shared.Config).Crushers.Enabled then return end
 -- Ground guide (Kit/GuidePath): glowing chevrons that lead the player to
 --   * the sell pad of their scrap shop when they carry scrap (always in the first
 --     session, later once it would pay for an upgrade),

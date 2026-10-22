@@ -1,4 +1,5 @@
 --!strict
+if require(game:GetService("ReplicatedStorage").Shared.Config).Crushers.Enabled then return end
 -- Zone label at the top of the screen (Destroy a Vault's "Base" / "Market"):
 -- "Your Plot", "<Name>'s Plot", "Free Plot", "Scrap Shop" or "Hub",
 -- in a cobalt workshop plate that pops when it changes. Plots carry their

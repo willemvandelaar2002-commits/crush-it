@@ -1,5 +1,11 @@
 # Press and plots
 
+22 Oct gameplay redesign: plot origins/footprints and train access remain, while
+three rear working bays, roll/bin/seller stations and two upgrade boards replace
+the old per-plot manual press and smelter. Equipped inventory instances use the
+existing press builder at bay scale. See [[Collectible crushers]] for current
+gameplay and migration; the manual-tier details below are historical.
+
 21 Oct connected-land update: the hub now sits on a broad raised commons
 that reaches beneath the train loop. Its foundation now stops at the road,
 restoring the 12-stud sandy gap to the plot islands. Four wider

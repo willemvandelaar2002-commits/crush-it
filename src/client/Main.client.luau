@@ -13,6 +13,7 @@ local Debris = game:GetService("Debris")
 local Workspace = game:GetService("Workspace")
 
 local Config = require(ReplicatedStorage.Shared.Config)
+if Config.Crushers.Enabled then require(script.Parent.CrusherHud).start() return end
 local Format = require(ReplicatedStorage.Shared.Format)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Objects = require(ReplicatedStorage.Shared.Objects)

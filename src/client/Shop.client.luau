@@ -94,7 +94,7 @@ local function buyProduct(id: string)
 end
 
 -- AUTO switch on top of the CRUSH button ---------------------------------------
-local crushButton = hud:WaitForChild("CrushButton") :: TextButton
+local crushButton = (if Config.Crushers.Enabled then hud:WaitForChild("FactoryActions"):WaitForChild("CrushButton") else hud:WaitForChild("CrushButton")) :: TextButton
 local autoButton = make("TextButton", {
 	Name = "AutoButton", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 0, -10), Size = UDim2.new(1, 0, 0, 40),
 	BackgroundColor3 = GREY, Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "AUTO", Parent = crushButton,
@@ -124,6 +124,7 @@ end)
 player:GetAttributeChangedSignal(Store.passAttr("AutoCrush")):Connect(refreshAuto)
 player:GetAttributeChangedSignal("AutoOn"):Connect(refreshAuto)
 refreshAuto()
+if Config.Crushers.Enabled then autoButton.Visible = false end
 
 -- Auto Crush works while AFK: stop Roblox's 20-minute idle kick for pass owners.
 player.Idled:Connect(function()
@@ -292,7 +293,7 @@ local function fitOffers()
 	local viewport = Workspace.CurrentCamera.ViewportSize
 	local h = viewport.Y
 	offersScale.Scale = math.clamp((h - 380) / 480, 0.5, 1) -- stays between the leaderboard and the CRUSH button
-	offers:SetAttribute("FitsScreen", not Style.compact() and h >= 650)
+	offers:SetAttribute("FitsScreen", not Config.Crushers.Enabled and not Style.compact() and h >= 650)
 	local book = hud:FindFirstChild("Book") :: GuiObject?
 	offers.Visible = offers:GetAttribute("FitsScreen") == true and not panel.Visible and not (book and book.Visible)
 end

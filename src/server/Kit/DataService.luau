@@ -33,6 +33,7 @@ local RETRIES = 4
 type Store = { UpdateAsync: (any, string, (any) -> any) -> any, GetAsync: (any, string) -> any }
 
 local store: Store
+local mockActive = false
 local defaults: { [string]: any } = {}
 local sanitizeFn: ((any) -> any)? = nil
 local profiles: { [Player]: { data: any, loaded: boolean, canSave: boolean } } = {}
@@ -88,6 +89,7 @@ local function resolveStore(name: string): Store
 	end)
 	if not ok then
 		if RunService:IsStudio() then
+			mockActive = true
 			warn("[DataService] No DataStore access in Studio (Game Settings > Security > Enable Studio Access to API Services). Using an in-memory store; nothing is saved.")
 			return mockStore()
 		end
@@ -189,6 +191,21 @@ end
 function DataService.get(player: Player): any
 	local p = profiles[player]
 	return if p and p.loaded then p.data else nil
+end
+
+function DataService.isMock(): boolean return mockActive end
+function DataService.replaceForTest(player: Player, data: any)
+	assert(RunService:IsStudio() and mockActive, "Only the Studio mock profile may be replaced")
+	local p = profiles[player] assert(p and p.loaded)
+	local nextData = deepCopy(data) reconcile(nextData, defaults)
+	p.data = if sanitizeFn then (sanitizeFn :: any)(nextData) else nextData
+end
+
+function DataService.reloadForTest(player: Player)
+	assert(RunService:IsStudio() and mockActive, "Only Studio mock profiles can be reloaded")
+	local saved = store:GetAsync(key(player)) assert(saved, "Save the profile before reloading")
+	saved._lock = nil reconcile(saved, defaults)
+	profiles[player].data = if sanitizeFn then (sanitizeFn :: any)(saved) else saved
 end
 
 function DataService.whenLoaded(player: Player): any

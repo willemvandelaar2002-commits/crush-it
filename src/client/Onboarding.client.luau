@@ -1,4 +1,6 @@
 --!strict
+-- Retired income/progression presentation is dormant in the crusher redesign.
+if require(game:GetService("ReplicatedStorage").Shared.Config).Crushers.Enabled then return end
 -- First-session tutorial as numbered steps (like the Yuzu game's
 -- "Tutorial / Collect Yuzu (0/3)"): big outlined text at the top, a pulsing
 -- ring + pointing hand on the button to use, ground arrows (Guide.client)

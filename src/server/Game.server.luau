@@ -14,6 +14,10 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
+if Config.Crushers.Enabled then
+	require(script.Parent.CrusherGame).start()
+	return -- Do not start retired smelting/helpers/manual-income loops.
+end
 local Format = require(ReplicatedStorage.Shared.Format)
 local Net = require(ReplicatedStorage.Shared.Net)
 local DataService = require(script.Parent.Kit.DataService)

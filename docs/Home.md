@@ -1,5 +1,18 @@
 # Crush It
 
+22 Oct gameplay redesign: collect and level hydraulic crushers, equip them in
+three rear working bays, automatically crush inputs, collect scrap and sell
+directly for cash. Separate Production and Rolling boards, instance inventory
+and a new tutorial replace manual crushing, object-tier progression and smelting.
+Existing profiles migrate without a wipe, with legacy recovery retained. See
+[[Systems/Collectible crushers]] for economy, migration and validation limits.
+
+22 Oct current factory refinement: twelve skylights and four broad opaque
+infill bays give a roughly half-solid roof. Overhead beam shadow bars are
+removed while display contact shadows remain. Brighter golden flooring and distinct
+car/duck/block/packing displays soften and organise the hall. See
+[[Systems/Toy factory environment]] and [[Systems/Blender prop briefs]].
+
 22 Oct factory polish: finished cream ceiling sections and framed skylights,
 heavier structural beams, larger stocked shelves and mascots, a readable rear
 marquee, golden floors with coarser studs, and cleaner lighting depth. Layout,
@@ -33,6 +46,7 @@ Small, quick game to test alongside WarChest: one loop, few systems, out fast.
 
 - [[Plan]] — the idea and the milestones
 - [[Systems/Economy]] — objects, upgrades, prices and the timing behind them
+- [[Systems/Collectible crushers]] — current roll/equip/produce/collect/sell loop and save migration
 - [[Systems/Press and plots]] — the world, the press, crushing
 - [[Systems/Shop]] — Robux passes/products, onboarding, analytics, thumbnail
 - [[Systems/Progression]] — rebirth, golden/diamond objects, collection book

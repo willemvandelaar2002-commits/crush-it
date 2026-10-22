@@ -87,8 +87,8 @@ local function roof(parent: Instance)
 	local m = group(parent, "SkylightRoof")
 	local y = FLOOR_Y + HEIGHT
 	local bayWidth = HALF / 2
-	-- Roughly half solid cream ceiling and half framed skylights. These panels
-	-- provide a visible underside without blocking the daylight fill entirely.
+	-- Twelve open bays occupy ~47% of the hall's roof plan. Four broad opaque
+	-- infills, including two above the centre, make the solid ceiling readable.
 	for i = 0, 4 do
 		local x = -HALF + i * bayWidth
 		local rib = part(m, "CeilingPanel", V(40, 5, HALF * 2 + 40), CFrame.new(x, y + 2, 0), P.Cream)
@@ -100,9 +100,13 @@ local function roof(parent: Instance)
 		for iz = 0, 3 do
 			local x, z = -HALF + (ix + 0.5) * bayWidth, -HALF + (iz + 0.5) * bayWidth
 			local w, d = bayWidth - 40, bayWidth - 50
-			local glass = part(m, "Skylight", V(w, 0.6, d), CFrame.new(x, y + 2, z), P.Glass)
-			glass.Transparency = 0.65
-			glass.CastShadow = false
+			if ix == iz then
+				part(m, "CeilingInfill", V(w, 5, d), CFrame.new(x, y + 2, z), P.Cream).CastShadow = false
+			else
+				local glass = part(m, "Skylight", V(w, 0.6, d), CFrame.new(x, y + 2, z), P.Glass)
+				glass.Transparency = 0.65
+				glass.CastShadow = false
+			end
 			for _, side in { -1, 1 } do
 				part(m, "SkylightFrame", V(w + 6, 5, 5), CFrame.new(x, y - 0.5, z + side * d / 2), P.White).CastShadow = false
 				part(m, "SkylightFrame", V(5, 5, d), CFrame.new(x + side * w / 2, y - 0.5, z), P.White).CastShadow = false
@@ -120,6 +124,11 @@ local function roof(parent: Instance)
 			part(m, "LampCable", V(1.2, 13, 1.2), CFrame.new(x, y - 15, z), P.Navy)
 			FactoryProps.workLight(m, CFrame.new(x, y - 23, z), 1.7, i == 1 or i == 3)
 		end
+	end
+	-- High directional casters made long, dark bars across the apron. Keep
+	-- the structure visible while retaining toy/shelf/crate contact shadows.
+	for _, p in m:GetDescendants() do
+		if p:IsA("BasePart") then p.CastShadow = false end
 	end
 end
 
@@ -145,12 +154,12 @@ local function displays(parent: Instance)
 	local m = group(parent, "ToyDisplays")
 	local inset = HALF - 25
 	for i, p in {
-		{ pos = V(-230, FLOOR_Y, inset), yaw = 0 }, { pos = V(230, FLOOR_Y, inset), yaw = 0 },
-		{ pos = V(-230, FLOOR_Y, -inset), yaw = math.pi }, { pos = V(230, FLOOR_Y, -inset), yaw = math.pi },
-		{ pos = V(inset, FLOOR_Y, -210), yaw = math.pi / 2 }, { pos = V(inset, FLOOR_Y, 210), yaw = math.pi / 2 },
-		{ pos = V(-inset, FLOOR_Y, -210), yaw = -math.pi / 2 }, { pos = V(-inset, FLOOR_Y, 210), yaw = -math.pi / 2 },
+		{ pos = V(-230, FLOOR_Y, inset), yaw = 0, theme = "Cars" }, { pos = V(230, FLOOR_Y, inset), yaw = 0, theme = "Blocks" },
+		{ pos = V(-230, FLOOR_Y, -inset), yaw = math.pi, theme = "Ducks" }, { pos = V(230, FLOOR_Y, -inset), yaw = math.pi, theme = "Blocks" },
+		{ pos = V(inset, FLOOR_Y, -210), yaw = math.pi / 2, theme = "Cars" }, { pos = V(inset, FLOOR_Y, 210), yaw = math.pi / 2, theme = "Packing" },
+		{ pos = V(-inset, FLOOR_Y, -210), yaw = -math.pi / 2, theme = "Ducks" }, { pos = V(-inset, FLOOR_Y, 210), yaw = -math.pi / 2, theme = "Packing" },
 	} do
-		FactoryProps.shelf(m, CFrame.new(p.pos) * CFrame.Angles(0, p.yaw, 0), i)
+		FactoryProps.shelf(m, CFrame.new(p.pos) * CFrame.Angles(0, p.yaw, 0), i, p.theme)
 		task.wait()
 	end
 	-- Large mascots sit in outer corners, wholly beyond the plot envelope.

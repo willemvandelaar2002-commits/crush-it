@@ -1,5 +1,10 @@
 # Scrap and the scrap shop (20 Oct)
 
+22 Oct redesign: [[Collectible crushers]] supersedes this smelter flow. Finished
+objects add persisted ready scrap to a bin; Collect moves it into carried scrap,
+and Sell converts it directly into cash. Existing smelter balances are migrated
+once. The old deposit/smelt/collect-cash implementation is dormant.
+
 The core loop changed (after the Yuzu game Willem liked): **crushing no longer
 pays cash**. The object breaks into scrap you pick up and sell.
 

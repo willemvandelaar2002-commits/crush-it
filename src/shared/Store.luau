@@ -34,6 +34,7 @@ Store.CashPackShare = { CashSmall = 0.25, CashMedium = 1, CashLarge = 4 }
 Store.GoldenRushCount = 10
 
 function Store.cashPackAmount(productId: string, tier: number): number
+	if Config.Crushers.Enabled then return Config.Crushers.CashPacks[productId] or 0 end
 	local share = Store.CashPackShare[productId] or 0
 	return math.floor(Config.SizeCost(math.min(tier, Config.MaxTier - 1)) * share)
 end
@@ -67,4 +68,16 @@ function Store.productById(id: string): Product?
 	return nil
 end
 
+if Config.Crushers.Enabled then
+	for _, pass in Store.Passes do
+		if pass.perk == "AutoCrush" then pass.title = "Production Boost" pass.desc = "+25% strike damage. Automatic crushing is free for everyone." end
+		if pass.perk == "Lucky" then pass.desc = "Doubles uncommon-and-rarer crusher roll weights." end
+		if pass.perk == "AutoCollect" then pass.desc = "Automatically collects and sells your finished scrap." end
+	end
+	for _, product in Store.Products do
+		if product.id == "FinishSmelt" then product.title = "Sell All Scrap" product.desc = "Collect and sell all finished scrap instantly." end
+		if product.id == "GoldenRush" then product.title = "Golden Batch" product.desc = "Next 10 completed inputs award 10x scrap value." end
+		if Store.CashPackShare[product.id] then product.desc = "Cash for crusher rolls and upgrades." end
+	end
+end
 return Store

@@ -1,5 +1,10 @@
 # Progression (rebirth, rare objects, collection)
 
+22 Oct redesign: progression now means global Production upgrades, global
+Rolling upgrades and levels on unique owned crusher instances. Rebirth/object
+collection are retained for recovery and migration, with no active legacy
+income. The Book panel now compares crushers. See [[Collectible crushers]].
+
 All numbers in `src/shared/Config.luau`.
 
 ## Rebirth
