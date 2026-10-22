@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-23: Willem: upper floor should be bought, not always there, and bays should fill the left side before the right. Upper floor per wing is now hidden, then a ghost with a NEW FLOOR / BUILD sign when it is next, and rises into place when bought. Unlock order: left ground, right ground, left upper, right upper.
+
 - 2026-10-23: Fixed world buttons: an upgrade no longer leaves the whole row enlarged (success only flashes), hover grows just the green button 8%, and the dark duplicate price text (the hidden button text's outline) is gone.
 
 - 2026-10-23: Willem: hover should grow only the price button, and the scrap tower sat on the back. Hover now scales just the button; scrap is held in front with both arms raised (carry pose), smaller tower.

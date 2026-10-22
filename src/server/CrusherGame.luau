@@ -42,6 +42,46 @@ local function bayLook(bay,state)
 	bay.strip.Transparency=if state=="locked" then .85 else 0
 	bay.strip.Color=if state=="next" then Color3.fromRGB(80,235,110) elseif state=="busy" then Color3.fromRGB(255,244,214) else Color3.fromRGB(120,180,255)
 end
+-- Upper floors: hidden until the previous bays are full, then a see-through
+-- ghost with a NEW FLOOR sign, then built (solid) once bought.
+local function partsLook(model,mode)
+	for _,p in model:GetDescendants() do if p:IsA("BasePart") then
+		if p:GetAttribute("BaseT")==nil then p:SetAttribute("BaseT",p.Transparency) p:SetAttribute("BaseC",p.CanCollide) end
+		local baseT=p:GetAttribute("BaseT")
+		p.Transparency=if mode=="built" then baseT elseif mode=="ghost" then math.max(baseT,.62) else 1
+		p.CanCollide=mode=="built" and p:GetAttribute("BaseC")==true
+		p.CastShadow=mode=="built"
+	end end
+end
+local function floorOf(i) local l=C.bayLayout(i) return if l.tier>1 then l.wing else nil end
+local function floorLook(plot,unlocked)
+	for _,f in plot.floors or {} do
+		local mode=if unlocked>=f.first then "built" elseif unlocked+1==f.first then "ghost" else "hidden"
+		if f.mode~=mode then
+			local rise=f.mode=="ghost" and mode=="built"
+			f.mode=mode
+			partsLook(f.model,mode)
+			if rise then
+				-- the new floor (and its bays) rises up out of the ground floor's roof
+				local models={f.model}
+				for i,bay in plot.bays do local l=C.bayLayout(i) if l.tier>1 and C.floorStart(l.tier,l.wing)==f.first then table.insert(models,bay.model) end end
+				local homes={} for k,m in models do homes[k]=m:GetPivot() m:PivotTo(homes[k]*CFrame.new(0,-C.Layout.TierHeight,0)) end
+				task.spawn(function()
+					local t0=os.clock()
+					while true do
+						local t=math.min(1,(os.clock()-t0)/0.9) local e=1-(1-t)^3
+						for k,m in models do if m.Parent then m:PivotTo(homes[k]*CFrame.new(0,-C.Layout.TierHeight*(1-e),0)) end end
+						if t>=1 then break end
+						task.wait()
+					end
+				end)
+			end
+			partsLook(f.sign,if mode=="ghost" then "built" else "hidden")
+			f.content.Visible=mode=="ghost"
+		end
+		f.buy.Text="BUILD "..Format.cash(C.BayCosts[f.first])
+	end
+end
 local function send(p,message,result)
 	local d=Data.get(p) local ctx=sessions[p] if not d or not ctx then return end
 	local s=d.crushers
@@ -78,7 +118,16 @@ local function send(p,message,result)
 			row.button.Text=if lv>=C.MaxGlobal then "MAX" else Format.cash(C.globalCost(id,lv))
 		end end
 	end
+	floorLook(ctx.plot,s.bays)
 	for i,bay in ctx.plot.bays do
+		-- bays on an upper floor that isn't built yet are invisible
+		local wing=floorOf(i) local f=wing and ctx.plot.floors and ctx.plot.floors[wing]
+		local hidden=f~=nil and f.mode~="built"
+		if bay.hidden~=hidden then bay.hidden=hidden bay.shown=nil partsLook(bay.model,if hidden then "hidden" else "built") end
+		if hidden then
+			bay.label.name.Text="" bay.label.rarity.Text="" bay.label.stats.Text="" bay.buy.Visible=false bay.manage.Visible=false bay.lockLabel.Text=""
+			continue
+		end
 		local item=Rules.find(d,s.equipped[tostring(i)])
 		local state=if item then "busy" elseif i<=s.bays then "open" elseif i==s.bays+1 then "next" else "locked"
 		local card=bay.label
@@ -219,6 +268,7 @@ function G.start()
 	Data.start("CrushItPlayer_v1",{cash=C.StartCash,scrap=0,purchases={},daily={day=0,streak=0},goldenRush=0,lastSeen=0},function(d) return Rules.migrate(d,guid) end)
 	Plots.create() require(script.Parent.World).create() Friend.start()
 	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
+	for _,plot in Plots.all() do floorLook(plot,0) for i,bay in plot.bays do if floorOf(i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end end
 	require(script.Parent.Moat).start(function(p) local ctx=sessions[p] return if ctx then Plots.spawnFor(ctx.plot) else CFrame.new(0,5,14) end)
 	require(script.Parent.Kit.Leaderboard).start({store="CashBoard_v1",score=function(p) return p:GetAttribute("Cash") or 0 end})
 	local function spawnCharacter(p,char)
@@ -252,6 +302,7 @@ function G.start()
 		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory" ctx.rollToken=nil
 			if ctx.revealModel then ctx.revealModel:Destroy() end ctx.plot.stations.Roll.reveal.Text="LAST ROLL"
 			for _,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
+			floorLook(ctx.plot,0) for i,bay in ctx.plot.bays do if floorOf(i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
 		sessions[p]=nil
 	end)
 	Net.event("CrusherAction").OnServerEvent:Connect(function(p,name,args)
@@ -260,15 +311,18 @@ function G.start()
 		if name=="Sync" then send(p) return end
 		args=if type(args)=="table" then args else {}
 		-- World purchases require the owner's own station and a nearby character.
-		local target
+		local target local reach=C.Layout.InteractionDistance
 		if name=="Upgrade" then local u=C.Upgrades[args.id] if u then target=ctx.plot.stations[u.group].part end
 		elseif name=="Level" or name=="Unlock" then
 			local bay=if type(args.bay)=="number" then ctx.plot.bays[args.bay] else nil
 			if bay and (name=="Unlock" and args.bay==d.crushers.bays+1 or name=="Level" and d.crushers.equipped[tostring(args.bay)]==args.id) then target=bay.part end
+			local wing=type(args.bay)=="number" and floorOf(args.bay)
+			local f=wing and ctx.plot.floors and ctx.plot.floors[wing]
+			if name=="Unlock" and f and f.first==args.bay and args.bay==d.crushers.bays+1 then target=f.face reach=45 end
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
 		if name~="Equip" and name~="Unequip" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
-			if not target or not root or (root.Position-target.Position).Magnitude>C.Layout.InteractionDistance then send(p,"Walk closer to your station or bay control.") return end
+			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end
 		action(p,name,args)
 	end)

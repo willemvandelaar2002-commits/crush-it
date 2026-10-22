@@ -14,8 +14,8 @@ local C = {
 }
 -- Stadium banks: ground bays open to the plaza, the upper row steps back on
 -- top of them (its walkway is the ground bays' roof). Local plot coordinates,
--- +Z points to the plot entrance. Bays alternate left/right so the plot fills
--- symmetrically; ground floor first, then the upper row.
+-- +Z points to the plot entrance. Left wing first, then the right; ground
+-- floor first, then the upper floors (bought per wing as a "new floor").
 C.Layout = { Wings=2, Tiers=2, PerWing=6, WingX=40, Pitch=10, BayWidth=9.6,
 	BayZ=-12, BayDepth=12, UpperBack=12, TierHeight=14, WingTilt=0.25,
 	StairX=64, StairWidth=10, StairRun=34,
@@ -27,8 +27,9 @@ C.LegacyTypes={"Bumper","Steel","Cobalt","Mega","Titan","Quantum"}
 for i=4,C.MaxBays do C.BayCosts[i]=math.floor(900*1.45^(i-3)) end
 function C.bayLayout(index)
 	local l=C.Layout local n=index-1 local perTier=l.Wings*l.PerWing
+	-- left wing fills first (inner to outer), then the right; ground, then upper
 	local tier=math.floor(n/perTier) local k=n%perTier
-	local wing=k%l.Wings local row=math.floor(k/l.Wings)
+	local wing=math.floor(k/l.PerWing) local row=k%l.PerWing
 	local side=if wing==0 then -1 else 1
 	-- row 1 sits next to the centre walkway, row PerWing at the outer stairs
 	local x=side*(l.WingX+(row-(l.PerWing-1)/2)*l.Pitch)
@@ -40,6 +41,8 @@ function C.wingFrame(side)
 	local l=C.Layout local ix=side*(l.WingX-(l.PerWing*l.Pitch+2)/2) local pz=l.BayZ+l.BayDepth/2
 	return CFrame.new(ix,0,pz)*CFrame.Angles(0,-side*l.WingTilt,0)*CFrame.new(-ix,0,-pz)
 end
+-- First bay of an upper wing (buying it builds that wing's upper floor).
+function C.floorStart(tier,wing) local l=C.Layout return (tier-1)*l.Wings*l.PerWing+(wing-1)*l.PerWing+1 end
 function C.bayName(index)
 	local v=C.bayLayout(index)
 	return (if v.tier==1 then "Ground" else "Upper").." "..(if v.wing==1 then "left" else "right").." "..v.row

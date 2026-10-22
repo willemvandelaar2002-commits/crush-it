@@ -113,6 +113,15 @@ Feedback (23 Oct, from Willem's reference video):
   selling flies them into your counter and bursts 8-26 cash bundles that fly
   into the cash icon (bottom-left), with the Coin sound.
 
+Upper floors (23 Oct, Willem): bays fill the left wing (inner to outer), then
+the right; ground floor first. Each wing's upper floor ("UpperFloor1/2": upper
+back wall, columns, rail, stairs, plus its 6 bays) is invisible until it is the
+next purchase; then it shows as a see-through ghost with a big green NEW FLOOR
+sign on the roof ("6 more crusher bays", BUILD + price, reach 45 studs).
+Buying it (= unlocking its first bay, `C.floorStart`) makes it solid and it
+rises out of the roof in 0.9 s. Existing saves keep their bay numbers, so
+machines in bays 2+ appear in the new left-first positions.
+
 World controls are SurfaceGuis copied into PlayerGui for the plot owner (mouse
 clicks are reliable there); purchases are server-checked for owner, distance
 (22 studs from the control) and cash.

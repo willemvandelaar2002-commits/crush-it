@@ -11,57 +11,72 @@ function P.prompt(part,action,title)
  local p=Instance.new("ProximityPrompt") p.Name="FactoryPrompt" p.ActionText=action p.ObjectText=title
  p.KeyboardKeyCode=Enum.KeyCode.E p.HoldDuration=0 p.MaxActivationDistance=12 p.RequiresLineOfSight=false p.Parent=part return p
 end
+-- Ground banks plus, per wing, an "UpperFloor" model (back wall, columns, rails,
+-- stairs) that only appears once that floor is bought (CrusherGame.floorLook).
 local function banks(parent,o)
  local m=Instance.new("Model") m.Name="WorkshopBanks" m.Parent=parent
+ local floors={}
  local width=L.PerWing*L.Pitch+2 local T=L.TierHeight
  local back=L.BayZ-L.UpperBack-L.BayDepth/2 -- back face of the upper bays
  local riserFront=L.BayZ-L.BayDepth/2 -- back face of the ground bays
  local deckDepth=L.WalkFront-back
- for _,side in {-1,1} do
+ for wing,side in {-1,1} do
   local o=o*C.wingFrame(side) -- build the whole wing in its turned frame
+  local up=Instance.new("Model") up.Name="UpperFloor"..wing up.Parent=m floors[wing]=up
   local x=side*L.WingX local inner=x-side*width/2 local stairX=side*L.StairX
-  -- Back wall behind the upper row, capped with a yellow trim line.
-  W.part(m,"BankBackWall",V(width,2*T+2,1.2),o*CFrame.new(x,T+1,back-.6),W.Blue,true)
-  W.part(m,"BackWallCap",V(width+.4,.6,1.6),o*CFrame.new(x,2*T+2.3,back-.6),W.Yellow)
+  -- Back wall: the ground part stays, the upper part belongs to the upper floor.
+  W.part(m,"BankBackWall",V(width,T,1.2),o*CFrame.new(x,T/2,back-.6),W.Blue,true)
+  W.part(up,"BankBackWallUpper",V(width,T+2,1.2),o*CFrame.new(x,T+(T+2)/2,back-.6),W.Blue,true)
+  W.part(up,"BackWallCap",V(width+.4,.6,1.6),o*CFrame.new(x,2*T+2.3,back-.6),W.Yellow)
   -- The step: a solid block under the upper row; its front is the ground bays' back.
   W.part(m,"BankStep",V(width,T-.8,riserFront-back),o*CFrame.new(x,(T-.8)/2,(riserFront+back)/2),W.Blue,true)
-  -- One deck: upper bay floor + walkway over the ground bays.
+  -- The deck: roof of the ground bays (and floor of the upper floor once built).
   local deck=W.part(m,"UpperDeck",V(width,.8,deckDepth),o*CFrame.new(x,T-.4,back+deckDepth/2),Color3.fromRGB(125,159,199),true)
   Style.materialStuds(deck,true,{Enum.NormalId.Top},2)
   W.part(m,"DeckFascia",V(width,1.4,.8),o*CFrame.new(x,T-.9,L.WalkFront+.2),W.Navy)
   W.part(m,"FasciaStripe",V(width,.3,.9),o*CFrame.new(x,T-.05,L.WalkFront+.2),W.Yellow)
-  -- Columns between bays on both rows.
   for row=0,L.PerWing do
    local px=side*(L.WingX+(row-L.PerWing/2)*L.Pitch)
    W.part(m,"GroundColumn",V(.9,T-.8,.9),o*CFrame.new(px,(T-.8)/2,L.BayZ+L.BayDepth/2-.2),W.Blue,true)
-   W.part(m,"UpperColumn",V(.9,T,.9),o*CFrame.new(px,T+T/2,L.BayZ-L.UpperBack+L.BayDepth/2-.2),W.Blue,true)
+   W.part(up,"UpperColumn",V(.9,T,.9),o*CFrame.new(px,T+T/2,L.BayZ-L.UpperBack+L.BayDepth/2-.2),W.Blue,true)
   end
-  -- Front safety rail with a gap where the stairs land, and a short end rail.
   local railEnd=stairX-side*(L.StairWidth/2+.4)
   local railLen=math.abs(railEnd-inner) local railMid=(railEnd+inner)/2
-  for _,h in {1.2,3} do W.part(m,"SafetyRail",V(railLen,.4,.4),o*CFrame.new(railMid,T+h,L.WalkFront-.4),W.Yellow,true) end
+  for _,h in {1.2,3} do W.part(up,"SafetyRail",V(railLen,.4,.4),o*CFrame.new(railMid,T+h,L.WalkFront-.4),W.Yellow,true) end
   for i=0,math.floor(railLen/L.Pitch) do
-   W.part(m,"RailPost",V(.5,3.2,.5),o*CFrame.new(inner+side*i*L.Pitch,T+1.6,L.WalkFront-.4),W.Yellow,true)
+   W.part(up,"RailPost",V(.5,3.2,.5),o*CFrame.new(inner+side*i*L.Pitch,T+1.6,L.WalkFront-.4),W.Yellow,true)
   end
-  W.part(m,"RailPost",V(.5,3.2,.5),o*CFrame.new(railEnd,T+1.6,L.WalkFront-.4),W.Yellow,true)
-  for _,h in {1.2,3} do W.part(m,"EndRail",V(.4,.4,deckDepth),o*CFrame.new(inner,T+h,back+deckDepth/2),W.Yellow,true) end
-  -- Stairs at the outer end, climbing from the plaza onto the walkway.
+  W.part(up,"RailPost",V(.5,3.2,.5),o*CFrame.new(railEnd,T+1.6,L.WalkFront-.4),W.Yellow,true)
+  for _,h in {1.2,3} do W.part(up,"EndRail",V(.4,.4,deckDepth),o*CFrame.new(inner,T+h,back+deckDepth/2),W.Yellow,true) end
   local count=math.ceil(T) local step=L.StairRun/count
   for i=1,count do
    local z=L.StairFront-(i-.5)*step local y=i*T/count
-   W.part(m,"StairTread",V(L.StairWidth,1,step+.08),o*CFrame.new(stairX,y-.5,z),W.Navy,true)
-   W.part(m,"StepNose",V(L.StairWidth,.12,.3),o*CFrame.new(stairX,y+.06,z+step/2-.15),W.Yellow)
+   W.part(up,"StairTread",V(L.StairWidth,1,step+.08),o*CFrame.new(stairX,y-.5,z),W.Navy,true)
+   W.part(up,"StepNose",V(L.StairWidth,.12,.3),o*CFrame.new(stairX,y+.06,z+step/2-.15),W.Yellow)
   end
   for _,edge in {-1,1} do
    local ex=stairX+edge*(L.StairWidth/2-.3)
    local bottom=(o*CFrame.new(ex,3,L.StairFront)).Position
    local top=(o*CFrame.new(ex,T+3,L.WalkFront)).Position
-   W.part(m,"StairRail",V(.5,.5,(top-bottom).Magnitude),CFrame.lookAt((top+bottom)/2,top),W.Yellow,true)
+   W.part(up,"StairRail",V(.5,.5,(top-bottom).Magnitude),CFrame.lookAt((top+bottom)/2,top),W.Yellow,true)
    for _,z in {L.StairFront,L.WalkFront} do
-    W.part(m,"StairPost",V(.7,3,.7),o*CFrame.new(ex,(if z==L.StairFront then 0 else T)+1.5,z),W.Blue,true)
+    W.part(up,"StairPost",V(.7,3,.7),o*CFrame.new(ex,(if z==L.StairFront then 0 else T)+1.5,z),W.Blue,true)
    end
   end
+  -- "NEW FLOOR" sign standing on the roof, shown when this floor is next to buy.
+  local sm=Instance.new("Model") sm.Name="FloorSign"..wing sm.Parent=m
+  local cf=o*CFrame.new(x,T,L.BayZ-L.UpperBack+1)
+  for _,dx in {-10,10} do W.part(sm,"SignPost",V(1.2,7,1.2),cf*CFrame.new(dx,3.5,0),W.Navy) end
+  local face,gui=W.panel(sm,cf*CFrame.new(0,10.5,0),24,10,Color3.fromRGB(53,170,80))
+  gui.MaxDistance=260
+  local box=Instance.new("Frame") box.Name="Content" box.BackgroundTransparency=1 box.Size=UDim2.fromScale(1,1) box.Parent=gui
+  W.text(box,"Title","NEW FLOOR!",UDim2.fromScale(.04,.03),UDim2.fromScale(.92,.32))
+  local info=W.text(box,"Info","6 more crusher bays",UDim2.fromScale(.04,.34),UDim2.fromScale(.92,.18))
+  info.TextColor3=Color3.fromRGB(255,240,170)
+  local buy=W.button(box,"Buy","BUILD",UDim2.fromScale(.12,.56),UDim2.fromScale(.76,.38),"Bay",nil,C.floorStart(2,wing))
+  floors[wing]={model=up,sign=sm,face=face,content=box,buy=buy,first=C.floorStart(2,wing)}
  end
+ return floors
 end
 -- One bay's frame: floor, beam with a status strip, back panel and padlock.
 local function bayFrame(holder,cf)
@@ -98,8 +113,8 @@ function P.create(root,Plots)
   W.border(decor,o,F,rear,front,14)
   local sign=W.entrance(decor,o*CFrame.new(0,0,front-4),14)
   W.walkway(m,o,12,rear+2,front)
-  banks(m,o)
-  local plot={index=i,origin=o,model=m,owner=nil,sign=sign,bays={},stations={}}
+  local floors=banks(m,o)
+  local plot={index=i,origin=o,model=m,owner=nil,sign=sign,bays={},stations={},floors=floors}
   for bay=1,C.MaxBays do
    local l=C.bayLayout(bay) local cf=o*C.wingFrame(l.side)*CFrame.new(l.x,l.y,l.z)*CFrame.Angles(0,l.yaw,0)
    local holder=Instance.new("Model") holder.Name="WorkingBay"..bay holder:SetAttribute("Bay",bay) holder.Parent=m
