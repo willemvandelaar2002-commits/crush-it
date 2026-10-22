@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-22: Scrap conveyor from the left bank into the hopper with toy parts rolling along it (client-side visuals), like the reference. Sell counter made smaller and moved so it no longer blocks the hopper from the entrance; stairs moved slightly inward to make room. Checked: no overlaps, both stairs climbable, 117 checks, no errors.
+
 - 2026-10-22: Willem: toys on the presses were still hidden, banks should be angled and the plot longer like the reference, and the custom leaderboard can go. Presses on a higher stage with flatter plaques; banks moved back for a longer plaza and turned outward-forward; stations re-placed; custom leaderboard off, Roblox player list back. Checked: no overlaps inside or between plots, 117 checks, no errors.
 
 - 2026-10-22: Brought back the classic HUD pieces the crusher redesign had switched off: big cash bottom-left with count-up and "+$X" pop, Friend Boost line with invite button (new client/CashHud.luau), and the right-side 2X Cash / featured pass offers (now at the bottom right, since there is no CRUSH button). The top line now shows only CARRIED and READY.

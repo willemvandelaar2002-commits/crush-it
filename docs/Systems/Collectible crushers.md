@@ -81,6 +81,15 @@ plaque; plaques lie flatter (66°). Stations: Production/Rolling boards
 Here/Friends/Global leaderboard is switched off (Leaderboard.client returns
 early); Roblox's player list shows the leaderstats Cash again.
 
+Scrap conveyor (22 Oct, from the reference): a 4-wide belt (`W.conveyor`, two
+segments) runs from the outer end of the left bank along the outside of the
+stairs (StairX moved in to 64 to make room) and turns in over the back corner
+of the scrap hopper. Toy blocks riding it are client-only
+(`client/Conveyor.client.luau`: 7 pieces per belt, ~30 fps, only belts within
+260 studs of the camera). Hopper moved to (-50, 66); the Sell counter is
+smaller (20 x 12) and sits at (-58, 82), out of the line of sight from the
+entrance to the hopper.
+
 World controls are SurfaceGuis copied into PlayerGui for the plot owner (mouse
 clicks are reliable there); purchases are server-checked for owner, distance
 (22 studs from the control) and cash.

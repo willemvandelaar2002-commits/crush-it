@@ -212,9 +212,35 @@ function W.walkway(parent,cf,width,z0,z1)
 	end
 	return m
 end
+-- Sloped conveyor from a to b (world points on the belt surface): dark belt,
+-- yellow side rails, navy legs and end rollers. The belt carries attributes
+-- the client uses to roll toy parts along it (Conveyor.client.luau).
+function W.conveyor(parent,a,b,width,floorY)
+	local m=Instance.new("Model") m.Name="ScrapConveyor" m.Parent=parent
+	local len=(b-a).Magnitude local mid=(a+b)/2 local cf=CFrame.lookAt(mid,b)
+	local belt=W.part(m,"ConveyorBelt",V(width,.5,len),cf*CFrame.new(0,-.25,0),Color3.fromRGB(45,50,62),true)
+	belt:SetAttribute("ConveyorFrom",a) belt:SetAttribute("ConveyorTo",b) belt:SetAttribute("ConveyorWidth",width)
+	for _,x in {-1,1} do
+		W.part(m,"ConveyorRail",V(.4,.9,len),cf*CFrame.new(x*(width/2+.2),.2,0),W.Yellow,true)
+		W.part(m,"ConveyorSkirt",V(.3,.8,len),cf*CFrame.new(x*(width/2+.15),-.6,0),W.Navy)
+	end
+	for _,t in {-.5,.5} do
+		local r=W.part(m,"ConveyorRoller",V(width+.6,1,1),cf*CFrame.new(0,-.4,t*len),Color3.fromRGB(150,160,175))
+		r.Shape=Enum.PartType.Cylinder r.CFrame=cf*CFrame.new(0,-.4,t*len)
+	end
+	local n=math.max(2,math.floor(len/7))
+	for i=0,n do
+		local p=a:Lerp(b,i/n) local h=p.Y-floorY
+		if h>1.2 then for _,x in {-1,1} do
+			local foot=(cf*CFrame.new(x*(width/2-.3),0,0)).Position-cf.Position+p
+			W.part(m,"ConveyorLeg",V(.6,h-.6,.6),CFrame.new(foot.X,p.Y-.5-(h-.6)/2,foot.Z),W.Navy)
+		end end
+	end
+	return m
+end
 -- Front control panel shared by the three stations: heading, live line, button.
-local function stationPanel(m,cf,color,heading,action)
-	local face,gui=W.panel(m,cf,20,6.2,color)
+local function stationPanel(m,cf,color,heading,action,width)
+	local face,gui=W.panel(m,cf,width or 20,6.2,color)
 	W.text(gui,"Heading",heading,UDim2.fromScale(.04,.03),UDim2.fromScale(.92,.3))
 	local label=W.text(gui,"StationInfo","",UDim2.fromScale(.04,.33),UDim2.fromScale(.92,.2))
 	label.TextColor3=Color3.fromRGB(255,240,170)
@@ -244,25 +270,25 @@ function W.station(parent,cf,kind)
 		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.1,7.6),W.Blue,"COLLECT SCRAP","COLLECT")
 		station={part=face,label=label,button=button,fill=fill}
 	elseif kind=="Sell" then
-		-- Green counter with a register and a SELL SCRAP sign on low posts.
-		W.part(m,"MachineFoot",V(24,1,15),cf*CFrame.new(0,.5,0),W.Navy)
-		W.part(m,"CounterBody",V(22,6.6,12),cf*CFrame.new(0,4.3,0),W.Green)
-		W.part(m,"CounterTop",V(23,.9,13),cf*CFrame.new(0,8,0),W.Navy)
-		W.hazard(m,cf*CFrame.new(0,1.4,6.1),22,.8,.4)
-		W.part(m,"Register",V(5,3,4),cf*CFrame.new(6,10,-2),W.Navy)
-		W.part(m,"RegisterKeys",V(4.4,.5,2),cf*CFrame.new(6,8.7,1)*CFrame.Angles(math.rad(-15),0,0),Color3.fromRGB(70,80,100))
-		local screen=W.part(m,"RegisterDisplay",V(3.8,1.6,.3),cf*CFrame.new(6,10.6,0),Color3.fromRGB(120,255,140))
+		-- Compact green counter with a register and a SELL SCRAP sign on low posts.
+		W.part(m,"MachineFoot",V(20,1,12),cf*CFrame.new(0,.5,0),W.Navy)
+		W.part(m,"CounterBody",V(18,6.6,10),cf*CFrame.new(0,4.3,0),W.Green)
+		W.part(m,"CounterTop",V(19,.9,11),cf*CFrame.new(0,8,0),W.Navy)
+		W.hazard(m,cf*CFrame.new(0,1.4,5.1),18,.8,.4)
+		W.part(m,"Register",V(4.6,3,3.6),cf*CFrame.new(5,10,-1.5),W.Navy)
+		W.part(m,"RegisterKeys",V(4,.5,1.8),cf*CFrame.new(5,8.7,1.6)*CFrame.Angles(math.rad(-15),0,0),Color3.fromRGB(70,80,100))
+		local screen=W.part(m,"RegisterDisplay",V(3.4,1.5,.3),cf*CFrame.new(5,10.6,.35),Color3.fromRGB(120,255,140))
 		screen.Material=Enum.Material.Neon screen.CastShadow=false
-		for i,x in {-7,-4,-1} do
-			W.part(m,"CashStack",V(2.6,.5+i*.35,1.5),cf*CFrame.new(x,8.7+i*.17,-3),Color3.fromRGB(80,200,90))
+		for i,x in {-6,-3.5,-1} do
+			W.part(m,"CashStack",V(2.2,.5+i*.35,1.4),cf*CFrame.new(x,8.7+i*.17,-2.5),Color3.fromRGB(80,200,90))
 		end
-		for _,x in {-9,9} do W.part(m,"SignPost",V(1.2,6,1.2),cf*CFrame.new(x,11.5,-5),W.Navy) end
-		local board=W.part(m,"SellSign",V(18,3.4,.8),cf*CFrame.new(0,14.2,-5),W.Green)
-		W.part(m,"SignFrame",V(19.2,4.6,.6),cf*CFrame.new(0,14.2,-5.6),W.Navy)
+		for _,x in {-7.5,7.5} do W.part(m,"SignPost",V(1.1,6,1.1),cf*CFrame.new(x,11.5,-4.2),W.Navy) end
+		local board=W.part(m,"SellSign",V(15,3.2,.8),cf*CFrame.new(0,14.2,-4.2),W.Green)
+		W.part(m,"SignFrame",V(16.2,4.4,.6),cf*CFrame.new(0,14.2,-4.8),W.Navy)
 		local gui=W.sign(board)
 		W.icon(gui,"CashIcon",Icons.Cash,UDim2.fromScale(.02,.05),UDim2.fromScale(.18,.9))
 		W.text(gui,"SignText","SELL SCRAP",UDim2.fromScale(.2,.08),UDim2.fromScale(.76,.84))
-		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.2,6.9),W.Green,"SELL SCRAP","SELL")
+		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.2,5.9),W.Green,"SELL SCRAP","SELL",16)
 		station={part=face,label=label,button=button}
 	else
 		-- Purple roll machine: crushing rollers, a big die and a reveal stand.

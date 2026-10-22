@@ -110,12 +110,17 @@ function P.create(root,Plots)
     prompt=P.prompt(face,"Manage",C.bayName(bay))}
   end
   -- Boards stand low and forward, turned toward the walkway, so the banks show over them.
-  for _,spec in {{id="Production",x=-22,z=50,yaw=.3},{id="Rolling",x=22,z=50,yaw=-.3},{id="Collect",x=-56,z=66},{id="Sell",x=-30,z=80},{id="Roll",x=46,z=74}} do
+  for _,spec in {{id="Production",x=-22,z=50,yaw=.3},{id="Rolling",x=22,z=50,yaw=-.3},{id="Collect",x=-50,z=66},{id="Sell",x=-58,z=82},{id="Roll",x=46,z=74}} do
    local cf=o*CFrame.new(spec.x,0,spec.z)*CFrame.Angles(0,spec.yaw or 0,0)
    local station=if spec.id=="Production" or spec.id=="Rolling" then W.board(m,cf,spec.id) else W.station(m,cf,spec.id)
    if not station.rows then station.prompt=P.prompt(station.part,spec.id,spec.id.." station") end
    plot.stations[spec.id]=station
   end
+  -- Conveyor from the outer end of the left bank, climbing into the scrap hopper.
+  -- Runs alongside the outer stairs, then turns in over the hopper's back corner.
+  local bend=(o*CFrame.new(-63.5,8.6,58)).Position
+  W.conveyor(decor,(o*CFrame.new(-72.5,1.4,18)).Position,bend,4,o.Position.Y)
+  W.conveyor(decor,bend,(o*CFrame.new(-55,10.5,64)).Position,4,o.Position.Y)
   -- Toy bricks round the plaza, clear of paths, stations and stairs.
   local red=Color3.fromRGB(230,69,77) local orange=Color3.fromRGB(255,140,40)
   for _,b in {{12,87,2,2,red,0},{15,89.5,2,1,W.Yellow,.4},{-12,87,2,2,W.Green,0},{-14,89.5,1,1,W.Blue,-.3},
