@@ -8,9 +8,10 @@ local Net=require(RS.Shared.Net)
 local Style=require(RS.Shared.Kit.Style)
 local Icons=require(RS.Shared.Icons)
 local Format=require(RS.Shared.Format)
+local WorldFx=require(script.Parent.WorldFx)
 local H={}
 function H.start()
- local p=Players.LocalPlayer local state local selectedBay=1 local signature=""
+ local p=Players.LocalPlayer local state local selectedBay=1 local signature="" local pending
  local navy=Color3.fromRGB(19,23,42) local blue=Color3.fromRGB(45,114,207)
  local function make(class,props,parent) local v=Instance.new(class) for k,x in props do v[k]=x end v.Parent=parent return v end
  local function text(parent,name,value,pos,size)
@@ -96,10 +97,11 @@ function H.start()
    end
    mirror(original,copy)
    for _,v in copy:GetDescendants() do if v:IsA("TextButton") and v:GetAttribute("Action") then
-    Style.feedback(v)
+    WorldFx.bind(v)
     v.Activated:Connect(function()
      if not state then return end
      local action=v:GetAttribute("Action") local bay=v:GetAttribute("Bay")
+     if action=="Upgrade" or action=="Bay" then pending={row=WorldFx.rowOf(v),t=os.clock(),unlock=action=="Bay" and not state.bays[tostring(bay)]} end
      if action=="Manage" then if bay<=state.unlocked then selectedBay=bay redraw() panel.Visible=true else toast.Text="Unlock bays in order using their green plaques." noticeUntil=os.clock()+4 end
      elseif action=="Bay" then
       local id=state.bays[tostring(bay)]
@@ -115,7 +117,14 @@ function H.start()
  p:GetAttributeChangedSignal("Plot"):Connect(function() task.spawn(bindWorld) end)
  task.spawn(bindWorld)
  Net.event("CrusherState").OnClientEvent:Connect(function(v)
-  state=v if v.message then toast.Text=v.message noticeUntil=os.clock()+5 end
+  state=v
+  -- world purchase feedback: the next answer after a board/plaque click
+  if pending and v.message and os.clock()-pending.t<2 then
+   if v.message=="Done!" then WorldFx.success(pending.row,if pending.unlock then "BAY UNLOCKED!" else nil) v.message=nil
+   else WorldFx.fail(pending.row) end
+   pending=nil
+  end
+  if v.message then toast.Text=v.message noticeUntil=os.clock()+5 end
   if v.result then resultText=v.result.rarity.." / "..v.result.modifier.."\n"..C.typeById(v.result.type).name resultUntil=v.rollReadyAt+2 end
   redraw()
  end)
