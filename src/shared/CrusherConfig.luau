@@ -45,6 +45,15 @@ function C.nextBenefit(id,lv)
 	if id=="Luck" then return string.format("Rare weights +%d%% > +%d%% / rank",math.floor(C.LuckPerLevel*lv*100),math.floor(C.LuckPerLevel*nextLv*100)) end
 	return string.format("Roll %.2fs > %.2fs",C.rollSeconds(lv),C.rollSeconds(nextLv))
 end
+-- Short effect step for the world boards, e.g. "x1.35 > x1.82".
+function C.shortBenefit(id,lv)
+	local n=math.min(C.MaxGlobal,lv+1)
+	if id=="Damage" then return string.format("x%.2f > x%.2f",C.DamageFactor^lv,C.DamageFactor^n) end
+	if id=="Speed" then return string.format("%d%% > %d%% faster",math.floor((1-C.SpeedFactor^lv)*100+.5),math.floor((1-C.SpeedFactor^n)*100+.5)) end
+	if id=="Yield" then return string.format("x%.1f > x%.1f",1+C.YieldPerLevel*lv,1+C.YieldPerLevel*n) end
+	if id=="Luck" then return string.format("+%d%% > +%d%% rares",math.floor(C.LuckPerLevel*lv*100),math.floor(C.LuckPerLevel*n*100)) end
+	return string.format("%.1fs > %.1fs",C.rollSeconds(lv),C.rollSeconds(n))
+end
 C.Types = {
 	{ id = "Bumper", name = "Bumper Press", tier = 1, input = 1, damage = 3, hp = 12, value = 8, cycle = 1.4 },
 	{ id = "Steel", name = "Steel Stamp", tier = 3, input = 2, damage = 4, hp = 18, value = 13, cycle = 1.5 },

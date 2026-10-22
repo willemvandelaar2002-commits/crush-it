@@ -67,19 +67,32 @@ local function send(p,message,result)
 	for _,group in {"Production","Rolling"} do
 		for _,id in C.UpgradeOrder do if C.Upgrades[id].group==group then
 			local lv=s.upgrades[id] local row=ctx.plot.stations[group].rows[id]
-			row.label.Text=C.Upgrades[id].name.." Lv "..lv.."\n"..C.nextBenefit(id,lv)
+			row.label.Text=if lv>=C.MaxGlobal then "Lv "..lv.."  MAX LEVEL" else "Lv "..lv.." > "..(lv+1).."   "..C.shortBenefit(id,lv)
 			row.button.Text=if lv>=C.MaxGlobal then "MAX" else Format.cash(C.globalCost(id,lv))
 		end end
 	end
 	for i,bay in ctx.plot.bays do
 		local item=Rules.find(d,s.equipped[tostring(i)])
 		local state=if item then "busy" elseif i<=s.bays then "open" elseif i==s.bays+1 then "next" else "locked"
-		bay.label.Text=if item then C.typeById(item.type).name.." / Lv "..item.level.."\n"..item.rarity.." / "..item.modifier.."\n"..Format.cash(Rules.stats(d,item,perks(p)).cps*60).." scrap/min"
-			elseif state=="open" then "EMPTY BAY\nEquip a crusher" elseif state=="next" then "NEXT BAY\nMore production" else "LOCKED"
-		bay.buy.Text=if item then (if item.level>=C.MaxLevel then "MAX" else "LEVEL "..Format.cash(C.individualCost(item)))
-			elseif state=="next" then "UNLOCK "..Format.cash(C.BayCosts[i]) else "EQUIP"
+		local card=bay.label
+		if item then
+			local r=C.rarity(item.rarity)
+			card.name.Text=C.typeById(item.type).name
+			card.rarity.Text=item.rarity..(if item.modifier~="Standard" then "  ·  "..item.modifier.." x"..C.modifier(item.modifier).mult else "")
+			card.rarity.TextColor3=r.color:Lerp(Color3.new(1,1,1),.25)
+			card.stats.Text="Level "..item.level.."  ·  "..Format.cash(Rules.stats(d,item,perks(p)).cps*60).."/min"
+		else
+			card.name.Text=if state=="open" then "EMPTY BAY" elseif state=="next" then "NEXT BAY" else "LOCKED"
+			card.rarity.Text=if state=="open" then "Equip a crusher here" elseif state=="next" then "Unlock for more output" else ""
+			card.rarity.TextColor3=Color3.new(1,1,1)
+			card.stats.Text=""
+		end
+		bay.buy.Text=if item then (if item.level>=C.MaxLevel then "MAX" else "LEVEL UP\n"..Format.cash(C.individualCost(item)))
+			elseif state=="next" then "UNLOCK\n"..Format.cash(C.BayCosts[i]) else "EQUIP"
+		local plate=if item then C.rarity(item.rarity).color:Lerp(Workshop.Navy,.2) else Workshop.Blue
+		if bay.part.Color~=plate then bay.part.Color=plate end
 		bay.buy.Visible=state~="locked"
-		bay.manage.Text="CHANGE" bay.manage.Visible=state=="busy"
+		bay.manage.Visible=state=="busy"
 		-- The direct plaque buttons replace the default prompt overlay, which can
 		-- cover the small level button and intercept its mouse click.
 		bay.prompt.Enabled=false
@@ -152,7 +165,7 @@ end
 function G.start()
 	Data.start("CrushItPlayer_v1",{cash=C.StartCash,scrap=0,purchases={},daily={day=0,streak=0},goldenRush=0,lastSeen=0},function(d) return Rules.migrate(d,guid) end)
 	Plots.create() require(script.Parent.World).create() Friend.start()
-	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.Text="LOCKED" bay.buy.Visible=false bay.manage.Visible=false end end
+	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
 	require(script.Parent.Moat).start(function(p) local ctx=sessions[p] return if ctx then Plots.spawnFor(ctx.plot) else CFrame.new(0,5,14) end)
 	require(script.Parent.Kit.Leaderboard).start({store="CashBoard_v1",score=function(p) return p:GetAttribute("Cash") or 0 end})
 	local function spawnCharacter(p,char)
@@ -184,7 +197,7 @@ function G.start()
 	Players.PlayerAdded:Connect(join) for _,p in Players:GetPlayers() do task.spawn(join,p) end
 	Players.PlayerRemoving:Connect(function(p)
 		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory"
-			for _,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.Text="LOCKED" bay.buy.Visible=false bay.manage.Visible=false end end
+			for _,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
 		sessions[p]=nil
 	end)
 	Net.event("CrusherAction").OnServerEvent:Connect(function(p,name,args)

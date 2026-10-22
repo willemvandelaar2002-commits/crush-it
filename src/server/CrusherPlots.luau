@@ -98,7 +98,7 @@ function P.create(root,Plots)
    local l=C.bayLayout(bay) local cf=o*CFrame.new(l.x,l.y,l.z)*CFrame.Angles(0,l.yaw,0)
    local holder=Instance.new("Model") holder.Name="WorkingBay"..bay holder:SetAttribute("Bay",bay) holder.Parent=m
    local panel,lock,strip,lockLabel=bayFrame(holder,cf)
-   local face,text,buy,manage=W.plaque(holder,cf*CFrame.new(0,2,8)*CFrame.Angles(math.rad(-25),0,0),bay)
+   local face,text,buy,manage=W.plaque(holder,cf*CFrame.new(0,2.4,8)*CFrame.Angles(math.rad(-25),0,0),bay)
    plot.bays[bay]={model=holder,origin=cf*CFrame.new(0,.4,.5),label=text,buy=buy,manage=manage,part=face,locked=panel,padlock=lock,strip=strip,lockLabel=lockLabel,
     prompt=P.prompt(face,"Manage",C.bayName(bay))}
   end

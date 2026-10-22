@@ -3,6 +3,7 @@
 local RS=game:GetService("ReplicatedStorage")
 local Style=require(RS.Shared.Kit.Style)
 local C=require(RS.Shared.CrusherConfig)
+local Icons=require(RS.Shared.Icons)
 local Build=require(script.Parent.Build)
 local W={}
 W.Blue=Color3.fromRGB(35,99,210) W.Navy=Color3.fromRGB(25,43,73)
@@ -17,6 +18,10 @@ end
 function W.text(parent,name,value,pos,size)
 	local t=Instance.new("TextLabel") t.Name=name t.Text=value t.Position=pos t.Size=size
 	t.BackgroundTransparency=1 t.TextScaled=true t.TextWrapped=true Style.text(t,2) t.Parent=parent return t
+end
+function W.icon(parent,name,image,pos,size)
+	local img=Instance.new("ImageLabel") img.Name=name img.Image=image img.BackgroundTransparency=1
+	img.Position=pos img.Size=size img.ScaleType=Enum.ScaleType.Fit img.Parent=parent return img
 end
 function W.button(parent,name,value,pos,size,action,id,bay)
 	local b=Instance.new("TextButton") b.Name=name b.Text=value b.Position=pos b.Size=size
@@ -50,6 +55,11 @@ function W.panel(parent,cf,width,height,color)
 	end end
 	return face,W.surface(face)
 end
+W.UpgradeIcons={Damage=Icons.Power,Speed=Icons.Speed,Yield=Icons.Value,Luck=Icons.Lucky,RollSpeed=Icons.Rebirth}
+W.UpgradeColors={Damage=Color3.fromRGB(223,62,62),Speed=Color3.fromRGB(240,180,30),Yield=Color3.fromRGB(53,190,79),
+	Luck=Color3.fromRGB(150,62,229),RollSpeed=Color3.fromRGB(106,76,224)}
+-- Upgrade board: one colour band per upgrade with icon, name, level step and
+-- a green price button (the button is the purchase control).
 function W.board(parent,cf,kind)
 	local color=if kind=="Production" then W.Blue else W.Purple
 	local m=Instance.new("Model") m.Name=kind.."Station" m.Parent=parent
@@ -59,25 +69,38 @@ function W.board(parent,cf,kind)
 		W.beacon(m,cf*CFrame.new(x,16,0))
 	end
 	local face,gui=W.panel(m,cf*CFrame.new(0,8.6,0),22,13,color)
-	W.text(gui,"Heading",string.upper(kind).." UPGRADES",UDim2.fromScale(.03,.02),UDim2.fromScale(.94,.14))
+	W.text(gui,"Heading",string.upper(kind).." UPGRADES",UDim2.fromScale(.04,.025),UDim2.fromScale(.92,.15))
 	local rows={} local count=if kind=="Production" then 3 else 2 local rowIndex=0
-	local colors={Damage=Color3.fromRGB(223,62,62),Speed=W.Yellow,Yield=W.Green,Luck=Color3.fromRGB(168,62,229),RollSpeed=Color3.fromRGB(116,76,224)}
+	local top,span=.2,.77
 	for _,id in C.UpgradeOrder do if C.Upgrades[id].group==kind then
 		rowIndex+=1 local row=Instance.new("Frame") row.Name="Row_"..id
-		row.Position=UDim2.fromScale(.035,.18+(rowIndex-1)*(.77/count)) row.Size=UDim2.fromScale(.93,.71/count)
-		Style.panel(row,colors[id],color) row.Parent=gui
-		local t=W.text(row,"Benefit",C.Upgrades[id].name,UDim2.fromScale(.02,.04),UDim2.fromScale(.64,.92))
-		local b=W.button(row,"Buy","BUY",UDim2.fromScale(.69,.16),UDim2.fromScale(.28,.68),"Upgrade",id)
-		rows[id]={label=t,button=b}
+		local h=span/count
+		row.Position=UDim2.fromScale(.03,top+(rowIndex-1)*h) row.Size=UDim2.fromScale(.94,h-.03)
+		Style.panel(row,W.UpgradeColors[id],Style.darken(W.UpgradeColors[id],.35)) row.Parent=gui
+		W.icon(row,"UpgradeIcon",W.UpgradeIcons[id],UDim2.fromScale(.015,.08),UDim2.fromScale(.15,.84))
+		local title=W.text(row,"UpgradeName",string.upper(C.Upgrades[id].name),UDim2.fromScale(.18,.06),UDim2.fromScale(.5,.5))
+		title.TextXAlignment=Enum.TextXAlignment.Left
+		local level=W.text(row,"LevelStep","Lv 0 > 1",UDim2.fromScale(.18,.56),UDim2.fromScale(.5,.38))
+		level.TextXAlignment=Enum.TextXAlignment.Left level.TextColor3=Color3.fromRGB(255,240,170)
+		local b=W.button(row,"Buy","$0",UDim2.fromScale(.7,.12),UDim2.fromScale(.28,.76),"Upgrade",id)
+		rows[id]={label=level,button=b}
 	end end
 	return {part=face,rows=rows}
 end
+-- Bay plaque, laid out like a collectible card: name, rarity + modifier,
+-- level + output, a big green level-up price and a small swap button.
 function W.plaque(parent,cf,index)
-	local face,gui=W.panel(parent,cf,8.2,3.2,W.Blue)
-	local label=W.text(gui,"MachineInfo","BAY "..index,UDim2.fromScale(.02,.02),UDim2.fromScale(.63,.96))
-	local buy=W.button(gui,"Level","LOCKED",UDim2.fromScale(.67,.08),UDim2.fromScale(.31,.48),"Bay",nil,index)
-	local manage=W.button(gui,"Manage","EQUIP",UDim2.fromScale(.67,.62),UDim2.fromScale(.31,.31),"Manage",nil,index)
-	return face,label,buy,manage
+	local face,gui=W.panel(parent,cf,8.6,4,W.Blue)
+	local name=W.text(gui,"CrusherName","LOCKED",UDim2.fromScale(.04,.04),UDim2.fromScale(.6,.34))
+	name.TextXAlignment=Enum.TextXAlignment.Left
+	local rarity=W.text(gui,"Rarity","",UDim2.fromScale(.04,.39),UDim2.fromScale(.6,.24))
+	rarity.TextXAlignment=Enum.TextXAlignment.Left
+	local stats=W.text(gui,"Output","",UDim2.fromScale(.04,.66),UDim2.fromScale(.6,.28))
+	stats.TextXAlignment=Enum.TextXAlignment.Left stats.TextColor3=Color3.fromRGB(255,240,170)
+	local buy=W.button(gui,"Level","",UDim2.fromScale(.66,.07),UDim2.fromScale(.32,.55),"Bay",nil,index)
+	local manage=W.button(gui,"Manage","SWAP",UDim2.fromScale(.7,.67),UDim2.fromScale(.24,.27),"Manage",nil,index)
+	Style.setButtonColor(manage,Color3.fromRGB(70,140,230))
+	return face,{name=name,rarity=rarity,stats=stats},buy,manage
 end
 function W.station(parent,cf,kind)
 	local m=Instance.new("Model") m.Name=kind.."Station" m.Parent=parent

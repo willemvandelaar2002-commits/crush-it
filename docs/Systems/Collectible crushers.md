@@ -31,6 +31,16 @@ Two crusher banks, left and right of the centre walkway, 24 bays in total
   (-50, 54), Sell counter (-50, 76), Roll machine (50, 76). Boards are lower
   (panel 13 tall) so the banks show above them from the entrance.
 
+Boards and plaques (22 Oct): each upgrade row is a colour band with an icon
+(Damage = Power burst, Speed = lightning, Scrap yield = money bag, Luck =
+clover, Rolling speed = rebirth arrow), the name, "Lv 2 > 3" plus a short
+effect step (`CrusherConfig.shortBenefit`) and a green price button. Bay
+plaques read like a collectible card: crusher name, rarity (+ modifier when not
+Standard) in the rarity colour, "Level 3 · $161/min", a big LEVEL UP price
+button and a small SWAP button. The plate takes the rarity colour (Common grey,
+Uncommon green, Rare blue, Epic purple, Legendary gold); empty/next/locked bays
+stay cobalt with EMPTY BAY / NEXT BAY (+ UNLOCK price) / LOCKED.
+
 World controls are SurfaceGuis copied into PlayerGui for the plot owner (mouse
 clicks are reliable there); purchases are server-checked for owner, distance
 (22 studs from the control) and cash.

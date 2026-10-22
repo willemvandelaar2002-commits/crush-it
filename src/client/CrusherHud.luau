@@ -87,7 +87,7 @@ function H.start()
    local copy=original:Clone() copy.Name="PlotControls_"..#worldCopies copy.Adornee=original.Parent copy.Enabled=original.Enabled copy.Active=true copy.Parent=p.PlayerGui
    table.insert(worldCopies,copy) original.Enabled=false
    local function mirror(a,b)
-    for _,prop in (if a:IsA("TextLabel") or a:IsA("TextButton") then {"Text","Visible"} else if a:IsA("GuiObject") then {"Visible"} else {}) do
+    for _,prop in (if a:IsA("TextLabel") or a:IsA("TextButton") then {"Text","Visible","TextColor3"} else if a:IsA("GuiObject") then {"Visible"} else {}) do
      table.insert(worldConnections,a:GetPropertyChangedSignal(prop):Connect(function() b[prop]=a[prop] end))
     end
     local ac,bc=a:GetChildren(),b:GetChildren()
