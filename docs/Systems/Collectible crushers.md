@@ -41,6 +41,19 @@ button and a small SWAP button. The plate takes the rarity colour (Common grey,
 Uncommon green, Rare blue, Epic purple, Legendary gold); empty/next/locked bays
 stay cobalt with EMPTY BAY / NEXT BAY (+ UNLOCK price) / LOCKED.
 
+Stations (22 Oct, `CrusherWorkshop.station`): each has the same front panel
+(heading, live line in yellow, big green button).
+- Collect: low blue hopper with a hazard lip; a pile of 24 toy blocks shows
+  in proportion to ready scrap (full at about one minute of output, min 3
+  pieces when anything is ready, empty after collecting).
+- Sell: green counter with register, cash stacks and a SELL SCRAP sign
+  (cash icon) on low posts.
+- Roll: purple machine with diamond-plate rollers and a six-faced die. Rolling
+  spins the die and rollers for the roll time (server Heartbeat, one
+  connection per roll), then a scaled mini model of the new crusher appears
+  on the yellow reveal plinth beside the machine, with its rarity and name on
+  the banner.
+
 World controls are SurfaceGuis copied into PlayerGui for the plot owner (mouse
 clicks are reliable there); purchases are server-checked for owner, distance
 (22 studs from the control) and cash.

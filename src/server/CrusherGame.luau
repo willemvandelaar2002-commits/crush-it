@@ -58,12 +58,18 @@ local function send(p,message,result)
 		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,tutorial=s.tutorial,rate=cps(p,d),
 		rollSeconds=C.rollSeconds(s.upgrades.RollSpeed),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll})
-	ctx.plot.stations.Collect.label.Text="COLLECT SCRAP\n"..Format.cash(s.available).." ready"
-	for _,v in ctx.plot.stations.Collect.fill:GetChildren() do if v:IsA("BasePart") then v.Transparency=if s.available>0 then 0 else .75 end end
-	ctx.plot.stations.Sell.label.Text="SELL SCRAP\n"..Format.cash(d.scrap).." carried"
-	ctx.plot.stations.Roll.label.Text="ROLL A CRUSHER / "..Format.cash(C.RollCost)
-	ctx.plot.stations.Roll.button.Text=if os.clock()<(ctx.nextRoll or 0) then "ROLLING..." else "ROLL "..Format.cash(C.RollCost)
-	if result then ctx.plot.stations.Roll.reveal.Text=result.rarity.." / "..C.typeById(result.type).name end
+	local st=ctx.plot.stations
+	st.Collect.label.Text=Format.cash(s.available).." ready"
+	-- The pile grows with ready scrap (about one minute of output fills it).
+	local pieces=st.Collect.fill:GetChildren()
+	local shown=if s.available<=0 then 0 else math.clamp(math.ceil(#pieces*s.available/math.max(1,cps(p,d)*60)),3,#pieces)
+	if st.Collect.shown~=shown then st.Collect.shown=shown
+		for i,v in pieces do v.Transparency=if i<=shown then 0 else 1 end
+	end
+	st.Sell.label.Text=Format.cash(d.scrap).." carried"
+	local rolling=os.clock()<(ctx.nextRoll or 0)
+	st.Roll.label.Text=if rolling then "Rolling..." else "Random rarity  ·  "..Format.cash(C.RollCost)
+	st.Roll.button.Text=if rolling then "ROLLING..." else "ROLL "..Format.cash(C.RollCost)
 	for _,group in {"Production","Rolling"} do
 		for _,id in C.UpgradeOrder do if C.Upgrades[id].group==group then
 			local lv=s.upgrades[id] local row=ctx.plot.stations[group].rows[id]
@@ -137,10 +143,49 @@ local function reconcile(p)
 		if (item and item.id or nil)~=(visual and visual.id or nil) then buildBay(p,i,item) end
 	end
 end
+-- Fit a press model into a box and paint it in the crusher's rarity/modifier.
+local function dress(model,item,fit)
+	local _,size=model:GetBoundingBox()
+	model:ScaleTo(math.min(1,fit.X/size.X,fit.Z/size.Z,fit.Y/size.Y))
+	for _,part in model:GetDescendants() do if part:IsA("BasePart") then
+		part.CanCollide=false part.CanTouch=false part.CanQuery=false
+		if part.Name=="Plinth" or part.Name=="Housing" then part.Color=C.rarity(item.rarity).color end
+		if item.modifier=="Polished" and part.Name=="Housing" then part.Material=Enum.Material.Metal end
+		if item.modifier=="Rusty" and part.Name=="Bed" then part.Material=Enum.Material.CorrodedMetal end
+		if item.modifier=="Polished" and part.Name=="Bed" then part.Material=Enum.Material.Metal part.Color=Color3.fromRGB(211,224,238) end
+		if item.modifier=="Charged" and part.Name=="Plinth" then part.Material=Enum.Material.Neon end
+	elseif part:IsA("Light") then part.Enabled=false
+	elseif part:IsA("ParticleEmitter") then part.Enabled=false end end
+end
+-- Spin the die and rollers for the roll time, then show the new crusher on the stand.
+local function rollShow(p,item)
+	local ctx=sessions[p] local st=ctx.plot.stations.Roll
+	local seconds=math.max(.3,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
+	st.reveal.Text="ROLLING..."
+	local start=os.clock() local base=st.die:GetPivot() local rollers={}
+	for _,r in st.rollers do rollers[r]=r.CFrame end
+	local conn conn=RunService.Heartbeat:Connect(function()
+		local t=os.clock()-start
+		if t>=seconds or ctx.rollToken~=token or not st.die.Parent then
+			conn:Disconnect() st.die:PivotTo(base) for r,cf in rollers do r.CFrame=cf end
+			if ctx.rollToken~=token or sessions[p]~=ctx then return end
+			if ctx.revealModel then ctx.revealModel:Destroy() end
+			local built=PressBuilder.build(st.pedestal,C.typeById(item.type).tier)
+			built.model.Name="RolledCrusher" dress(built.model,item,Vector3.new(5.4,7.4,5.4))
+			built.model:PivotTo(st.pedestal) built.model.Parent=ctx.plot.model ctx.revealModel=built.model
+			st.reveal.Text=string.upper(item.rarity).."\n"..C.typeById(item.type).name
+			st.reveal.TextColor3=C.rarity(item.rarity).color:Lerp(Color3.new(1,1,1),.2)
+			return
+		end
+		local spin=t*14*(1-t/seconds*.6)
+		st.die:PivotTo(base*CFrame.new(0,math.abs(math.sin(t*9))*1.2,0)*CFrame.Angles(spin,spin*.7,spin*.4))
+		for r,cf in rollers do r.CFrame=cf*CFrame.Angles(t*20,0,0) end
+	end)
+end
 local function action(p,name,args)
 	local ctx=sessions[p] local d=Data.get(p) if not ctx or not d then return false,"Profile is loading." end
 	local ok,message,result=Rules.act(d,ctx,name,args,os.clock(),random,guid,perks(p))
-	if ok and name=="Roll" then d.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock()) end
+	if ok and name=="Roll" then d.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock()) rollShow(p,result) end
 	if ok then reconcile(p) end
 	send(p,message,result) return ok,message,result
 end
@@ -196,7 +241,8 @@ function G.start()
 	end
 	Players.PlayerAdded:Connect(join) for _,p in Players:GetPlayers() do task.spawn(join,p) end
 	Players.PlayerRemoving:Connect(function(p)
-		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory"
+		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory" ctx.rollToken=nil
+			if ctx.revealModel then ctx.revealModel:Destroy() end ctx.plot.stations.Roll.reveal.Text="LAST ROLL"
 			for _,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
 		sessions[p]=nil
 	end)
