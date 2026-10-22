@@ -1,5 +1,9 @@
 # Toy factory environment
 
+22 Oct gameplay integration fix: shared starter-Baseplate cleanup now runs before
+the collectible plot builder branches. Its grey surface had covered the golden
+apron between islands. The existing golden floor and stud material are retained.
+
 22 Oct colour follow-up: restored the brighter golden apron (218,157,48) at
 Willem's request. The softer lighting, reduced overhead shadows, larger studs
 and themed displays remain. This supersedes the honey colour described below.

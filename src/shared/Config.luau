@@ -431,12 +431,12 @@ Config.Loop = {
 Config.Plots = {
 	Count = 8,
 	Ring = 210, -- distance from the centre to a plot's entrance edge (Loop.Outer + World.HubGap)
-	FloorSize = 120, -- plot width (X); big enough for the widest (Cosmic) press frame
+	FloorSize = 156, -- two low crusher banks with stairs and a broad centre aisle
 	-- Plot depth, measured from the press centre (plot-local +Z points to the hub):
 	--   Front: entrance from the hub bridge, scrap shop (left), upgrade pads (right), scrap pile
 	--   Back:  the conveyor from the toy factory hall, Mini Press yards
 	Front = 92,
-	Back = 80,
+	Back = 48,
 	ShopX = -12, -- scrap shop entrance line (it opens toward the centre path) ...
 	ShopZ = 66, -- ... and its centre along Z
 }

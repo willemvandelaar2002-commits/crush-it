@@ -55,7 +55,7 @@ local function edgeProps(m: Instance, origin: CFrame, rng: Random)
 end
 
 -- Island body + hub bridge + edge props for one plot.
-function Moat.build(plotModel: Model, origin: CFrame)
+function Moat.build(plotModel: Model, origin: CFrame, clearEdges: boolean?)
 	local P = Config.Plots
 	local F = P.FloorSize
 	local seaY = Config.World.SeaY
@@ -72,7 +72,7 @@ function Moat.build(plotModel: Model, origin: CFrame)
 	local a = (origin * CFrame.new(Moat.FRONT_BRIDGE_X, 0, P.Front - 1.5)).Position
 	local b = (origin * CFrame.new(Moat.FRONT_BRIDGE_X, 0, P.Front + gap + 1.5)).Position
 	Build.bridge(m, a, b, Moat.BRIDGE_WIDTH, palette(), seaY)
-	edgeProps(plotModel:FindFirstChild("Decor") or m, origin, rng)
+	if not clearEdges then edgeProps(plotModel:FindFirstChild("Decor") or m, origin, rng) end
 	m.Parent = plotModel
 end
 

@@ -172,6 +172,17 @@ function Objects.build(tier: number, base: CFrame, variant: string?, silhouette:
 end
 
 -- f in (0, 1]: fraction of the original height. Sideways spread grows as it flattens.
+-- Uniform display fitting keeps the squash originals aligned with small bay presses.
+function Objects.scale(model: Model, base: CFrame, scale: number)
+	local list=originals[model] if not list then return end
+	for _,o in list do
+		local pos=o.offset.Position
+		o.size*=scale o.offset=CFrame.new(pos*scale)*(o.offset-pos)
+		o.part.Size=o.size o.part.CFrame=base*o.offset
+	end
+	local height=model:GetAttribute("Height") if type(height)=="number" then model:SetAttribute("Height",height*scale) end
+end
+
 function Objects.setSquash(model: Model, base: CFrame, f: number)
 	local list = originals[model]
 	if not list then

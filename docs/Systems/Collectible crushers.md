@@ -7,13 +7,33 @@ crush automatic inputs, collect ready scrap into carried scrap, then sell
 carried scrap directly for cash. Automatic crushing is free. Objects are
 production inputs, not purchases or the main collection.
 
-The eight plot origins, 120 x 172 footprints, bridges, factory hall, central
-Mega Crusher, circular railway and rideable trains remain. New plot furniture
-has three rear bays at local X -34/0/34, Z -38, plus a roll station, blue scrap
-bin, green seller and separate Production/Rolling boards. Consoles are low
-and tilted to keep crushing beds visible. Interactive furniture and machine
-decoration do not collide with players. Use E/tap prompts on your own stations;
-the HUD also supports collecting/selling/rolling and managing the same actions.
+The eight plot origins, bridges, factory hall, central Mega Crusher, circular
+railway and rideable trains remain. Plots are now 156 wide (Front 92, Back 48).
+
+### Plot layout (22 Oct, stadium banks)
+
+Two crusher banks, left and right of the centre walkway, 24 bays in total
+(2 wings x 2 tiers x 6). All numbers live in `CrusherConfig.Layout`.
+
+- **Ground row** (Z 24..36): open to the plaza, no deep roof. Each bay has a
+  navy floor with a hazard edge, a cobalt top beam with a neon status strip,
+  a back panel and a padlock.
+- **Upper row** steps back 12 studs and stands on a solid step block. The deck
+  over the ground bays is the upper walkway (yellow rail, gap where the outer
+  stairs land). Stairs at X ±70 climb from the plaza to the walkway.
+- **Unlock order** alternates left/right, inner to outer: bay 1 left inner,
+  bay 2 right inner, ... ground row first (1..12), then the upper row (13..24).
+- **Bay states** (server `bayLook`): working = warm white strip, no panel;
+  empty = blue panel "EMPTY"; next to unlock = padlock + green strip + price;
+  locked = light panel + padlock, dimmed strip. Plaques hide their buttons on
+  locked bays.
+- Stations: Production board (-18, 64), Rolling board (18, 64), Collect bin
+  (-50, 54), Sell counter (-50, 76), Roll machine (50, 76). Boards are lower
+  (panel 13 tall) so the banks show above them from the entrance.
+
+World controls are SurfaceGuis copied into PlayerGui for the plot owner (mouse
+clicks are reliable there); purchases are server-checked for owner, distance
+(22 studs from the control) and cash.
 
 ## Configuration and economy
 
@@ -24,7 +44,7 @@ prices, weights, limits, production parameters and tutorial instructions.
 | --- | --- |
 | Starter | One equipped Bumper Press, one usable bay, $20 for a new profile |
 | Rolls | $30 each; inventory limit 80; duplicates remain separate GUID instances |
-| Extra bays | Bay 2 costs $180; bay 3 costs $900; sequential unlocks |
+| Extra bays | 24 bays; bay 2 $180, bay 3 $900, then floor(900 × 1.45^(n-3)); sequential unlocks |
 | Individual levels | 1..40, cost floor(16 × 1.38^(level-1) × rarity multiplier) |
 | Global upgrades | Each has its own level 0..20; costs below |
 | Damage | Cost floor(20 × 1.65^level); damage multiplier 1.35^level |

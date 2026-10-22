@@ -213,7 +213,6 @@ function Plots.all(): { Plot }
 end
 
 function Plots.create()
-	if Config.Crushers.Enabled then require(script.Parent.CrusherPlots).create(root, Plots) return end
 	local theme = Style.theme(Config.Look.Theme)
 	local F = Config.Plots.FloorSize
 	local P = Config.Plots
@@ -234,6 +233,9 @@ function Plots.create()
 		base.CanTouch = false
 		base.CFrame = CFrame.new(0, -500, 0)
 	end
+	-- Both plot modes must clear the place's starter baseplate so it cannot
+	-- cover the golden factory apron or add an unintended walking surface.
+	if Config.Crushers.Enabled then require(script.Parent.CrusherPlots).create(root, Plots) return end
 	-- Station hub, walkways, the loop road and the toy train (every plot's bridge lands on the loop).
 	require(script.Parent.Hub).create(root)
 

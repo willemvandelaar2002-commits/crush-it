@@ -1,9 +1,9 @@
 --!strict
 -- Collectible crusher economy. Legacy Config numbers remain for save recovery.
 local C = {
-	Enabled = true, Schema = 2, MaxBays = 3, MaxInventory = 80, MaxLevel = 40,
+	Enabled = true, Schema = 2, MaxInventory = 80, MaxLevel = 40,
 	MaxGlobal = 20, MaxMoney = 1e300, RollCost = 30, StartCash = 20,
-	BayCosts = { 0, 180, 900 }, BayX = { -34, 0, 34 }, BayZ = -38,
+	BayCosts = { 0, 180, 900 },
 	InputDelay = 0.8, Tick = 0.05, RequestInterval = 0.08,
 	BaseRollSeconds = 3, MinRollSeconds = 0.65, RollSpeedFactor = 0.93,
 	MaxPressEmitters = 1, PressParticleRate = 2,
@@ -12,6 +12,39 @@ local C = {
 	GoldenYield = 10, AutoCollectInterval = 2,
 	CashPacks = { CashSmall = 60, CashMedium = 300, CashLarge = 1200 },
 }
+-- Stadium banks: ground bays open to the plaza, the upper row steps back on
+-- top of them (its walkway is the ground bays' roof). Local plot coordinates,
+-- +Z points to the plot entrance. Bays alternate left/right so the plot fills
+-- symmetrically; ground floor first, then the upper row.
+C.Layout = { Wings=2, Tiers=2, PerWing=6, WingX=43, Pitch=10, BayWidth=9.6,
+	BayZ=30, BayDepth=12, UpperBack=12, TierHeight=14,
+	StairX=70, StairWidth=10, StairRun=34,
+	MachineWidth=8.6, MachineDepth=10, MachineHeight=11, InteractionDistance=22 }
+C.Layout.WalkFront=C.Layout.BayZ+C.Layout.BayDepth/2+1 -- front edge of the upper walkway
+C.Layout.StairFront=C.Layout.WalkFront+C.Layout.StairRun
+C.MaxBays = C.Layout.Wings*C.Layout.Tiers*C.Layout.PerWing
+for i=4,C.MaxBays do C.BayCosts[i]=math.floor(900*1.45^(i-3)) end
+function C.bayLayout(index)
+	local l=C.Layout local n=index-1 local perTier=l.Wings*l.PerWing
+	local tier=math.floor(n/perTier) local k=n%perTier
+	local wing=k%l.Wings local row=math.floor(k/l.Wings)
+	local side=if wing==0 then -1 else 1
+	-- row 1 sits next to the centre walkway, row PerWing at the outer stairs
+	local x=side*(l.WingX+(row-(l.PerWing-1)/2)*l.Pitch)
+	return {x=x,y=tier*l.TierHeight,z=l.BayZ-tier*l.UpperBack,yaw=0,tier=tier+1,wing=wing+1,row=row+1,side=side}
+end
+function C.bayName(index)
+	local v=C.bayLayout(index)
+	return (if v.tier==1 then "Ground" else "Upper").." "..(if v.wing==1 then "left" else "right").." "..v.row
+end
+function C.nextBenefit(id,lv)
+	local nextLv=math.min(C.MaxGlobal,lv+1)
+	if id=="Damage" then return string.format("Damage x%.2f > x%.2f",C.DamageFactor^lv,C.DamageFactor^nextLv) end
+	if id=="Speed" then return string.format("Cycle x%.2f > x%.2f",C.SpeedFactor^lv,C.SpeedFactor^nextLv) end
+	if id=="Yield" then return string.format("Scrap x%.1f > x%.1f",1+C.YieldPerLevel*lv,1+C.YieldPerLevel*nextLv) end
+	if id=="Luck" then return string.format("Rare weights +%d%% > +%d%% / rank",math.floor(C.LuckPerLevel*lv*100),math.floor(C.LuckPerLevel*nextLv*100)) end
+	return string.format("Roll %.2fs > %.2fs",C.rollSeconds(lv),C.rollSeconds(nextLv))
+end
 C.Types = {
 	{ id = "Bumper", name = "Bumper Press", tier = 1, input = 1, damage = 3, hp = 12, value = 8, cycle = 1.4 },
 	{ id = "Steel", name = "Steel Stamp", tier = 3, input = 2, damage = 4, hp = 18, value = 13, cycle = 1.5 },
@@ -48,7 +81,7 @@ C.Tutorial = {
 	"Open CRUSHERS, select your rolled machine and equip it in a working bay.",
 	"Buy a global upgrade at the PRODUCTION board. Collect and sell to afford it.",
 	"Buy Luck or Rolling Speed at the ROLLING board.",
-	"Level up an individual crusher in CRUSHERS. Its level belongs to that instance.",
+	"Use the green LEVEL button on an equipped crusher's bay plaque.",
 	"Keep collecting, selling and rolling. Unlock another working bay for more production!",
 }
 function C.typeById(id) for _,v in C.Types do if v.id == id then return v end end end
