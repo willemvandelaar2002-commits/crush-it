@@ -90,6 +90,13 @@ of the scrap hopper. Toy blocks riding it are client-only
 smaller (20 x 12) and sits at (-58, 82), out of the line of sight from the
 entrance to the hopper.
 
+Spacing pass (22 Oct, Willem: stations stood too close): banks moved back
+again (BayZ -12, floor rear -34). Boards (±22, 42); Collect hopper on the left
+edge at (-60, 60) turned to face the walkway, fed by the two-segment conveyor
+along the plot edge; Sell (-26, 80) and Roll (46, 72) turned 180° so their
+fronts face into the plaza and their backs face the entrance. Every station
+has at least ~10 studs of floor around it.
+
 World controls are SurfaceGuis copied into PlayerGui for the plot owner (mouse
 clicks are reliable there); purchases are server-checked for owner, distance
 (22 studs from the control) and cash.

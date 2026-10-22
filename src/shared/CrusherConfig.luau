@@ -17,7 +17,7 @@ local C = {
 -- +Z points to the plot entrance. Bays alternate left/right so the plot fills
 -- symmetrically; ground floor first, then the upper row.
 C.Layout = { Wings=2, Tiers=2, PerWing=6, WingX=40, Pitch=10, BayWidth=9.6,
-	BayZ=0, BayDepth=12, UpperBack=12, TierHeight=14, WingTilt=0.25,
+	BayZ=-12, BayDepth=12, UpperBack=12, TierHeight=14, WingTilt=0.25,
 	StairX=64, StairWidth=10, StairRun=34,
 	MachineWidth=8.6, MachineDepth=8, MachineHeight=9.4, MachineZ=2.5, Pedestal=2.4, InteractionDistance=22 }
 C.Layout.WalkFront=C.Layout.BayZ+C.Layout.BayDepth/2+1 -- front edge of the upper walkway

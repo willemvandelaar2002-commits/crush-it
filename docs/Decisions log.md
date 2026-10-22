@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-22: Willem: stations too close together. Plot made longer (banks 12 studs further back), scrap hopper moved to the left edge facing the walkway with the conveyor along the edge, boards moved back, and Sell and Roll turned around (Willem's choice) to face into the plaza. Checked: no overlaps, roll + reveal works, no errors.
+
 - 2026-10-22: Scrap conveyor from the left bank into the hopper with toy parts rolling along it (client-side visuals), like the reference. Sell counter made smaller and moved so it no longer blocks the hopper from the entrance; stairs moved slightly inward to make room. Checked: no overlaps, both stairs climbable, 117 checks, no errors.
 
 - 2026-10-22: Willem: toys on the presses were still hidden, banks should be angled and the plot longer like the reference, and the custom leaderboard can go. Presses on a higher stage with flatter plaques; banks moved back for a longer plaza and turned outward-forward; stations re-placed; custom leaderboard off, Roblox player list back. Checked: no overlaps inside or between plots, 117 checks, no errors.
