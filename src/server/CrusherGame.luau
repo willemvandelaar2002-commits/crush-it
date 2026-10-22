@@ -344,6 +344,31 @@ function G.start()
 		cashPerSecond=function(p) local d=Data.get(p) return if d then cps(p,d) else 0 end,
 		finishLegacyProduct=function(p) local d=Data.get(p) if d then d.scrap=C.money(d.scrap+d.crushers.available) d.crushers.available=0 action(p,"Sell") end end}
 	require(script.Parent.Shop).start(api) require(script.Parent.Rewards).start(api)
+	-- /credits <amount> (or /cash): test cash, e.g. "/credits 5m". Studio, or the
+	-- place owner in live servers. No amount gives 1M.
+	local SUFFIX={k=1e3,m=1e6,b=1e9,t=1e12,qa=1e15}
+	local function isAdmin(p) return RunService:IsStudio() or (game.CreatorType==Enum.CreatorType.User and p.UserId==game.CreatorId) end
+	local function credits(p,text)
+		if not isAdmin(p) then return end
+		local arg=string.split(text," ")[2]
+		local amount=1e6
+		if arg and arg~="" then
+			local num,suffix=string.match(string.lower(arg),"^([%d%.]+)(%a*)$")
+			local n=tonumber(num)
+			if not n or (suffix~="" and not SUFFIX[suffix]) then Net.event("Notice"):FireClient(p,{text="Use: /credits 5m"}) return end
+			amount=math.floor(n*(SUFFIX[suffix] or 1))
+		end
+		if amount<=0 or amount~=amount or amount==math.huge then return end
+		api.addCash(p,amount)
+		Net.event("Notice"):FireClient(p,{text="+"..Format.cash(amount).." (dev)"})
+	end
+	local TCS=game:GetService("TextChatService")
+	local command=Instance.new("TextChatCommand") command.Name="CreditsCommand"
+	command.PrimaryAlias="/credits" command.SecondaryAlias="/cash"
+	command.Triggered:Connect(function(source,text) local p=Players:GetPlayerByUserId(source.UserId) if p then credits(p,text) end end)
+	command.Parent=TCS
+	local function hook(p) p.Chatted:Connect(function(m) local c=string.lower(string.split(m," ")[1] or "") if c=="/credits" or c=="/cash" then credits(p,m) end end) end
+	if TCS.ChatVersion~=Enum.ChatVersion.TextChatService then Players.PlayerAdded:Connect(hook) for _,p in Players:GetPlayers() do hook(p) end end
 	if RunService:IsStudio() then
 		local dev=Instance.new("BindableFunction") dev.Name="DevCrusher"
 		dev.OnInvoke=function(p,cmd,args)
