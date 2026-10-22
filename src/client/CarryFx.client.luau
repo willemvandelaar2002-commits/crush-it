@@ -20,8 +20,8 @@ local Icons = require(ReplicatedStorage.Shared.Icons)
 local me = Players.LocalPlayer
 local COLORS = { Color3.fromRGB(248, 199, 53), Color3.fromRGB(53, 201, 79), Color3.fromRGB(35, 99, 210),
 	Color3.fromRGB(230, 69, 77), Color3.fromRGB(255, 140, 40), Color3.fromRGB(156, 66, 221) }
-local MAX_LAYERS = 24
-local BLOCK = Vector3.new(2.2, 0.75, 1.5)
+local MAX_LAYERS = 10
+local BLOCK = Vector3.new(2, 0.7, 1.4)
 
 local function play(id: number?, volume: number?)
 	if not id then return end
@@ -35,7 +35,7 @@ end
 -- How many layers a carried amount shows: grows with the number's size.
 local function layersFor(amount: number): number
 	if amount <= 0 then return 0 end
-	return math.clamp(math.floor(2 + math.log10(amount + 1) * 2.2), 1, MAX_LAYERS)
+	return math.clamp(math.floor(1 + math.log10(amount + 1) * 1.5), 1, MAX_LAYERS)
 end
 
 type Stack = { player: Player, folder: Folder, blocks: { BasePart }, label: TextLabel?, gui: BillboardGui?, root: BasePart?, shown: number }
@@ -51,11 +51,67 @@ local function block(i: number, root: BasePart, parent: Instance): BasePart
 	local w = Instance.new("Weld")
 	w.Part0 = root
 	w.Part1 = p
-	-- behind the back (+Z of the root), each layer slightly twisted like a loose pile
-	w.C0 = CFrame.new(0, -0.3 + (i - 1) * BLOCK.Y, 1.35) * CFrame.Angles(0, math.sin(i * 1.7) * 0.25, 0)
+	-- held in front of the chest (-Z of the root), starting at hand height,
+	-- each layer slightly twisted like a loose pile
+	w.C0 = CFrame.new(0, -0.1 + (i - 1) * BLOCK.Y, -1.45) * CFrame.Angles(0, math.sin(i * 1.7) * 0.25, 0)
 	w.Parent = p
 	p.Parent = parent
 	return p
+end
+
+-- Raise both arms forward while carrying: a looping one-pose animation built
+-- at runtime (KeyframeSequenceProvider), playing on top of walk/idle. R15.
+local holdAnimId: string? = nil
+local function holdAnimation(): string?
+	if holdAnimId then return holdAnimId end
+	local ok, id = pcall(function()
+		local seq = Instance.new("KeyframeSequence")
+		seq.Loop = true
+		seq.Priority = Enum.AnimationPriority.Action
+		for _, time in { 0, 1 } do
+			local kf = Instance.new("Keyframe")
+			kf.Time = time
+			local root = Instance.new("Pose") root.Name = "HumanoidRootPart" root.Weight = 0 root.Parent = kf
+			local lower = Instance.new("Pose") lower.Name = "LowerTorso" lower.Weight = 0 lower.Parent = root
+			local upper = Instance.new("Pose") upper.Name = "UpperTorso" upper.Weight = 0 upper.Parent = lower
+			for _, side in { { "Right", -1 }, { "Left", 1 } } do
+				local arm = Instance.new("Pose")
+				arm.Name = side[1] .. "UpperArm"
+				arm.CFrame = CFrame.Angles(math.rad(85), 0, math.rad(side[2] :: number * 6))
+				arm.Parent = upper
+				local fore = Instance.new("Pose")
+				fore.Name = side[1] .. "LowerArm"
+				fore.CFrame = CFrame.Angles(math.rad(10), 0, 0)
+				fore.Parent = arm
+			end
+			kf.Parent = seq
+		end
+		return game:GetService("KeyframeSequenceProvider"):RegisterKeyframeSequence(seq)
+	end)
+	if ok then holdAnimId = id end
+	return holdAnimId
+end
+local holdTracks: { [Model]: AnimationTrack } = {}
+local function holdPose(char: Model, holding: boolean)
+	local track = holdTracks[char]
+	if holding and not track then
+		local humanoid = char:FindFirstChildOfClass("Humanoid")
+		local animator = humanoid and humanoid:FindFirstChildOfClass("Animator")
+		local id = holdAnimation()
+		if not (animator and id) then return end
+		local anim = Instance.new("Animation")
+		anim.AnimationId = id
+		local ok, t = pcall(function() return (animator :: Animator):LoadAnimation(anim) end)
+		if ok and t then
+			t.Looped = true
+			t:Play(0.2)
+			holdTracks[char] = t
+			char.AncestryChanged:Connect(function() if not char.Parent then holdTracks[char] = nil end end)
+		end
+	elseif not holding and track then
+		track:Stop(0.2)
+		holdTracks[char] = nil
+	end
 end
 
 local function rebuild(st: Stack, amount: number)
@@ -69,6 +125,7 @@ local function rebuild(st: Stack, amount: number)
 		st.folder.Parent = char
 	end
 	local want = layersFor(amount)
+	holdPose(char :: Model, want > 0)
 	while #st.blocks < want do table.insert(st.blocks, block(#st.blocks + 1, root, st.folder)) end
 	while #st.blocks > want do (table.remove(st.blocks) :: BasePart):Destroy() end
 	if not st.gui then

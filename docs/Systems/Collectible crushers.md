@@ -102,13 +102,14 @@ along the plot edge; Sell (-26, 80) turned 180° to face into the plaza; Roll at
 has at least ~10 studs of floor around it.
 
 Feedback (23 Oct, from Willem's reference video):
-- `client/WorldFx.luau`: hovering a board row / plaque grows it 6% with a white
-  outline; a click punches it; the next server answer flashes it white with a
+- `client/WorldFx.luau`: hovering grows only the green price button (12%) with
+  a white outline; a click punches it; the next server answer flashes it white with a
   rising "+1 LEVEL!" (or "BAY UNLOCKED!") and the LevelUp sound, or shakes it
   red when refused.
-- `client/CarryFx.client.luau`: carried scrap is a tower of toy blocks welded
-  to every player's back (layers = 2 + 2.2 * log10(amount), max 24) with the
-  value above it. Collecting flies blocks from your hopper onto your back;
+- `client/CarryFx.client.luau`: carried scrap is a tower of toy blocks held in
+  front of every player (welded at hand height, layers = 1 + 1.5 * log10(amount),
+  max 10) with the value above it; a looping arms-forward pose (runtime
+  KeyframeSequence, R15) plays while carrying. Collecting flies blocks from your hopper onto your back;
   selling flies them into your counter and bursts 8-26 cash bundles that fly
   into the cash icon (bottom-left), with the Coin sound.
 

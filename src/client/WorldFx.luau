@@ -39,26 +39,26 @@ local function scaleOf(g: GuiObject): UIScale
 	return s :: UIScale
 end
 
+-- Hover and click animate only the button itself (the green price button).
 function Fx.bind(button: GuiButton)
-	local row = Fx.rowOf(button)
-	local scale = scaleOf(row)
+	local scale = scaleOf(button)
 	local glow = Instance.new("UIStroke")
 	glow.Name = "HoverGlow"
 	glow.Color = Color3.fromRGB(255, 255, 255)
 	glow.Thickness = 0
 	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	glow.Parent = row
+	glow.Parent = button
 	button.MouseEnter:Connect(function()
-		TweenService:Create(scale, QUICK, { Scale = 1.06 }):Play()
-		TweenService:Create(glow, QUICK, { Thickness = 5 }):Play()
+		TweenService:Create(scale, QUICK, { Scale = 1.12 }):Play()
+		TweenService:Create(glow, QUICK, { Thickness = 4 }):Play()
 	end)
 	button.MouseLeave:Connect(function()
 		TweenService:Create(scale, QUICK, { Scale = 1 }):Play()
 		TweenService:Create(glow, QUICK, { Thickness = 0 }):Play()
 	end)
 	button.Activated:Connect(function()
-		scale.Scale = 0.93
-		TweenService:Create(scale, BOUNCE, { Scale = 1.06 }):Play()
+		scale.Scale = 0.9
+		TweenService:Create(scale, BOUNCE, { Scale = 1.12 }):Play()
 	end)
 end
 
