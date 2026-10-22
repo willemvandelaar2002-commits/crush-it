@@ -21,6 +21,13 @@ sits inside the train loop (r < 172); +Z is the south spoke (spawn side).
   the ram's mesh (head + rod) is the moving "Ram", the truck (x1.7) squashes.
   Frame attributes BedTop 5 / BarBottom 37.6 (studs above its bottom, unscaled).
   Without the folder the part-built crusher is used.
+- **Willem's Mega Crusher model (23 Oct):** `HubMeshes.MegaCrusherModel`
+  (moved from Workspace "MegaCrusher-Roblox"; Frame_*, Platform_* incl. its own
+  MEGA CRUSHER sign, Ram, PistonRod). Takes priority over the AI frame: scaled
+  1.8, turned 180° (its sign faced -Z), Ram slams, PistonRod sits in
+  "RamStretch" and stretches between the beam and the ram (client), the AI toy
+  truck squashes on Frame_Bed. Attribute BedTop 5.72 (unscaled). The code sign
+  is skipped when the model has its own (OwnSign).
 - **Station meshes (22 Oct):** HubMeshes also holds Station_DailySpin,
   Station_TopCrushers, Station_Quests, Station_Boosts (scaled to their base
   widths 14/27/17/14), Prop_Pedestal (Special Crushers display, glass dome and

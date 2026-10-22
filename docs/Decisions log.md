@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-23: Willem's own Mega Crusher model replaces the AI one in the hub (ram slams, piston rod stretches, toy truck squashes). Stored in ServerStorage.HubMeshes.MegaCrusherModel: Publish to keep it.
+
 - 2026-10-22: All hub stations now AI meshes (Daily Spin wheel, leaderboards + trophy, quest booth with foreman, boosts vending machine, display pedestal with GoldenKing under glass) plus toy trees and lamp posts; stations face the nearest spoke. Place-only meshes: Willem must Publish.
 
 - 2026-10-22: Willem: the code-built hub did not look like the reference. Switched the visible hub models to Roblox AI meshes (place-only, ServerStorage.HubMeshes), starting with the Mega Crusher frame, ram and toy dump truck; code keeps the layout and a part-built fallback.

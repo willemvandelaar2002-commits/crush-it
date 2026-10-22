@@ -20,6 +20,7 @@ HubPlaza.Stage = { 50, 43, 36 } -- tier radii; each tier is 1.4 high
 HubPlaza.MegaScale = 1.45
 HubPlaza.MegaMeshScale = 1.35 -- AI mesh version
 HubPlaza.TruckScale = 1.7
+HubPlaza.ModelScale = 1.8 -- Willem's MegaCrusherModel
 HubPlaza.StationScale = 1.8
 HubPlaza.Stations = { -- angle in degrees (0 = south spoke), radius, scale
 	Boosts = { 35, 112 }, Quests = { 325, 112 }, Special = { 135, 114 },
@@ -188,8 +189,66 @@ end
 -- Mesh version (place-only AI meshes in ServerStorage.HubMeshes: MegaFrame,
 -- MegaRam, MegaTruck; pivots at their bottom centre, fronts facing +Z). The
 -- frame carries BedTop / BarBottom attributes (studs above its bottom).
+-- Willem's own model (HubMeshes.MegaCrusherModel): Frame_*/Platform_* parts stay,
+-- "Ram" moves, "PistonRod" stretches between the top beam and the ram.
+local function megaModel(parent: Instance, o: CFrame, t: Model): Model
+	local m = t:Clone()
+	m.Name = "MegaCrusher"
+	local S = HubPlaza.ModelScale
+	m:ScaleTo(m:GetScale() * S)
+	m:PivotTo(o * CFrame.Angles(0, (t:GetAttribute("FrontYaw") :: number?) or 0, 0))
+	local ram = m:FindFirstChild("Ram") :: BasePart
+	local rod = m:FindFirstChild("PistonRod") :: BasePart?
+	if rod then
+		local stretch = Instance.new("Folder")
+		stretch.Name = "RamStretch"
+		stretch.Parent = m
+		rod.Parent = stretch
+	end
+	for _, p in m:GetDescendants() do
+		if p:IsA("BasePart") then
+			p.Anchored = true
+			local moving = p == ram or p == rod
+			p.CanCollide = not moving
+			p.CanTouch = false
+		end
+	end
+	local bedTop = o.Position.Y + ((t:GetAttribute("BedTop") :: number?) or 5.7) * S
+	-- toy truck on the bed, sized to fit under the raised ram
+	local folder = game:GetService("ServerStorage"):FindFirstChild("HubMeshes")
+	local truckT = folder and folder:FindFirstChild("MegaTruck")
+	local toy = Instance.new("Model")
+	toy.Name = "Toy"
+	toy.Parent = m
+	if truckT then
+		local truck = truckT:Clone()
+		local _, ts = truck:GetBoundingBox()
+		local room = (ram.Position.Y - ram.Size.Y / 2) - bedTop
+		truck:ScaleTo(truck:GetScale() * math.min(room * 0.8 / ts.Y, 20 / ts.Z))
+		truck:PivotTo(CFrame.new(o.Position.X, bedTop, o.Position.Z) * CFrame.Angles(0, math.rad(90), 0))
+		for _, p in truck:GetDescendants() do
+			if p:IsA("BasePart") then p.CanCollide = false p.CanTouch = false p.CanQuery = false p.Parent = toy end
+		end
+		truck:Destroy()
+	end
+	local toyTop = bedTop
+	for _, p in toy:GetChildren() do
+		if p:IsA("BasePart") then toyTop = math.max(toyTop, p.Position.Y + p.Size.Y / 2) end
+	end
+	m:SetAttribute("BedTop", bedTop)
+	m:SetAttribute("RestY", ram.Position.Y)
+	m:SetAttribute("HitY", bedTop + (toyTop - bedTop) * 0.35 + ram.Size.Y / 2)
+	m:SetAttribute("Period", 7)
+	m:SetAttribute("OwnSign", true)
+	m.Parent = parent
+	CollectionService:AddTag(m, "MegaCrusher")
+	return m
+end
+
 local function megaCrusher(parent: Instance, o: CFrame): Model
 	local folder = game:GetService("ServerStorage"):FindFirstChild("HubMeshes")
+	local own = folder and folder:FindFirstChild("MegaCrusherModel")
+	if own and own:IsA("Model") then return megaModel(parent, o, own) end
 	local frameT = folder and folder:FindFirstChild("MegaFrame")
 	local ramT = folder and folder:FindFirstChild("MegaRam")
 	local truckT = folder and folder:FindFirstChild("MegaTruck")
@@ -435,13 +494,15 @@ function HubPlaza.build(parent: Instance, floorY: number)
 	local topY = stage(m, o)
 	local mega = megaCrusher(m, o * CFrame.new(0, topY, 0))
 	-- MEGA CRUSHER sign at the foot of the stage, facing the south spoke.
-	local signCf = o * CFrame.new(0, 0, HubPlaza.Stage[1] + 6)
-	for _, x in { -11, 11 } do W.part(m, "MegaSignPost", V(1.6, 9, 1.6), signCf * CFrame.new(x, 4.5, 0), W.Navy, true) end
-	local face, gui = W.panel(m, signCf * CFrame.new(0, 8.6, 0), 22, 7, W.Blue)
-	farSigns(gui)
-	local t = W.text(gui, "Title", "MEGA\nCRUSHER", UDim2.fromScale(0.04, 0.06), UDim2.fromScale(0.92, 0.88))
-	t.TextColor3 = C(255, 214, 80)
-	local _ = face
+	if not mega:GetAttribute("OwnSign") then
+		local signCf = o * CFrame.new(0, 0, HubPlaza.Stage[1] + 6)
+		for _, x in { -11, 11 } do W.part(m, "MegaSignPost", V(1.6, 9, 1.6), signCf * CFrame.new(x, 4.5, 0), W.Navy, true) end
+		local face, gui = W.panel(m, signCf * CFrame.new(0, 8.6, 0), 22, 7, W.Blue)
+		farSigns(gui)
+		local t = W.text(gui, "Title", "MEGA\nCRUSHER", UDim2.fromScale(0.04, 0.06), UDim2.fromScale(0.92, 0.88))
+		t.TextColor3 = C(255, 214, 80)
+		local _ = face
+	end
 	-- yellow ring line round the stage
 	for k = 0, 47 do
 		local a = (k + 0.5) / 48 * math.pi * 2

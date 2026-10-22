@@ -17,7 +17,7 @@ local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local player = Players.LocalPlayer
 
 type ToyPart = { part: BasePart, size: Vector3, cf: CFrame }
-type Rig = { press: Model, ram: BasePart, toys: { ToyPart }, lastHit: number, follow: { { part: BasePart, offset: CFrame } } }
+type Rig = { press: Model, ram: BasePart, toys: { ToyPart }, lastHit: number, follow: { { part: BasePart, offset: CFrame } }, stretch: { { part: BasePart, top: number } }? }
 local rigs: { [Model]: Rig } = {}
 
 local function rig(press: Model): Rig?
@@ -138,6 +138,22 @@ RunService.RenderStepped:Connect(function()
 			end
 		end
 		for _, f in r.follow do f.part.CFrame = r.ram.CFrame * f.offset end
+		-- Parts in "RamStretch" (piston rod) keep their top fixed and reach down to the ram.
+		local sg = press:FindFirstChild("RamStretch")
+		if sg then
+			if not r.stretch or #r.stretch < #sg:GetChildren() then -- parts may stream in late
+				r.stretch = {}
+				for _, p in sg:GetChildren() do
+					if p:IsA("BasePart") then table.insert(r.stretch, { part = p, top = p.Position.Y + p.Size.Y / 2 }) end
+				end
+			end
+			local ramTop = r.ram.Position.Y + r.ram.Size.Y / 2
+			for _, st in r.stretch :: { { part: BasePart, top: number } } do
+				local h = math.max(0.2, st.top - ramTop)
+				st.part.Size = Vector3.new(st.part.Size.X, h, st.part.Size.Z)
+				st.part.CFrame = CFrame.new(st.part.Position.X, st.top - h / 2, st.part.Position.Z) * st.part.CFrame.Rotation
+			end
+		end
 		-- toys: squashed while the ram is down, bounce back as it lifts off
 		local k: number
 		if t >= 0.9 then
