@@ -310,26 +310,28 @@ function Build.island(parent: Instance, top: CFrame, w: number, d: number, seaY:
 			t += bw + rng:NextNumber(3, 12)
 		end
 	end
-	sideBlocks(w, function(x) return top * CFrame.new(x, 0, d / 2 + 1.4) end)
-	sideBlocks(w, function(x) return top * CFrame.new(x, 0, -d / 2 - 1.4) * CFrame.Angles(0, math.pi, 0) end)
-	sideBlocks(d, function(z) return top * CFrame.new(w / 2 + 1.4, 0, z) * CFrame.Angles(0, math.pi / 2, 0) end)
-	sideBlocks(d, function(z) return top * CFrame.new(-w / 2 - 1.4, 0, z) * CFrame.Angles(0, -math.pi / 2, 0) end)
-	-- boulders at the waterline
-	for _ = 1, math.floor((w + d) / 14) do
-		local side = rng:NextInteger(1, 4)
-		local along = rng:NextNumber(-0.5, 0.5)
-		local local_: Vector3
-		if side == 1 then
-			local_ = Vector3.new(along * w, 0, d / 2 + rng:NextNumber(1.5, 3))
-		elseif side == 2 then
-			local_ = Vector3.new(along * w, 0, -d / 2 - rng:NextNumber(1.5, 3))
-		elseif side == 3 then
-			local_ = Vector3.new(w / 2 + rng:NextNumber(1.5, 3), 0, along * d)
-		else
-			local_ = Vector3.new(-w / 2 - rng:NextNumber(1.5, 3), 0, along * d)
+	if o.rocks ~= false then -- rocky sides and waterline boulders (off for clean plots)
+		sideBlocks(w, function(x) return top * CFrame.new(x, 0, d / 2 + 1.4) end)
+		sideBlocks(w, function(x) return top * CFrame.new(x, 0, -d / 2 - 1.4) * CFrame.Angles(0, math.pi, 0) end)
+		sideBlocks(d, function(z) return top * CFrame.new(w / 2 + 1.4, 0, z) * CFrame.Angles(0, math.pi / 2, 0) end)
+		sideBlocks(d, function(z) return top * CFrame.new(-w / 2 - 1.4, 0, z) * CFrame.Angles(0, -math.pi / 2, 0) end)
+		-- boulders at the waterline
+		for _ = 1, math.floor((w + d) / 14) do
+			local side = rng:NextInteger(1, 4)
+			local along = rng:NextNumber(-0.5, 0.5)
+			local local_: Vector3
+			if side == 1 then
+				local_ = Vector3.new(along * w, 0, d / 2 + rng:NextNumber(1.5, 3))
+			elseif side == 2 then
+				local_ = Vector3.new(along * w, 0, -d / 2 - rng:NextNumber(1.5, 3))
+			elseif side == 3 then
+				local_ = Vector3.new(w / 2 + rng:NextNumber(1.5, 3), 0, along * d)
+			else
+				local_ = Vector3.new(-w / 2 - rng:NextNumber(1.5, 3), 0, along * d)
+			end
+			local sz = rng:NextNumber(2.5, 5)
+			Build.block(m, "Boulder", Vector3.new(sz, sz * 0.8, sz), top * CFrame.new(local_.X, seaY - topY + sz * 0.15, local_.Z) * CFrame.Angles(rng:NextNumber(-0.2, 0.2), rng:NextNumber() * 6, rng:NextNumber(-0.2, 0.2)), stoneDark, ALL4)
 		end
-		local sz = rng:NextNumber(2.5, 5)
-		Build.block(m, "Boulder", Vector3.new(sz, sz * 0.8, sz), top * CFrame.new(local_.X, seaY - topY + sz * 0.15, local_.Z) * CFrame.Angles(rng:NextNumber(-0.2, 0.2), rng:NextNumber() * 6, rng:NextNumber(-0.2, 0.2)), stoneDark, ALL4)
 	end
 	-- low stone curb along the edge, chunky blocks of random length/height, with gaps
 	if o.curb ~= false then

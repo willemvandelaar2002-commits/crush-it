@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-22: Plaza and entrance like the reference: big blue gate replaced by a low yellow studded arch with hazard posts and the owner name plate; dark walkway with yellow dashes and arrows; random stone curbs/boulders replaced by a clean blue studded rim with lamp posts and blue plot sides; floor trimmed to end just behind the banks; toy bricks round the plaza. Checked: no plot overlaps, spawn + walking out over the bridge and back, trains, 117 rule checks, no errors.
+
 - 2026-10-22: Stations rebuilt like the reference: collect hopper with a scrap pile that grows with ready scrap, sell counter with register and SELL SCRAP sign, roll machine with rollers and a real six-faced die that spin while rolling, plus a reveal plinth showing a mini model of the rolled crusher. Checked in Studio: collect empties the pile, sell pays out, roll animation and reveal work, 117 rule checks, no errors.
 
 - 2026-10-22: Plaques and boards restyled like the reference cards: board rows get icons, upper-case names, "Lv 2 > 3" + short effect and a big price button; bay plaques show name, rarity/modifier in colour, level + $/min, LEVEL UP price and SWAP, with the plate coloured by rarity. No internal bay names shown any more. Purchases checked through the server in Studio; real mouse clicks on world buttons could not be automated (the test tool cannot click any GUI button) and still need a manual check.

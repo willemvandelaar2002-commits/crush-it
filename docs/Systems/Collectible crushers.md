@@ -54,6 +54,17 @@ Stations (22 Oct, `CrusherWorkshop.station`): each has the same front panel
   on the yellow reveal plinth beside the machine, with its rarity and name on
   the banner.
 
+Plaza and edge (22 Oct): the plot floor now runs from local Z 8 (just behind
+the banks) to the front edge (Front 92); `Moat.build(..., clearEdges, rear)`
+gives it clean cobalt/navy sides with no curb, rocks or boulders. A studded
+rim of alternating blue blocks runs round the edge with navy corner blocks and
+yellow lamp posts, open 14 studs at the front centre. The entrance is a low
+yellow studded beam on hazard-striped posts with the owner's name plate
+(`W.entrance`), the walkway is dark with yellow edge dashes and arrows pointing
+in (`W.walkway`), and toy bricks with round studs sit round the plaza clear of
+paths, stations and stairs (`W.brick`). `Config.Plots.Back` is unchanged, so
+the factory hall around the ring keeps its size.
+
 World controls are SurfaceGuis copied into PlayerGui for the plot owner (mouse
 clicks are reliable there); purchases are server-checked for owner, distance
 (22 studs from the control) and cash.

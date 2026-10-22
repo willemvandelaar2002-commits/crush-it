@@ -130,6 +130,88 @@ function W.die(parent,cf,size)
 	end end
 	return m
 end
+-- Toy brick with round studs on top (2 x n), for plaza decoration.
+function W.brick(parent,cf,nx,nz,color,h)
+	h=h or 1.6
+	local m=Instance.new("Model") m.Name="ToyBrick" m.Parent=parent
+	W.part(m,"BrickBody",V(nx*1.6,h,nz*1.6),cf*CFrame.new(0,h/2,0),color,true)
+	for i=1,nx do for k=1,nz do
+		local stud=W.part(m,"BrickStud",V(.5,1,1),cf*CFrame.new((i-(nx+1)/2)*1.6,h+.25,(k-(nz+1)/2)*1.6)*CFrame.Angles(0,0,math.pi/2),color)
+		stud.Shape=Enum.PartType.Cylinder
+	end end
+	return m
+end
+-- Lamp post: navy post with a warm yellow light box.
+function W.lamp(parent,cf,h)
+	h=h or 3.2
+	W.part(parent,"LampPost",V(.9,h,.9),cf*CFrame.new(0,h/2,0),W.Navy,true)
+	local light=W.part(parent,"LampLight",V(1.5,1.2,1.5),cf*CFrame.new(0,h+.6,0),W.Yellow)
+	light.Material=Enum.Material.Neon light.CastShadow=false
+	W.part(parent,"LampCap",V(1.8,.3,1.8),cf*CFrame.new(0,h+1.35,0),W.Navy)
+end
+-- Clean raised rim round a plot top (local frame cf at floor height, plot
+-- spans x -w/2..w/2, z rear..front) with an opening at the front centre.
+function W.border(parent,cf,w,rear,front,gap)
+	local m=Instance.new("Model") m.Name="PlotBorder" m.Parent=parent
+	local light=Color3.fromRGB(78,140,232)
+	local function run(a,b,along,fixed,isX)
+		local len=b-a local n=math.max(1,math.floor(len/6+.5)) local seg=len/n
+		for i=0,n-1 do
+			local mid=a+seg*(i+.5)
+			local pos=if isX then CFrame.new(mid,.8,fixed) else CFrame.new(fixed,.8,mid)
+			local size=if isX then V(seg-.2,1.6,2) else V(2,1.6,seg-.2)
+			local block=W.part(m,"RimBlock",size,cf*pos,if i%2==0 then W.Blue else light,true)
+			Style.materialStuds(block,true,{Enum.NormalId.Top},2)
+		end
+	end
+	local half=w/2-1
+	run(-half,-gap/2,"x",front-1,true) run(gap/2,half,"x",front-1,true)
+	run(-half,half,"x",rear+1,true)
+	run(rear+2,front-2,"z",-half,false) run(rear+2,front-2,"z",half,false)
+	for _,x in {-half,half} do for _,z in {rear+1,front-1} do
+		W.part(m,"RimCorner",V(2.6,2.2,2.6),cf*CFrame.new(x,1.1,z),W.Navy,true)
+		W.lamp(m,cf*CFrame.new(x,2.2,z),2.2)
+	end end
+	for _,x in {-gap/2-1,gap/2+1} do W.lamp(m,cf*CFrame.new(x,1.6,front-1),2.6) end
+	for t=1,3 do local z=rear+(front-rear)*t/4
+		for _,x in {-half,half} do W.lamp(m,cf*CFrame.new(x,1.6,z),2) end
+	end
+	return m
+end
+-- Low yellow entrance arch with hazard posts; returns the owner sign label.
+function W.entrance(parent,cf,width)
+	local m=Instance.new("Model") m.Name="Entrance" m.Parent=parent
+	for _,x in {-width/2,width/2} do
+		W.part(m,"GatePost",V(2,7,2),cf*CFrame.new(x,3.5,0),W.Navy,true)
+		for k=0,3 do W.part(m,"PostStripe",V(2.1,.7,2.1),cf*CFrame.new(x,1+k*1.6,0),W.Yellow) end
+		W.beacon(m,cf*CFrame.new(x,9,0))
+	end
+	local beam=W.part(m,"GateBeam",V(width+3,1.8,2.4),cf*CFrame.new(0,7.9,0),W.Yellow)
+	Style.materialStuds(beam,true,{Enum.NormalId.Top},2)
+	local plate=W.part(m,"NamePlate",V(width-3,1.4,.4),cf*CFrame.new(0,7.9,1.35),W.Navy)
+	local gui=W.sign(plate)
+	return W.text(gui,"OwnerName","Free factory",UDim2.fromScale(.03,.06),UDim2.fromScale(.94,.88))
+end
+-- Dark walkway with yellow edge dashes and white arrows pointing in.
+function W.walkway(parent,cf,width,z0,z1)
+	local m=Instance.new("Model") m.Name="Walkway" m.Parent=parent
+	local len=z1-z0
+	local top=W.part(m,"WalkTop",V(width,.14,len),cf*CFrame.new(0,.07,(z0+z1)/2),Color3.fromRGB(52,58,72))
+	top.Material=Enum.Material.SmoothPlastic
+	local function paint(name,size,pcf,color)
+		local p=W.part(m,name,size,cf*pcf,color) p.CastShadow=false
+	end
+	for z=z0+2,z1-2,4 do for _,x in {-width/2+.6,width/2-.6} do
+		paint("EdgeDash",V(.5,.04,2),CFrame.new(x,.16,z),W.Yellow)
+	end end
+	local white=Color3.fromRGB(240,242,236)
+	for _,z in {z0+(len*.25),z0+len*.6,z0+len*.9} do
+		-- Arrow pointing into the plot (-Z): shaft, then a chevron whose tip is at z-1.6.
+		paint("ArrowShaft",V(.7,.04,3.2),CFrame.new(0,.16,z+.6),white)
+		for _,side in {-1,1} do paint("ArrowHead",V(.7,.04,2.4),CFrame.new(side*.78,.16,z-.75)*CFrame.Angles(0,side*math.pi/4,0),white) end
+	end
+	return m
+end
 -- Front control panel shared by the three stations: heading, live line, button.
 local function stationPanel(m,cf,color,heading,action)
 	local face,gui=W.panel(m,cf,20,6.2,color)

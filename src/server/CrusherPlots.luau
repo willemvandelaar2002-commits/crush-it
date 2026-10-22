@@ -5,7 +5,6 @@ local Config=require(S.Config) local C=Config.Crushers local L=C.Layout
 local Build=require(script.Parent.Kit.Build)
 local W=require(script.Parent.Kit.CrusherWorkshop)
 local Style=require(S.Kit.Style)
-local Decor=require(script.Parent.PlotDecor)
 local Moat=require(script.Parent.Moat)
 local P={} local V=Vector3.new
 function P.prompt(part,action,title)
@@ -87,11 +86,13 @@ function P.create(root,Plots)
  local theme=Style.theme(Config.Look.Theme)
  for i=1,Config.Plots.Count do
   local o=Plots.originFor(i) local m=Instance.new("Model") m.Name="Plot"..i m:SetAttribute("Index",i) m:SetAttribute("Origin",o)
-  local depth=Config.Plots.Front+Config.Plots.Back
-  Build.platform(m,"Floor",o*CFrame.new(0,0,(Config.Plots.Front-Config.Plots.Back)/2),Config.Plots.FloorSize,depth,2,theme.platform,W.Blue,2)
+  -- The plot ends just behind the banks (no hidden strip of floor at the back).
+  local front=Config.Plots.Front local rear=L.BayZ-L.UpperBack-L.BayDepth/2-4 local F=Config.Plots.FloorSize
+  Build.platform(m,"Floor",o*CFrame.new(0,0,(front+rear)/2),F,front-rear,2,theme.platform,W.Blue,2)
   local decor=Instance.new("Model") decor.Name="Decor" decor.Parent=m
-  local sign=Decor.gate(decor,o*CFrame.new(0,0,Config.Plots.Front-2.2),11,W.Blue,theme)
-  Build.path(m,(o*CFrame.new(0,.05,Config.Plots.Front-1)).Position,(o*CFrame.new(0,.05,-Config.Plots.Back+4)).Position,12)
+  W.border(decor,o,F,rear,front,14)
+  local sign=W.entrance(decor,o*CFrame.new(0,0,front-4),14)
+  W.walkway(m,o,12,rear+2,front)
   banks(m,o)
   local plot={index=i,origin=o,model=m,owner=nil,sign=sign,bays={},stations={}}
   for bay=1,C.MaxBays do
@@ -108,10 +109,17 @@ function P.create(root,Plots)
    if not station.rows then station.prompt=P.prompt(station.part,spec.id,spec.id.." station") end
    plot.stations[spec.id]=station
   end
-  for _,side in {-1,1} do for k=1,3 do
-   W.part(decor,"ToyCrate",V(4,3,4),o*CFrame.new(side*(52+k*5),1.6,-39),if k%2==0 then W.Yellow else W.Blue)
-  end end
-  m.Parent=root Moat.build(m,o,true) table.insert(Plots.all(),plot)
+  -- Toy bricks round the plaza, clear of paths, stations and stairs.
+  local red=Color3.fromRGB(230,69,77) local orange=Color3.fromRGB(255,140,40)
+  for _,b in {{12,86,2,2,red,0},{16,88,2,1,W.Yellow,.4},{-12,86,2,2,W.Green,0},{-16,88,2,1,W.Blue,-.3},
+   {31,67,2,2,W.Yellow,.2},{-31,67,2,2,red,-.2},{33,69,1,1,W.Green,.6},{-33,69,1,1,orange,.5},
+   {-35,52,2,2,W.Yellow,.3},{35,50,2,2,W.Blue,-.4},{36,88,2,1,orange,0},{-36,88,2,2,W.Blue,.2},
+   {71,85,2,2,W.Green,.1},{-71,85,2,2,red,-.1},{71,88.5,1,1,W.Yellow,0},{-71,88.5,1,1,W.Yellow,0}} do
+   W.brick(decor,o*CFrame.new(b[1],0,b[2])*CFrame.Angles(0,b[6],0),b[3],b[4],b[5])
+  end
+  W.brick(decor,o*CFrame.new(12,1.6,86)*CFrame.Angles(0,.5,0),1,1,W.Blue)
+  W.brick(decor,o*CFrame.new(-12,1.6,86)*CFrame.Angles(0,-.4,0),2,1,W.Yellow)
+  m.Parent=root Moat.build(m,o,true,rear) table.insert(Plots.all(),plot)
   task.wait()
  end
 end

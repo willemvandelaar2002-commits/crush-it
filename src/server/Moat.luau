@@ -55,7 +55,9 @@ local function edgeProps(m: Instance, origin: CFrame, rng: Random)
 end
 
 -- Island body + hub bridge + edge props for one plot.
-function Moat.build(plotModel: Model, origin: CFrame, clearEdges: boolean?)
+-- clearEdges: crusher plots (clean blue sides, no curb/rocks/props); rear
+-- overrides the back edge (local Z) for plots that end right behind their build.
+function Moat.build(plotModel: Model, origin: CFrame, clearEdges: boolean?, rear: number?)
 	local P = Config.Plots
 	local F = P.FloorSize
 	local seaY = Config.World.SeaY
@@ -63,8 +65,18 @@ function Moat.build(plotModel: Model, origin: CFrame, clearEdges: boolean?)
 	m.Name = "Island"
 	local index = (plotModel:GetAttribute("Index") :: number?) or 1
 	local rng = Random.new(200 + index)
-	Build.island(m, origin * CFrame.new(0, 0, (P.Front - P.Back) / 2), F, P.Front + P.Back, seaY, palette(), {
+	local back = if rear then -rear else P.Back
+	local pal = palette()
+	if clearEdges then
+		pal = table.clone(pal)
+		pal.dirt = Color3.fromRGB(25, 43, 73)
+		pal.stone = Color3.fromRGB(46, 84, 156)
+		pal.stoneDark = Color3.fromRGB(25, 43, 73)
+	end
+	Build.island(m, origin * CFrame.new(0, 0, (P.Front - back) / 2), F, P.Front + back, seaY, pal, {
 		rng = rng,
+		curb = not clearEdges,
+		rocks = not clearEdges,
 		gaps = { { side = "front", at = Moat.FRONT_BRIDGE_X, width = Moat.BRIDGE_WIDTH + 1 } },
 	})
 	-- bridge over the lava to the hub (deck from the plot edge to the hub edge)
