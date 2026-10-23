@@ -3,9 +3,9 @@
 -- UI helpers for chunky, outlined, gradient panels and big green buttons.
 -- No game-specific code: copy src/shared/Kit and src/server/Kit to the next game.
 --
---   Style.studs(part, faces?, perTile?)        stud pattern on a part
---   Style.materialStuds(part, enabled, fallbackFaces?, fallbackPerTile?) -> boolean
---        explicit whole-part material opt-in; false restores face textures
+--   Style.studs(part, faces?)                  imported Studs material on the whole part
+--                                              (an empty faces list means no studs)
+--   Style.materialStuds(part, enabled?) -> boolean   same; kept for older callers
 --   Style.theme(name) -> palette               world colours (ground, platform, edge, path, dark,
 --                                              and leaf, trunk, rock, fence, lamp for props)
 --   Style.lighten(c, f) / Style.darken(c, f)
@@ -32,11 +32,11 @@ Style.Colors = {
 	Safety = C(255, 216, 72), Chrome = C(211, 231, 245),
 }
 
+-- The imported Studs MaterialVariant (MaterialService, saved with the place)
+-- is the only stud look in the world. UI uses its colour map as a tiled image.
 Style.Studs = {
-	Texture = "rbxassetid://7447638591", -- free "Stud Texture" (decal 7447638611)
-	PerTile = 2,
-	MaterialVariant = "Studs", -- place-only asset; never used by UI or legacy calls
-	UseWorldMaterials = true, -- world builder rollout; false restores legacy on next Play
+	MaterialVariant = "Studs",
+	UiImage = "rbxassetid://10509831729", -- Studs variant colour map
 }
 Style.Font = Enum.Font.FredokaOne
 
@@ -84,100 +84,20 @@ function Style.darken(c: Color3, f: number): Color3
 	return c:Lerp(Color3.new(0, 0, 0), f)
 end
 
-local function isStudTexture(item: Instance): boolean
-	-- Match both name and asset so custom textures/decals remain untouched.
-	return item:IsA("Texture") and item.Name == "Studs" and item.Texture == Style.Studs.Texture
-end
-
-local function studBackup(p: BasePart): Folder?
-	for _, item in p:GetChildren() do
-		if item:IsA("Folder") and item:GetAttribute("StyleStudMaterialBackup") == true then
-			return item
-		end
-	end
-	return nil
-end
-
-local function restoreStudMaterial(p: BasePart): boolean
-	local backup = studBackup(p)
-	if not backup then return false end
-	local originalMaterial = backup:GetAttribute("Material")
-	local originalVariant = backup:GetAttribute("MaterialVariant")
-	if typeof(originalMaterial) == "string" then
-		p.Material = (Enum.Material :: any)[originalMaterial]
-	end
-	if typeof(originalVariant) == "string" then p.MaterialVariant = originalVariant end
-	if backup:GetAttribute("RestoreDefaultPhysics") == true then p.CustomPhysicalProperties = nil end
-	local restored = false
-	for _, texture in backup:GetChildren() do
-		-- Restore the exact originals, including face, spacing, offsets and tint.
-		texture.Parent = p
-		restored = true
-	end
-	backup:Destroy()
-	return restored
-end
-
-function Style.studs(p: BasePart, faces: { Enum.NormalId }?, perTile: number?)
-	restoreStudMaterial(p)
-	for _, face in faces or { Enum.NormalId.Top } do
-		local t: Texture? = nil
-		for _, item in p:GetChildren() do
-			if item:IsA("Texture") and isStudTexture(item) and item.Face == face then
-				if t then item:Destroy() else t = item end
-			end
-		end
-		if not t then
-			t = Instance.new("Texture")
-			t.Name = "Studs"
-		end
-		t.Texture = Style.Studs.Texture
-		t.Face = face
-		t.StudsPerTileU = perTile or Style.Studs.PerTile
-		t.StudsPerTileV = perTile or Style.Studs.PerTile
-		t.Parent = p
-	end
-end
-
--- A MaterialVariant wraps ALL faces, regardless of fallbackFaces. Call only
--- for deliberately selected world parts where that difference is acceptable.
--- Its shared tiling is never changed; fallbackPerTile affects textures only.
-function Style.materialStuds(p: BasePart, enabled: boolean, fallbackFaces: { Enum.NormalId }?, fallbackPerTile: number?): boolean
+-- Imported Studs on the whole part (a MaterialVariant always wraps every face).
+-- Pass an empty faces list for "no studs" (Build.block uses that).
+function Style.studs(p: BasePart, faces: { Enum.NormalId }?, _perTile: number?)
+	if faces and #faces == 0 then return end
 	local variant = MaterialService:FindFirstChild(Style.Studs.MaterialVariant)
-	if not enabled or not variant or not variant:IsA("MaterialVariant") then
-		local restored = restoreStudMaterial(p)
-		local hasLegacy = false
-		for _, item in p:GetChildren() do
-			if isStudTexture(item) then hasLegacy = true; break end
-		end
-		if (not restored and not hasLegacy) or fallbackFaces ~= nil or fallbackPerTile ~= nil then
-			Style.studs(p, fallbackFaces, fallbackPerTile)
-		end
-		return false
-	end
-	local backup = studBackup(p)
-	if not backup then
-		backup = Instance.new("Folder")
-		backup.Name = "StyleStudMaterialBackup"
-		backup:SetAttribute("StyleStudMaterialBackup", true)
-		backup:SetAttribute("Material", p.Material.Name)
-		backup:SetAttribute("MaterialVariant", p.MaterialVariant)
-		if p.CustomPhysicalProperties == nil then
-			backup:SetAttribute("RestoreDefaultPhysics", true)
-			p.CustomPhysicalProperties = p.CurrentPhysicalProperties
-		end
-		backup.Parent = p
-	end
-	for _, item in p:GetChildren() do
-		if isStudTexture(item) then
-			-- Texture only renders directly on a BasePart. Archive our overlays
-			-- off its surfaces for lossless rollback; unrelated textures stay put.
-			item.Parent = backup
-		end
-	end
+	if not (variant and variant:IsA("MaterialVariant")) then return end
 	p.Material = variant.BaseMaterial
 	p.MaterialVariant = variant.Name
-	return true
+end
+
+function Style.materialStuds(p: BasePart, enabled: boolean?, _faces: { Enum.NormalId }?, _perTile: number?): boolean
+	if enabled == false then return false end
+	Style.studs(p)
+	return p.MaterialVariant == Style.Studs.MaterialVariant
 end
 
 -- UI -----------------------------------------------------------------------------
@@ -205,7 +125,7 @@ end
 
 function Style.studsImage(parent: GuiObject, tile: number, transparency: number)
 	local img = decoration(parent, "ImageLabel", "Studs", {
-		Name = "Studs", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = Style.Studs.Texture,
+		Name = "Studs", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = Style.Studs.UiImage,
 		ScaleType = Enum.ScaleType.Tile, TileSize = UDim2.fromOffset(tile, tile), ImageTransparency = transparency,
 		ZIndex = parent.ZIndex,
 	})

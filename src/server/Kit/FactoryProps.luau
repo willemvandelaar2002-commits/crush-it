@@ -74,37 +74,9 @@ function FactoryProps.sign(parent: Instance, cf: CFrame, width: number, height: 
 	return face
 end
 
--- Large environment floors have their own scale; never retile the imported
--- shared Studs variant or change the UI/press finish.
-function FactoryProps.floorFinish(p: BasePart, faces: { Enum.NormalId })
-	local materials = game:GetService("MaterialService")
-	local source = materials:FindFirstChild(Style.Studs.MaterialVariant)
-	if Style.Studs.UseWorldMaterials and source and source:IsA("MaterialVariant") then
-		local name = "CrushItFactoryFloorStuds"
-		local variant = materials:FindFirstChild(name)
-		if not variant then
-			local copy = source:Clone()
-			copy.Name = name
-			copy:SetAttribute("FactoryFloorMaterial", true)
-			copy.StudsPerTile = 4
-			copy.Parent = materials
-			variant = copy
-		end
-		if variant:IsA("MaterialVariant") and variant:GetAttribute("FactoryFloorMaterial") == true then
-			variant.StudsPerTile = 4
-			-- The normal-only copy is prepared in Studio: texture-map writes
-			-- require plugin permissions. If absent, cloning Studs still gives
-			-- a working coarser finish with its original colour/normal maps.
-			Style.materialStuds(p, true)
-			p.Material = variant.BaseMaterial
-			p.MaterialVariant = variant.Name
-			return
-		end
-	end
-	Style.studs(p, faces, 4)
-	for _, t in p:GetChildren() do
-		if t:IsA("Texture") and t.Name == "Studs" and t.Texture == Style.Studs.Texture then t.Transparency = 0.5 end
-	end
+-- Large environment floors use the same imported Studs as everything else.
+function FactoryProps.floorFinish(p: BasePart, _faces: { Enum.NormalId }?)
+	Style.studs(p)
 end
 
 function FactoryProps.workLight(parent: Instance, cf: CFrame, scale: number, lit: boolean)

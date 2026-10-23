@@ -226,8 +226,6 @@ function World.create()
 	roof(root)
 	displays(root)
 	toyBays(root)
-	-- Retain the approved imported-stud rollout and its legacy fallback.
-	require(script.Parent.Kit.WorldStuds).apply()
 	FactoryProps.floorFinish(root.YardFloor :: BasePart, { Enum.NormalId.Top })
 	local plots = Workspace:FindFirstChild("Plots")
 	local hub = plots and plots:FindFirstChild("Hub")
