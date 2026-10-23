@@ -128,7 +128,11 @@ per plot) of random crusher types flicker on the reveal plinth, slowing down,
 with a floating card "??? / ??? / [1 in N]" (`C.oddsFor`, base weights). The
 last flicker is the real type; then a flash and the real model (imported
 special mesh when it has one) appears with name, rarity + modifier, odds and
-$/min. Silhouettes are built once per plot (RollSilhouettes). The HUD no longer
+$/min. Silhouettes are built once per plot (RollSilhouettes); the shown one
+and the result turn slowly about the plinth (server). `client/RollCam.client`:
+when you roll within 70 studs, the camera eases in on the plinth (banner
+behind it, FOV 42), sways gently, then punches out with an FOV kick at the
+reveal and hands back; the tutorial/balance lines hide meanwhile. The HUD no longer
 shows a screen reveal or a "Rolled X" toast, so the result is not spoiled.
 
 World controls are SurfaceGuis copied into PlayerGui for the plot owner (mouse

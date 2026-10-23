@@ -270,6 +270,7 @@ local function rollShow(p,item)
 		local folder=Instance.new("Model") folder.Name="RollSilhouettes" folder.Parent=plot.model
 		for _,t in C.Types do
 			local m=displayModel(t.id,st.pedestal) silhouette(m) showModel(m,false) m.Parent=folder plot.silhouettes[t.id]=m
+			m:SetAttribute("BasePivot",m:GetPivot())
 		end
 		local hl=Instance.new("Highlight") hl.Name="SilhouetteOutline" hl.FillColor=Color3.fromRGB(8,8,12) hl.FillTransparency=0 hl.OutlineTransparency=0 hl.OutlineColor=Color3.new(1,1,1)
 		hl.DepthMode=Enum.HighlightDepthMode.Occluded hl.Enabled=false hl.Parent=folder plot.silhouetteOutline=hl
@@ -278,6 +279,13 @@ local function rollShow(p,item)
 	local function pick()
 		local total=0 for _,e in pool do total+=e.w end local x=rng:NextNumber()*total
 		for _,e in pool do x-=e.w if x<=0 then return e.id end end return pool[#pool].id
+	end
+	-- turn a model slowly about the plinth centre, from its stored base pose
+	local centre=st.pedestal.Position
+	local function turn(m,a)
+		local basePivot=m:GetAttribute("BasePivot")
+		if typeof(basePivot)~="CFrame" then basePivot=m:GetPivot() m:SetAttribute("BasePivot",basePivot) end
+		m:PivotTo(CFrame.new(centre)*CFrame.Angles(0,a,0)*CFrame.new(-centre)*basePivot)
 	end
 	local shown
 	local function flick(id)
@@ -301,6 +309,11 @@ local function rollShow(p,item)
 			task.delay(.4,function() flash:Destroy() end)
 			local model=displayModel(item.type,st.pedestal,item)
 			model.Name="RolledCrusher" model.Parent=plot.model ctx.revealModel=model
+			-- the result turns slowly on the plinth for a while
+			task.spawn(function()
+				local t0=os.clock()
+				while model.Parent and os.clock()-t0<12 do turn(model,(os.clock()-t0)*0.8) task.wait(1/30) end
+			end)
 			local r=C.rarity(item.rarity) local d=Data.get(p)
 			local perMin=d and Rules.stats(d,item,perks(p)).cps*60 or 0
 			-- (the server toast would spoil the reveal; the card says it)
@@ -316,6 +329,7 @@ local function rollShow(p,item)
 			flick(if last then item.type else pick())
 			nextFlick=t+.12+.35*(t/seconds)^2
 		end
+		if shown then turn(plot.silhouettes[shown],t*1.1) end
 		local spin=t*14*(1-t/seconds*.6)
 		st.die:PivotTo(base*CFrame.new(0,math.abs(math.sin(t*9))*1.2,0)*CFrame.Angles(spin,spin*.7,spin*.4))
 		for r,cf in rollers do r.CFrame=cf*CFrame.Angles(t*20,0,0) end
