@@ -32,8 +32,7 @@ function H.start()
  end
  fitDesktopHeader() workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitDesktopHeader)
  local toast=text(gui,"Notice","",UDim2.new(.5,0,1,-90),UDim2.fromOffset(640,40)) toast.AnchorPoint=Vector2.new(.5,0) toast.TextColor3=Color3.fromRGB(255,225,136)
- local noticeUntil=0 local resultUntil=0 local resultText=""
- local reveal=text(gui,"RollReveal","",UDim2.fromScale(.5,.4),UDim2.fromOffset(500,76)) reveal.AnchorPoint=Vector2.new(.5,.5) reveal.Visible=false
+ local noticeUntil=0
  local panel=make("Frame",{Name="Book",AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.53),Size=UDim2.fromOffset(660,500),BackgroundColor3=navy,Visible=false,ZIndex=5},gui)
  Style.workshopPanel(panel,blue) Style.modal(panel)
  text(panel,"Title","YOUR CRUSHERS",UDim2.fromOffset(12,6),UDim2.new(1,-65,0,32))
@@ -124,10 +123,8 @@ function H.start()
    else WorldFx.fail(pending.row) end
    pending=nil
   end
-  -- a roll is revealed on the roll machine's plinth; no screen spoiler
-  if v.result then v.message=nil end
+  -- rolls are revealed on the roll machine's pedestals; no screen spoiler
   if v.message then toast.Text=v.message noticeUntil=os.clock()+5 end
-  if v.result then resultText=v.result.rarity.." / "..v.result.modifier.."\n"..C.typeById(v.result.type).name resultUntil=v.rollReadyAt+2 end
   redraw()
  end)
  Net.event("CrusherOpen").OnClientEvent:Connect(function(kind,bay) if kind=="Inventory" then selectedBay=bay or selectedBay redraw() panel.Visible=true end end)
@@ -135,11 +132,6 @@ function H.start()
  local last=0 Run.RenderStepped:Connect(function()
   if os.clock()-last<.1 then return end last=os.clock()
   if os.clock()>noticeUntil then toast.Text="" end
-  if state then
-   local left=math.max(0,state.rollReadyAt-workspace:GetServerTimeNow())
-   reveal.Visible=false -- the roll reveal happens in the world (roll machine plinth)
-   reveal.Text=if left>0 then C.Types[math.floor(os.clock()*9)%#C.Types+1].name..string.format("\nRolling... %.1fs",left) else resultText
-  end
  end)
  act("Sync")
 end

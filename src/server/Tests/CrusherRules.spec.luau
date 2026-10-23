@@ -11,10 +11,15 @@ return function()
 	local function act(d,s,name,args,now) return R.act(d,s,name,args or {},now or 0,random,id,{}) end
 	local d=fresh() local s={} local starter=d.crushers.owned[1]
 	check(#d.crushers.owned==1 and d.crushers.equipped["1"]==starter.id,"starter must be equipped")
-	local before=d.cash local ok,_,rolled=act(d,s,"Roll")
-	check(ok and d.cash==before-C.RollCost and rolled.id~=starter.id,"paid roll / unique duplicate instance")
-	before=d.cash check(not act(d,s,"Roll",{},.1) and d.cash==before,"cooldown cannot charge or roll again")
-	check(act(d,s,"Roll",{},C.BaseRollSeconds),"roll after interval")
+	local before=d.cash local ok,_,offers=act(d,s,"Roll")
+	check(ok and d.cash==before and #offers==C.StartPedestals and #d.crushers.owned==1,"free roll fills the starting pedestals only")
+	check(not act(d,s,"Buy",{slot=1},.1),"cannot buy before the reveal")
+	before=d.cash local price=C.offerPrice(offers[1]) local bought,_,item=act(d,s,"Buy",{slot=1},C.RollSeconds)
+	check(bought and d.cash==before-price and item.id~=starter.id,"buying an offer charges its price, unique instance")
+	check(not act(d,s,"Buy",{slot=1},C.RollSeconds),"an offer can only be bought once")
+	check(not act(d,s,"Roll",{},.1),"cooldown cannot roll again")
+	check(act(d,s,"Roll",{},C.RollSeconds),"roll after interval")
+	check(act(d,s,"Buy",{slot=1},2*C.RollSeconds),"buy second crusher")
 	local sameType=d.crushers.owned[2] local otherLevel=starter.level
 	check(act(d,s,"Level",{id=sameType.id}) and starter.level==otherLevel and sameType.level==2,"level correct duplicate")
 	before=d.cash check(not act(d,s,"Level",{id="another-player-id"}) and before==d.cash,"foreign level ownership")
@@ -34,12 +39,15 @@ return function()
 	local w0,w20=R.weights(0,false),R.weights(20,false) local sum0,sum20=0,0 for _,w in w0 do sum0+=w end for _,w in w20 do sum20+=w end
 	check(w20[5]/sum20>w0[5]/sum0,"luck improves rare probability")
 	local lucky=R.weights(0,true) check(lucky[1]==w0[1] and lucky[2]==w0[2]*2,"paid lucky weights")
-	d=fresh() s={} act(d,s,"Upgrade",{id="RollSpeed"}) act(d,s,"Roll",{},10)
-	check(math.abs(s.nextRoll-(10+C.rollSeconds(1)))<.0001,"server enforces improved roll interval")
-	before=d.cash check(not act(d,s,"Roll",{},s.nextRoll-.01) and before==d.cash,"animation cannot bypass interval")
-	d.cash=0 before=#d.crushers.owned check(not act(d,s,"Roll",{},100) and #d.crushers.owned==before,"unaffordable roll")
-	d.cash=10000 while #d.crushers.owned<C.MaxInventory do table.insert(d.crushers.owned,{id=id(),type="Bumper",rarity="Common",modifier="Standard",level=1}) end
-	before=d.cash check(not act(d,s,"Roll",{},100) and d.cash==before,"full inventory never charges")
+	d=fresh() s={} act(d,s,"Upgrade",{id="Pedestals"}) local _,_,two=act(d,s,"Roll",{},10)
+	check(#two==C.StartPedestals+1,"pedestal upgrade adds an offer per roll")
+	check(not act(d,s,"Roll",{},s.nextRoll-.01),"animation cannot bypass interval")
+	check(not act(d,s,"Buy",{slot=9},100) and not act(d,s,"Buy",{slot=0/0},100),"invalid pedestal slot rejected")
+	d.cash=0 before=#d.crushers.owned check(not act(d,s,"Buy",{slot=1},100) and #d.crushers.owned==before,"unaffordable offer")
+	d.cash=1e9 while #d.crushers.owned<C.MaxInventory do table.insert(d.crushers.owned,{id=id(),type="Bumper",rarity="Common",modifier="Standard",level=1}) end
+	before=d.cash check(not act(d,s,"Buy",{slot=2},100) and d.cash==before,"full inventory never charges")
+	d=fresh() d.cash=1e12 s={} for _=1,10 do act(d,s,"Upgrade",{id="Pedestals"}) end
+	check(d.crushers.upgrades.Pedestals==C.upgradeMax("Pedestals") and C.pedestals(d.crushers.upgrades.Pedestals)==C.MaxPedestals,"pedestals stop at the max")
 	d=R.migrate({cash=57,tier=7,levels={Power=6,Speed=4,Value=3},rebirths=2,helpers={2,4},scrap=8,smeltQueue=11,smeltReady=13,purchases={"paid"}},id)
 	check(d.cash==57 and d.scrap==32 and #d.crushers.owned==3,"legacy balances and helpers migrate")
 	check(d.purchases[1]=="paid" and d.legacyCrusherRecovery.helpers[2]==4 and d.smeltQueue==0 and #d.helpers==0,"perks/recovery and retirement")
@@ -69,7 +77,6 @@ return function()
 	for i=1,8 do profiles[i]=fresh() contexts[i]={} R.step(profiles[i],contexts[i],0,{}) end
 	for time=1,7 do for i=1,8 do R.step(profiles[i],contexts[i],time,{}) end end
 	for i=1,8 do check(profiles[i].crushers.available==8,"independent simultaneous factory production") end
-	for lv=1,C.MaxGlobal do check(C.rollSeconds(lv)<C.rollSeconds(lv-1),"every rolling-speed level improves the server interval") end
 	local boosted=R.migrate({cash=0,goldenRush=1},id) local boostedSession={}
 	for time=0,7 do R.step(boosted,boostedSession,time,{mult=2}) end
 	check(boosted.crushers.available==8*2*C.GoldenYield and boosted.goldenRush==0,"paid double/golden benefits apply once at completion")
@@ -104,7 +111,7 @@ return function()
 		check(a.damage==b.damage and a.cycle==b.cycle and a.value==b.value and a.hp==b.hp,"special keeps its existing production band")
 		local draws={v[3],.1,v[4]} local index=0
 		local result,_,rolled=R.act(profile,{},"Roll",{},0,function() index+=1 return draws[index] end,id,{})
-		check(result and rolled.type==v[1],"special is reachable through authoritative collection rolls")
+		check(result and rolled[1].type==v[1],"special is reachable through authoritative collection rolls")
 	end
 	return {passed=checks}
 end

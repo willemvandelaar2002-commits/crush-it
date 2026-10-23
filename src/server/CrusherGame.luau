@@ -20,9 +20,10 @@ local Special=require(script.Parent.SpecialCrushers)
 local Friend=require(script.Parent.FriendBoost)
 local G={}
 local sessions={}
+local pedestalLook -- defined with the roll show helpers below
 -- Teleport without falling through: with streaming on, the client may not have
 -- the floor at the target yet. Load the area first, hold the character
--- anchored until the client reports the floor is there (or 4 s), then release.
+-- anchored for a moment while it streams in, then release.
 function G.safeTeleport(p,char,cf)
 	local root=char:FindFirstChild("HumanoidRootPart") if not root then return end
 	root.Anchored=true
@@ -37,7 +38,7 @@ local rng=Random.new()
 local function guid() return Http:GenerateGUID(false) end
 local function random() return rng:NextNumber() end
 local function restoredCooldown(d)
-	return os.clock()+math.clamp((d.crushers.rollReadyAt or 0)-workspace:GetServerTimeNow(),0,C.BaseRollSeconds)
+	return os.clock()+math.clamp((d.crushers.rollReadyAt or 0)-workspace:GetServerTimeNow(),0,C.RollSeconds)
 end
 local function perks(p)
 	return {autoCrush=Store.hasPass(p,"AutoCrush"),lucky=Store.hasPass(p,"Lucky"),mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*Friend.mult(p)}
@@ -99,7 +100,7 @@ local function send(p,message,result)
 	local d=Data.get(p) local ctx=sessions[p] if not d or not ctx then return end
 	local s=d.crushers
 	if s.tutorial==5 and (s.upgrades.Damage+s.upgrades.Speed+s.upgrades.Yield)>0 then s.tutorial=6 end
-	if s.tutorial==6 and (s.upgrades.Luck+s.upgrades.RollSpeed)>0 then s.tutorial=7 end
+	if s.tutorial==6 and (s.upgrades.Luck+s.upgrades.Pedestals)>0 then s.tutorial=7 end
 	if s.tutorial==7 then for _,v in s.owned do if v.level>1 then s.tutorial=8 break end end end
 	p:SetAttribute("Cash",d.cash) p:SetAttribute("Scrap",d.scrap) p:SetAttribute("AvailableScrap",s.available)
 	p:SetAttribute("Plot",ctx.plot.index) p:SetAttribute("Crushed",d.crushed) p:SetAttribute("Tier",d.tier)
@@ -110,7 +111,7 @@ local function send(p,message,result)
 	end
 	Net.event("CrusherState"):FireClient(p,{cash=d.cash,carried=d.scrap,available=s.available,items=items,
 		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,tutorial=s.tutorial,rate=cps(p,d),
-		rollSeconds=C.rollSeconds(s.upgrades.RollSpeed),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
+		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll})
 	local st=ctx.plot.stations
 	st.Collect.label.Text=Format.cash(s.available).." ready"
@@ -122,13 +123,15 @@ local function send(p,message,result)
 	end
 	st.Sell.label.Text=Format.cash(d.scrap).." carried"
 	local rolling=os.clock()<(ctx.nextRoll or 0)
-	st.Roll.label.Text=if rolling then "Rolling..." else "Random rarity  ·  "..Format.cash(C.RollCost)
-	st.Roll.button.Text=if rolling then "ROLLING..." else "ROLL "..Format.cash(C.RollCost)
+	st.Roll.label.Text=if rolling then "Rolling..." else "Free  ·  "..C.pedestals(s.upgrades.Pedestals).." pedestal"..(if C.pedestals(s.upgrades.Pedestals)>1 then "s" else "")
+	st.Roll.button.Text=if rolling then "ROLLING..." else "ROLL"
+	pedestalLook(ctx.plot,C.pedestals(s.upgrades.Pedestals))
 	for _,group in {"Production","Rolling"} do
 		for _,id in C.UpgradeOrder do if C.Upgrades[id].group==group then
 			local lv=s.upgrades[id] local row=ctx.plot.stations[group].rows[id]
-			row.label.Text=if lv>=C.MaxGlobal then "Lv "..lv.."  MAX LEVEL" else "Lv "..lv.." > "..(lv+1).."   "..C.shortBenefit(id,lv)
-			row.button.Text=if lv>=C.MaxGlobal then "MAX" else Format.cash(C.globalCost(id,lv))
+			local max=C.upgradeMax(id)
+			row.label.Text=if lv>=max then "Lv "..lv.."  MAX LEVEL" else "Lv "..lv.." > "..(lv+1).."   "..C.shortBenefit(id,lv)
+			row.button.Text=if lv>=max then "MAX" else Format.cash(C.globalCost(id,lv))
 		end end
 	end
 	floorLook(ctx.plot,s.bays)
@@ -262,87 +265,128 @@ local function showModel(model,visible)
 		part.Transparency=if visible then part:GetAttribute("ShowT") else 1
 	end end
 end
-local function card(st,name,rarity,odds,value,color)
-	st.card.name.Text=name st.card.name.TextColor3=color or Color3.new(1,1,1)
-	st.card.rarity.Text=rarity st.card.rarity.TextColor3=color or Color3.new(1,1,1)
-	st.card.odds.Text=odds st.card.value.Text=value
+local function card(ped,name,rarity,odds,value,price,color)
+	local c=ped.card
+	c.name.Text=name c.name.TextColor3=color or Color3.new(1,1,1)
+	c.rarity.Text=rarity c.rarity.TextColor3=color or Color3.new(1,1,1)
+	c.odds.Text=odds c.value.Text=value c.price.Text=price
 end
--- Roll show (like the reference): the die and rollers spin while black
--- silhouettes of possible crushers flicker on the plinth with "???" and their
--- odds; then a flash and the real crusher appears with name, rarity, odds and
--- its output per minute.
-local function rollShow(p,item)
-	local ctx=sessions[p] local st=ctx.plot.stations.Roll
-	local seconds=math.max(1.2,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
-	st.reveal.Text="ROLLING..."
-	if ctx.revealModel then ctx.revealModel:Destroy() ctx.revealModel=nil end
-	-- silhouettes are built once per plot and reused
-	local plot=ctx.plot
-	if not plot.silhouettes then
-		plot.silhouettes={}
-		local folder=Instance.new("Model") folder.Name="RollSilhouettes" folder.Parent=plot.model
-		for _,t in C.Types do
-			local m=displayModel(t.id,st.pedestal) silhouette(m) showModel(m,false) m.Parent=folder plot.silhouettes[t.id]=m
-			m:SetAttribute("BasePivot",m:GetPivot())
-		end
-		local hl=Instance.new("Highlight") hl.Name="SilhouetteOutline" hl.FillColor=Color3.fromRGB(8,8,12) hl.FillTransparency=0 hl.OutlineTransparency=0 hl.OutlineColor=Color3.new(1,1,1)
-		hl.DepthMode=Enum.HighlightDepthMode.Occluded hl.Enabled=false hl.Parent=folder plot.silhouetteOutline=hl
+local function oddsText(typeId) return "[1 in "..Format.cash(C.oddsFor(typeId)):gsub("%$","").."]" end
+-- Unlocked pedestals are yellow and empty until a roll; locked ones are grey
+-- with a hint, so the ROLLING board upgrade is visible on the plot.
+function pedestalLook(plot,count)
+	if plot.pedestalCount==count then return end plot.pedestalCount=count
+	for i,ped in plot.stations.Roll.pedestals do
+		local open=i<=count
+		ped.part.Color=if open then Workshop.Yellow else Color3.fromRGB(120,128,140)
+		ped.part.Material=if open then Enum.Material.SmoothPlastic else Enum.Material.Slate
+		if not open then card(ped,"LOCKED","More pedestals at","the ROLLING board","","",Color3.fromRGB(200,205,215)) ped.prompt.Enabled=false
+		elseif ped.card.name.Text=="LOCKED" then card(ped,"","","","","") end
 	end
+end
+-- Remove the offer models and cards (a new roll, a purchase, or leaving).
+local function clearOffer(plot,slot)
+	local ped=plot.stations.Roll.pedestals[slot]
+	if plot.offerModels and plot.offerModels[slot] then plot.offerModels[slot]:Destroy() plot.offerModels[slot]=nil end
+	ped.prompt.Enabled=false
+	if ped.card.name.Text~="LOCKED" then card(ped,"","","","","") end
+end
+local function flash(plot,at,color)
+	local f=Workshop.part(plot.model,"RevealFlash",Vector3.new(2,2,2),at*CFrame.new(0,3,0),color or Color3.fromRGB(255,240,180))
+	f.Shape=Enum.PartType.Ball f.Material=Enum.Material.Neon f.CastShadow=false
+	Tween:Create(f,TweenInfo.new(.35,Enum.EasingStyle.Quad),{Size=Vector3.new(10,10,10),Transparency=1}):Play()
+	task.delay(.4,function() f:Destroy() end)
+end
+-- Roll show (like the reference): every unlocked pedestal flickers black
+-- silhouettes of possible crushers with "???" and their odds, slowing down;
+-- then each pops in turn (flash) into the real offer with name, rarity, odds,
+-- output and price. Buying is done with the pedestal's prompt.
+local function rollShow(p,offers)
+	local ctx=sessions[p] local plot=ctx.plot local st=plot.stations.Roll
+	local seconds=math.max(1.2,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
+	for i in st.pedestals do clearOffer(plot,i) end
+	plot.offerModels={}
+	-- silhouettes are built lazily per pedestal and type, then reused
+	plot.silhouettes=plot.silhouettes or {}
+	local folder=plot.model:FindFirstChild("RollSilhouettes")
+	if not folder then folder=Instance.new("Model") folder.Name="RollSilhouettes" folder.Parent=plot.model end
+	local function silhouetteFor(slot,id)
+		plot.silhouettes[slot]=plot.silhouettes[slot] or {}
+		local m=plot.silhouettes[slot][id]
+		if not m then
+			m=displayModel(id,st.pedestals[slot].top) silhouette(m) showModel(m,false) m.Parent=folder
+			m:SetAttribute("BasePivot",m:GetPivot()) plot.silhouettes[slot][id]=m
+		end
+		return m
+	end
+	plot.outlines=plot.outlines or {}
 	local pool={} for _,r in C.Rarities do for _,id in r.types do table.insert(pool,{id=id,w=r.weight^.45}) end end
 	local function pick()
 		local total=0 for _,e in pool do total+=e.w end local x=rng:NextNumber()*total
 		for _,e in pool do x-=e.w if x<=0 then return e.id end end return pool[#pool].id
 	end
-	-- turn a model slowly about the plinth centre, from its stored base pose
-	local centre=st.pedestal.Position
-	local function turn(m,a)
+	-- turn a model slowly about its pedestal centre, from its stored base pose
+	local function turn(m,centre,a)
 		local basePivot=m:GetAttribute("BasePivot")
 		if typeof(basePivot)~="CFrame" then basePivot=m:GetPivot() m:SetAttribute("BasePivot",basePivot) end
 		m:PivotTo(CFrame.new(centre)*CFrame.Angles(0,a,0)*CFrame.new(-centre)*basePivot)
 	end
-	local shown
-	local function flick(id)
-		if shown then showModel(plot.silhouettes[shown],false) end
-		shown=id showModel(plot.silhouettes[id],true)
-		plot.silhouetteOutline.Parent=plot.silhouettes[id] plot.silhouetteOutline.Enabled=true
-		card(st,"???","???","[1 in "..Format.cash(C.oddsFor(id)):gsub("%$","").."]","???")
+	local shown={} local nextFlick={}
+	local function flick(slot,id)
+		if shown[slot] then showModel(shown[slot],false) end
+		local m=silhouetteFor(slot,id) shown[slot]=m showModel(m,true)
+		local hl=plot.outlines[slot]
+		if not hl then
+			hl=Instance.new("Highlight") hl.Name="SilhouetteOutline" hl.FillColor=Color3.fromRGB(8,8,12) hl.FillTransparency=0 hl.OutlineTransparency=0
+			hl.OutlineColor=Color3.new(1,1,1) hl.DepthMode=Enum.HighlightDepthMode.Occluded plot.outlines[slot]=hl
+		end
+		hl.Parent=m hl.Enabled=true
+		card(st.pedestals[slot],"???","???",oddsText(id),"???","")
 	end
-	local start=os.clock() local base=st.die:GetPivot() local rollers={} local nextFlick=0
+	local function stop()
+		for slot,m in shown do showModel(m,false) if plot.outlines[slot] then plot.outlines[slot].Enabled=false end end
+		shown={}
+	end
+	local start=os.clock() local base=st.die:GetPivot() local rollers={}
 	for _,r in st.rollers do rollers[r]=r.CFrame end
+	for i in offers do nextFlick[i]=(i-1)*.04 end
 	local conn conn=RunService.Heartbeat:Connect(function()
 		local t=os.clock()-start
 		if t>=seconds or ctx.rollToken~=token or not st.die.Parent then
 			conn:Disconnect() st.die:PivotTo(base) for r,cf in rollers do r.CFrame=cf end
-			if shown then showModel(plot.silhouettes[shown],false) end plot.silhouetteOutline.Enabled=false
+			stop()
 			if ctx.rollToken~=token or sessions[p]~=ctx then return end
-			-- flash, then the real crusher
-			local flash=Workshop.part(plot.model,"RevealFlash",Vector3.new(2,2,2),st.pedestal*CFrame.new(0,3,0),Color3.fromRGB(255,240,180))
-			flash.Shape=Enum.PartType.Ball flash.Material=Enum.Material.Neon flash.CastShadow=false
-			Tween:Create(flash,TweenInfo.new(.35,Enum.EasingStyle.Quad),{Size=Vector3.new(11,11,11),Transparency=1}):Play()
-			task.delay(.4,function() flash:Destroy() end)
-			local model=displayModel(item.type,st.pedestal,item)
-			model.Name="RolledCrusher" model.Parent=plot.model ctx.revealModel=model
-			-- the result turns slowly on the plinth for a while
-			task.spawn(function()
-				local t0=os.clock()
-				while model.Parent and os.clock()-t0<12 do turn(model,(os.clock()-t0)*0.8) task.wait(1/30) end
-			end)
-			local r=C.rarity(item.rarity) local d=Data.get(p)
-			local perMin=d and Rules.stats(d,item,perks(p)).cps*60 or 0
-			-- (the server toast would spoil the reveal; the card says it)
-			card(st,C.typeById(item.type).name,item.rarity..(if item.modifier~="Standard" then " · "..item.modifier else ""),
-				"[1 in "..Format.cash(C.oddsFor(item.type)):gsub("%$","").."]",Format.cash(perMin).."/min",r.color:Lerp(Color3.new(1,1,1),.15))
-			st.reveal.Text=string.upper(item.rarity).."\n"..C.typeById(item.type).name
-			st.reveal.TextColor3=r.color:Lerp(Color3.new(1,1,1),.2)
+			local d=Data.get(p)
+			for slot,item in offers do
+				-- reveal the pedestals one after another, centre first
+				task.delay((slot-1)*.12,function()
+					if ctx.rollToken~=token or sessions[p]~=ctx or not item then return end
+					local ped=st.pedestals[slot] local r=C.rarity(item.rarity)
+					flash(plot,ped.top,r.color:Lerp(Color3.new(1,1,1),.5))
+					local model=displayModel(item.type,ped.top,item) model.Name="OfferCrusher" model.Parent=plot.model
+					plot.offerModels[slot]=model
+					task.spawn(function()
+						local t0=os.clock() local centre=ped.top.Position
+						while model.Parent and os.clock()-t0<30 do turn(model,centre,(os.clock()-t0)*0.8) task.wait(1/20) end
+					end)
+					local perMin=d and Rules.stats(d,{type=item.type,rarity=item.rarity,modifier=item.modifier,level=1},perks(p)).cps*60 or 0
+					local name=C.typeById(item.type).name
+					card(ped,name,item.rarity..(if item.modifier~="Standard" then " · "..item.modifier else ""),oddsText(item.type),
+						Format.cash(perMin).."/min",Format.cash(C.offerPrice(item)),r.color:Lerp(Color3.new(1,1,1),.15))
+					ped.prompt.ActionText="Buy "..Format.cash(C.offerPrice(item)) ped.prompt.ObjectText=name ped.prompt.Enabled=true
+				end)
+			end
 			return
 		end
 		-- flicker: fast at first, slowing down towards the reveal
-		if t>=nextFlick then
-			local last=seconds-t<.45
-			flick(if last then item.type else pick())
-			nextFlick=t+.12+.35*(t/seconds)^2
+		for slot,item in offers do
+			if t>=nextFlick[slot] then
+				local last=seconds-t<.45
+				flick(slot,if last then item.type else pick())
+				nextFlick[slot]=t+.12+.35*(t/seconds)^2
+			end
+			if shown[slot] then turn(shown[slot],st.pedestals[slot].top.Position,t*1.1) end
 		end
-		if shown then turn(plot.silhouettes[shown],t*1.1) end
 		local spin=t*14*(1-t/seconds*.6)
 		st.die:PivotTo(base*CFrame.new(0,math.abs(math.sin(t*9))*1.2,0)*CFrame.Angles(spin,spin*.7,spin*.4))
 		for r,cf in rollers do r.CFrame=cf*CFrame.Angles(t*20,0,0) end
@@ -352,8 +396,16 @@ local function action(p,name,args)
 	local ctx=sessions[p] local d=Data.get(p) if not ctx or not d then return false,"Profile is loading." end
 	local ok,message,result=Rules.act(d,ctx,name,args,os.clock(),random,guid,perks(p))
 	if ok and name=="Roll" then d.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock()) rollShow(p,result) end
+	if ok and name=="Buy" then
+		local ped=ctx.plot.stations.Roll.pedestals[args.slot]
+		flash(ctx.plot,ped.top,Color3.fromRGB(120,255,140)) clearOffer(ctx.plot,args.slot)
+		card(ped,"BOUGHT!","","","","",Color3.fromRGB(120,255,140))
+		task.delay(1.5,function() if ped.card.name.Text=="BOUGHT!" then card(ped,"","","","","") end end)
+	end
 	if ok then reconcile(p) end
-	send(p,message,result) return ok,message,result
+	ctx.justRolled=ok and name=="Roll" or nil
+	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" then result else nil) ctx.justRolled=nil
+	return ok,message,result
 end
 local function visualEvent(p,event)
 	local v=sessions[p].visuals[event.bay] if not v then return end
@@ -378,6 +430,7 @@ function G.start()
 	Data.start("CrushItPlayer_v1",{cash=C.StartCash,scrap=0,purchases={},daily={day=0,streak=0},goldenRush=0,lastSeen=0},function(d) return Rules.migrate(d,guid) end)
 	Plots.create() require(script.Parent.World).create() Friend.start()
 	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
+	for _,plot in Plots.all() do pedestalLook(plot,C.StartPedestals) end
 	for _,plot in Plots.all() do floorLook(plot,0) for i,bay in plot.bays do if floorOf(i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end end
 	require(script.Parent.Moat).start(function(p) local ctx=sessions[p] return if ctx then Plots.spawnFor(ctx.plot) else CFrame.new(0,5,14) end, G.safeTeleport)
 	require(script.Parent.Kit.Leaderboard).start({store="CashBoard_v1",score=function(p) return p:GetAttribute("Cash") or 0 end})
@@ -403,6 +456,10 @@ function G.start()
 			if plot.owner~=p then Net.event("Notice"):FireClient(p,{text="Use your own factory."}) return end
 			if name=="Production" or name=="Rolling" then Net.event("CrusherOpen"):FireClient(p,name) else action(p,name) end
 		end) end end
+		for slot,ped in plot.stations.Roll.pedestals do ped.prompt.Triggered:Connect(function(p)
+			if plot.owner~=p then Net.event("Notice"):FireClient(p,{text="Use your own factory."}) return end
+			action(p,"Buy",{slot=slot})
+		end) end
 		for i,bay in plot.bays do bay.prompt.Triggered:Connect(function(p)
 			if plot.owner~=p then return end Net.event("CrusherOpen"):FireClient(p,"Inventory",i)
 		end) end
@@ -410,7 +467,7 @@ function G.start()
 	Players.PlayerAdded:Connect(join) for _,p in Players:GetPlayers() do task.spawn(join,p) end
 	Players.PlayerRemoving:Connect(function(p)
 		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory" ctx.rollToken=nil
-			if ctx.revealModel then ctx.revealModel:Destroy() end ctx.plot.stations.Roll.reveal.Text="LAST ROLL" card(ctx.plot.stations.Roll,"","","","")
+			for i in ctx.plot.stations.Roll.pedestals do clearOffer(ctx.plot,i) end ctx.plot.pedestalCount=nil pedestalLook(ctx.plot,C.StartPedestals)
 			for _,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
 			floorLook(ctx.plot,0) for i,bay in ctx.plot.bays do if floorOf(i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
 		sessions[p]=nil
@@ -429,6 +486,7 @@ function G.start()
 			local wing=type(args.bay)=="number" and floorOf(args.bay)
 			local f=wing and ctx.plot.floors and ctx.plot.floors[wing]
 			if name=="Unlock" and f and f.first==args.bay and args.bay==d.crushers.bays+1 then target=f.face reach=45 end
+		elseif name=="Buy" then local ped=type(args.slot)=="number" and ctx.plot.stations.Roll.pedestals[args.slot] if ped then target=ped.part end
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
 		if name~="Equip" and name~="Unequip" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")

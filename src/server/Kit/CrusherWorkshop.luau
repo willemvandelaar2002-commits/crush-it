@@ -58,9 +58,9 @@ function W.panel(parent,cf,width,height,color)
 	end end
 	return face,W.surface(face)
 end
-W.UpgradeIcons={Damage=Icons.Power,Speed=Icons.Speed,Yield=Icons.Value,Luck=Icons.Lucky,RollSpeed=Icons.Rebirth}
+W.UpgradeIcons={Damage=Icons.Power,Speed=Icons.Speed,Yield=Icons.Value,Luck=Icons.Lucky,Pedestals=Icons.Rebirth}
 W.UpgradeColors={Damage=Color3.fromRGB(223,62,62),Speed=Color3.fromRGB(240,180,30),Yield=Color3.fromRGB(53,190,79),
-	Luck=Color3.fromRGB(150,62,229),RollSpeed=Color3.fromRGB(106,76,224)}
+	Luck=Color3.fromRGB(150,62,229),Pedestals=Color3.fromRGB(106,76,224)}
 -- Upgrade board: one colour band per upgrade with icon, name, level step and
 -- a green price button (the button is the purchase control).
 function W.board(parent,cf,kind)
@@ -307,25 +307,33 @@ function W.station(parent,cf,kind)
 		W.part(m,"DiePedestal",V(5,2,5),cf*CFrame.new(6.5,9,-3),W.Yellow)
 		local die=W.die(m,cf*CFrame.new(6.5,13,-3)*CFrame.Angles(.35,.6,.2),5.2)
 		W.beacon(m,cf*CFrame.new(-10,8,6)) W.beacon(m,cf*CFrame.new(10,8,6))
-		-- Reveal stand on the right side: last rolled crusher + its name.
-		local stand=W.part(m,"RevealStand",V(6,1,6),cf*CFrame.new(14.5,.5,1),W.Navy)
-		W.part(m,"RevealPlinth",V(5,2.4,5),cf*CFrame.new(14.5,2.2,1),W.Yellow)
-		local banner=W.part(m,"RevealPanel",V(7,2.2,.4),cf*CFrame.new(14.5,11.6,-1.4),W.Navy)
-		for _,x in {12,17} do W.part(m,"RevealPost",V(.6,11,.6),cf*CFrame.new(x,6,-1.6),W.Navy) end
-		local reveal=W.text(W.sign(banner),"Reveal","LAST ROLL",UDim2.fromScale(.03,.05),UDim2.fromScale(.94,.9))
 		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.3,7.4),W.Purple,"ROLL A CRUSHER","ROLL")
-		-- Floating card above the reveal plinth: name, rarity, odds, output.
-		local anchor=W.part(m,"RevealCardAnchor",V(.2,.2,.2),cf*CFrame.new(14.5,11.5,1),W.Navy)
-		anchor.Transparency=1
-		local card=Instance.new("BillboardGui") card.Name="RevealCard" card.Size=UDim2.fromOffset(240,118)
-		card.StudsOffset=Vector3.new(0,4,0) card.MaxDistance=120 card.LightInfluence=0 card.Parent=anchor
-		local function line(name,y,h,color)
-			local t=W.text(card,name,"",UDim2.fromScale(0,y),UDim2.fromScale(1,h)) t.TextColor3=color return t
+		-- Pedestals in an arc in front of the machine (like the reference): a roll
+		-- fills every unlocked one with an offer; each has a card and a Buy prompt.
+		-- Listed in unlock order: centre first, then outwards.
+		local pedestals={}
+		for i,at in C.PedestalSpots do
+			local pcf=cf*CFrame.new(at.X,0,at.Y)*CFrame.Angles(0,math.atan2(at.X,at.Y),0)
+			local base=W.part(m,"PedestalBase",V(5.4,1,5.4),pcf*CFrame.new(0,.5,0),W.Navy,true)
+			local plinth=W.part(m,"Pedestal",V(4.4,2.2,4.4),pcf*CFrame.new(0,2.1,0),W.Yellow,true)
+			plinth:SetAttribute("Slot",i)
+			W.part(m,"PedestalTrim",V(4.8,.3,4.8),pcf*CFrame.new(0,3.3,0),W.Navy)
+			local anchor=W.part(m,"PedestalCardAnchor",V(.2,.2,.2),pcf*CFrame.new(0,3.4,0),W.Navy)
+			anchor.Transparency=1
+			local card=Instance.new("BillboardGui") card.Name="OfferCard" card.Size=UDim2.fromScale(9,5.4)
+			card.StudsOffset=Vector3.new(0,10.4,0) card.MaxDistance=110 card.LightInfluence=0 card.Parent=anchor
+			local function line(name,y,h,color)
+				local t=W.text(card,name,"",UDim2.fromScale(0,y),UDim2.fromScale(1,h)) t.TextColor3=color return t
+			end
+			local lines={name=line("CrusherName",0,.25,Color3.new(1,1,1)),rarity=line("Rarity",.25,.18,Color3.new(1,1,1)),
+				odds=line("Odds",.43,.16,Color3.fromRGB(120,200,255)),value=line("Value",.59,.18,Color3.fromRGB(120,255,110)),
+				price=line("Price",.77,.23,Color3.fromRGB(255,220,80))}
+			local prompt=Instance.new("ProximityPrompt") prompt.Name="BuyPrompt" prompt.ActionText="Buy" prompt.ObjectText="Pedestal "..i
+			prompt.KeyboardKeyCode=Enum.KeyCode.E prompt.HoldDuration=0 prompt.MaxActivationDistance=10 prompt.RequiresLineOfSight=false
+			prompt.Enabled=false prompt.Parent=plinth
+			pedestals[i]={top=pcf*CFrame.new(0,3.2,0),part=plinth,base=base,card=lines,prompt=prompt}
 		end
-		local cardLines={name=line("CrusherName",0,.3,Color3.new(1,1,1)),rarity=line("Rarity",.3,.2,Color3.new(1,1,1)),
-			odds=line("Odds",.52,.2,Color3.fromRGB(120,200,255)),value=line("Value",.74,.24,Color3.fromRGB(120,255,110))}
-		station={part=face,label=label,button=button,reveal=reveal,die=die,rollers=rollers,
-			pedestal=cf*CFrame.new(14.5,3.4,1),standPart=stand,card=cardLines}
+		station={part=face,label=label,button=button,die=die,rollers=rollers,pedestals=pedestals}
 	end
 	return station
 end

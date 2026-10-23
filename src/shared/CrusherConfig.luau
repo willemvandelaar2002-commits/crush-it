@@ -2,10 +2,11 @@
 -- Collectible crusher economy. Legacy Config numbers remain for save recovery.
 local C = {
 	Enabled = true, Schema = 2, MaxInventory = 80, MaxLevel = 40,
-	MaxGlobal = 20, MaxMoney = 1e300, RollCost = 30, StartCash = 20,
+	MaxGlobal = 20, MaxMoney = 1e300, StartCash = 20,
 	BayCosts = { 0, 180, 900 },
 	InputDelay = 0.8, Tick = 0.05, RequestInterval = 0.08,
-	BaseRollSeconds = 3, MinRollSeconds = 0.65, RollSpeedFactor = 0.93,
+	-- Rolling is free: it fills your unlocked pedestals with offers you can buy.
+	RollSeconds = 3, StartPedestals = 1, MaxPedestals = 5,
 	MaxPressEmitters = 1, PressParticleRate = 2,
 	LevelDamage = 1.12, LevelYield = 1.10, DamageFactor = 1.35, SpeedFactor = 0.94,
 	YieldPerLevel = 0.2, LuckPerLevel = 0.12, AutoCrushDamage = 1.25,
@@ -22,6 +23,9 @@ C.Layout = { Wings=2, Tiers=2, PerWing=6, WingX=40, Pitch=10, BayWidth=9.6,
 	MachineWidth=8.6, MachineDepth=8, MachineHeight=9.4, MachineZ=2.5, Pedestal=2.4, InteractionDistance=22 }
 C.Layout.WalkFront=C.Layout.BayZ+C.Layout.BayDepth/2+1 -- front edge of the upper walkway
 C.Layout.StairFront=C.Layout.WalkFront+C.Layout.StairRun
+-- Roll pedestals, station-local (x, z) with +z out of the machine's front, in
+-- unlock order: centre first, then outwards. #PedestalSpots = MaxPedestals.
+C.PedestalSpots = { Vector2.new(0,23), Vector2.new(-11,21), Vector2.new(11,21), Vector2.new(-20.5,15.5), Vector2.new(20.5,15.5) }
 C.MaxBays = C.Layout.Wings*C.Layout.Tiers*C.Layout.PerWing
 C.LegacyTypes={"Bumper","Steel","Cobalt","Mega","Titan","Quantum"}
 for i=4,C.MaxBays do C.BayCosts[i]=math.floor(900*1.45^(i-3)) end
@@ -53,7 +57,7 @@ function C.nextBenefit(id,lv)
 	if id=="Speed" then return string.format("Cycle x%.2f > x%.2f",C.SpeedFactor^lv,C.SpeedFactor^nextLv) end
 	if id=="Yield" then return string.format("Scrap x%.1f > x%.1f",1+C.YieldPerLevel*lv,1+C.YieldPerLevel*nextLv) end
 	if id=="Luck" then return string.format("Rare weights +%d%% > +%d%% / rank",math.floor(C.LuckPerLevel*lv*100),math.floor(C.LuckPerLevel*nextLv*100)) end
-	return string.format("Roll %.2fs > %.2fs",C.rollSeconds(lv),C.rollSeconds(nextLv))
+	return string.format("Pedestals %d > %d",C.pedestals(lv),C.pedestals(math.min(C.upgradeMax(id),lv+1)))
 end
 -- Short effect step for the world boards, e.g. "x1.35 > x1.82".
 function C.shortBenefit(id,lv)
@@ -62,7 +66,7 @@ function C.shortBenefit(id,lv)
 	if id=="Speed" then return string.format("%d%% > %d%% faster",math.floor((1-C.SpeedFactor^lv)*100+.5),math.floor((1-C.SpeedFactor^n)*100+.5)) end
 	if id=="Yield" then return string.format("x%.1f > x%.1f",1+C.YieldPerLevel*lv,1+C.YieldPerLevel*n) end
 	if id=="Luck" then return string.format("+%d%% > +%d%% rares",math.floor(C.LuckPerLevel*lv*100),math.floor(C.LuckPerLevel*n*100)) end
-	return string.format("%.1fs > %.1fs",C.rollSeconds(lv),C.rollSeconds(n))
+	return string.format("%d > %d pedestals",C.pedestals(lv),C.pedestals(math.min(C.upgradeMax(id),lv+1)))
 end
 C.Types = {
 	{ id = "Bumper", name = "Bumper Press", tier = 1, input = 1, damage = 3, hp = 12, value = 8, cycle = 1.4 },
@@ -79,11 +83,11 @@ C.Types = {
 	{ id = "Toyzilla", name = "Toyzilla", template="Toyzilla", tier=11, input=3, damage=40, hp=120, value=220, cycle=1.8 },
 }
 C.Rarities = {
-	{ name = "Common", weight = 70, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
-	{ name = "Uncommon", weight = 22, rank = 1, types = { "Cobalt", "RocketPress" }, mult = 1.15, color = Color3.fromRGB(99, 210, 132) },
-	{ name = "Rare", weight = 6, rank = 2, types = { "Mega", "Magnetron" }, mult = 1.35, color = Color3.fromRGB(75, 148, 255) },
-	{ name = "Epic", weight = 1.8, rank = 3, types = { "Titan", "TwinTitan" }, mult = 1.65, color = Color3.fromRGB(187, 105, 246) },
-	{ name = "Legendary", weight = 0.2, rank = 4, types = { "Quantum", "GoldenKing", "Toyzilla" }, mult = 2, color = Color3.fromRGB(255, 200, 55) },
+	{ name = "Common", price = 30, weight = 70, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
+	{ name = "Uncommon", price = 150, weight = 22, rank = 1, types = { "Cobalt", "RocketPress" }, mult = 1.15, color = Color3.fromRGB(99, 210, 132) },
+	{ name = "Rare", price = 900, weight = 6, rank = 2, types = { "Mega", "Magnetron" }, mult = 1.35, color = Color3.fromRGB(75, 148, 255) },
+	{ name = "Epic", price = 6000, weight = 1.8, rank = 3, types = { "Titan", "TwinTitan" }, mult = 1.65, color = Color3.fromRGB(187, 105, 246) },
+	{ name = "Legendary", price = 60000, weight = 0.2, rank = 4, types = { "Quantum", "GoldenKing", "Toyzilla" }, mult = 2, color = Color3.fromRGB(255, 200, 55) },
 }
 C.Modifiers = {
 	{ name = "Standard", weight = 80, mult = 1 }, { name = "Rusty", weight = 14, mult = 1.15 },
@@ -94,18 +98,18 @@ C.Upgrades = {
 	Speed = { name = "Strike speed", group = "Production", base = 30, growth = 1.7 },
 	Yield = { name = "Scrap yield", group = "Production", base = 25, growth = 1.65 },
 	Luck = { name = "Luck", group = "Rolling", base = 50, growth = 1.75 },
-	RollSpeed = { name = "Rolling speed", group = "Rolling", base = 35, growth = 1.7 },
+	Pedestals = { name = "Rolling pedestals", group = "Rolling", base = 150, growth = 6, max = 4 },
 }
-C.UpgradeOrder = { "Damage", "Speed", "Yield", "Luck", "RollSpeed" }
+C.UpgradeOrder = { "Damage", "Speed", "Yield", "Luck", "Pedestals" }
 C.IndividualBase = 16
 C.IndividualGrowth = 1.38
 C.Tutorial = {
 	"Your starter crusher works automatically. Collect scrap at the blue bin.",
 	"Sell carried scrap at the green seller to earn cash.",
-	"Use the roll station to buy a crusher roll ($30). Keep collecting and selling if you need cash.",
+	"Press ROLL at the roll machine (free), then buy a crusher from a pedestal.",
 	"Open CRUSHERS, select your rolled machine and equip it in a working bay.",
 	"Buy a global upgrade at the PRODUCTION board. Collect and sell to afford it.",
-	"Buy Luck or Rolling Speed at the ROLLING board.",
+	"Buy Luck or more Rolling Pedestals at the ROLLING board.",
 	"Use the green LEVEL button on an equipped crusher's bay plaque.",
 	"Keep collecting, selling and rolling. Unlock another working bay for more production!",
 }
@@ -124,5 +128,9 @@ function C.modifier(name) for _,v in C.Modifiers do if v.name == name then retur
 function C.money(n) return math.clamp(math.floor(n * 100 + 0.5) / 100, 0, C.MaxMoney) end
 function C.globalCost(id, level) local u = C.Upgrades[id] return math.floor(u.base * u.growth ^ level) end
 function C.individualCost(item) return math.floor(C.IndividualBase * C.IndividualGrowth ^ (item.level - 1) * C.rarity(item.rarity).mult) end
-function C.rollSeconds(level) return math.max(C.MinRollSeconds, C.BaseRollSeconds * C.RollSpeedFactor ^ level) end
+function C.rollSeconds() return C.RollSeconds end
+function C.upgradeMax(id) return C.Upgrades[id].max or C.MaxGlobal end
+function C.pedestals(level) return math.clamp(C.StartPedestals + (level or 0), 1, C.MaxPedestals) end
+-- Price of a rolled offer on a pedestal (rarity price x modifier multiplier).
+function C.offerPrice(item) return math.floor(C.rarity(item.rarity).price * C.modifier(item.modifier).mult) end
 return C

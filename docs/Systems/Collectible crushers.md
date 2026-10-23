@@ -122,18 +122,25 @@ Buying it (= unlocking its first bay, `C.floorStart`) makes it solid and it
 rises out of the roof in 0.9 s. Existing saves keep their bay numbers, so
 machines in bays 2+ appear in the new left-first positions.
 
-Roll show (23 Oct, from Willem's reference video): while the roll timer runs
-the die and rollers spin and black silhouettes (white outline, one Highlight
-per plot) of random crusher types flicker on the reveal plinth, slowing down,
-with a floating card "??? / ??? / [1 in N]" (`C.oddsFor`, base weights). The
-last flicker is the real type; then a flash and the real model (imported
-special mesh when it has one) appears with name, rarity + modifier, odds and
-$/min. Silhouettes are built once per plot (RollSilhouettes); the shown one
-and the result turn slowly about the plinth (server). `client/RollCam.client`:
-when you roll within 70 studs, the camera eases in on the plinth (banner
-behind it, FOV 42), sways gently, then punches out with an FOV kick at the
-reveal and hands back; the tutorial/balance lines hide meanwhile. The HUD no longer
-shows a screen reveal or a "Rolled X" toast, so the result is not spoiled.
+Roll pedestals (23 Oct, from Willem's second reference video): rolling is
+free (3 s cooldown) and fills every unlocked pedestal with an offer; you buy
+the ones you want with each pedestal's prompt (E or click, 10 studs). Offers
+are not owned until bought, live only in the session (`ctx.offers`) and are
+replaced by the next roll. Five pedestals stand in an arc in front of the roll
+machine (`C.PedestalSpots`, centre first, then outwards); you start with 1 and
+buy more with the ROLLING board's "Rolling pedestals" upgrade (replaced Rolling
+speed). Locked pedestals are grey with "LOCKED / More pedestals at the ROLLING
+board". Prices per rarity x modifier multiplier (`C.offerPrice`).
+
+Roll show: while the roll timer runs the die and rollers spin and every
+unlocked pedestal flickers black silhouettes (white outline, a Highlight per
+pedestal) of random types with "??? / [1 in N]" (`C.oddsFor`), slowing down.
+The last flicker is the real type; then the pedestals pop one after another
+(flash) into the real model with name, rarity + modifier, odds, $/min and
+price. Silhouettes are built lazily per pedestal and type (RollSilhouettes).
+Buying flashes green and shows "BOUGHT!". `client/RollCam.client`: never takes
+the camera; within 60 studs it narrows the FOV by 8 during the roll, kicks it
+7 wider at the reveal, then settles, so you can keep walking and looking.
 
 World controls are SurfaceGuis copied into PlayerGui for the plot owner (mouse
 clicks are reliable there); purchases are server-checked for owner, distance
@@ -147,7 +154,7 @@ prices, weights, limits, production parameters and tutorial instructions.
 | Progression | Behaviour |
 | --- | --- |
 | Starter | One equipped Bumper Press, one usable bay, $20 for a new profile |
-| Rolls | $30 each; inventory limit 80; duplicates remain separate GUID instances |
+| Rolls | Free, 3 s cooldown; fills 1-5 pedestals; offers cost Common $30, Uncommon $150, Rare $900, Epic $6,000, Legendary $60,000 (x modifier mult); inventory limit 80; duplicates remain separate GUID instances |
 | Extra bays | 24 bays; bay 2 $180, bay 3 $900, then floor(900 × 1.45^(n-3)); sequential unlocks |
 | Individual levels | 1..40, cost floor(16 × 1.38^(level-1) × rarity multiplier) |
 | Global upgrades | Each has its own level 0..20; costs below |
@@ -155,11 +162,10 @@ prices, weights, limits, production parameters and tutorial instructions.
 | Speed | Cost floor(30 × 1.7^level); strike/reset cycle multiplier 0.94^level |
 | Scrap yield | Cost floor(25 × 1.65^level); completed-object value × (1 + 0.2 × level) |
 | Luck | Cost floor(50 × 1.75^level); uncommon+ weights improve with rarity rank |
-| Rolling speed | Cost floor(35 × 1.7^level); interval max(0.65, 3 × 0.93^level) seconds |
+| Rolling pedestals | Cost floor(150 × 6^level) ($150, $900, $5,400, $32,400); pedestals = 1 + level, max 5 |
 
-Every rolling-speed level currently improves the actual server interval. The
-reveal cycles machine names until the server cooldown expires, then displays
-the real result. Paying faster requests cannot create extra rolls. The roll
+Offers can only be bought after the reveal (server cooldown) and only once.
+Fast requests cannot create extra rolls. The roll
 deadline is saved as an absolute timestamp and restored on profile reload.
 
 Rarity weights are Common 70, Uncommon 22, Rare 6, Epic 1.8 and Legendary 0.2.

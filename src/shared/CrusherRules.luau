@@ -33,14 +33,15 @@ function R.migrate(d, guid)
 		for i=2,bays do equipped[tostring(i)]=owned[i].id end
 		d.crushers={ owned=owned, equipped=equipped, bays=bays, available=0, tutorial=1, upgrades={
 			Damage=integer(number(levels.Power,0,50)/2,0,C.MaxGlobal), Speed=integer(levels.Speed,0,C.MaxGlobal),
-			Yield=integer(number(levels.Value,0,50)+number(d.rebirths,0,100),0,C.MaxGlobal), Luck=integer(d.rebirths,0,C.MaxGlobal), RollSpeed=0 } }
+			Yield=integer(number(levels.Value,0,50)+number(d.rebirths,0,100),0,C.MaxGlobal), Luck=integer(d.rebirths,0,C.MaxGlobal), Pedestals=0 } }
 		d.scrap=C.money(d.scrap+number(d.smeltQueue,0)+number(d.smeltReady,0))
 		d.smeltQueue=0 d.smeltReady=0 d.smeltRate=0 d.helpers={}
 		d.crusherSchema=C.Schema
 	end
 	local s=d.crushers
 	s.upgrades=if type(s.upgrades)=="table" then s.upgrades else {}
-	for _,id in C.UpgradeOrder do s.upgrades[id]=integer(s.upgrades[id],0,C.MaxGlobal) end
+	s.upgrades.RollSpeed=nil -- retired upgrade (rolling speed became pedestals)
+	for _,id in C.UpgradeOrder do s.upgrades[id]=integer(s.upgrades[id],0,C.upgradeMax(id)) end
 	s.bays=math.clamp(integer(s.bays,1,C.MaxBays),1,C.MaxBays)
 	s.available=C.money(number(s.available,0)) s.tutorial=math.clamp(integer(s.tutorial,1,#C.Tutorial),1,#C.Tutorial)
 	s.rollReadyAt=number(s.rollReadyAt,0,1e12)
@@ -82,16 +83,29 @@ function R.act(d,session,action,args,now,random,guid,perks)
 	local s=d.crushers args=if type(args)=="table" then args else {}
 	local function pay(cost) if d.cash<cost then return false end d.cash=C.money(d.cash-cost) return true end
 	if action=="Roll" then
+		-- Free roll: fills every unlocked pedestal with an offer (not owned yet).
 		if now<(session.nextRoll or 0) then return false,"Roll is cooling down." end
-		if #s.owned>=C.MaxInventory then return false,"Crusher inventory is full. No cash was charged." end
-		if not pay(C.RollCost) then return false,"Need $"..C.RollCost..". Collect and sell scrap first." end
-		local rarity=C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky),random)]
 		local weights={} for i,v in C.Modifiers do weights[i]=v.weight end
-		local mod=C.Modifiers[choose(weights,random)]
-		local item={id=guid(),type=rarity.types[math.min(#rarity.types,math.floor(random()*#rarity.types)+1)],rarity=rarity.name,modifier=mod.name,level=1}
-		table.insert(s.owned,item) session.lastRoll=item.id session.nextRoll=now+C.rollSeconds(s.upgrades.RollSpeed)
+		local offers={}
+		for i=1,C.pedestals(s.upgrades.Pedestals) do
+			local rarity=C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky),random)]
+			local mod=C.Modifiers[choose(weights,random)]
+			offers[i]={type=rarity.types[math.min(#rarity.types,math.floor(random()*#rarity.types)+1)],rarity=rarity.name,modifier=mod.name,level=1}
+		end
+		session.offers=offers session.nextRoll=now+C.rollSeconds()
+		return true,"Rolling...",offers
+	elseif action=="Buy" then
+		local slot=args.slot
+		local offer=type(slot)=="number" and session.offers and session.offers[slot]
+		if not offer then return false,"That pedestal is empty. Roll first." end
+		if now<(session.nextRoll or 0) then return false,"Wait for the reveal." end
+		if #s.owned>=C.MaxInventory then return false,"Crusher inventory is full. No cash was charged." end
+		local price=C.offerPrice(offer)
+		if not pay(price) then return false,"Need $"..price..". Collect and sell scrap first." end
+		local item={id=guid(),type=offer.type,rarity=offer.rarity,modifier=offer.modifier,level=1}
+		table.insert(s.owned,item) session.offers[slot]=false session.lastRoll=item.id
 		if s.tutorial==3 then s.tutorial=4 end
-		return true,"Rolled "..C.typeById(item.type).name,item
+		return true,"Bought "..C.typeById(item.type).name.."!",item
 	elseif action=="Equip" then
 		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
 		local bay=args.bay
@@ -110,7 +124,7 @@ function R.act(d,session,action,args,now,random,guid,perks)
 		item.level+=1 if s.tutorial==7 then s.tutorial=8 end
 	elseif action=="Upgrade" then
 		local u=C.Upgrades[args.id] if not u then return false,"Unknown upgrade." end
-		local lv=s.upgrades[args.id] if lv>=C.MaxGlobal then return false,"Upgrade is at maximum level." end
+		local lv=s.upgrades[args.id] if lv>=C.upgradeMax(args.id) then return false,"Upgrade is at maximum level." end
 		if not pay(C.globalCost(args.id,lv)) then return false,"Not enough cash. Collect and sell scrap." end
 		s.upgrades[args.id]+=1
 		if s.tutorial==5 and u.group=="Production" then s.tutorial=6 elseif s.tutorial==6 and u.group=="Rolling" then s.tutorial=7 end
