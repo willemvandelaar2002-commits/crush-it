@@ -112,7 +112,7 @@ local function send(p,message,result)
 	end
 	Net.event("CrusherState"):FireClient(p,{cash=d.cash,carried=d.scrap,available=s.available,items=items,
 		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,tutorial=s.tutorial,rate=cps(p,d),
-		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
+		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,boughtSlot=ctx.justBought,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll})
 	local st=ctx.plot.stations
 	st.Collect.label.Text=Format.cash(s.available).." ready"
@@ -415,7 +415,8 @@ local function action(p,name,args)
 	end
 	if ok then reconcile(p) end
 	ctx.justRolled=ok and name=="Roll" or nil
-	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" then result else nil) ctx.justRolled=nil
+	ctx.justBought=if ok and name=="Buy" then args.slot else nil
+	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" then result else nil) ctx.justRolled=nil ctx.justBought=nil
 	return ok,message,result
 end
 local function visualEvent(p,event)

@@ -27,11 +27,23 @@ function H.start()
   tutorial.Size=UDim2.fromOffset(width,46) balances.Size=UDim2.fromOffset(width,30)
  end
  fitDesktopHeader() workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitDesktopHeader)
- local toast=text(gui,"Notice","",UDim2.new(.5,0,1,-90),UDim2.fromOffset(640,40)) toast.AnchorPoint=Vector2.new(.5,0) toast.TextColor3=Color3.fromRGB(255,225,136)
+ local toast=text(gui,"Notice","",UDim2.new(.5,0,1,-150),UDim2.fromOffset(640,40)) toast.AnchorPoint=Vector2.new(.5,0) toast.TextColor3=Color3.fromRGB(255,225,136)
  local noticeUntil=0
  local indexView=require(script.Parent.CrusherIndex).new(gui,act)
  local book=Style.iconButton(gui,{name="BookButton",image=Icons.Book,label="INDEX",a=blue,b=navy})
  Style.placeHudButton(book,0) book.Activated:Connect(indexView.toggle)
+ local bar=require(script.Parent.InventoryBar).new(gui,function() indexView.open(1) end)
+ -- screen point of a roll pedestal on your plot (start of the fly-in)
+ local function pedestalPoint(slot)
+  local plot=workspace:FindFirstChild("Plots") and workspace.Plots:FindFirstChild("Plot"..tostring(p:GetAttribute("Plot")))
+  local st=plot and plot:FindFirstChild("RollStation",true) local cam=workspace.CurrentCamera
+  if not st then return nil end
+  for _,v in st:GetChildren() do if v.Name=="Pedestal" and v:GetAttribute("Slot")==slot then
+   local sp,on=cam:WorldToViewportPoint(v.Position+Vector3.new(0,4,0))
+   if on then return Vector2.new(sp.X,sp.Y)-game:GetService("GuiService"):GetGuiInset() end
+  end end
+  return nil
+ end
  -- Preserve the legacy shop caller's reference without retaining an action toolbar.
  local compatibility=make("Frame",{Name="FactoryActions",Visible=false,Size=UDim2.fromOffset(1,1)},gui)
  make("TextButton",{Name="CrushButton",Visible=false,Size=UDim2.fromOffset(1,1)},compatibility)
@@ -102,6 +114,7 @@ function H.start()
  task.spawn(bindWorld)
  Net.event("CrusherState").OnClientEvent:Connect(function(v)
   state=v
+  if v.boughtSlot and v.result then task.spawn(bar.flyIn,v.result,pedestalPoint(v.boughtSlot),v) else bar.update(v) end
   -- world purchase feedback: the next answer after a board/plaque click
   if pending and v.message and os.clock()-pending.t<2 then
    if v.message=="Done!" then WorldFx.success(pending.row,if pending.unlock then "BAY UNLOCKED!" else nil) v.message=nil
