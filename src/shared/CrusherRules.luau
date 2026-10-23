@@ -99,7 +99,7 @@ function R.act(d,session,action,args,now,random,guid,perks)
 		local offer=type(slot)=="number" and session.offers and session.offers[slot]
 		if not offer then return false,"That pedestal is empty. Roll first." end
 		if now<(session.nextRoll or 0) then return false,"Wait for the reveal." end
-		if #s.owned>=C.MaxInventory then return false,"Crusher inventory is full. No cash was charged." end
+		if #s.owned>=C.MaxInventory then return false,"Inventory full. Open OWNED and recycle an unequipped duplicate. No cash was charged." end
 		local price=C.offerPrice(offer)
 		if not pay(price) then return false,"Need $"..price..". Collect and sell scrap first." end
 		local item={id=guid(),type=offer.type,rarity=offer.rarity,modifier=offer.modifier,level=1}
@@ -117,6 +117,13 @@ function R.act(d,session,action,args,now,random,guid,perks)
 	elseif action=="Unequip" then
 		if not R.find(d,args.id) then return false,"You do not own that crusher." end
 		for key,id in s.equipped do if id==args.id then s.equipped[key]=nil end end
+	elseif action=="Recycle" then
+		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
+		for _,id in s.equipped do if id==item.id then return false,"Unequip this crusher before recycling it." end end
+		local copies=0 for _,other in s.owned do if other.type==item.type then copies+=1 end end
+		if copies<2 then return false,"Keep your last crusher of each type for the Index." end
+		for i,other in s.owned do if other.id==item.id then table.remove(s.owned,i) break end end
+		return true,"Duplicate recycled. Inventory space freed."
 	elseif action=="Level" then
 		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
 		if item.level>=C.MaxLevel then return false,"Crusher is at maximum level." end

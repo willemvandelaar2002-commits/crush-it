@@ -109,9 +109,40 @@ return function()
 		local instance=table.clone(base) instance.type=v[1]
 		local a,b=R.stats(profile,base),R.stats(profile,instance)
 		check(a.damage==b.damage and a.cycle==b.cycle and a.value==b.value and a.hp==b.hp,"special keeps its existing production band")
-		local draws={v[3],.1,v[4]} local index=0
+		local pool=C.rarityOf(v[1]).types
+		local draws={v[3],.1,(table.find(pool,v[1])-.5)/#pool} local index=0
 		local result,_,rolled=R.act(profile,{},"Roll",{},0,function() index+=1 return draws[index] end,id,{})
 		check(result and rolled[1].type==v[1],"special is reachable through authoritative collection rolls")
 	end
+	-- Forty real, reachable definitions; model additions must not silently
+	-- change legacy IDs, saved instance stats or the existing rarity weights.
+	check(#C.Types==40,"forty live crusher types")
+	local seen={} local cumulative=0 local total=0 for _,r in C.Rarities do total+=r.weight end
+	for _,r in C.Rarities do
+		check(#r.types==8,"eight types per rarity")
+		for position,typeId in r.types do
+			check(not seen[typeId] and C.typeById(typeId)~=nil,"unique real type in each roll pool") seen[typeId]=true
+			local profile=fresh() local context={} local values={(cumulative+r.weight/2)/total,.1,(position-.5)/#r.types} local n=0
+			local ok,_,result=R.act(profile,context,"Roll",{},0,function() n+=1 return values[n] end,id,{})
+			check(ok and result[1].type==typeId and result[1].rarity==r.name,"every catalogue entry is rollable")
+			profile.cash=1e9
+			local bought,_,item=R.act(profile,context,"Buy",{slot=1},context.nextRoll,math.random,id,{})
+			check(bought and item.type==typeId,"catalogue offer can be purchased")
+			local stats=R.stats(profile,item)
+			check(stats.cps>0 and stats.cycle>0 and stats.hp>0,"each type has usable production stats")
+			item.level=7 local restored=R.migrate(R.copy(profile),id)
+			check(R.find(restored,item.id).type==typeId and R.find(restored,item.id).level==7,"new types and levels survive migration")
+		end
+		cumulative+=r.weight
+	end
+	local recycle=fresh() local first=recycle.crushers.owned[1] local duplicate=table.clone(first)
+	duplicate.id=id() duplicate.level=4 table.insert(recycle.crushers.owned,duplicate)
+	local cash=recycle.cash
+	check(not act(recycle,{},"Recycle",{id=first.id}),"cannot recycle an equipped instance")
+	check(not act(recycle,{},"Recycle",{id="foreign-id"}),"cannot recycle another player's instance")
+	check(act(recycle,{},"Recycle",{id=duplicate.id}) and #recycle.crushers.owned==1,"can free space by recycling exact duplicate")
+	check(recycle.cash==cash and first.level==1,"recycling cannot mint cash or change other levels")
+	act(recycle,{},"Unequip",{id=first.id})
+	check(not act(recycle,{},"Recycle",{id=first.id}),"last copy of a type protects discovery")
 	return {passed=checks}
 end

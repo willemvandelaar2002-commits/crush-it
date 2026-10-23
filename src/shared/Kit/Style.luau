@@ -160,6 +160,19 @@ function Style.panel(frame: Frame, a: Color3, b: Color3?)
 	studs.ZIndex = 0
 end
 
+-- Compact collectible cards and headers: same palette/studs as panels, with
+-- squarer corners so neighbouring cards read as a single dense collection.
+function Style.collectionPanel(frame: Frame, a: Color3, b: Color3?)
+	Style.panel(frame, a, b)
+	local corner = frame:FindFirstChild("Corner") :: UICorner
+	corner.CornerRadius = UDim.new(0, 4)
+	for _, name in { "InnerBorder", "Studs" } do
+		local layer = frame:FindFirstChild(name)
+		local inner = layer and layer:FindFirstChildOfClass("UICorner")
+		if inner then inner.CornerRadius = UDim.new(0, 2) end
+	end
+end
+
 -- Opt-in bolted casing for major workshop panels. Keep this off list/grid
 -- containers; the single noninteractive decoration layer sits behind content.
 function Style.workshopPanel(frame: Frame, accent: Color3?)

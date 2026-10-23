@@ -1,5 +1,11 @@
 # Crush It
 
+23 Oct forty-crusher update: all 40 types are active in the roll catalogue,
+with 29 distinct code-built rigs alongside the original eleven. The desktop
+Index/Owned UI uses actual model previews, base odds and protected duplicate
+recycling. See [[Systems/Crusher-collection-index|Full roster and verification]]
+and [[Apply-40-crushers|Patch application instructions]].
+
 22 Oct imported crusher integration: TwinTitan, RocketPress, Magnetron,
 GoldenKing and Toyzilla are collectible types using anchored place templates,
 manifest-fitted bays and separate moving rams. See [[Systems/Special crusher models]]

@@ -91,6 +91,18 @@ C.Rarities = {
 	{ name = "Epic", price = 6000, weight = 1.8, rank = 3, types = { "Titan", "TwinTitan" }, mult = 1.65, color = Color3.fromRGB(187, 105, 246) },
 	{ name = "Legendary", price = 60000, weight = 0.2, rank = 4, types = { "Quantum", "GoldenKing", "Toyzilla" }, mult = 2, color = Color3.fromRGB(255, 200, 55) },
 }
+-- Extend the real roll catalogue, not just the Index. Each rarity now contains
+-- eight types. Existing definitions and legacy migration order are unchanged.
+for _, entry in require(script.Parent.CrusherRoster) do
+	local band
+	for _, existing in C.Types do if existing.id==entry.band then band=existing break end end
+	assert(band,"Missing production band for "..entry.id)
+	local def=table.clone(band)
+	def.id=entry.id def.name=entry.name def.design=entry.design def.accent=entry.color
+	def.template=nil
+	table.insert(C.Types,def)
+	for _, rarity in C.Rarities do if rarity.name==entry.rarity then table.insert(rarity.types,entry.id) break end end
+end
 C.Modifiers = {
 	{ name = "Standard", weight = 80, mult = 1 }, { name = "Rusty", weight = 14, mult = 1.15 },
 	{ name = "Polished", weight = 5, mult = 1.5 }, { name = "Charged", weight = 1, mult = 2 },
@@ -109,7 +121,7 @@ C.Tutorial = {
 	"Your starter crusher works automatically. Collect scrap at the blue bin.",
 	"Sell carried scrap at the green seller to earn cash.",
 	"Press ROLL at the roll machine (free), then buy a crusher from a pedestal.",
-	"Open CRUSHERS, select your rolled machine and equip it in a working bay.",
+	"Open INDEX > OWNED, select your rolled machine and equip it in a working bay.",
 	"Buy a global upgrade at the PRODUCTION board. Collect and sell to afford it.",
 	"Buy Luck or more Rolling Pedestals at the ROLLING board.",
 	"Use the green LEVEL button on an equipped crusher's bay plaque.",

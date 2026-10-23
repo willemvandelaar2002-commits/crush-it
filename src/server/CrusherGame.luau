@@ -17,6 +17,7 @@ local Plots=require(script.Parent.Plots)
 local PressBuilder=require(script.Parent.PressBuilder)
 local Workshop=require(script.Parent.Kit.CrusherWorkshop)
 local Special=require(script.Parent.SpecialCrushers)
+local Catalog=require(script.Parent.CatalogCrushers)
 local Friend=require(script.Parent.FriendBoost)
 local G={}
 local sessions={}
@@ -177,7 +178,7 @@ local function buildBay(p,i,item)
 	if old then old.model:Destroy() ctx.visuals[i]=nil end
 	if not item then return end
 	local t=C.typeById(item.type) local o=bay.origin
-	local special=if t.template then Special.build(o,t.template) else nil
+	local special=if t.design then Catalog.build(o,t.id) elseif t.template then Special.build(o,t.template) else nil
 	if special then
 		special.id=item.id special.tier=t.input special.model.Name="EquippedCrusher"
 		special.model:SetAttribute("InventoryId",item.id) special.model:SetAttribute("Rarity",item.rarity) special.model:SetAttribute("Modifier",item.modifier)
@@ -237,7 +238,7 @@ local REVEAL_FIT=Vector3.new(5.4,7.4,5.4)
 local function displayModel(typeId,at,item)
 	local t=C.typeById(typeId)
 	local model
-	local special=t.template and Special.build(at,t.template)
+	local special=if t.design then Catalog.build(at,t.id) elseif t.template then Special.build(at,t.template) else nil
 	if special then model=special.model
 	else local built=PressBuilder.build(at,t.tier) model=built.model end
 	local _,size=model:GetBoundingBox()
@@ -314,9 +315,19 @@ local function rollShow(p,offers)
 		plot.silhouettes[slot]=plot.silhouettes[slot] or {}
 		local m=plot.silhouettes[slot][id]
 		if not m then
+			local count=0 local oldest local oldestTime=math.huge
+			for key,cached in plot.silhouettes[slot] do
+				count+=1 local used=cached:GetAttribute("LastShown") or 0
+				if used<oldestTime then oldest=key oldestTime=used end
+			end
+			if count>=6 and oldest then
+				if plot.outlines[slot] then plot.outlines[slot].Parent=folder end
+				plot.silhouettes[slot][oldest]:Destroy() plot.silhouettes[slot][oldest]=nil
+			end
 			m=displayModel(id,st.pedestals[slot].top) silhouette(m) showModel(m,false) m.Parent=folder
 			m:SetAttribute("BasePivot",m:GetPivot()) plot.silhouettes[slot][id]=m
 		end
+		m:SetAttribute("LastShown",os.clock())
 		return m
 	end
 	plot.outlines=plot.outlines or {}
@@ -417,6 +428,7 @@ local function visualEvent(p,event)
 		Objects.scale(v.input,v.base,scale) v.input:SetAttribute("Height",size.Y*scale)
 	else
 		if v.input then Objects.setSquash(v.input,v.base,event.fraction) end
+		if v.catalog then Catalog.strike(v,event) return end
 		if v.special then Special.strike(v,event) return end
 		local height=(if v.input then v.input:GetAttribute("Height") else Config.Objects[v.tier].height)*event.fraction
 		local down=CFrame.new(v.rest.Position.X,v.base.Position.Y+height+v.ram.Size.Y/2,v.rest.Position.Z)*(v.rest-v.rest.Position)
@@ -429,6 +441,7 @@ end
 function G.start()
 	Data.start("CrushItPlayer_v1",{cash=C.StartCash,scrap=0,purchases={},daily={day=0,streak=0},goldenRush=0,lastSeen=0},function(d) return Rules.migrate(d,guid) end)
 	Plots.create() require(script.Parent.World).create() Friend.start()
+	require(script.Parent.CrusherPreviews).start()
 	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
 	for _,plot in Plots.all() do pedestalLook(plot,C.StartPedestals) end
 	for _,plot in Plots.all() do floorLook(plot,0) for i,bay in plot.bays do if floorOf(i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end end
@@ -501,7 +514,7 @@ function G.start()
 			if name=="Unlock" and f and f.first==args.bay and args.bay==d.crushers.bays+1 then target=f.face reach=45 end
 		elseif name=="Buy" then local ped=type(args.slot)=="number" and ctx.plot.stations.Roll.pedestals[args.slot] if ped then target=ped.part end
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
-		if name~="Equip" and name~="Unequip" then
+		if name~="Equip" and name~="Unequip" and name~="Recycle" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end
