@@ -201,8 +201,10 @@ local function reconcile(p)
 end
 -- Fit a press model into a box and paint it in the crusher's rarity/modifier.
 local function dress(model,item,fit)
-	local _,size=model:GetBoundingBox()
-	model:ScaleTo(math.min(1,fit.X/size.X,fit.Z/size.Z,fit.Y/size.Y))
+	if fit then
+		local _,size=model:GetBoundingBox()
+		model:ScaleTo(math.min(1,fit.X/size.X,fit.Z/size.Z,fit.Y/size.Y))
+	end
 	for _,part in model:GetDescendants() do if part:IsA("BasePart") then
 		part.CanCollide=false part.CanTouch=false part.CanQuery=false
 		if part.Name=="Plinth" or part.Name=="Housing" then part.Color=C.rarity(item.rarity).color end
@@ -213,25 +215,106 @@ local function dress(model,item,fit)
 	elseif part:IsA("Light") then part.Enabled=false
 	elseif part:IsA("ParticleEmitter") then part.Enabled=false end end
 end
--- Spin the die and rollers for the roll time, then show the new crusher on the stand.
+-- A display copy of a crusher type for the reveal plinth (imported special
+-- meshes when the type has a template, else the procedural press).
+local REVEAL_FIT=Vector3.new(5.4,7.4,5.4)
+local function displayModel(typeId,at,item)
+	local t=C.typeById(typeId)
+	local model
+	local special=t.template and Special.build(at,t.template)
+	if special then model=special.model
+	else local built=PressBuilder.build(at,t.tier) model=built.model end
+	local _,size=model:GetBoundingBox()
+	model:ScaleTo(model:GetScale()*math.min(1,REVEAL_FIT.X/size.X,REVEAL_FIT.Z/size.Z,REVEAL_FIT.Y/size.Y))
+	-- sit the bounding box on the plinth
+	local cf,sz=model:GetBoundingBox()
+	model:PivotTo(model:GetPivot()+(at.Position+Vector3.new(0,sz.Y/2,0)-cf.Position))
+	if item then dress(model,item,nil) else
+		for _,part in model:GetDescendants() do if part:IsA("BasePart") then part.CanCollide=false part.CanTouch=false part.CanQuery=false
+		elseif part:IsA("Light") or part:IsA("ParticleEmitter") then part.Enabled=false end end
+	end
+	return model
+end
+-- Black silhouette with a white outline (one Highlight per plot follows it).
+local function silhouette(model)
+	for _,part in model:GetDescendants() do
+		if part:IsA("BasePart") then part.Color=Color3.fromRGB(12,12,16) part.Material=Enum.Material.SmoothPlastic part.CastShadow=false
+			if part:IsA("MeshPart") then part.TextureID="" end
+		elseif part:IsA("SurfaceAppearance") or part:IsA("Decal") or part:IsA("Texture") or part:IsA("SurfaceGui") or part:IsA("BillboardGui") then part:Destroy() end
+	end
+end
+local function showModel(model,visible)
+	for _,part in model:GetDescendants() do if part:IsA("BasePart") then
+		if part:GetAttribute("ShowT")==nil then part:SetAttribute("ShowT",part.Transparency) end
+		part.Transparency=if visible then part:GetAttribute("ShowT") else 1
+	end end
+end
+local function card(st,name,rarity,odds,value,color)
+	st.card.name.Text=name st.card.name.TextColor3=color or Color3.new(1,1,1)
+	st.card.rarity.Text=rarity st.card.rarity.TextColor3=color or Color3.new(1,1,1)
+	st.card.odds.Text=odds st.card.value.Text=value
+end
+-- Roll show (like the reference): the die and rollers spin while black
+-- silhouettes of possible crushers flicker on the plinth with "???" and their
+-- odds; then a flash and the real crusher appears with name, rarity, odds and
+-- its output per minute.
 local function rollShow(p,item)
 	local ctx=sessions[p] local st=ctx.plot.stations.Roll
-	local seconds=math.max(.3,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
+	local seconds=math.max(1.2,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
 	st.reveal.Text="ROLLING..."
-	local start=os.clock() local base=st.die:GetPivot() local rollers={}
+	if ctx.revealModel then ctx.revealModel:Destroy() ctx.revealModel=nil end
+	-- silhouettes are built once per plot and reused
+	local plot=ctx.plot
+	if not plot.silhouettes then
+		plot.silhouettes={}
+		local folder=Instance.new("Model") folder.Name="RollSilhouettes" folder.Parent=plot.model
+		for _,t in C.Types do
+			local m=displayModel(t.id,st.pedestal) silhouette(m) showModel(m,false) m.Parent=folder plot.silhouettes[t.id]=m
+		end
+		local hl=Instance.new("Highlight") hl.Name="SilhouetteOutline" hl.FillColor=Color3.fromRGB(8,8,12) hl.FillTransparency=0 hl.OutlineTransparency=0 hl.OutlineColor=Color3.new(1,1,1)
+		hl.DepthMode=Enum.HighlightDepthMode.Occluded hl.Enabled=false hl.Parent=folder plot.silhouetteOutline=hl
+	end
+	local pool={} for _,r in C.Rarities do for _,id in r.types do table.insert(pool,{id=id,w=r.weight^.45}) end end
+	local function pick()
+		local total=0 for _,e in pool do total+=e.w end local x=rng:NextNumber()*total
+		for _,e in pool do x-=e.w if x<=0 then return e.id end end return pool[#pool].id
+	end
+	local shown
+	local function flick(id)
+		if shown then showModel(plot.silhouettes[shown],false) end
+		shown=id showModel(plot.silhouettes[id],true)
+		plot.silhouetteOutline.Parent=plot.silhouettes[id] plot.silhouetteOutline.Enabled=true
+		card(st,"???","???","[1 in "..Format.cash(C.oddsFor(id)):gsub("%$","").."]","???")
+	end
+	local start=os.clock() local base=st.die:GetPivot() local rollers={} local nextFlick=0
 	for _,r in st.rollers do rollers[r]=r.CFrame end
 	local conn conn=RunService.Heartbeat:Connect(function()
 		local t=os.clock()-start
 		if t>=seconds or ctx.rollToken~=token or not st.die.Parent then
 			conn:Disconnect() st.die:PivotTo(base) for r,cf in rollers do r.CFrame=cf end
+			if shown then showModel(plot.silhouettes[shown],false) end plot.silhouetteOutline.Enabled=false
 			if ctx.rollToken~=token or sessions[p]~=ctx then return end
-			if ctx.revealModel then ctx.revealModel:Destroy() end
-			local built=PressBuilder.build(st.pedestal,C.typeById(item.type).tier)
-			built.model.Name="RolledCrusher" dress(built.model,item,Vector3.new(5.4,7.4,5.4))
-			built.model:PivotTo(st.pedestal) built.model.Parent=ctx.plot.model ctx.revealModel=built.model
+			-- flash, then the real crusher
+			local flash=Workshop.part(plot.model,"RevealFlash",Vector3.new(2,2,2),st.pedestal*CFrame.new(0,3,0),Color3.fromRGB(255,240,180))
+			flash.Shape=Enum.PartType.Ball flash.Material=Enum.Material.Neon flash.CastShadow=false
+			Tween:Create(flash,TweenInfo.new(.35,Enum.EasingStyle.Quad),{Size=Vector3.new(11,11,11),Transparency=1}):Play()
+			task.delay(.4,function() flash:Destroy() end)
+			local model=displayModel(item.type,st.pedestal,item)
+			model.Name="RolledCrusher" model.Parent=plot.model ctx.revealModel=model
+			local r=C.rarity(item.rarity) local d=Data.get(p)
+			local perMin=d and Rules.stats(d,item,perks(p)).cps*60 or 0
+			-- (the server toast would spoil the reveal; the card says it)
+			card(st,C.typeById(item.type).name,item.rarity..(if item.modifier~="Standard" then " · "..item.modifier else ""),
+				"[1 in "..Format.cash(C.oddsFor(item.type)):gsub("%$","").."]",Format.cash(perMin).."/min",r.color:Lerp(Color3.new(1,1,1),.15))
 			st.reveal.Text=string.upper(item.rarity).."\n"..C.typeById(item.type).name
-			st.reveal.TextColor3=C.rarity(item.rarity).color:Lerp(Color3.new(1,1,1),.2)
+			st.reveal.TextColor3=r.color:Lerp(Color3.new(1,1,1),.2)
 			return
+		end
+		-- flicker: fast at first, slowing down towards the reveal
+		if t>=nextFlick then
+			local last=seconds-t<.45
+			flick(if last then item.type else pick())
+			nextFlick=t+.12+.35*(t/seconds)^2
 		end
 		local spin=t*14*(1-t/seconds*.6)
 		st.die:PivotTo(base*CFrame.new(0,math.abs(math.sin(t*9))*1.2,0)*CFrame.Angles(spin,spin*.7,spin*.4))
@@ -300,7 +383,7 @@ function G.start()
 	Players.PlayerAdded:Connect(join) for _,p in Players:GetPlayers() do task.spawn(join,p) end
 	Players.PlayerRemoving:Connect(function(p)
 		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory" ctx.rollToken=nil
-			if ctx.revealModel then ctx.revealModel:Destroy() end ctx.plot.stations.Roll.reveal.Text="LAST ROLL"
+			if ctx.revealModel then ctx.revealModel:Destroy() end ctx.plot.stations.Roll.reveal.Text="LAST ROLL" card(ctx.plot.stations.Roll,"","","","")
 			for _,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
 			floorLook(ctx.plot,0) for i,bay in ctx.plot.bays do if floorOf(i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
 		sessions[p]=nil

@@ -109,6 +109,15 @@ C.Tutorial = {
 	"Use the green LEVEL button on an equipped crusher's bay plaque.",
 	"Keep collecting, selling and rolling. Unlock another working bay for more production!",
 }
+-- "1 in N" odds of rolling a type with base weights (no luck).
+function C.oddsFor(typeId)
+	local total=0 for _,r in C.Rarities do total+=r.weight end
+	for _,r in C.Rarities do for _,t in r.types do if t==typeId then
+		return math.max(1,math.floor(total/r.weight*#r.types+.5))
+	end end end
+	return 1
+end
+function C.rarityOf(typeId) for _,r in C.Rarities do for _,t in r.types do if t==typeId then return r end end end end
 function C.typeById(id) for _,v in C.Types do if v.id == id then return v end end end
 function C.rarity(name) for _,v in C.Rarities do if v.name == name then return v end end end
 function C.modifier(name) for _,v in C.Modifiers do if v.name == name then return v end end end

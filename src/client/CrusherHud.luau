@@ -124,6 +124,8 @@ function H.start()
    else WorldFx.fail(pending.row) end
    pending=nil
   end
+  -- a roll is revealed on the roll machine's plinth; no screen spoiler
+  if v.result then v.message=nil end
   if v.message then toast.Text=v.message noticeUntil=os.clock()+5 end
   if v.result then resultText=v.result.rarity.." / "..v.result.modifier.."\n"..C.typeById(v.result.type).name resultUntil=v.rollReadyAt+2 end
   redraw()
@@ -135,7 +137,7 @@ function H.start()
   if os.clock()>noticeUntil then toast.Text="" end
   if state then
    local left=math.max(0,state.rollReadyAt-workspace:GetServerTimeNow())
-   reveal.Visible=workspace:GetServerTimeNow()<resultUntil
+   reveal.Visible=false -- the roll reveal happens in the world (roll machine plinth)
    reveal.Text=if left>0 then C.Types[math.floor(os.clock()*9)%#C.Types+1].name..string.format("\nRolling... %.1fs",left) else resultText
   end
  end)

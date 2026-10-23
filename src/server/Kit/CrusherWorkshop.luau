@@ -314,8 +314,18 @@ function W.station(parent,cf,kind)
 		for _,x in {12,17} do W.part(m,"RevealPost",V(.6,11,.6),cf*CFrame.new(x,6,-1.6),W.Navy) end
 		local reveal=W.text(W.sign(banner),"Reveal","LAST ROLL",UDim2.fromScale(.03,.05),UDim2.fromScale(.94,.9))
 		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.3,7.4),W.Purple,"ROLL A CRUSHER","ROLL")
+		-- Floating card above the reveal plinth: name, rarity, odds, output.
+		local anchor=W.part(m,"RevealCardAnchor",V(.2,.2,.2),cf*CFrame.new(14.5,11.5,1),W.Navy)
+		anchor.Transparency=1
+		local card=Instance.new("BillboardGui") card.Name="RevealCard" card.Size=UDim2.fromOffset(240,118)
+		card.StudsOffset=Vector3.new(0,4,0) card.MaxDistance=120 card.LightInfluence=0 card.Parent=anchor
+		local function line(name,y,h,color)
+			local t=W.text(card,name,"",UDim2.fromScale(0,y),UDim2.fromScale(1,h)) t.TextColor3=color return t
+		end
+		local cardLines={name=line("CrusherName",0,.3,Color3.new(1,1,1)),rarity=line("Rarity",.3,.2,Color3.new(1,1,1)),
+			odds=line("Odds",.52,.2,Color3.fromRGB(120,200,255)),value=line("Value",.74,.24,Color3.fromRGB(120,255,110))}
 		station={part=face,label=label,button=button,reveal=reveal,die=die,rollers=rollers,
-			pedestal=cf*CFrame.new(14.5,3.4,1),standPart=stand}
+			pedestal=cf*CFrame.new(14.5,3.4,1),standPart=stand,card=cardLines}
 	end
 	return station
 end

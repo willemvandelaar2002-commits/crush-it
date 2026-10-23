@@ -122,6 +122,15 @@ Buying it (= unlocking its first bay, `C.floorStart`) makes it solid and it
 rises out of the roof in 0.9 s. Existing saves keep their bay numbers, so
 machines in bays 2+ appear in the new left-first positions.
 
+Roll show (23 Oct, from Willem's reference video): while the roll timer runs
+the die and rollers spin and black silhouettes (white outline, one Highlight
+per plot) of random crusher types flicker on the reveal plinth, slowing down,
+with a floating card "??? / ??? / [1 in N]" (`C.oddsFor`, base weights). The
+last flicker is the real type; then a flash and the real model (imported
+special mesh when it has one) appears with name, rarity + modifier, odds and
+$/min. Silhouettes are built once per plot (RollSilhouettes). The HUD no longer
+shows a screen reveal or a "Rolled X" toast, so the result is not spoiled.
+
 World controls are SurfaceGuis copied into PlayerGui for the plot owner (mouse
 clicks are reliable there); purchases are server-checked for owner, distance
 (22 studs from the control) and cash.
