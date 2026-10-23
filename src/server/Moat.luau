@@ -89,7 +89,7 @@ function Moat.build(plotModel: Model, origin: CFrame, clearEdges: boolean?, rear
 end
 
 -- Fall into the lava -> back on your plot (or the hub). `spawnFor(player)` gives a CFrame.
-function Moat.start(spawnFor: (Player) -> CFrame)
+function Moat.start(spawnFor: (Player) -> CFrame, teleport: ((Player, Model, CFrame) -> ())?)
 	local Notice = Net.event("Notice")
 	local limit = Config.World.SeaY + 1.2 -- feet this low = in the lava (floors are ~4.6 studs higher)
 	task.spawn(function()
@@ -103,7 +103,7 @@ function Moat.start(spawnFor: (Player) -> CFrame)
 				local feet = if root and humanoid then root.Position.Y - root.Size.Y / 2 - humanoid.HipHeight else math.huge
 				if root and feet < limit then
 					root.AssemblyLinearVelocity = Vector3.zero
-					character:PivotTo(spawnFor(player))
+					if teleport then teleport(player, character :: Model, spawnFor(player)) else character:PivotTo(spawnFor(player)) end
 					Notice:FireClient(player, { text = "Ouch, hot lava!" })
 				end
 			end

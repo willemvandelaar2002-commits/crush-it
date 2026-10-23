@@ -20,6 +20,19 @@ local Special=require(script.Parent.SpecialCrushers)
 local Friend=require(script.Parent.FriendBoost)
 local G={}
 local sessions={}
+-- Teleport without falling through: with streaming on, the client may not have
+-- the floor at the target yet. Load the area first, hold the character
+-- anchored until the client reports the floor is there (or 4 s), then release.
+function G.safeTeleport(p,char,cf)
+	local root=char:FindFirstChild("HumanoidRootPart") if not root then return end
+	root.Anchored=true
+	char:PivotTo(cf)
+	task.spawn(function()
+		pcall(function() p:RequestStreamAroundAsync(cf.Position,4) end)
+		task.wait(0.4)
+		if root.Parent then root.AssemblyLinearVelocity=Vector3.zero root.Anchored=false end
+	end)
+end
 local rng=Random.new()
 local function guid() return Http:GenerateGUID(false) end
 local function random() return rng:NextNumber() end
@@ -366,12 +379,12 @@ function G.start()
 	Plots.create() require(script.Parent.World).create() Friend.start()
 	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
 	for _,plot in Plots.all() do floorLook(plot,0) for i,bay in plot.bays do if floorOf(i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end end
-	require(script.Parent.Moat).start(function(p) local ctx=sessions[p] return if ctx then Plots.spawnFor(ctx.plot) else CFrame.new(0,5,14) end)
+	require(script.Parent.Moat).start(function(p) local ctx=sessions[p] return if ctx then Plots.spawnFor(ctx.plot) else CFrame.new(0,5,14) end, G.safeTeleport)
 	require(script.Parent.Kit.Leaderboard).start({store="CashBoard_v1",score=function(p) return p:GetAttribute("Cash") or 0 end})
 	local function spawnCharacter(p,char)
 		local h=char:WaitForChild("Humanoid",10) local root=char:WaitForChild("HumanoidRootPart",10)
 		if h then h.WalkSpeed=Config.PlayerWalkSpeed end
-		local ctx=sessions[p] if root and ctx then char:PivotTo(Plots.spawnFor(ctx.plot)) end
+		local ctx=sessions[p] if root and ctx then G.safeTeleport(p,char,Plots.spawnFor(ctx.plot)) end
 	end
 	local function join(p)
 		local d=Data.whenLoaded(p) if not d then return end
