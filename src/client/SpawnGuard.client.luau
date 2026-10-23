@@ -16,8 +16,9 @@ local function groundBelow(root: BasePart, char: Model): boolean
 	local params = RaycastParams.new()
 	params.FilterType = Enum.RaycastFilterType.Exclude
 	params.FilterDescendantsInstances = { char }
+	params.RespectCanCollide = true -- look through decorative non-solid strips to the real floor
 	local hit = Workspace:Raycast(root.Position, Vector3.new(0, -G.Probe, 0), params)
-	return hit ~= nil and hit.Instance.CanCollide
+	return hit ~= nil
 end
 
 local function guard(char: Model)
