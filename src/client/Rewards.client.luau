@@ -10,6 +10,9 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local Format = require(ReplicatedStorage.Shared.Format)
@@ -109,7 +112,8 @@ tab("Playtime", 18)
 tab("Daily", 180)
 
 -- Tiles ----------------------------------------------------------------------------
-type Tile = { button: TextButton, title: TextLabel, icon: ImageLabel, status: TextLabel, badge: Frame, outline: UIStroke }
+type Tile = { button: TextButton, title: TextLabel, icon: ImageLabel, status: TextLabel, claim: TextButton, pill: Frame,
+	badge: Frame, outline: UIStroke, dim: Frame, ready: boolean, reward: any }
 
 local function grid(name: string): Frame
 	local f = make("Frame", { Name = name, Position = UDim2.fromOffset(18, 146), Size = UDim2.fromOffset(W - 36, TILE_H * 2 + GAP), BackgroundTransparency = 1, ZIndex = 5 }, panel)
@@ -120,28 +124,57 @@ local function grid(name: string): Frame
 	return f
 end
 
-local function makeTile(parent: Frame, order: number, color: Color3, image: string, onClick: () -> ()): Tile
+local function makeTile(parent: Frame, order: number, color: Color3, image: string, reward: any, onClaim: () -> ()): Tile
 	local b = make("TextButton", { Name = "Tile" .. order, LayoutOrder = order, BackgroundColor3 = color, Text = "", AutoButtonColor = false, ZIndex = 5 }, parent)
 	corner(b, 8)
 	local outline = stroke(b, 3)
 	shade(b, color)
 	Style.studsImage(b, 22, 0.86).ZIndex = 5
-	Style.feedback(b)
+	Style.feedback(b) -- every tile grows a little on hover
 	local title = label(b, "", UDim2.fromOffset(8, 6), UDim2.new(1, -16, 0, 30), 3)
 	local icon = make("ImageLabel", {
-		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 38), Size = UDim2.fromOffset(66, 66), BackgroundTransparency = 1,
+		AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0, 70), Size = UDim2.fromOffset(62, 62), BackgroundTransparency = 1,
 		Image = image, ScaleType = Enum.ScaleType.Fit, ZIndex = 6,
 	}, b)
-	local status = label(b, "", UDim2.new(0, 8, 1, -40), UDim2.new(1, -16, 0, 32), 3)
+	-- bottom: a dark pill with the timer / CLAIMED!, or a green CLAIM! button
+	local pill = make("Frame", {
+		AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -7), Size = UDim2.new(1, -18, 0, 36),
+		BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.55, ZIndex = 6,
+	}, b)
+	corner(pill, 8)
+	local status = label(pill, "", UDim2.fromScale(0.06, 0.1), UDim2.fromScale(0.88, 0.8), 2.5)
+	status.ZIndex = 7
+	local claim = make("TextButton", {
+		Name = "Claim", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -6), Size = UDim2.new(1, -16, 0, 40),
+		Text = "", AutoButtonColor = false, Visible = false, ZIndex = 7,
+	}, b)
+	Style.button(claim, Style.GREEN)
+	label(claim, "CLAIM!", UDim2.fromScale(0.08, 0.1), UDim2.fromScale(0.84, 0.8), 2.5).ZIndex = 8
+	make("UIScale", { Name = "Pulse" }, claim)
+	local dim = make("Frame", { Name = "Dim", Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.6, Visible = false, ZIndex = 9 }, b)
+	corner(dim, 8)
 	local mark = make("Frame", {
 		Name = "Ready", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -6, 0, 6), Size = UDim2.fromOffset(36, 36),
-		BackgroundColor3 = RED, Visible = false, ZIndex = 8,
+		BackgroundColor3 = RED, Visible = false, ZIndex = 10,
 	}, b)
 	corner(mark, 5)
 	stroke(mark, 3)
-	label(mark, "!", UDim2.fromScale(0.15, 0.08), UDim2.fromScale(0.7, 0.84), 2).ZIndex = 9
-	b.Activated:Connect(onClick)
-	return { button = b, title = title, icon = icon, status = status, badge = mark, outline = outline }
+	label(mark, "!", UDim2.fromScale(0.15, 0.08), UDim2.fromScale(0.7, 0.84), 2).ZIndex = 11
+	Style.wobble(mark, 10, 5)
+	local tile: Tile
+	local function press()
+		if tile.ready then onClaim() return end
+		-- not ready yet: a little shake
+		local x = b.Rotation
+		for _, d in { -4, 4, -3, 3, 0 } do
+			TweenService:Create(b, TweenInfo.new(0.04), { Rotation = x + d }):Play()
+			task.wait(0.04)
+		end
+	end
+	b.Activated:Connect(press)
+	claim.Activated:Connect(press)
+	tile = { button = b, title = title, icon = icon, status = status, claim = claim, pill = pill, badge = mark, outline = outline, dim = dim, ready = false, reward = reward }
+	return tile
 end
 
 local function colorFor(r: any, last: boolean): Color3
@@ -155,14 +188,14 @@ end
 local playGrid = grid("PlaytimeGrid")
 local playTiles: { Tile } = {}
 for i, r in Config.Rewards.Playtime do
-	playTiles[i] = makeTile(playGrid, i, colorFor(r, i == #Config.Rewards.Playtime), imageFor(r), function()
+	playTiles[i] = makeTile(playGrid, i, colorFor(r, i == #Config.Rewards.Playtime), imageFor(r), r, function()
 		Claim:FireServer("playtime", i)
 	end)
 end
 local dailyGrid = grid("DailyGrid")
 local dailyTiles: { Tile } = {}
 for i, r in Config.Rewards.Daily do
-	dailyTiles[i] = makeTile(dailyGrid, i, colorFor(r, i == #Config.Rewards.Daily), imageFor(r), function()
+	dailyTiles[i] = makeTile(dailyGrid, i, colorFor(r, i == #Config.Rewards.Daily), imageFor(r), r, function()
 		Claim:FireServer("daily")
 	end)
 end
@@ -201,14 +234,76 @@ local function clock(seconds: number): string
 	return string.format("%02d:%02d", m, s)
 end
 
-local function set(tile: Tile, title: string, status: string, ready: boolean, today: boolean?)
+local function set(tile: Tile, title: string, status: string, ready: boolean, today: boolean?, done: boolean?)
 	tile.title.Text = title
 	tile.status.Text = status
+	tile.ready = ready
 	tile.badge.Visible = ready
-	tile.button.Active = ready
-	tile.outline.Color = if today then Color3.new(1, 1, 1) else INK
-	tile.outline.Thickness = if today then 4 else 3
+	tile.claim.Visible = ready
+	tile.pill.Visible = not ready
+	tile.dim.Visible = done == true
+	tile.outline.Color = if today or ready then Color3.new(1, 1, 1) else INK
+	tile.outline.Thickness = if today or ready then 4 else 3
 end
+
+-- Claim celebration ---------------------------------------------------------------
+local coin = make("Sound", { SoundId = "rbxassetid://" .. Config.Sounds.Coin, Volume = 0.6 }, SoundService)
+local function centre(g: GuiObject): Vector2 return g.AbsolutePosition + g.AbsoluteSize / 2 end
+local function cashTarget(): Vector2?
+	local hud = player.PlayerGui:FindFirstChild("CrushHud")
+	local icon = hud and hud:FindFirstChild("CashIcon", true) :: GuiObject?
+	return icon and centre(icon)
+end
+local function celebrate(tile: Tile, amount: string)
+	coin:Play()
+	-- tile pops: icon bounces, a white flash fades out
+	local icon = tile.icon
+	TweenService:Create(icon, TweenInfo.new(0.12, Enum.EasingStyle.Quad), { Size = UDim2.fromOffset(92, 92), Rotation = -12 }):Play()
+	task.delay(0.12, function()
+		TweenService:Create(icon, TweenInfo.new(0.35, Enum.EasingStyle.Back), { Size = UDim2.fromOffset(62, 62), Rotation = 0 }):Play()
+	end)
+	local flash = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 0.15, ZIndex = 12 }, tile.button)
+	corner(flash, 8)
+	TweenService:Create(flash, TweenInfo.new(0.45, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 }):Play()
+	task.delay(0.5, function() flash:Destroy() end)
+	-- "+$375" floats up from the tile
+	local start = centre(tile.button)
+	local pop = label(gui, "+" .. amount, UDim2.fromOffset(start.X - 110, start.Y - 50), UDim2.fromOffset(220, 46), 4)
+	pop.ZIndex = 60
+	pop.TextColor3 = if tile.reward.kind == "golden" then C(255, 214, 80) else C(140, 255, 120)
+	TweenService:Create(pop, TweenInfo.new(1, Enum.EasingStyle.Quad), { Position = UDim2.fromOffset(start.X - 110, start.Y - 130) }):Play()
+	TweenService:Create(pop, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 0.5), { TextTransparency = 1 }):Play()
+	task.delay(1.05, function() pop:Destroy() end)
+	-- bundles burst out and fly into the cash counter (golden stars fly up and fade)
+	local target = if tile.reward.kind == "golden" then nil else cashTarget()
+	for i = 1, 12 do
+		local img = make("ImageLabel", {
+			AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromOffset(start.X, start.Y), Size = UDim2.fromOffset(40, 40),
+			BackgroundTransparency = 1, Image = icon.Image, Rotation = math.random(-30, 30), ZIndex = 59,
+		}, gui)
+		local a = math.random() * math.pi * 2
+		local out = start + Vector2.new(math.cos(a), math.sin(a) * 0.7) * math.random(50, 140)
+		TweenService:Create(img, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Position = UDim2.fromOffset(out.X, out.Y) }):Play()
+		task.delay(0.3 + i * 0.03, function()
+			local goal = target or (out - Vector2.new(0, 120))
+			local t = TweenService:Create(img, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+				{ Position = UDim2.fromOffset(goal.X, goal.Y), Size = UDim2.fromOffset(22, 22), ImageTransparency = if target then 0 else 1 })
+			t:Play()
+			t.Completed:Once(function() img:Destroy() end)
+		end)
+	end
+end
+
+-- the green CLAIM! buttons breathe gently
+RunService.RenderStepped:Connect(function()
+	if not panel.Visible then return end
+	local k = 1 + math.sin(os.clock() * 5) * 0.04
+	for _, list in { playTiles, dailyTiles } do
+		for _, tile in list do
+			if tile.ready then (tile.claim:FindFirstChild("Pulse") :: UIScale).Scale = k end
+		end
+	end
+end)
 
 local function refresh()
 	if not state then
@@ -224,7 +319,7 @@ local function refresh()
 	for i, r in Config.Rewards.Playtime do
 		local left = r.minutes * 60 - played
 		if claimed[i] then
-			set(playTiles[i], amountText(r), "CLAIMED!", false)
+			set(playTiles[i], amountText(r), "CLAIMED!", false, false, true)
 		elseif left <= 0 then
 			set(playTiles[i], amountText(r), "CLAIM!", true)
 			anyPlay = true
@@ -241,7 +336,7 @@ local function refresh()
 		elseif i == d.day then
 			set(dailyTiles[i], amountText(r), clock(d.nextAt - now), false, true)
 		elseif done then
-			set(dailyTiles[i], amountText(r), "CLAIMED!", false)
+			set(dailyTiles[i], amountText(r), "CLAIMED!", false, false, true)
 		else
 			set(dailyTiles[i], amountText(r), "Day " .. i, false)
 		end
@@ -261,9 +356,28 @@ local function refresh()
 	badge.Visible = anyPlay or anyDaily
 end
 
+local function claimedSet(s: any): { [number]: boolean }
+	local out = {}
+	for _, i in s.claimed do out[i] = true end
+	return out
+end
 Net.event("Rewards").OnClientEvent:Connect(function(s)
+	local before = state
 	state = s
+	-- celebrate what was just claimed (amount text from before the claim)
+	local wins = {}
+	if before then
+		local was = claimedSet(before)
+		for i in claimedSet(s) do
+			if not was[i] then table.insert(wins, { playTiles[i], playTiles[i].title.Text }) end
+		end
+		local d0 = before.daily
+		if d0.canClaim and not s.daily.canClaim and dailyTiles[d0.day] then
+			table.insert(wins, { dailyTiles[d0.day], dailyTiles[d0.day].title.Text })
+		end
+	end
 	refresh()
+	for _, w in wins do task.spawn(celebrate, w[1], w[2]) end
 end)
 
 button.Activated:Connect(function()
