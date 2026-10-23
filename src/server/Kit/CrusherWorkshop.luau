@@ -41,7 +41,7 @@ function W.surface(part)
 	part.CanQuery=true
 	local gui=Instance.new("SurfaceGui") gui.Name="WorkshopControls" gui.Face=Enum.NormalId.Back
 	gui.SizingMode=Enum.SurfaceGuiSizingMode.PixelsPerStud gui.PixelsPerStud=32
-	gui.LightInfluence=.15 gui.MaxDistance=125 gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+	gui.LightInfluence=.15 gui.MaxDistance=C.ControlsMaxDistance gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
 	gui:SetAttribute("CrusherWorldControls",true) gui.Parent=part return gui
 end
 function W.beacon(parent,cf)

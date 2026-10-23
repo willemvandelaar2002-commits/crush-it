@@ -444,6 +444,7 @@ function G.start()
 		local plot for _,v in Plots.all() do if not v.owner then plot=v break end end
 		if not plot then p:Kick("All factory plots are occupied. Please join another server.") return end
 		plot.owner=p plot.sign.Text=p.DisplayName.."'s Factory"
+		p.CameraMaxZoomDistance=C.CameraMaxZoom
 		sessions[p]={plot=plot,visuals={},bays={},nextRoll=restoredCooldown(d),lastRequest=0}
 		local ls=Instance.new("Folder") ls.Name="leaderstats" ls.Parent=p local cash=Instance.new("StringValue") cash.Name="Cash" cash.Parent=ls
 		p:GetAttributeChangedSignal("Cash"):Connect(function() cash.Value=Format.cash(p:GetAttribute("Cash") or 0) end)
