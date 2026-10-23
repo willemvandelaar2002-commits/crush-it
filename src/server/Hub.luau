@@ -139,6 +139,16 @@ local function station(m: Model, pal: { [string]: Color3 }, rng: Random)
 		decal:Destroy()
 	end
 	spawn.Parent = m
+	-- HubSpawn is the only spawn: Roblox picks randomly between enabled spawns,
+	-- and a leftover default SpawnLocation at the map centre sat inside the hub
+	-- floor and the Mega Crusher base, so players sometimes fell through.
+	for _, other in workspace:GetDescendants() do
+		if other:IsA("SpawnLocation") and other ~= spawn then
+			other.Enabled = false
+			other.CanCollide = false
+			other.Transparency = 1
+		end
+	end
 end
 
 -- The ring road with its rails, built from SEGMENTS straight pieces.
