@@ -23,6 +23,21 @@ local rigs: { [Model]: Rig } = {}
 local function rig(press: Model): Rig?
 	local r = rigs[press]
 	if r and r.ram.Parent then
+		-- toy parts can stream in after the rig was made (StreamingEnabled):
+		-- add them, recording their untouched size/pose from the server
+		for i = #r.toys, 1, -1 do -- drop parts that streamed out
+			if not r.toys[i].part.Parent then table.remove(r.toys, i) end
+		end
+		local toy = press:FindFirstChild("Toy")
+		if toy and #r.toys < #toy:GetChildren() then
+			local seen = {}
+			for _, t in r.toys do seen[t.part] = true end
+			for _, p in toy:GetChildren() do
+				if p:IsA("BasePart") and not seen[p] then
+					table.insert(r.toys, { part = p, size = p.Size, cf = p.CFrame })
+				end
+			end
+		end
 		return r
 	end
 	local ram = press:FindFirstChild("Ram") :: BasePart?
