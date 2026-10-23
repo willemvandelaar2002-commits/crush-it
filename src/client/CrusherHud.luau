@@ -32,18 +32,31 @@ function H.start()
  local indexView=require(script.Parent.CrusherIndex).new(gui,act)
  local book=Style.iconButton(gui,{name="BookButton",image=Icons.Book,label="INDEX",a=blue,b=navy})
  Style.placeHudButton(book,0) book.Activated:Connect(indexView.toggle)
- local bar=require(script.Parent.InventoryBar).new(gui,function() indexView.open(1) end)
- -- screen point of a roll pedestal on your plot (start of the fly-in)
- local function pedestalPoint(slot)
-  local plot=workspace:FindFirstChild("Plots") and workspace.Plots:FindFirstChild("Plot"..tostring(p:GetAttribute("Plot")))
-  local st=plot and plot:FindFirstChild("RollStation",true) local cam=workspace.CurrentCamera
-  if not st then return nil end
-  for _,v in st:GetChildren() do if v.Name=="Pedestal" and v:GetAttribute("Slot")==slot then
-   local sp,on=cam:WorldToViewportPoint(v.Position+Vector3.new(0,4,0))
-   if on then return Vector2.new(sp.X,sp.Y)-game:GetService("GuiService"):GetGuiInset() end
-  end end
-  return nil
+ -- the crusher you're holding from the backpack (hotbar), if any
+ local function heldId()
+  local tool=p.Character and p.Character:FindFirstChildOfClass("Tool")
+  local id=tool and tool:GetAttribute("InventoryId")
+  return if typeof(id)=="string" then id else nil
  end
+ -- bay prompts say "Place" while you hold a crusher
+ local function inBay(v)
+  local a=v.Parent while a and a~=workspace do if a.Name:match("^WorkingBay") then return true end a=a.Parent end return false
+ end
+ local function promptText()
+  local plot=workspace:FindFirstChild("Plots") and workspace.Plots:FindFirstChild("Plot"..tostring(p:GetAttribute("Plot")))
+  if not plot then return end
+  local place=heldId()~=nil
+  for _,v in plot:GetDescendants() do
+   if v:IsA("ProximityPrompt") and v.Name=="FactoryPrompt" and inBay(v) then
+    v.ActionText=if place then "Place" else "Manage"
+   end
+  end
+ end
+ local function watchChar(char)
+  char.ChildAdded:Connect(function(c) if c:IsA("Tool") then promptText() end end)
+  char.ChildRemoved:Connect(function(c) if c:IsA("Tool") then promptText() end end)
+ end
+ p.CharacterAdded:Connect(watchChar) if p.Character then watchChar(p.Character) end
  -- Preserve the legacy shop caller's reference without retaining an action toolbar.
  local compatibility=make("Frame",{Name="FactoryActions",Visible=false,Size=UDim2.fromOffset(1,1)},gui)
  make("TextButton",{Name="CrushButton",Visible=false,Size=UDim2.fromOffset(1,1)},compatibility)
@@ -93,7 +106,9 @@ function H.start()
     if action=="Manage" then if bay<=state.unlocked then indexView.open(bay) else toast.Text="Unlock bays in order using their green plaques." noticeUntil=os.clock()+4 end
     elseif action=="Bay" then
      local id=state.bays[tostring(bay)]
-     if id then act("Level",{id=id,bay=bay})
+     local held=heldId()
+     if held and bay<=state.unlocked then act("Equip",{id=held,bay=bay})
+     elseif id then act("Level",{id=id,bay=bay})
      elseif bay==state.unlocked+1 then act("Unlock",{bay=bay})
      elseif bay<=state.unlocked then indexView.open(bay)
      else toast.Text="Unlock bay "..(state.unlocked+1).." first." noticeUntil=os.clock()+4 end
@@ -114,7 +129,6 @@ function H.start()
  task.spawn(bindWorld)
  Net.event("CrusherState").OnClientEvent:Connect(function(v)
   state=v
-  if v.boughtSlot and v.result then task.spawn(bar.flyIn,v.result,pedestalPoint(v.boughtSlot),v) else bar.update(v) end
   -- world purchase feedback: the next answer after a board/plaque click
   if pending and v.message and os.clock()-pending.t<2 then
    if v.message=="Done!" then WorldFx.success(pending.row,if pending.unlock then "BAY UNLOCKED!" else nil) v.message=nil

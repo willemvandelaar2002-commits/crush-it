@@ -121,7 +121,7 @@ C.Tutorial = {
 	"Your starter crusher works automatically. Collect scrap at the blue bin.",
 	"Sell carried scrap at the green seller to earn cash.",
 	"Press ROLL at the roll machine (free), then buy a crusher from a pedestal.",
-	"Open INDEX > OWNED, select your rolled machine and equip it in a working bay.",
+	"Hold your new crusher from the hotbar (bottom) and press E at a working bay to place it.",
 	"Buy a global upgrade at the PRODUCTION board. Collect and sell to afford it.",
 	"Buy Luck or more Rolling Pedestals at the ROLLING board.",
 	"Use the green LEVEL button on an equipped crusher's bay plaque.",

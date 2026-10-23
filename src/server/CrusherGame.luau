@@ -19,6 +19,7 @@ local Workshop=require(script.Parent.Kit.CrusherWorkshop)
 local Special=require(script.Parent.SpecialCrushers)
 local Catalog=require(script.Parent.CatalogCrushers)
 local Friend=require(script.Parent.FriendBoost)
+local Tools=require(script.Parent.CrusherTools)
 local G={}
 local sessions={}
 local pedestalLook -- defined with the roll show helpers below
@@ -103,6 +104,7 @@ local function send(p,message,result)
 	if s.tutorial==5 and (s.upgrades.Damage+s.upgrades.Speed+s.upgrades.Yield)>0 then s.tutorial=6 end
 	if s.tutorial==6 and (s.upgrades.Luck+s.upgrades.Pedestals)>0 then s.tutorial=7 end
 	if s.tutorial==7 then for _,v in s.owned do if v.level>1 then s.tutorial=8 break end end end
+	Tools.sync(p,d) -- unequipped crushers live in the Roblox backpack
 	p:SetAttribute("Cash",d.cash) p:SetAttribute("Scrap",d.scrap) p:SetAttribute("AvailableScrap",s.available)
 	p:SetAttribute("Plot",ctx.plot.index) p:SetAttribute("Crushed",d.crushed) p:SetAttribute("Tier",d.tier)
 	p:SetAttribute("AutoOn",true) p:SetAttribute("GoldenRush",d.goldenRush) p:SetAttribute("Rebirths",d.rebirths)
@@ -112,7 +114,7 @@ local function send(p,message,result)
 	end
 	Net.event("CrusherState"):FireClient(p,{cash=d.cash,carried=d.scrap,available=s.available,items=items,
 		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,tutorial=s.tutorial,rate=cps(p,d),
-		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,boughtSlot=ctx.justBought,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
+		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll})
 	local st=ctx.plot.stations
 	st.Collect.label.Text=Format.cash(s.available).." ready"
@@ -415,8 +417,7 @@ local function action(p,name,args)
 	end
 	if ok then reconcile(p) end
 	ctx.justRolled=ok and name=="Roll" or nil
-	ctx.justBought=if ok and name=="Buy" then args.slot else nil
-	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" then result else nil) ctx.justRolled=nil ctx.justBought=nil
+	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" then result else nil) ctx.justRolled=nil
 	return ok,message,result
 end
 local function visualEvent(p,event)
@@ -476,7 +477,10 @@ function G.start()
 			action(p,"Buy",{slot=slot})
 		end) end
 		for i,bay in plot.bays do bay.prompt.Triggered:Connect(function(p)
-			if plot.owner~=p then return end Net.event("CrusherOpen"):FireClient(p,"Inventory",i)
+			if plot.owner~=p then return end
+			-- holding a crusher from the backpack: place it in this bay
+			local held=Tools.held(p) if held then action(p,"Equip",{id=held,bay=i}) return end
+			Net.event("CrusherOpen"):FireClient(p,"Inventory",i)
 		end) end
 	end
 	-- Top travel buttons: to the Mega Crusher (hub) or back to your factory.
