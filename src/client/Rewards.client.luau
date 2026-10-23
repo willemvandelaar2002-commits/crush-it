@@ -1,9 +1,11 @@
 --!strict
--- REWARDS gift button (next to BOOK and SHOP) and its panel:
+-- REWARDS gift button (next to BOOK and SHOP) and its panel, styled after the
+-- reference game: purple studded header, a grid of chunky reward tiles (reward
+-- on top, big icon, timer / CLAIM! at the bottom, red "!" when ready).
 --   Playtime  8 gifts that unlock after 2..90 minutes in this session
 --   Daily     7-day check-in; claim once per day, missing a day starts over
--- The "!" badge shows whenever something can be claimed. The server decides
--- everything (server/Rewards.luau); this only shows its state and counts down.
+-- The server decides everything (server/Rewards.luau); this only shows its
+-- state and counts down. Click a ready tile to claim it.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -18,9 +20,19 @@ local Icons = require(ReplicatedStorage.Shared.Icons)
 local player = Players.LocalPlayer
 local Claim = Net.event("ClaimReward")
 
-local DARK = Color3.fromRGB(28, 30, 38)
-local GREY = Color3.fromRGB(110, 112, 120)
-local GOLD = Color3.fromRGB(255, 200, 50)
+local C = Color3.fromRGB
+local INK = Style.Colors.Ink
+local BODY = C(24, 28, 46)
+local HEADER = C(176, 62, 232)
+local TILE = {
+	cash = C(58, 168, 70),
+	golden = C(232, 150, 32),
+	big = C(128, 60, 205),
+}
+local RED = C(225, 45, 50)
+
+local W, H = 760, 548 -- panel size (desktop)
+local COLS, TILE_W, TILE_H, GAP = 4, 172, 150, 12
 
 local function make(class: string, props: { [string]: any }, parent: Instance?): any
 	local i = Instance.new(class)
@@ -33,116 +45,139 @@ end
 local function corner(parent: Instance, r: number)
 	make("UICorner", { CornerRadius = UDim.new(0, r) }, parent)
 end
+local function stroke(parent: Instance, thickness: number, color: Color3?): UIStroke
+	return make("UIStroke", { Thickness = thickness, Color = color or INK, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, parent)
+end
+local function label(parent: Instance, text: string, pos: UDim2, size: UDim2, outline: number?): TextLabel
+	local l = make("TextLabel", { Text = text, Position = pos, Size = size, BackgroundTransparency = 1, TextScaled = true, ZIndex = 6 }, parent)
+	Style.text(l, outline or 3)
+	return l
+end
+local function shade(parent: GuiObject, color: Color3)
+	-- lighter top, darker bottom, like the reference tiles
+	make("UIGradient", {
+		Rotation = 90,
+		Color = ColorSequence.new(Style.lighten(color, 0.12), Style.darken(color, 0.38)),
+	}, parent)
+end
 
 local gui = make("ScreenGui", { Name = "RewardsHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, player:WaitForChild("PlayerGui"))
 
 local button, badge = Style.iconButton(gui, {
-	name = "RewardsButton", icon = "🎁", image = Icons.Rewards, label = "REWARDS", a = Color3.fromRGB(200, 120, 255), b = Color3.fromRGB(120, 50, 220),
+	name = "RewardsButton", icon = "🎁", image = Icons.Rewards, label = "REWARDS", a = C(200, 120, 255), b = C(120, 50, 220),
 })
 Style.placeHudButton(button, 2)
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() Style.placeHudButton(button, 2) end)
 
 -- Panel ----------------------------------------------------------------------------
 local panel = make("Frame", {
-	Name = "RewardsPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0.84, 0),
-	BackgroundColor3 = DARK, BackgroundTransparency = 0.03, Visible = false, ZIndex = 5,
+	Name = "RewardsPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.52), Size = UDim2.fromOffset(W, H),
+	BackgroundColor3 = BODY, Visible = false, ZIndex = 5,
 }, gui)
-Style.workshopPanel(panel, Style.Colors.Purple)
+corner(panel, 14)
+stroke(panel, 5)
 Style.modal(panel)
-make("UISizeConstraint", { MaxSize = Vector2.new(720, 520) }, panel)
-local title = make("TextLabel", {
-	Position = UDim2.fromOffset(16, 8), Size = UDim2.new(1, -80, 0, 36), BackgroundTransparency = 1, TextScaled = true,
-	TextXAlignment = Enum.TextXAlignment.Left, Text = "🎁 Free Rewards",
-}, panel)
-Style.text(title, 2.5)
+
+local header = make("Frame", { Name = "Header", Position = UDim2.fromOffset(10, 10), Size = UDim2.fromOffset(W - 20, 78), BackgroundColor3 = HEADER, ZIndex = 5 }, panel)
+corner(header, 10)
+stroke(header, 3, Style.darken(HEADER, 0.45))
+Style.studsImage(header, 26, 0.8).ZIndex = 5
+label(header, "Rewards", UDim2.new(0.5, -170, 0, 8), UDim2.fromOffset(340, 62), 4)
+
 local close = make("TextButton", {
-	AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 10), Size = UDim2.fromOffset(40, 40), Text = "X", TextScaled = true,
-}, panel)
-Style.button(close, Color3.fromRGB(230, 80, 70))
-make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6) }, close)
+	Name = "Close", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -10, 0.5, 0), Size = UDim2.fromOffset(62, 62),
+	BackgroundColor3 = RED, Text = "", AutoButtonColor = false, ZIndex = 6,
+}, header)
+corner(close, 6)
+stroke(close, 3)
+shade(close, RED)
+Style.feedback(close)
+label(close, "X", UDim2.fromScale(0.15, 0.1), UDim2.fromScale(0.7, 0.8), 3).ZIndex = 7
 
-local scroll = make("ScrollingFrame", {
-	Position = UDim2.fromOffset(12, 54), Size = UDim2.new(1, -24, 1, -64), BackgroundTransparency = 1, BorderSizePixel = 0,
-	ScrollBarThickness = 6, AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(),
-}, panel)
-make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }, scroll)
-Style.scroll(scroll)
-
-local function heading(text: string, order: number)
-	local l = make("TextLabel", {
-		Size = UDim2.new(1, 0, 0, 26), BackgroundTransparency = 1, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left,
-		Text = text, LayoutOrder = order,
-	}, scroll)
-	Style.text(l, 2)
-	l.TextColor3 = GOLD
+-- Tabs -----------------------------------------------------------------------------
+local tabs: { [string]: TextButton } = {}
+local function tab(name: string, x: number)
+	local t = make("TextButton", {
+		Name = name .. "Tab", Position = UDim2.fromOffset(x, 98), Size = UDim2.fromOffset(150, 38), Text = "", AutoButtonColor = false, ZIndex = 6,
+	}, panel)
+	Style.button(t, HEADER)
+	label(t, name, UDim2.fromScale(0.08, 0.12), UDim2.fromScale(0.84, 0.76), 2.5).ZIndex = 7
+	tabs[name] = t
+	return t
 end
+tab("Playtime", 18)
+tab("Daily", 180)
 
-local function grid(order: number, cell: Vector2): Frame
-	local f = make("Frame", {
-		Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = order,
-	}, scroll)
+-- Tiles ----------------------------------------------------------------------------
+type Tile = { button: TextButton, title: TextLabel, icon: ImageLabel, status: TextLabel, badge: Frame, outline: UIStroke }
+
+local function grid(name: string): Frame
+	local f = make("Frame", { Name = name, Position = UDim2.fromOffset(18, 146), Size = UDim2.fromOffset(W - 36, TILE_H * 2 + GAP), BackgroundTransparency = 1, ZIndex = 5 }, panel)
 	make("UIGridLayout", {
-		CellSize = UDim2.fromOffset(cell.X, cell.Y), CellPadding = UDim2.fromOffset(8, 8), SortOrder = Enum.SortOrder.LayoutOrder,
-		HorizontalAlignment = Enum.HorizontalAlignment.Center,
+		CellSize = UDim2.fromOffset(TILE_W, TILE_H), CellPadding = UDim2.fromOffset(GAP, GAP), SortOrder = Enum.SortOrder.LayoutOrder,
+		HorizontalAlignment = Enum.HorizontalAlignment.Left, FillDirectionMaxCells = COLS,
 	}, f)
-	Style.grid(f, cell.X, cell.Y, 10)
 	return f
 end
 
-type Card = { frame: Frame, icon: TextLabel, amount: TextLabel, button: TextButton, check: TextLabel }
-
-local CASH_A, CASH_B = Color3.fromRGB(110, 230, 100), Color3.fromRGB(40, 150, 60)
-local GOLD_A, GOLD_B = Color3.fromRGB(255, 225, 90), Color3.fromRGB(230, 140, 20)
-
-local function makeCard(parent: Frame, order: number, top: string, reward: any, onClaim: () -> ()): Card
-	local golden = reward.kind == "golden"
-	local frame = make("Frame", { LayoutOrder = order }, parent)
-	Style.panel(frame, if golden then GOLD_A else CASH_A, if golden then GOLD_B else CASH_B)
-	local head = make("TextLabel", {
-		Position = UDim2.fromOffset(6, 4), Size = UDim2.new(1, -12, 0, 20), BackgroundTransparency = 1, TextScaled = true, Text = top, ZIndex = 2,
-	}, frame)
-	Style.text(head, 2)
+local function makeTile(parent: Frame, order: number, color: Color3, image: string, onClick: () -> ()): Tile
+	local b = make("TextButton", { Name = "Tile" .. order, LayoutOrder = order, BackgroundColor3 = color, Text = "", AutoButtonColor = false, ZIndex = 5 }, parent)
+	corner(b, 8)
+	local outline = stroke(b, 3)
+	shade(b, color)
+	Style.studsImage(b, 22, 0.86).ZIndex = 5
+	Style.feedback(b)
+	local title = label(b, "", UDim2.fromOffset(8, 6), UDim2.new(1, -16, 0, 30), 3)
 	local icon = make("ImageLabel", {
-		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 24), Size = UDim2.fromOffset(44, 44), BackgroundTransparency = 1,
-		Image = if golden then Icons.Golden else Icons.Cash, ScaleType = Enum.ScaleType.Fit, ZIndex = 2,
-	}, frame)
-	local amount = make("TextLabel", {
-		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 70), Size = UDim2.new(1, -12, 0, 22), BackgroundTransparency = 1,
-		TextScaled = true, Text = "", ZIndex = 2,
-	}, frame)
-	Style.text(amount, 2)
-	local btn = make("TextButton", {
-		AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -6), Size = UDim2.new(1, -14, 0, 44), Text = "", TextScaled = true, ZIndex = 3,
-	}, frame)
-	Style.button(btn)
-	make("UIPadding", { PaddingTop = UDim.new(0, 5), PaddingBottom = UDim.new(0, 5), PaddingLeft = UDim.new(0, 4), PaddingRight = UDim.new(0, 4) }, btn)
-	btn.Activated:Connect(onClaim)
-	local check = make("TextLabel", {
-		Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.45, TextScaled = true,
-		Text = "✅", Visible = false, ZIndex = 6,
-	}, frame)
-	corner(check, 12)
-	make("UIPadding", { PaddingTop = UDim.new(0.25, 0), PaddingBottom = UDim.new(0.25, 0) }, check)
-	return { frame = frame, icon = icon, amount = amount, button = btn, check = check }
+		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 38), Size = UDim2.fromOffset(66, 66), BackgroundTransparency = 1,
+		Image = image, ScaleType = Enum.ScaleType.Fit, ZIndex = 6,
+	}, b)
+	local status = label(b, "", UDim2.new(0, 8, 1, -40), UDim2.new(1, -16, 0, 32), 3)
+	local mark = make("Frame", {
+		Name = "Ready", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -6, 0, 6), Size = UDim2.fromOffset(36, 36),
+		BackgroundColor3 = RED, Visible = false, ZIndex = 8,
+	}, b)
+	corner(mark, 5)
+	stroke(mark, 3)
+	label(mark, "!", UDim2.fromScale(0.15, 0.08), UDim2.fromScale(0.7, 0.84), 2).ZIndex = 9
+	b.Activated:Connect(onClick)
+	return { button = b, title = title, icon = icon, status = status, badge = mark, outline = outline }
 end
 
-heading("⏱️ Playtime gifts", 1)
-local playGrid = grid(2, Vector2.new(130, 148))
-local playCards: { Card } = {}
+local function colorFor(r: any, last: boolean): Color3
+	if last then return TILE.big end
+	return if r.kind == "golden" then TILE.golden else TILE.cash
+end
+local function imageFor(r: any): string
+	return if r.kind == "golden" then Icons.Golden else Icons.Cash
+end
+
+local playGrid = grid("PlaytimeGrid")
+local playTiles: { Tile } = {}
 for i, r in Config.Rewards.Playtime do
-	playCards[i] = makeCard(playGrid, i, r.minutes .. " min", r, function()
+	playTiles[i] = makeTile(playGrid, i, colorFor(r, i == #Config.Rewards.Playtime), imageFor(r), function()
 		Claim:FireServer("playtime", i)
 	end)
 end
-
-heading("📅 Daily check-in  (come back every day!)", 3)
-local dailyGrid = grid(4, Vector2.new(110, 148))
-local dailyCards: { Card } = {}
+local dailyGrid = grid("DailyGrid")
+local dailyTiles: { Tile } = {}
 for i, r in Config.Rewards.Daily do
-	dailyCards[i] = makeCard(dailyGrid, i, "Day " .. i, r, function()
+	dailyTiles[i] = makeTile(dailyGrid, i, colorFor(r, i == #Config.Rewards.Daily), imageFor(r), function()
 		Claim:FireServer("daily")
 	end)
 end
+
+local footer = label(panel, "", UDim2.fromOffset(22, H - 70), UDim2.fromOffset(W - 44, 52), 4)
+footer.TextXAlignment = Enum.TextXAlignment.Left
+
+local function showTab(name: string)
+	playGrid.Visible = name == "Playtime"
+	dailyGrid.Visible = name == "Daily"
+	footer.Text = if name == "Playtime" then "Leaving Resets Progress!" else "Come back every day!"
+	for n, t in tabs do Style.setButtonColor(t, if n == name then HEADER else C(80, 84, 104)) end
+end
+for n, t in tabs do t.Activated:Connect(function() showTab(n) end) end
+showTab("Playtime")
 
 -- State + refresh ------------------------------------------------------------------
 local state: any = nil
@@ -161,16 +196,18 @@ local function clock(seconds: number): string
 	local m = math.floor((seconds % 3600) / 60)
 	local s = seconds % 60
 	if h > 0 then
-		return string.format("%dh %02dm", h, m)
+		return string.format("%02d:%02d:%02d", h, m, s)
 	end
-	return string.format("%d:%02d", m, s)
+	return string.format("%02d:%02d", m, s)
 end
 
-local function setButton(card: Card, text: string, color: Color3, active: boolean)
-	card.button.Text = text
-	card.button.Active = active
-	card.button.AutoButtonColor = active
-	Style.setButtonColor(card.button, color)
+local function set(tile: Tile, title: string, status: string, ready: boolean, today: boolean?)
+	tile.title.Text = title
+	tile.status.Text = status
+	tile.badge.Visible = ready
+	tile.button.Active = ready
+	tile.outline.Color = if today then Color3.new(1, 1, 1) else INK
+	tile.outline.Thickness = if today then 4 else 3
 end
 
 local function refresh()
@@ -183,44 +220,45 @@ local function refresh()
 	for _, i in state.claimed do
 		claimed[i] = true
 	end
-	local any = false
+	local anyPlay, anyDaily = false, false
 	for i, r in Config.Rewards.Playtime do
-		local card = playCards[i]
-		card.amount.Text = amountText(r)
-		card.check.Visible = claimed[i] == true
 		local left = r.minutes * 60 - played
 		if claimed[i] then
-			setButton(card, "CLAIMED", GREY, false)
+			set(playTiles[i], amountText(r), "CLAIMED!", false)
 		elseif left <= 0 then
-			setButton(card, "CLAIM!", Style.GREEN, true)
-			any = true
+			set(playTiles[i], amountText(r), "CLAIM!", true)
+			anyPlay = true
 		else
-			setButton(card, clock(left), GREY, false)
+			set(playTiles[i], amountText(r), clock(left), false)
 		end
 	end
 	local d = state.daily
 	for i, r in Config.Rewards.Daily do
-		local card = dailyCards[i]
-		card.amount.Text = amountText(r)
 		local done = i < d.day or (i == d.day and not d.canClaim)
-		card.check.Visible = done
-		local stroke = card.frame:FindFirstChildOfClass("UIStroke")
-		if stroke then
-			stroke.Thickness = if i == d.day then 5 else 3
-			stroke.Color = if i == d.day then Color3.new(1, 1, 1) else Color3.fromRGB(30, 30, 30)
-		end
 		if i == d.day and d.canClaim then
-			setButton(card, "CLAIM!", Style.GREEN, true)
-			any = true
+			set(dailyTiles[i], amountText(r), "CLAIM!", true, true)
+			anyDaily = true
 		elseif i == d.day then
-			setButton(card, clock(d.nextAt - now), GREY, false)
+			set(dailyTiles[i], amountText(r), clock(d.nextAt - now), false, true)
 		elseif done then
-			setButton(card, "DONE", GREY, false)
+			set(dailyTiles[i], amountText(r), "CLAIMED!", false)
 		else
-			setButton(card, "Day " .. i, GREY, false)
+			set(dailyTiles[i], amountText(r), "Day " .. i, false)
 		end
 	end
-	badge.Visible = any
+	-- a "!" on a tab that has something to claim
+	for n, t in tabs do
+		local has = if n == "Playtime" then anyPlay else anyDaily
+		local mark = t:FindFirstChild("Ready") :: Frame?
+		if not mark then
+			mark = make("Frame", { Name = "Ready", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -4, 0, 4), Size = UDim2.fromOffset(24, 24), BackgroundColor3 = RED, ZIndex = 9 }, t)
+			corner(mark :: Frame, 4)
+			stroke(mark :: Frame, 2)
+			label(mark :: Frame, "!", UDim2.fromScale(0.15, 0.08), UDim2.fromScale(0.7, 0.84), 1.5).ZIndex = 10
+		end
+		(mark :: Frame).Visible = has
+	end
+	badge.Visible = anyPlay or anyDaily
 end
 
 Net.event("Rewards").OnClientEvent:Connect(function(s)
