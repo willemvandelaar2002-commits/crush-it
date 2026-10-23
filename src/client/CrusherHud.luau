@@ -74,44 +74,60 @@ function H.start()
  end
  -- PlayerGui-hosted SurfaceGuis receive mouse input reliably. Replicated world
  -- templates remain visible to other players; only the owner's copies are interactive.
- local worldConnections={} local worldCopies={}
+ -- With streaming, plot parts load in and out; every time a control's part
+ -- (re)appears it gets a fresh copy, and copies of parts that left are dropped.
+ local copies={} -- original SurfaceGui -> {copy, connections}
+ local plotConnections={}
+ local function unbind(original)
+  local c=copies[original] if not c then return end copies[original]=nil
+  for _,x in c.connections do x:Disconnect() end c.copy:Destroy()
+ end
  local function clearWorld()
-  for _,c in worldConnections do c:Disconnect() end table.clear(worldConnections)
-  for _,v in worldCopies do v:Destroy() end table.clear(worldCopies)
+  for _,x in plotConnections do x:Disconnect() end table.clear(plotConnections)
+  for original in copies do unbind(original) end
+ end
+ local function bindOne(original)
+  if copies[original] or not original:IsA("SurfaceGui") or not original:GetAttribute("CrusherWorldControls") then return end
+  local adornee=original.Parent if not (adornee and adornee:IsA("BasePart")) then return end
+  local copy=original:Clone() copy.Name="PlotControls" copy.Adornee=adornee copy.Enabled=original.Enabled copy.Active=true copy.Parent=p.PlayerGui
+  original.Enabled=false
+  local connections={}
+  copies[original]={copy=copy,connections=connections}
+  local function mirror(a,b)
+   for _,prop in (if a:IsA("TextLabel") or a:IsA("TextButton") then {"Text","Visible","TextColor3"} else if a:IsA("GuiObject") then {"Visible"} else {}) do
+    table.insert(connections,a:GetPropertyChangedSignal(prop):Connect(function() b[prop]=a[prop] end))
+   end
+   local ac,bc=a:GetChildren(),b:GetChildren()
+   for i,child in ac do if bc[i] then mirror(child,bc[i]) end end
+  end
+  mirror(original,copy)
+  -- the part streamed out (or was destroyed): drop this copy
+  table.insert(connections,original.AncestryChanged:Connect(function() if not original:IsDescendantOf(workspace) then unbind(original) end end))
+  for _,v in copy:GetDescendants() do if v:IsA("TextButton") and v:GetAttribute("Action") then
+   WorldFx.bind(v)
+   v.Activated:Connect(function()
+    if not state then return end
+    local action=v:GetAttribute("Action") local bay=v:GetAttribute("Bay")
+    if action=="Upgrade" or action=="Bay" then pending={row=WorldFx.rowOf(v),t=os.clock(),unlock=action=="Bay" and not state.bays[tostring(bay)]} end
+    if action=="Manage" then if bay<=state.unlocked then selectedBay=bay redraw() panel.Visible=true else toast.Text="Unlock bays in order using their green plaques." noticeUntil=os.clock()+4 end
+    elseif action=="Bay" then
+     local id=state.bays[tostring(bay)]
+     if id then act("Level",{id=id,bay=bay})
+     elseif bay==state.unlocked+1 then act("Unlock",{bay=bay})
+     elseif bay<=state.unlocked then selectedBay=bay redraw() panel.Visible=true
+     else toast.Text="Unlock bay "..(state.unlocked+1).." first." noticeUntil=os.clock()+4 end
+    else act(action,{id=v:GetAttribute("UpgradeId")}) end
+   end)
+  end end
  end
  local function bindWorld()
   clearWorld()
   local index=p:GetAttribute("Plot") if not index then return end
   local plot=workspace:WaitForChild("Plots"):WaitForChild("Plot"..index)
-  for _,original in plot:GetDescendants() do
-   if not original:IsA("SurfaceGui") or not original:GetAttribute("CrusherWorldControls") then continue end
-   local copy=original:Clone() copy.Name="PlotControls_"..#worldCopies copy.Adornee=original.Parent copy.Enabled=original.Enabled copy.Active=true copy.Parent=p.PlayerGui
-   table.insert(worldCopies,copy) original.Enabled=false
-   local function mirror(a,b)
-    for _,prop in (if a:IsA("TextLabel") or a:IsA("TextButton") then {"Text","Visible","TextColor3"} else if a:IsA("GuiObject") then {"Visible"} else {}) do
-     table.insert(worldConnections,a:GetPropertyChangedSignal(prop):Connect(function() b[prop]=a[prop] end))
-    end
-    local ac,bc=a:GetChildren(),b:GetChildren()
-    for i,child in ac do if bc[i] then mirror(child,bc[i]) end end
-   end
-   mirror(original,copy)
-   for _,v in copy:GetDescendants() do if v:IsA("TextButton") and v:GetAttribute("Action") then
-    WorldFx.bind(v)
-    v.Activated:Connect(function()
-     if not state then return end
-     local action=v:GetAttribute("Action") local bay=v:GetAttribute("Bay")
-     if action=="Upgrade" or action=="Bay" then pending={row=WorldFx.rowOf(v),t=os.clock(),unlock=action=="Bay" and not state.bays[tostring(bay)]} end
-     if action=="Manage" then if bay<=state.unlocked then selectedBay=bay redraw() panel.Visible=true else toast.Text="Unlock bays in order using their green plaques." noticeUntil=os.clock()+4 end
-     elseif action=="Bay" then
-      local id=state.bays[tostring(bay)]
-      if id then act("Level",{id=id,bay=bay})
-      elseif bay==state.unlocked+1 then act("Unlock",{bay=bay})
-      elseif bay<=state.unlocked then selectedBay=bay redraw() panel.Visible=true
-      else toast.Text="Unlock bay "..(state.unlocked+1).." first." noticeUntil=os.clock()+4 end
-     else act(action,{id=v:GetAttribute("UpgradeId")}) end
-    end)
-   end end
-  end
+  for _,original in plot:GetDescendants() do bindOne(original) end
+  table.insert(plotConnections,plot.DescendantAdded:Connect(function(v)
+   if v:IsA("SurfaceGui") then task.defer(bindOne,v) end -- attributes/children arrive with it
+  end))
  end
  p:GetAttributeChangedSignal("Plot"):Connect(function() task.spawn(bindWorld) end)
  task.spawn(bindWorld)

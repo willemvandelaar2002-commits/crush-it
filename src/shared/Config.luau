@@ -401,6 +401,9 @@ Config.Rewards = {
 }
 
 -- Look: the classic Roblox stud pattern on floors, pads and boards.
+-- Client guard against falling through floors that haven't streamed in yet
+-- (client/SpawnGuard): watched for WatchSeconds after spawning or a teleport.
+Config.SpawnGuard = { Probe = 60, WatchSeconds = 3, TeleportJump = 40, MaxHold = 15, StreamTimeout = 10 }
 Config.Look = {
 	Theme = "Island", -- see shared/Kit/Style.luau (Island, Factory, Teal, Scrap)
 	Props = true, -- trees, rocks, fences and lamps round the plots (server/Decor.luau)
