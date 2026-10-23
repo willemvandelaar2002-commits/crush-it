@@ -3,7 +3,7 @@
 local C = {
 	Enabled = true, Schema = 2, MaxInventory = 80, MaxLevel = 40,
 	MaxGlobal = 20, MaxMoney = 1e300, StartCash = 20,
-	BayCosts = { 0, 180, 900 },
+	BayCosts = { 0, 100, 900 },
 	InputDelay = 0.8, Tick = 0.05, RequestInterval = 0.08,
 	-- Rolling is free: it fills your unlocked pedestals with offers you can buy.
 	RollSeconds = 3, StartPedestals = 1, MaxPedestals = 5,

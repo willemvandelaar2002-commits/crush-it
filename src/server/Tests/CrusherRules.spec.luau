@@ -11,6 +11,8 @@ return function()
 	local function act(d,s,name,args,now) return R.act(d,s,name,args or {},now or 0,random,id,{}) end
 	local d=fresh() local s={} local starter=d.crushers.owned[1]
 	check(#d.crushers.owned==1 and d.crushers.equipped["1"]==starter.id,"starter must be equipped")
+	local first=fresh() local _,_,cheap=R.act(first,{},"Roll",{},0,function() return .999 end,id,{})
+	check(cheap[1].rarity=="Common" and cheap[1].modifier=="Standard" and first.crushers.rolls==1,"first roll is always a plain Common")
 	local before=d.cash local ok,_,offers=act(d,s,"Roll")
 	check(ok and d.cash==before and #offers==C.StartPedestals and #d.crushers.owned==1,"free roll fills the starting pedestals only")
 	check(not act(d,s,"Buy",{slot=1},.1),"cannot buy before the reveal")
@@ -110,6 +112,7 @@ return function()
 		local a,b=R.stats(profile,base),R.stats(profile,instance)
 		check(a.damage==b.damage and a.cycle==b.cycle and a.value==b.value and a.hp==b.hp,"special keeps its existing production band")
 		local pool=C.rarityOf(v[1]).types
+		profile.crushers.rolls=1 -- past the plain-Common first roll
 		local draws={v[3],.1,(table.find(pool,v[1])-.5)/#pool} local index=0
 		local result,_,rolled=R.act(profile,{},"Roll",{},0,function() index+=1 return draws[index] end,id,{})
 		check(result and rolled[1].type==v[1],"special is reachable through authoritative collection rolls")
@@ -122,7 +125,7 @@ return function()
 		check(#r.types==8,"eight types per rarity")
 		for position,typeId in r.types do
 			check(not seen[typeId] and C.typeById(typeId)~=nil,"unique real type in each roll pool") seen[typeId]=true
-			local profile=fresh() local context={} local values={(cumulative+r.weight/2)/total,.1,(position-.5)/#r.types} local n=0
+			local profile=fresh() profile.crushers.rolls=1 local context={} local values={(cumulative+r.weight/2)/total,.1,(position-.5)/#r.types} local n=0
 			local ok,_,result=R.act(profile,context,"Roll",{},0,function() n+=1 return values[n] end,id,{})
 			check(ok and result[1].type==typeId and result[1].rarity==r.name,"every catalogue entry is rollable")
 			profile.cash=1e9

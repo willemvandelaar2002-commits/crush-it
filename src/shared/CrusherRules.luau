@@ -45,6 +45,7 @@ function R.migrate(d, guid)
 	s.bays=math.clamp(integer(s.bays,1,C.MaxBays),1,C.MaxBays)
 	s.available=C.money(number(s.available,0)) s.tutorial=math.clamp(integer(s.tutorial,1,#C.Tutorial),1,#C.Tutorial)
 	s.rollReadyAt=number(s.rollReadyAt,0,1e12)
+	s.rolls=integer(s.rolls,0,1e9) -- rolls made (the first one is always cheap)
 	local owned,ids={},{}
 	for _,v in (if type(s.owned)=="table" then s.owned else {}) do
 		if type(v)=="table" and C.typeById(v.type) and C.rarity(v.rarity) and C.modifier(v.modifier) and #owned<C.MaxInventory then
@@ -87,12 +88,14 @@ function R.act(d,session,action,args,now,random,guid,perks)
 		if now<(session.nextRoll or 0) then return false,"Roll is cooling down." end
 		local weights={} for i,v in C.Modifiers do weights[i]=v.weight end
 		local offers={}
+		-- the very first roll only offers plain Commons, so it is cheap to buy
+		local first=s.rolls==0
 		for i=1,C.pedestals(s.upgrades.Pedestals) do
-			local rarity=C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky),random)]
-			local mod=C.Modifiers[choose(weights,random)]
+			local rarity=if first then C.Rarities[1] else C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky),random)]
+			local mod=if first then C.Modifiers[1] else C.Modifiers[choose(weights,random)]
 			offers[i]={type=rarity.types[math.min(#rarity.types,math.floor(random()*#rarity.types)+1)],rarity=rarity.name,modifier=mod.name,level=1}
 		end
-		session.offers=offers session.nextRoll=now+C.rollSeconds()
+		session.offers=offers session.nextRoll=now+C.rollSeconds() s.rolls+=1
 		return true,"Rolling...",offers
 	elseif action=="Buy" then
 		local slot=args.slot

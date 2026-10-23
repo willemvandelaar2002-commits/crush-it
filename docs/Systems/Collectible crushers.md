@@ -155,7 +155,7 @@ prices, weights, limits, production parameters and tutorial instructions.
 | --- | --- |
 | Starter | One equipped Bumper Press, one usable bay, $20 for a new profile |
 | Rolls | Free, 3 s cooldown; fills 1-5 pedestals; offers cost Common $30, Uncommon $150, Rare $900, Epic $6,000, Legendary $60,000 (x modifier mult); inventory limit 80; duplicates remain separate GUID instances |
-| Extra bays | 24 bays; bay 2 $180, bay 3 $900, then floor(900 × 1.45^(n-3)); sequential unlocks |
+| Extra bays | 24 bays; bay 2 $100, bay 3 $900, then floor(900 × 1.45^(n-3)); sequential unlocks |
 | Individual levels | 1..40, cost floor(16 × 1.38^(level-1) × rarity multiplier) |
 | Global upgrades | Each has its own level 0..20; costs below |
 | Damage | Cost floor(20 × 1.65^level); damage multiplier 1.35^level |
