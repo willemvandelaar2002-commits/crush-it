@@ -54,3 +54,7 @@ sits inside the train loop (r < 172); +Z is the south spoke (spawn side).
 Next: gameplay for the stations (daily spin rewards, quests, boosts, special
 crushers, leaderboards); a shared Mega Crusher server event.
 Known gap: the Special Crushers press keeps its normal colours (meant to be gold).
+
+## Travel buttons
+
+`client/Travel.client.luau` adds two buttons at the top centre: **Mega Crusher** (hub, arrives at (0, `C.HubTravelZ`) facing the stage) and **My Factory** (your plot spawn). The server handles `Net "Travel"` in CrusherGame ("Hub" | "Plot"), with `C.TravelCooldown` between trips, using `G.safeTeleport` so you never fall through unstreamed floors.

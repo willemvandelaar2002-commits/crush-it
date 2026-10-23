@@ -464,6 +464,18 @@ function G.start()
 			if plot.owner~=p then return end Net.event("CrusherOpen"):FireClient(p,"Inventory",i)
 		end) end
 	end
+	-- Top travel buttons: to the Mega Crusher (hub) or back to your factory.
+	local lastTravel={}
+	Net.event("Travel").OnServerEvent:Connect(function(p,where)
+		local ctx=sessions[p] local char=p.Character
+		if not ctx or not char or (where~="Hub" and where~="Plot") then return end
+		if os.clock()-(lastTravel[p] or 0)<C.TravelCooldown then return end lastTravel[p]=os.clock()
+		if where=="Plot" then G.safeTeleport(p,char,Plots.spawnFor(ctx.plot)) return end
+		local spawn=workspace:FindFirstChild("HubSpawn",true)
+		local y=(if spawn then spawn.Position.Y else 0)+3
+		G.safeTeleport(p,char,CFrame.lookAt(Vector3.new(0,y,C.HubTravelZ),Vector3.new(0,y,0)))
+	end)
+	Players.PlayerRemoving:Connect(function(p) lastTravel[p]=nil end)
 	Players.PlayerAdded:Connect(join) for _,p in Players:GetPlayers() do task.spawn(join,p) end
 	Players.PlayerRemoving:Connect(function(p)
 		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory" ctx.rollToken=nil

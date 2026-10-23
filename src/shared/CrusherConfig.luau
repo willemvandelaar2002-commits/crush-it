@@ -11,6 +11,7 @@ local C = {
 	LevelDamage = 1.12, LevelYield = 1.10, DamageFactor = 1.35, SpeedFactor = 0.94,
 	YieldPerLevel = 0.2, LuckPerLevel = 0.12, AutoCrushDamage = 1.25,
 	GoldenYield = 10, AutoCollectInterval = 2,
+	TravelCooldown = 1.5, HubTravelZ = 62, -- top travel buttons; hub arrival in front of the Mega Crusher
 	CashPacks = { CashSmall = 60, CashMedium = 300, CashLarge = 1200 },
 }
 -- Stadium banks: ground bays open to the plaza, the upper row steps back on

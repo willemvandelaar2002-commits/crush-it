@@ -23,8 +23,8 @@ function H.start()
  end
  local function act(name,args) Net.event("CrusherAction"):FireServer(name,args) end
  local gui=make("ScreenGui",{Name="CrushHud",ResetOnSpawn=false,DisplayOrder=2,ZIndexBehavior=Enum.ZIndexBehavior.Sibling},p:WaitForChild("PlayerGui"))
- local tutorial=text(gui,"Tutorial","Loading factory...",UDim2.new(.5,0,0,18),UDim2.fromOffset(650,46)) tutorial.AnchorPoint=Vector2.new(.5,0)
- local balances=text(gui,"FactoryBalances","",UDim2.new(.5,0,0,72),UDim2.fromOffset(650,30)) balances.AnchorPoint=Vector2.new(.5,0)
+ local tutorial=text(gui,"Tutorial","Loading factory...",UDim2.new(.5,0,0,70),UDim2.fromOffset(650,46)) tutorial.AnchorPoint=Vector2.new(.5,0)
+ local balances=text(gui,"FactoryBalances","",UDim2.new(.5,0,0,122),UDim2.fromOffset(650,30)) balances.AnchorPoint=Vector2.new(.5,0)
  require(script.Parent.CashHud).start(gui)
  local function fitDesktopHeader()
   local width=math.clamp(workspace.CurrentCamera.ViewportSize.X-580,300,650)
