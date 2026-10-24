@@ -244,6 +244,7 @@ local function track(player: Player)
 		local root = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
 		if player == me and root then
 			if amount > last then
+				play(Config.Sounds.Coin,0.18,1.45)
 				-- collected: blocks fly from the hopper onto the back
 				local hopper = stationPart("CollectStation")
 				if hopper then

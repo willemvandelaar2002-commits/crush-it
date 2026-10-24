@@ -32,7 +32,7 @@ function P.start()
 	folder.Parent = RS
 	for _, def in C.Types do
 		local ok, problem = pcall(function()
-			local special = if def.design then Catalog.build(CFrame.new(),def.id) elseif def.template then Special.build(CFrame.new(), def.template) else nil
+			local special = Catalog.build(CFrame.new(),def.id) or (if def.template then Special.build(CFrame.new(), def.template) else nil)
 			local model = if special then special.model else PressBuilder.build(CFrame.new(), def.tier).model
 			clean(model)
 			local cf, size = model:GetBoundingBox()

@@ -21,6 +21,7 @@ local Special=require(script.Parent.SpecialCrushers)
 local Catalog=require(script.Parent.CatalogCrushers)
 local Friend=require(script.Parent.FriendBoost)
 local Tools=require(script.Parent.CrusherTools)
+local Feel=require(script.Parent.CrusherFeedbackServer)
 local G={}
 local sessions={}
 local pedestalLook -- defined with the roll show helpers below
@@ -203,11 +204,11 @@ local function buildBay(p,i,item)
 	if old then old.model:Destroy() ctx.visuals[i]=nil end
 	if not item then return end
 	local t=C.typeById(item.type) local o=bay.origin
-	local special=if t.design then Catalog.build(o,t.id) elseif t.template then Special.build(o,t.template) else nil
+	local special=Catalog.build(o,t.id) or (if t.template then Special.build(o,t.template) else nil)
 	if special then
 		special.id=item.id special.tier=t.input special.model.Name="EquippedCrusher"
 		special.model:SetAttribute("InventoryId",item.id) special.model:SetAttribute("Rarity",item.rarity) special.model:SetAttribute("Modifier",item.modifier)
-		special.model.Parent=bay.model ctx.visuals[i]=special return
+		special.model.Parent=bay.model ctx.visuals[i]=special Feel.track(special,t.id) return
 	end
 	local built=PressBuilder.build(o,t.tier) built.model.WorldPivot=o
 	local _,size=built.model:GetBoundingBox() local l=C.Layout
@@ -234,6 +235,7 @@ local function buildBay(p,i,item)
 	ctx.visuals[i]={id=item.id,model=built.model,ram=built.ram,rest=built.ram.CFrame,
 		base=CFrame.new(o.Position.X,bed.Position.Y+bed.Size.Y/2,o.Position.Z)*(o-o.Position),input=nil,tier=t.input,
 		clearance=built.ram.Position.Y-built.ram.Size.Y/2-(bed.Position.Y+bed.Size.Y/2),bedWidth=math.min(bed.Size.X,bed.Size.Z)}
+	Feel.track(ctx.visuals[i],t.id)
 end
 local function reconcile(p)
 	local ctx=sessions[p] local d=Data.get(p) if not ctx or not d then return end
@@ -263,7 +265,7 @@ local REVEAL_FIT=Vector3.new(5.4,7.4,5.4)
 local function displayModel(typeId,at,item)
 	local t=C.typeById(typeId)
 	local model
-	local special=if t.design then Catalog.build(at,t.id) elseif t.template then Special.build(at,t.template) else nil
+	local special=Catalog.build(at,t.id) or (if t.template then Special.build(at,t.template) else nil)
 	if special then model=special.model
 	else local built=PressBuilder.build(at,t.tier) model=built.model end
 	local _,size=model:GetBoundingBox()
@@ -451,16 +453,23 @@ local function visualEvent(p,event)
 		local _,size=v.input:GetBoundingBox()
 		local scale=math.min(1,v.clearance*.85/size.Y,v.bedWidth/(math.max(size.X,size.Z)*1.35))
 		Objects.scale(v.input,v.base,scale) v.input:SetAttribute("Height",size.Y*scale)
+		v.input:SetAttribute("SquashFraction",1) v.inputFraction=1
 	else
-		if v.input then Objects.setSquash(v.input,v.base,event.fraction) end
+		local before=v.inputFraction or 1 v.inputFraction=event.fraction
+		local timing=Feel.strike(v,event,before) local input=v.input
+		-- The authoritative display catches up at contact, never before the ram.
+		task.delay(timing.hit,function()
+			if v.model.Parent and input and input.Parent and v.input==input then
+				Objects.setSquash(input,v.base,event.fraction) input:SetAttribute("SquashFraction",event.fraction)
+			end
+		end)
 		if v.catalog then Catalog.strike(v,event) return end
 		if v.special then Special.strike(v,event) return end
 		local height=(if v.input then v.input:GetAttribute("Height") else Config.Objects[v.tier].height)*event.fraction
 		local down=CFrame.new(v.rest.Position.X,v.base.Position.Y+height+v.ram.Size.Y/2,v.rest.Position.Z)*(v.rest-v.rest.Position)
-		local duration=math.min(.45,event.cycle*.6)
 		local model=v.model
-		Tween:Create(v.ram,TweenInfo.new(duration*.4),{CFrame=down}):Play()
-		task.delay(duration*.4,function() if model.Parent and v.ram.Parent then Tween:Create(v.ram,TweenInfo.new(duration*.6),{CFrame=v.rest}):Play() end end)
+		Tween:Create(v.ram,TweenInfo.new(timing.hit,Enum.EasingStyle.Quad,Enum.EasingDirection.In),{CFrame=down}):Play()
+		task.delay(timing.retract,function() if model.Parent and v.ram.Parent then Tween:Create(v.ram,TweenInfo.new(timing.up,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{CFrame=v.rest}):Play() end end)
 	end
 end
 function G.start()
@@ -571,6 +580,7 @@ function G.start()
 			end
 			if now-lastSend>=1 then send(p) end
 		end end
+		Feel.flush(now)
 		if now-lastSend>=1 then lastSend=now end if now-lastAuto>=C.AutoCollectInterval then lastAuto=now end
 	end)
 	local api={getData=Data.get,whenLoaded=Data.whenLoaded,save=Data.saveNow,sync=function(p) send(p) end,

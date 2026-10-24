@@ -21,10 +21,22 @@ Index/Owned UI uses actual model previews, base odds and protected duplicate
 recycling. See [[Systems/Crusher-collection-index|Full roster and verification]]
 and [[Apply-40-crushers|Patch application instructions]].
 
+24 Oct crushing feedback: nearby machines get timed squash, contact/hold/release
+and small pooled scrap bursts. One local audio mix selects the nearest two
+crushers, merges simultaneous hits and caps impact starts at four per second.
+Collect/sell cues stand out through a temporary machinery duck. See
+[[Systems/Crusher feedback]] and [[Apply-crusher-feedback]].
+
 22 Oct imported crusher integration: TwinTitan, RocketPress, Magnetron,
 GoldenKing and Toyzilla are collectible types using anchored place templates,
 manifest-fitted bays and separate moving rams. See [[Systems/Special crusher models]]
 for tested dimensions, animation, fallback and place-save requirements.
+
+24 Oct crusher identities: thirteen Epic/Legendary rigs have stronger toy
+silhouettes, animated gears/cores/orbits and restrained glow. The three imported
+Epic/Legendary specials remain intact. Bays, rolling, Index and carried models
+share the new shapes; economy and saves are unchanged. See
+[[Systems/Crusher identities]] and [[Apply-crusher-identities]].
 
 22 Oct gameplay redesign: collect and level hydraulic crushers, equip them in
 three rear working bays, automatically crush inputs, collect scrap and sell

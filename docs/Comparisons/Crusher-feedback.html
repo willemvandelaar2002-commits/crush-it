@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crush It — existing and patched feedback</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#111a2b;color:#eff5ff;font:16px/1.5 system-ui,sans-serif}main{max-width:1080px;margin:40px auto;padding:0 24px}h1{font-size:32px;margin:0 0 8px}h2{font-size:22px;margin:0}p{color:#b8c9e1;margin:8px 0 22px}.controls{display:flex;gap:20px;flex-wrap:wrap;align-items:center;padding:18px;background:#20314d;border-radius:12px;margin:25px 0}label{display:grid;gap:5px}select,button,input{font:inherit}select,button{border:1px solid #6081a7;border-radius:7px;background:#17263b;color:white;padding:8px}button{cursor:pointer;min-width:100px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{background:#1c2c45;border:1px solid #426084;border-radius:14px;overflow:hidden}.card header{padding:18px 22px;background:#263e60}.card svg{display:block;width:100%;max-height:320px}.description{padding:0 22px 16px;min-height:55px;color:#c0d1e8}.timeline{margin:0 22px 20px;height:8px;border-radius:8px;background:#0e192a;overflow:hidden}.progress{height:100%;background:#73caff;width:0}.phase{font-size:14px;color:#a2d5ff;font-variant-numeric:tabular-nums}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}.metrics div{background:#20314d;padding:18px;border-radius:12px}.metrics strong{display:block;color:#ffe17f;font-size:21px}table{width:100%;border-collapse:collapse;margin:28px 0}td,th{text-align:left;padding:12px 10px;border-bottom:1px solid #3d526f}th{color:#8bd2ff}.note{font-size:14px;color:#aebfd8}a{color:#93d7ff}@media(max-width:740px){.pair,.metrics{grid-template-columns:1fr}main{margin-top:24px}h1{font-size:26px}}
+</style>
+<main>
+<h1>Your current animation, compared with the patch</h1>
+<p>A timing schematic using the actual before/after code. This is not a Studio recording and has no audio. Each view repeats one completed strike so the contact and return are easy to compare.</p>
+<div class="controls">
+<label>Crusher rig<select id="rig"><option value="regular">Ordinary press</option><option value="catalog">Catalogue crusher</option><option value="imported">Imported special crusher</option></select></label>
+<label>Production cycle: <output id="cycleText">1.40 s</output><input aria-label="Production cycle in seconds" id="cycle" type="range" min="0.4" max="1.8" step="0.05" value="1.4"></label>
+<label>Playback<select id="speed"><option value="1">Real time</option><option value="0.25">Quarter speed</option></select></label>
+<button id="pause">Pause</button>
+</div>
+<div class="pair">
+<section class="card" id="before"><header><h2>Existing</h2><div class="phase"></div></header><div class="drawing"></div><div class="description"></div><div class="timeline"><div class="progress"></div></div></section>
+<section class="card" id="after"><header><h2>Patched</h2><div class="phase"></div></header><div class="drawing"></div><div class="description"></div><div class="timeline"><div class="progress"></div></div></section>
+</div>
+<div class="metrics"><div><strong>Same production rate</strong>Changing the visual stroke does not change damage, cycle rules, prices or rewards.</div><div><strong>2 focused machines</strong>The new local sound mix limits impacts to two voices and four starts per second.</div><div><strong>Fixed effect pools</strong>The new feedback uses 24 cosmetic parts and eight Sounds; no Part/Sound is created per hit.</div></div>
+<table><thead><tr><th>What changes</th><th>Existing</th><th>Patched</th></tr></thead><tbody>
+<tr><td>Input object</td><td>Flattens when the strike starts</td><td>Server squash at contact; nearby clients blend around it</td></tr>
+<tr><td>Ordinary ram</td><td>Quick down/up; no hold</td><td>Accelerating descent, brief hold, softer return</td></tr>
+<tr><td>Catalogue / imported motion</td><td>Existing custom rig animation</td><td>Same custom animation, with aligned feedback</td></tr>
+<tr><td>Impact effects</td><td>No dedicated collectible-crusher effect mix</td><td>Small local rings and finishing scraps, restrained thuds / hiss</td></tr>
+<tr><td>Collect / sell</td><td>Existing carry and money effects</td><td>Machinery volume dips so those cues stand out; soft collection sound</td></tr>
+<tr><td>Camera</td><td>Existing camera</td><td>Unchanged; no per-hit shake</td></tr>
+</tbody></table>
+<p class="note">Measured comparison: the same 20-crusher profile produced 168 completed inputs and 17,450.80 scrap value in both 60-second deterministic simulations. Actual Studio checks also covered normal/max speed, constant pools, loaded sounds, moving away and replacing a working crusher. Sound quality still needs your listening review. See <a href="../Systems/Crusher%20feedback.md">the integration notes</a>.</p>
+</main>
+<template id="drawing"><svg viewBox="0 0 320 265" role="img" aria-label="Press timing schematic">
+<rect x="30" y="225" width="260" height="18" rx="5" fill="#f4bf40"/>
+<path d="M55 225V35H265V225" fill="none" stroke="#5288c9" stroke-width="18"/>
+<rect x="145" y="35" width="30" height="180" fill="#798a9f"/>
+<rect class="toy" x="130" y="155" width="60" height="65" rx="7" fill="#f9c65b" stroke="#e99038" stroke-width="3"/>
+<rect class="ram" x="100" y="60" width="120" height="26" rx="5" fill="#e75d59"/>
+<ellipse class="ring" cx="160" cy="219" rx="20" ry="7" fill="none" stroke="#b4edff" stroke-width="3" opacity="0"/>
+<g class="scraps" fill="#fbc447"><rect width="6" height="6"/><rect width="6" height="6"/><rect width="6" height="6"/><rect width="6" height="6"/></g>
+</svg></template>
+<script>
+'use strict';
+const $=id=>document.getElementById(id), cards=[$('before'),$('after')];
+cards.forEach(card=>card.querySelector('.drawing').append($('drawing').content.cloneNode(true)));
+let elapsed=0,last=performance.now(),paused=false;
+$('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'Resume':'Pause';};
+['rig','cycle'].forEach(id=>$(id).oninput=()=>{elapsed=0;});
+function timing(cycle,patched){
+ const special=$('rig').value!=='regular', imported=$('rig').value==='imported';
+ const duration=(patched||special)?Math.min(.6,cycle*.7):Math.min(.45,cycle*.6);
+ const hit=duration*(imported?.38:.4), retract=(patched||special)?duration*.48:hit;
+ return {duration,hit,retract,up:duration-retract,easeIn:patched||special};
+}
+function update(card,patched,t,cycle){
+ const x=timing(cycle,patched);let stroke;
+ if(t<x.hit){const u=t/x.hit;stroke=x.easeIn?u*u:1-(1-u)**2;}
+ else if(t<x.retract)stroke=1;
+ else if(t<x.duration){const u=(t-x.retract)/x.up;stroke=(1-u)**2;}
+ else stroke=0;
+ const target=.25, blend=patched?Math.max(0,Math.min(1,(t-x.hit+.065)/.12)):1;
+ const squash=patched?1-(1-target)*(1-(1-blend)**2):target;
+ const spread=1+(1-squash)*.35;
+ const toy=card.querySelector('.toy');toy.setAttribute('x',160-30*spread);toy.setAttribute('width',60*spread);toy.setAttribute('height',65*squash);toy.setAttribute('y',220-65*squash);
+ card.querySelector('.ram').setAttribute('y',60+stroke*(220-65*target-26-60));
+ const age=t-x.hit,show=patched&&age>=0&&age<.48;
+ const ring=card.querySelector('.ring');ring.setAttribute('opacity',show?1-age/.48:0);ring.setAttribute('rx',10+Math.max(0,age)*100);
+ card.querySelectorAll('.scraps rect').forEach((r,i)=>{r.setAttribute('opacity',show?1-age/.48:0);r.setAttribute('x',157+(i-1.5)*65*Math.max(0,age));r.setAttribute('y',216-135*Math.max(0,age)+220*Math.max(0,age)**2);});
+ const phase=t<x.hit?'Descending':t<x.retract?'Contact / hold':t<x.duration?'Returning':'Waiting for the next strike';
+ card.querySelector('.phase').textContent=`${phase} · ${(t*1000).toFixed(0)} ms`;
+ card.querySelector('.description').textContent=`Contact ${(x.hit*1000).toFixed(0)} ms · Hold ${((x.retract-x.hit)*1000).toFixed(0)} ms · Full return ${(x.duration*1000).toFixed(0)} ms`;
+ card.querySelector('.progress').style.width=`${t/cycle*100}%`;
+}
+function frame(now){const dt=Math.min(.1,(now-last)/1000);last=now;if(!paused)elapsed+=dt*Number($('speed').value);const cycle=Number($('cycle').value);$('cycleText').textContent=cycle.toFixed(2)+' s';const t=elapsed%cycle;cards.forEach((card,i)=>update(card,i===1,t,cycle));requestAnimationFrame(frame);}
+requestAnimationFrame(frame);
+</script>
+</html>

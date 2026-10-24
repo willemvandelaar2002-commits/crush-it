@@ -5,6 +5,7 @@ local RS=game:GetService("ReplicatedStorage")
 local Tween=game:GetService("TweenService")
 local C=require(RS.Shared.CrusherConfig)
 local Style=require(RS.Shared.Kit.Style)
+local Identity=require(RS.Shared.CrusherIdentityRig)
 local B={}
 local V=Vector3.new local F=CFrame.new local A=CFrame.Angles
 local ink=Color3.fromRGB(19,23,42) local steel=Color3.fromRGB(200,222,240)
@@ -12,6 +13,7 @@ local gold=Color3.fromRGB(255,200,58) local cyan=Color3.fromRGB(80,230,255)
 local white=Color3.fromRGB(241,247,255)
 
 function B.build(origin,typeId)
+	if Identity.supports(typeId) then return Identity.build(origin,typeId) end
 	local def=C.typeById(typeId)
 	if not def or not def.design then return nil end
 	local model=Instance.new("Model") model.Name=def.name model.WorldPivot=CFrame.new()
