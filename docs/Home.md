@@ -4,6 +4,8 @@
 spin every 24 hours. The server selects/persists cash, Golden Rush and crusher
 prizes; paid spins stay disabled. See [[Systems/Daily Spin]] for provisional
 weights, save recovery, Studio checks and remaining live verification.
+The imported standing wheel now replaces the old station mesh; its place-only
+template lives in ServerStorage.HubMeshes.DailySpinWheel (save the Studio place).
 
 24 Oct upgrade clarity: bay plaques identify THIS CRUSHER and preview its next
 level output. FACTORY UPGRADES affects ALL YOUR CRUSHERS; ROLL UPGRADES affects

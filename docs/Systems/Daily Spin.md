@@ -6,8 +6,9 @@ available in the conversation. Desktop only.
 
 ## Art and interaction
 
-The existing plaza station now has an E / Open prompt. Its placement and mesh
-are retained. The panel contains a square transparent rotor container with
+The existing plaza station has an E / Open prompt and retains its placement.
+Its old single-piece mesh is replaced by the imported standing wheel when
+ServerStorage.HubMeshes.DailySpinWheel is available. The panel contains a square transparent rotor container with
 `rbxassetid://105558594053157`, and a separate fixed frame/pointer ImageLabel
 using `rbxassetid://71953431310313`. Both have identical size, position and
 centre anchor. Only the rotor container rotates. There is no drawn wedge/icon
@@ -19,9 +20,16 @@ at (-45*i) modulo 360; target rotation adds the forward delta from the current
 angle and six complete clockwise revolutions. Finished angles are normalized
 before later spins. Equal artwork wedges do not imply equal odds.
 
-If Workspace.DailySpinWheel is present, the client cosmetically rotates only
-its anchored Rotor around its axle. Frame, Stand and model placement stay fixed.
-The UI has no dependency on that model. No place assets were replaced or moved.
+The imported Frame/Stand/Rotor model is stored outside Git in
+ServerStorage.HubMeshes.DailySpinWheel, with its authored ground pivot at origin.
+The plaza clones it onto the station base, fits it to the existing station width
+and tags the clone DailySpinWheel. Atomic streaming keeps its three parts together.
+All meshes are anchored, decorative and retain their imported appearance.
+The client rotates only Rotor; Frame and Stand stay fixed. The original loose
+Workspace import was moved into this template library rather than left floating.
+Missing templates retain the old station/procedural fallbacks. The UI works
+independently; legacy top-level Workspace.DailySpinWheel is still supported.
+Save the Studio place to retain the template; Rojo source alone cannot restore it.
 
 ## Provisional balance
 
@@ -109,3 +117,12 @@ still need testing with API access. Studio used the in-memory mock store, so
 no real player saves were changed. Paid spins and phones were not tested or
 enabled. Review provisional balance and the missing reference screenshot before
 publishing. Studio was returned to Edit mode; this change was not published.
+
+24 October standing-model follow-up: visually checked the imported wheel at the
+plaza in fresh Play. The stand bottom matches the station top within 0.001 stud;
+no loose duplicate remains. E opened the panel, both images loaded, and a real
+free-spin click completed with a cash reward and cooldown. All eight landing
+angles plus wrapped/repeated angles moved only Rotor, with Frame/Stand unchanged.
+Fixed rest-pose caching so garbage collection cannot capture a mid-spin pose.
+Rojo build passed; Output contained only the existing disabled-DataStore and
+asset 203785492 warnings. Live persistence remains untested as described above.

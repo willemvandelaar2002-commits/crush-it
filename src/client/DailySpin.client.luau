@@ -5,6 +5,7 @@ local RS=game:GetService("ReplicatedStorage")
 local Tween=game:GetService("TweenService")
 local Run=game:GetService("RunService")
 local Content=game:GetService("ContentProvider")
+local CollectionService=game:GetService("CollectionService")
 local S=require(RS.Shared.DailySpinConfig)
 local Style=require(RS.Shared.Kit.Style)
 local Net=require(RS.Shared.Net)
@@ -59,12 +60,25 @@ end)
 local paid=button(canvas,"PaidSpins","PAID SPINS UNAVAILABLE",UDim2.fromOffset(510,555),UDim2.fromOffset(365,46),Color3.fromRGB(90,95,115),function() end)
 paid.Active=false paid.AutoButtonColor=false paid.Selectable=false paid.TextSize=19
 -- Optional place-only decoration. Never PivotTo the Model or move Frame/Stand.
-local worldRest=setmetatable({},{__mode="k"})
+-- Keep rest poses alive throughout a spin; weak Instance keys can be collected
+-- while their parts still exist, causing the next frame to capture a rotated pose.
+local worldRest={}
+CollectionService:GetInstanceRemovedSignal("DailySpinWheel"):Connect(function(m)
+	local part=m:FindFirstChild("Rotor") if part then worldRest[part]=nil end
+end)
 rotor:GetPropertyChangedSignal("Rotation"):Connect(function()
-	local m=workspace:FindFirstChild("DailySpinWheel") local part=m and m:FindFirstChild("Rotor")
-	if part and part:IsA("BasePart") and part.Anchored then
-		if not worldRest[part] then worldRest[part]=part.CFrame end
-		part.CFrame=worldRest[part]*CFrame.Angles(0,0,-math.rad(rotor.Rotation))
+	local models=CollectionService:GetTagged("DailySpinWheel")
+	local legacy=workspace:FindFirstChild("DailySpinWheel")
+	if legacy and not table.find(models,legacy) then table.insert(models,legacy) end
+	for _,m in models do
+		local part=m:IsDescendantOf(workspace) and m:FindFirstChild("Rotor")
+		if part and part:IsA("BasePart") and part.Anchored then
+			if not worldRest[part] then
+				worldRest[part]=part.CFrame
+				part.Destroying:Once(function() worldRest[part]=nil end)
+			end
+			part.CFrame=worldRest[part]*CFrame.Angles(0,0,-math.rad(rotor.Rotation))
+		end
 	end
 end)
 remote.OnClientEvent:Connect(function(value)

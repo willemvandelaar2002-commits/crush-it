@@ -334,6 +334,25 @@ local function spinControl(m: Model, f: CFrame)
 	prompt.Parent = plate CollectionService:AddTag(prompt, "DailySpinPrompt")
 end
 local function dailySpin(m: Model, f: CFrame)
+	-- Separate imported meshes let the client turn the rotor without moving the stand.
+	local template = hubMesh("DailySpinWheel")
+	local rotor = template and template:FindFirstChild("Rotor")
+	if template and rotor and rotor:IsA("BasePart") then
+		local wheel = template:Clone()
+		wheel.Name = "DailySpinWheel"
+		local _, size = wheel:GetBoundingBox()
+		wheel:ScaleTo(wheel:GetScale() * Widths.DailySpin / size.X)
+		wheel:PivotTo(f * CFrame.new(0, 1.2, 0))
+		for _, p in wheel:GetDescendants() do
+			if p:IsA("BasePart") then
+				p.Anchored = true p.CanCollide = false p.CanTouch = false p.CanQuery = false
+			end
+		end
+		wheel.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
+		CollectionService:AddTag(wheel, "DailySpinWheel")
+		wheel.Parent = m
+		base(m, f, 16, 10) header(m, f * CFrame.new(0, 23, 0), "DAILY SPIN", RED, 12) spinControl(m, f) return
+	end
 	if stationMesh(m, "DailySpin", f * CFrame.new(0, 1.2, 0)) then
 		base(m, f, 16, 10) header(m, f * CFrame.new(0, 23, 0), "DAILY SPIN", RED, 12) spinControl(m, f) return
 	end
