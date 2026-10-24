@@ -116,6 +116,30 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if type(bay)~="number" or bay~=bay or bay%1~=0 or bay<1 or bay>s.bays then return false,"No usable bay. Unequip a crusher or unlock another bay." end
 		for key,id in s.equipped do if id==item.id then s.equipped[key]=nil end end
 		s.equipped[tostring(bay)]=item.id
+	elseif action=="EquipBest" then
+		-- fill the unlocked bays with the highest-output crushers; ones that
+		-- are already in a bay and still make the cut stay where they are
+		local list=table.clone(s.owned)
+		local out={} for _,item in list do out[item.id]=R.stats(d,item,perks).cps end
+		table.sort(list,function(a,b) if out[a.id]==out[b.id] then return a.id<b.id end return out[a.id]>out[b.id] end)
+		local best={} for i=1,math.min(s.bays,#list) do best[list[i].id]=true end
+		local equipped,placed={},{}
+		for key,id in s.equipped do if best[id] and tonumber(key) and tonumber(key)<=s.bays then equipped[key]=id placed[id]=true end end
+		local nextBest=1
+		for i=1,s.bays do
+			local key=tostring(i)
+			if not equipped[key] then
+				while list[nextBest] and (placed[list[nextBest].id] or not best[list[nextBest].id]) do nextBest+=1 end
+				local item=list[nextBest] if not item then break end
+				equipped[key]=item.id placed[item.id]=true
+			end
+		end
+		local same=true
+		for key,id in equipped do if s.equipped[key]~=id then same=false end end
+		for key,id in s.equipped do if equipped[key]~=id then same=false end end
+		if same then return false,"You're already using your best crushers!" end
+		s.equipped=equipped
+		return true,"Equipped your best crushers!"
 	elseif action=="Unequip" then
 		if not R.find(d,args.id) then return false,"You do not own that crusher." end
 		for key,id in s.equipped do if id==args.id then s.equipped[key]=nil end end
@@ -174,7 +198,7 @@ end
 function R.act(d,session,action,args,now,random,guid,perks)
 	local ok,message,result=act(d,session,action,args,now,random,guid,perks)
 	if ok then
-		local id=action
+		local id=if action=="EquipBest" then "Equip" else action
 		if action=="Upgrade" then local u=C.Upgrades[(type(args)=="table" and args.id) or ""] id=if u and u.group=="Production" then "Upgrade" else "" end
 		R.tutorialAdvance(d,id)
 	end

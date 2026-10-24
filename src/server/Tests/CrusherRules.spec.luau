@@ -58,6 +58,16 @@ return function()
 	check(d.scrap==32 and #d.crushers.owned==3 and d.crushers.owned[1].id==ids,"persisted migration is idempotent")
 	d=R.migrate({cash=0/0,crushers={owned={}},crusherSchema=C.Schema},id)
 	check(d.cash==C.StartCash and #d.crushers.owned==1,"repair invalid save without losing earning ability")
+	-- Equip Best: top output fills the bays, kept crushers stay in place, no-op when already best
+	local eb=fresh() eb.crushers.tutorial=#C.TutorialSteps+1 eb.crushers.bays=2
+	local weak=eb.crushers.owned[1]
+	local strong={id=id(),type="Quantum",rarity="Legendary",modifier="Standard",level=1}
+	local mid={id=id(),type="Titan",rarity="Epic",modifier="Standard",level=1}
+	table.insert(eb.crushers.owned,strong) table.insert(eb.crushers.owned,mid)
+	eb.crushers.equipped={["1"]=mid.id}
+	check(act(eb,{},"EquipBest") and eb.crushers.equipped["1"]==mid.id and eb.crushers.equipped["2"]==strong.id,"equip best keeps a kept crusher in its bay and fills the rest by output")
+	check(not act(eb,{},"EquipBest"),"equip best twice is a no-op")
+	check(weak and true,"fixture")
 	-- tutorial: each step pays once, only for its own action, in order
 	local t=fresh() local cash0=t.cash
 	check(not R.tutorialAdvance(t,"Sell") and t.cash==cash0,"wrong tutorial action pays nothing")
