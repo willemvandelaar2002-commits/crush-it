@@ -26,16 +26,15 @@ local Claim = Net.event("ClaimReward")
 local C = Color3.fromRGB
 local INK = Style.Colors.Ink
 local BODY = C(24, 28, 46)
-local HEADER = C(176, 62, 232)
+local HEADER = C(196, 64, 245)
 local TILE = {
 	cash = C(58, 168, 70),
-	golden = C(232, 150, 32),
-	big = C(128, 60, 205),
 }
 local RED = C(225, 45, 50)
 
-local W, H = 760, 548 -- panel size (desktop)
-local COLS, TILE_W, TILE_H, GAP = 4, 172, 150, 12
+local COLS, TILE_W, TILE_H, GAP = 4, 172, 128, 12
+local ROWS = 3 -- 12 playtime gifts, like the reference
+local W, H = 760, 146 + ROWS * TILE_H + (ROWS - 1) * GAP + 84 -- panel size (desktop)
 
 local function make(class: string, props: { [string]: any }, parent: Instance?): any
 	local i = Instance.new(class)
@@ -79,13 +78,19 @@ local panel = make("Frame", {
 }, gui)
 corner(panel, 14)
 stroke(panel, 5)
+Style.studsImage(panel, 26, 0.93).ZIndex = 5
 Style.modal(panel)
 
 local header = make("Frame", { Name = "Header", Position = UDim2.fromOffset(10, 10), Size = UDim2.fromOffset(W - 20, 78), BackgroundColor3 = HEADER, ZIndex = 5 }, panel)
 corner(header, 10)
-stroke(header, 3, Style.darken(HEADER, 0.45))
-Style.studsImage(header, 26, 0.8).ZIndex = 5
-label(header, "Rewards", UDim2.new(0.5, -170, 0, 8), UDim2.fromOffset(340, 62), 4)
+stroke(header, 4, Style.darken(HEADER, 0.5))
+make("UIGradient", { Rotation = 90, Color = ColorSequence.new(C(232, 120, 255), C(170, 40, 228)) }, header)
+-- big, clearly visible studs like the reference header
+local headerStuds = Style.studsImage(header, 34, 0.25)
+headerStuds.ZIndex = 5
+headerStuds.ImageColor3 = C(215, 95, 255) -- tinted, so the studs stay bright magenta
+local headerTitle = label(header, "Rewards", UDim2.new(0.5, -190, 0, 4), UDim2.fromOffset(380, 70), 5)
+headerTitle.ZIndex = 7
 
 local close = make("TextButton", {
 	Name = "Close", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -10, 0.5, 0), Size = UDim2.fromOffset(62, 62),
@@ -116,7 +121,7 @@ type Tile = { button: TextButton, title: TextLabel, icon: ImageLabel, status: Te
 	badge: Frame, outline: UIStroke, dim: Frame, ready: boolean, reward: any }
 
 local function grid(name: string): Frame
-	local f = make("Frame", { Name = name, Position = UDim2.fromOffset(18, 146), Size = UDim2.fromOffset(W - 36, TILE_H * 2 + GAP), BackgroundTransparency = 1, ZIndex = 5 }, panel)
+	local f = make("Frame", { Name = name, Position = UDim2.fromOffset(18, 146), Size = UDim2.fromOffset(W - 36, TILE_H * ROWS + GAP * (ROWS - 1)), BackgroundTransparency = 1, ZIndex = 5 }, panel)
 	make("UIGridLayout", {
 		CellSize = UDim2.fromOffset(TILE_W, TILE_H), CellPadding = UDim2.fromOffset(GAP, GAP), SortOrder = Enum.SortOrder.LayoutOrder,
 		HorizontalAlignment = Enum.HorizontalAlignment.Left, FillDirectionMaxCells = COLS,
@@ -124,28 +129,52 @@ local function grid(name: string): Frame
 	return f
 end
 
+-- 3D preview of a crusher type (server: CrusherPreviewModels), for crusher tiles
+local function preview(parent: GuiObject, typeId: string)
+	local folder = ReplicatedStorage:FindFirstChild("CrusherPreviewModels") or ReplicatedStorage:WaitForChild("CrusherPreviewModels", 10)
+	local source = folder and folder:FindFirstChild(typeId)
+	if not (source and source:IsA("Model")) then return end
+	local vp = make("ViewportFrame", { Name = "Preview", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = parent.ZIndex + 1,
+		Ambient = C(200, 210, 235), LightColor = Color3.new(1, 1, 1), LightDirection = Vector3.new(-1, -1, -1) }, parent)
+	local model = source:Clone()
+	model.Parent = vp
+	local cf, size = model:GetBoundingBox()
+	local cam = make("Camera", { FieldOfView = 34 }, vp)
+	cam.CFrame = CFrame.lookAt(cf.Position + Vector3.new(0.35, 0.18, 1).Unit * (size.Magnitude / 2) / math.sin(math.rad(17)) * 0.82, cf.Position)
+	vp.CurrentCamera = cam
+end
+
 local function makeTile(parent: Frame, order: number, color: Color3, image: string, reward: any, onClaim: () -> ()): Tile
-	local b = make("TextButton", { Name = "Tile" .. order, LayoutOrder = order, BackgroundColor3 = color, Text = "", AutoButtonColor = false, ZIndex = 5 }, parent)
+	-- earlier tiles draw on top, so a tile's "!" badge is never covered by its neighbour
+	local b = make("TextButton", { Name = "Tile" .. order, LayoutOrder = order, BackgroundColor3 = color, Text = "", AutoButtonColor = false, ZIndex = 40 - order }, parent)
 	corner(b, 8)
 	local outline = stroke(b, 3)
 	shade(b, color)
-	Style.studsImage(b, 22, 0.86).ZIndex = 5
+	local studs = Style.studsImage(b, 26, 0.35)
+	studs.ZIndex = 5
+	studs.ImageColor3 = Style.lighten(color, 0.08)
 	Style.feedback(b) -- every tile grows a little on hover
 	local title = label(b, "", UDim2.fromOffset(8, 6), UDim2.new(1, -16, 0, 30), 3)
 	local icon = make("ImageLabel", {
-		AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0, 70), Size = UDim2.fromOffset(62, 62), BackgroundTransparency = 1,
-		Image = image, ScaleType = Enum.ScaleType.Fit, ZIndex = 6,
+		AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0, 62), Size = UDim2.fromOffset(58, 58), BackgroundTransparency = 1,
+		Image = if reward.kind == "crusher" then "" else image, ScaleType = Enum.ScaleType.Fit, ZIndex = 6,
 	}, b)
+	if reward.kind == "crusher" then
+		icon.Size = UDim2.fromOffset(96, 70)
+		-- a crusher of that rarity, shown in 3D (the reward is a random one of the rarity)
+		local r = Config.Crushers.rarity(reward.rarity)
+		if r then task.spawn(preview, icon, r.types[1]) end
+	end
 	-- bottom: a dark pill with the timer / CLAIMED!, or a green CLAIM! button
 	local pill = make("Frame", {
-		AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -7), Size = UDim2.new(1, -18, 0, 36),
+		AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -6), Size = UDim2.new(1, -18, 0, 32),
 		BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.55, ZIndex = 6,
 	}, b)
 	corner(pill, 8)
 	local status = label(pill, "", UDim2.fromScale(0.06, 0.1), UDim2.fromScale(0.88, 0.8), 2.5)
 	status.ZIndex = 7
 	local claim = make("TextButton", {
-		Name = "Claim", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -6), Size = UDim2.new(1, -16, 0, 40),
+		Name = "Claim", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -5), Size = UDim2.new(1, -16, 0, 36),
 		Text = "", AutoButtonColor = false, Visible = false, ZIndex = 7,
 	}, b)
 	Style.button(claim, Style.GREEN)
@@ -177,12 +206,15 @@ local function makeTile(parent: Frame, order: number, color: Color3, image: stri
 	return tile
 end
 
-local function colorFor(r: any, last: boolean): Color3
-	if last then return TILE.big end
-	return if r.kind == "golden" then TILE.golden else TILE.cash
+local function colorFor(r: any, _last: boolean): Color3
+	if r.kind == "crusher" then
+		local rarity = Config.Crushers.rarity(r.rarity)
+		return if rarity then Style.darken(rarity.color, 0.15) else TILE.cash
+	end
+	return TILE.cash
 end
 local function imageFor(r: any): string
-	return if r.kind == "golden" then Icons.Golden else Icons.Cash
+	return if r.kind == "crusher" then Icons.Press else Icons.Cash
 end
 
 local playGrid = grid("PlaytimeGrid")
@@ -200,11 +232,40 @@ for i, r in Config.Rewards.Daily do
 	end)
 end
 
-local footer = label(panel, "", UDim2.fromOffset(22, H - 70), UDim2.fromOffset(W - 44, 52), 4)
+local footer = label(panel, "", UDim2.fromOffset(22, H - 70), UDim2.fromOffset(W - 330, 52), 4)
 footer.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Skip All (Robux): every playtime gift unlocks now. Product id 0 = not set up yet.
+local Store = require(ReplicatedStorage.Shared.Store)
+local skipProduct
+for _, p in Store.Products do if p.id == "SkipRewards" then skipProduct = p end end
+local GOLD = C(255, 196, 40)
+local skip = make("TextButton", { Name = "SkipAll", AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -18, 1, -14), Size = UDim2.fromOffset(270, 66),
+	BackgroundColor3 = GOLD, Text = "", AutoButtonColor = false, ZIndex = 6 }, panel)
+corner(skip, 10)
+stroke(skip, 4)
+shade(skip, GOLD)
+local skipStuds = Style.studsImage(skip, 26, 0.3)
+skipStuds.ZIndex = 6
+skipStuds.ImageColor3 = C(255, 214, 60)
+Style.feedback(skip)
+label(skip, "Skip All", UDim2.fromOffset(10, 3), UDim2.new(1, -20, 0, 40), 3.5).ZIndex = 8
+local skipPrice = label(skip, if skipProduct and skipProduct.productId ~= 0 then "R$ " .. skipProduct.price else "Coming soon", UDim2.fromOffset(10, 42), UDim2.new(1, -20, 0, 20), 2)
+skipPrice.ZIndex = 8
+skip.Activated:Connect(function()
+	if skipProduct and skipProduct.productId ~= 0 then
+		game:GetService("MarketplaceService"):PromptProductPurchase(player, skipProduct.productId)
+		return
+	end
+	for _, d in { -4, 4, -3, 3, 0 } do
+		TweenService:Create(skip, TweenInfo.new(0.04), { Rotation = d }):Play()
+		task.wait(0.04)
+	end
+end)
 
 local function showTab(name: string)
 	playGrid.Visible = name == "Playtime"
+	skip.Visible = name == "Playtime"
 	dailyGrid.Visible = name == "Daily"
 	footer.Text = if name == "Playtime" then "Leaving Resets Progress!" else "Come back every day!"
 	for n, t in tabs do Style.setButtonColor(t, if n == name then HEADER else C(80, 84, 104)) end
@@ -216,8 +277,8 @@ showTab("Playtime")
 local state: any = nil
 
 local function amountText(r: any): string
-	if r.kind == "golden" then
-		return r.count .. " Golden"
+	if r.kind == "crusher" then
+		return r.rarity .. " Crusher"
 	end
 	local cps = if state then state.cps else 0
 	return Format.cash(math.max(Config.Rewards.MinCash, math.floor(cps * r.seconds)))
@@ -270,16 +331,16 @@ local function celebrate(tile: Tile, amount: string)
 	local start = centre(tile.button)
 	local pop = label(gui, "+" .. amount, UDim2.fromOffset(start.X - 110, start.Y - 50), UDim2.fromOffset(220, 46), 4)
 	pop.ZIndex = 60
-	pop.TextColor3 = if tile.reward.kind == "golden" then C(255, 214, 80) else C(140, 255, 120)
+	pop.TextColor3 = if tile.reward.kind == "crusher" then C(255, 214, 80) else C(140, 255, 120)
 	TweenService:Create(pop, TweenInfo.new(1, Enum.EasingStyle.Quad), { Position = UDim2.fromOffset(start.X - 110, start.Y - 130) }):Play()
 	TweenService:Create(pop, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 0.5), { TextTransparency = 1 }):Play()
 	task.delay(1.05, function() pop:Destroy() end)
 	-- bundles burst out and fly into the cash counter (golden stars fly up and fade)
-	local target = if tile.reward.kind == "golden" then nil else cashTarget()
+	local target = if tile.reward.kind == "crusher" then nil else cashTarget()
 	for i = 1, 12 do
 		local img = make("ImageLabel", {
 			AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromOffset(start.X, start.Y), Size = UDim2.fromOffset(40, 40),
-			BackgroundTransparency = 1, Image = icon.Image, Rotation = math.random(-30, 30), ZIndex = 59,
+			BackgroundTransparency = 1, Image = if tile.reward.kind == "crusher" then Icons.Press else icon.Image, Rotation = math.random(-30, 30), ZIndex = 59,
 		}, gui)
 		local a = math.random() * math.pi * 2
 		local out = start + Vector2.new(math.cos(a), math.sin(a) * 0.7) * math.random(50, 140)

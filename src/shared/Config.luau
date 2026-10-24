@@ -376,28 +376,36 @@ Config.FriendBoost = { Per = 0.1, Max = 0.5 }
 -- never less than MinCash); kind "golden": that many Golden objects in a row.
 Config.Rewards = {
 	MinCash = 25,
+	-- kind "cash": `seconds` of your current earnings; kind "crusher": a random
+	-- crusher of that rarity, straight into the backpack (cash if it is full).
 	-- Playtime: unlock after `minutes` in this session (resets when you rejoin).
 	Playtime = {
 		{ minutes = 2, kind = "cash", seconds = 60 },
 		{ minutes = 5, kind = "cash", seconds = 120 },
-		{ minutes = 10, kind = "golden", count = 3 },
-		{ minutes = 15, kind = "cash", seconds = 300 },
-		{ minutes = 25, kind = "cash", seconds = 600 },
-		{ minutes = 40, kind = "golden", count = 5 },
-		{ minutes = 60, kind = "cash", seconds = 1200 },
-		{ minutes = 90, kind = "cash", seconds = 2400 },
+		{ minutes = 8, kind = "crusher", rarity = "Uncommon" },
+		{ minutes = 12, kind = "cash", seconds = 300 },
+		{ minutes = 16, kind = "crusher", rarity = "Uncommon" },
+		{ minutes = 20, kind = "cash", seconds = 600 },
+		{ minutes = 25, kind = "cash", seconds = 900 },
+		{ minutes = 30, kind = "crusher", rarity = "Rare" },
+		{ minutes = 40, kind = "cash", seconds = 1200 },
+		{ minutes = 50, kind = "cash", seconds = 1800 },
+		{ minutes = 60, kind = "cash", seconds = 2400 },
+		{ minutes = 75, kind = "crusher", rarity = "Epic" },
 	},
 	-- Daily check-in: one claim per UTC day; missing a day restarts at day 1;
 	-- after day 7 it starts over.
 	Daily = {
 		{ kind = "cash", seconds = 300 },
 		{ kind = "cash", seconds = 600 },
-		{ kind = "golden", count = 3 },
+		{ kind = "crusher", rarity = "Uncommon" },
 		{ kind = "cash", seconds = 900 },
 		{ kind = "cash", seconds = 1200 },
-		{ kind = "golden", count = 5 },
+		{ kind = "crusher", rarity = "Rare" },
 		{ kind = "cash", seconds = 3600 },
 	},
+	-- crusher rewards when the inventory is full: this many seconds of earnings
+	FullInventorySeconds = 600,
 }
 
 -- Client guard against falling through floors that haven't streamed in yet

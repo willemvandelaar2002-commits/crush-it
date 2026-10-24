@@ -110,6 +110,9 @@ local function grant(player: Player, productId: string)
 		if api.finishLegacyProduct then api.finishLegacyProduct(player) Purchased:FireClient(player,{id=productId,text="All scrap sold!"}) return end
 		require(script.Parent.Scrap).finishSmelt(player, data)
 		Purchased:FireClient(player, { id = productId, text = "Smelting done!" })
+	elseif productId == "SkipRewards" then
+		require(script.Parent.Rewards).skipAll(player)
+		Purchased:FireClient(player, { id = productId, text = "All playtime gifts unlocked!" })
 	elseif productId == "GoldenRush" then
 		data.goldenRush = (data.goldenRush or 0) + Store.GoldenRushCount
 		player:SetAttribute("GoldenRush", data.goldenRush)

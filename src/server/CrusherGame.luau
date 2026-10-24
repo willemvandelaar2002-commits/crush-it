@@ -584,6 +584,14 @@ function G.start()
 		if now-lastSend>=1 then lastSend=now end if now-lastAuto>=C.AutoCollectInterval then lastAuto=now end
 	end)
 	local api={getData=Data.get,whenLoaded=Data.whenLoaded,save=Data.saveNow,sync=function(p) send(p) end,
+		-- reward crusher: random type of that rarity, Standard, level 1; nil when full
+		giveCrusher=function(p,rarityName)
+			local d=Data.get(p) local r=C.rarity(rarityName)
+			if not d or not r or #d.crushers.owned>=C.MaxInventory then return nil end
+			local item={id=guid(),type=r.types[rng:NextInteger(1,#r.types)],rarity=r.name,modifier="Standard",level=1}
+			table.insert(d.crushers.owned,item) send(p)
+			return C.typeById(item.type).name
+		end,
 		addCash=function(p,n) local d=Data.get(p) if d then d.cash=C.money(d.cash+n) send(p) end end,
 		cashPerSecond=function(p) local d=Data.get(p) return if d then cps(p,d) else 0 end,
 		finishLegacyProduct=function(p) local d=Data.get(p) if d then d.scrap=C.money(d.scrap+d.crushers.available) d.crushers.available=0 action(p,"Sell") end end}

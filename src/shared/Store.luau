@@ -11,7 +11,7 @@ local Config = require(script.Parent.Config)
 local Store = {}
 
 export type Pass = { perk: string, gamePassId: number, price: number, title: string, desc: string, color: Color3 }
-export type Product = { id: string, productId: number, price: number, title: string, desc: string, color: Color3 }
+export type Product = { id: string, productId: number, price: number, title: string, desc: string, color: Color3, hidden: boolean? }
 
 Store.Passes = {
 	{ perk = "AutoCrush", gamePassId = 0, price = 199, title = "Auto Crush", desc = "Crushes for you, even while you're AFK", color = Color3.fromRGB(230, 80, 70) },
@@ -27,6 +27,8 @@ Store.Products = {
 	{ id = "CashLarge", productId = 0, price = 199, title = "Cash Vault", desc = "4x your next press", color = Color3.fromRGB(40, 160, 80) },
 	{ id = "FinishSmelt", productId = 0, price = 19, title = "Finish Now", desc = "Your smelter finishes all its scrap at once", color = Color3.fromRGB(255, 140, 40) },
 	{ id = "GoldenRush", productId = 0, price = 49, title = "Golden Rush", desc = "Your next 10 objects are Golden", color = Color3.fromRGB(255, 200, 50) },
+	-- Rewards panel "Skip All": every playtime gift unlocks now (not in the shop list)
+	{ id = "SkipRewards", productId = 0, price = 99, title = "Skip All", desc = "Unlock every playtime gift now", color = Color3.fromRGB(255, 200, 40), hidden = true },
 } :: { Product }
 
 -- What a cash pack pays: a share of the next press (or of the current one at max size).

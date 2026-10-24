@@ -237,6 +237,7 @@ end
 
 local boostGrid = section("Boosts", 3)
 for i, product in Store.Products do
+	if product.hidden then continue end
 	local desc, button = card(boostGrid, i, product.title, product.color, function()
 		buyProduct(product.id)
 	end, if product.id == "GoldenRush" then Icons.Golden else Icons.Cash)

@@ -21,6 +21,7 @@ export type Api = {
 	addCash: (Player, number) -> (),
 	sync: (Player) -> (),
 	cashPerSecond: (Player) -> number,
+	giveCrusher: ((Player, string) -> string?)?,
 }
 
 local Rewards = {}
@@ -67,7 +68,12 @@ end
 
 -- Pays out one reward entry; returns the celebration text.
 local function grant(player: Player, data: any, reward: any): string
-	if reward.kind == "golden" then
+	if reward.kind == "crusher" then
+		local name = api.giveCrusher and api.giveCrusher(player, reward.rarity)
+		if name then return "New " .. reward.rarity .. " crusher: " .. name .. "!" end
+		-- inventory full: pay cash instead
+		reward = { seconds = Config.Rewards.FullInventorySeconds }
+	elseif reward.kind == "golden" then -- older config entries
 		data.goldenRush = (data.goldenRush or 0) + reward.count
 		player:SetAttribute("GoldenRush", data.goldenRush)
 		api.sync(player)
@@ -110,6 +116,16 @@ local function claim(player: Player, kind: any, index: any)
 		return
 	end
 	Purchased:FireClient(player, { id = "Reward", text = text })
+	send(player)
+end
+
+-- "Skip All" (Robux): every playtime gift is ready now.
+function Rewards.skipAll(player: Player)
+	local s = sessions[player]
+	if not s then return end
+	local longest = 0
+	for _, r in Config.Rewards.Playtime do longest = math.max(longest, r.minutes) end
+	s.joined = math.min(s.joined, Workspace:GetServerTimeNow() - longest * 60)
 	send(player)
 end
 
