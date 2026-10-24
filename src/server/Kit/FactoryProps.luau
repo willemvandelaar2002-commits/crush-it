@@ -26,6 +26,62 @@ local function model(parent: Instance, name: string): Model
 	return m
 end
 
+-- Published bounds centres relative to the authored ground anchor, as fractions
+-- of X/Z size. Keep the beak/feet offsets when Studio recentres an import.
+-- Templates use +Y up, duck/bear/robot -Z forward, car +X forward.
+local GROUND_CENTRES = {
+	RubberDuck = Vector2.new(0, -1.8 / 8.6),
+	TeddyBear = Vector2.new(0, -1.675 / 10.35),
+	ToyCar = Vector2.new(0.0625 / 9.125, 0),
+	FriendlyRobot = Vector2.new(0, -0.25 / 3.9),
+	ToyBricks = Vector2.zero,
+}
+
+local function importedToy(parent: Instance, name: string, kind: string, cf: CFrame, scale: number, color: Color3?): Model?
+	-- These place-file assets are deliberately outside Rojo's Shared subtree.
+	-- No waits or warning spam: partial/missing imports use the original builders.
+	local library = ReplicatedStorage:FindFirstChild("FactoryToyModels")
+	local template = library and library:FindFirstChild(kind)
+	if not template or not template:IsA("Model") or not template.Archivable
+		or not template:FindFirstChildWhichIsA("BasePart", true) then return nil end
+	if kind == "ToyCar" then
+		local paint = template:FindFirstChild("BodyPaint", true)
+		if not paint or not paint:IsA("MeshPart") then return nil end
+	end
+	local m = template:Clone()
+	local bounds, size = m:GetBoundingBox()
+	local centre = GROUND_CENTRES[kind]
+	-- Repair only the clone's pivot; never move/recentre the library geometry.
+	-- The asymmetric offsets recover the original anchor even for a centred Model.
+	m.PrimaryPart = nil
+	m.WorldPivot = bounds * CFrame.new(-size.X * centre.X, -size.Y / 2, -size.Z * centre.Y)
+	for _, node in m:GetDescendants() do
+		if node:IsA("BasePart") then
+			node.Anchored = true
+			node.CanCollide = false
+			node.CanTouch = false
+			node.CanQuery = false
+			if kind == "ToyCar" and node:IsA("MeshPart") and node.Name == "BodyPaint" then
+				node.TextureID = ""
+				for _, layer in node:GetChildren() do
+					if layer:IsA("SurfaceAppearance") or layer:IsA("Texture") or layer:IsA("Decal") then layer:Destroy() end
+				end
+				if color then node.Color = color end
+			end
+		end
+	end
+	-- Multiply the existing model scale once; do not fit each display to a box.
+	m:ScaleTo(m:GetScale() * scale)
+	m:PivotTo(cf)
+	m.Name = name
+	m:SetAttribute("EnvironmentProp", true)
+	m:SetAttribute("PropKind", kind)
+	m:SetAttribute("PropScale", scale)
+	m:SetAttribute("ImportedFactoryToy", true)
+	m.Parent = parent
+	return m
+end
+
 function FactoryProps.part(parent: Instance, name: string, size: Vector3, cf: CFrame, color: Color3, studs: boolean?): Part
 	local p = Build.block(parent, name, size, cf, color, if studs then FACES else {})
 	p.CanCollide = false
@@ -149,6 +205,8 @@ function FactoryProps.brick(parent: Instance, cf: CFrame, size: Vector3, color: 
 end
 
 function FactoryProps.car(parent: Instance, cf: CFrame, scale: number, color: Color3): Model
+	local imported = importedToy(parent, "ToyCar", "ToyCar", cf, scale, color)
+	if imported then return imported end
 	local m = model(parent, "ToyCar")
 	local function block(name: string, size: Vector3, pos: Vector3, paint: Color3)
 		part(m, name, size * scale, cf * CFrame.new(pos * scale), paint)
@@ -172,6 +230,8 @@ function FactoryProps.car(parent: Instance, cf: CFrame, scale: number, color: Co
 end
 
 function FactoryProps.duck(parent: Instance, cf: CFrame, scale: number): Model
+	local imported = importedToy(parent, "ToyDuck", "RubberDuck", cf, scale)
+	if imported then return imported end
 	local m = model(parent, "ToyDuck")
 	ball(m, "Body", V(7, 5, 8) * scale, cf * CFrame.new(0, 2.5 * scale, 0), P.Yellow)
 	ball(m, "Head", V(4.8, 4.8, 4.8) * scale, cf * CFrame.new(0, 6 * scale, -2 * scale), P.Yellow)
@@ -232,6 +292,14 @@ function FactoryProps.shelf(parent: Instance, cf: CFrame, variant: number, theme
 				FactoryProps.crate(m, anchor, 23, if slot % 2 == 0 then C(190, 151, 106) else P.Teal, level == 0)
 				if level == 2 and slot == 1 then FactoryProps.crate(m, anchor * CFrame.new(0, 18, 0), 17, P.Red, false) end
 			elseif theme == "Blocks" then
+				-- Replace existing stacks, keeping their shelf footprint and headroom.
+				local replacement
+				if level == 0 and slot == 0 then
+					replacement = importedToy(m, "ToyRobot", "FriendlyRobot", anchor, 2.2)
+				elseif level == 1 and slot == 1 then
+					replacement = importedToy(m, "ToyBricks", "ToyBricks", anchor, 3)
+				end
+				if replacement then continue end
 				FactoryProps.brick(m, anchor, V(23, 9, 21), color)
 				if (slot + level) % 3 ~= 0 then
 					FactoryProps.brick(m, anchor * CFrame.new(0, 10.5, 0), V(20, 8, 18), TOY_COLORS[(variant + level + 1) % #TOY_COLORS + 1])
@@ -262,6 +330,8 @@ function FactoryProps.shelf(parent: Instance, cf: CFrame, variant: number, theme
 end
 
 function FactoryProps.bear(parent: Instance, cf: CFrame, scale: number): Model
+	local imported = importedToy(parent, "FactoryTeddy", "TeddyBear", cf, scale)
+	if imported then return imported end
 	local m = model(parent, "FactoryTeddy")
 	local tan, cream = C(187, 120, 65), C(247, 210, 153)
 	local function round(name: string, size: Vector3, pos: Vector3, color: Color3)

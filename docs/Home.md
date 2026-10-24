@@ -1,5 +1,11 @@
 # Crush It
 
+24 Oct Blender scenery integration: imported duck, teddy and recolourable cars
+replace their procedural displays. Two block shelves also reuse the robot and
+brick models. Place-file templates live in ReplicatedStorage.FactoryToyModels;
+missing templates retain procedural fallbacks. See [[Systems/Blender prop briefs]]
+for pivot conventions, Studio checks and the required place save.
+
 23 Oct forty-crusher update: all 40 types are active in the roll catalogue,
 with 29 distinct code-built rigs alongside the original eleven. The desktop
 Index/Owned UI uses actual model previews, base odds and protected duplicate
