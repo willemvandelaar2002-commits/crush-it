@@ -43,7 +43,7 @@ function R.migrate(d, guid)
 	s.upgrades.RollSpeed=nil -- retired upgrade (rolling speed became pedestals)
 	for _,id in C.UpgradeOrder do s.upgrades[id]=integer(s.upgrades[id],0,C.upgradeMax(id)) end
 	s.bays=math.clamp(integer(s.bays,1,C.MaxBays),1,C.MaxBays)
-	s.available=C.money(number(s.available,0)) s.tutorial=math.clamp(integer(s.tutorial,1,#C.Tutorial),1,#C.Tutorial)
+	s.available=C.money(number(s.available,0)) s.tutorial=math.clamp(integer(s.tutorial,1,#C.TutorialSteps+1),1,#C.TutorialSteps+1) -- #steps+1 = finished
 	s.rollReadyAt=number(s.rollReadyAt,0,1e12)
 	s.rolls=integer(s.rolls,0,1e9) -- rolls made (the first one is always cheap)
 	local owned,ids={},{}
@@ -80,7 +80,7 @@ local function choose(weights, random)
 	local total=0 for _,w in weights do total+=w end
 	local target=random()*total local n=0 for i,w in weights do n+=w if target<n then return i end end return #weights
 end
-function R.act(d,session,action,args,now,random,guid,perks)
+local function act(d,session,action,args,now,random,guid,perks)
 	local s=d.crushers args=if type(args)=="table" then args else {}
 	local function pay(cost) if d.cash<cost then return false end d.cash=C.money(d.cash-cost) return true end
 	if action=="Roll" then
@@ -107,7 +107,6 @@ function R.act(d,session,action,args,now,random,guid,perks)
 		if not pay(price) then return false,"Need $"..price..". Collect and sell scrap first." end
 		local item={id=guid(),type=offer.type,rarity=offer.rarity,modifier=offer.modifier,level=1}
 		table.insert(s.owned,item) session.offers[slot]=false session.lastRoll=item.id
-		if s.tutorial==3 then s.tutorial=4 end
 		return true,"Bought "..C.typeById(item.type).name.."!",item
 	elseif action=="Equip" then
 		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
@@ -116,7 +115,6 @@ function R.act(d,session,action,args,now,random,guid,perks)
 		if type(bay)~="number" or bay~=bay or bay%1~=0 or bay<1 or bay>s.bays then return false,"No usable bay. Unequip a crusher or unlock another bay." end
 		for key,id in s.equipped do if id==item.id then s.equipped[key]=nil end end
 		s.equipped[tostring(bay)]=item.id
-		if s.tutorial==4 then s.tutorial=5 end
 	elseif action=="Unequip" then
 		if not R.find(d,args.id) then return false,"You do not own that crusher." end
 		for key,id in s.equipped do if id==args.id then s.equipped[key]=nil end end
@@ -131,24 +129,55 @@ function R.act(d,session,action,args,now,random,guid,perks)
 		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
 		if item.level>=C.MaxLevel then return false,"Crusher is at maximum level." end
 		if not pay(C.individualCost(item)) then return false,"Not enough cash. Collect and sell scrap." end
-		item.level+=1 if s.tutorial==7 then s.tutorial=8 end
+		item.level+=1
 	elseif action=="Upgrade" then
 		local u=C.Upgrades[args.id] if not u then return false,"Unknown upgrade." end
 		local lv=s.upgrades[args.id] if lv>=C.upgradeMax(args.id) then return false,"Upgrade is at maximum level." end
 		if not pay(C.globalCost(args.id,lv)) then return false,"Not enough cash. Collect and sell scrap." end
 		s.upgrades[args.id]+=1
-		if s.tutorial==5 and u.group=="Production" then s.tutorial=6 elseif s.tutorial==6 and u.group=="Rolling" then s.tutorial=7 end
 	elseif action=="Unlock" then
 		if s.bays>=C.MaxBays then return false,"All bays are unlocked." end
 		if not pay(C.BayCosts[s.bays+1]) then return false,"Not enough cash for another bay. Collect and sell." end s.bays+=1
 	elseif action=="Collect" then
 		if s.available<=0 then return false,"No finished scrap yet. Your crushers are working." end
-		d.scrap=C.money(d.scrap+s.available) s.available=0 if s.tutorial==1 then s.tutorial=2 end
+		d.scrap=C.money(d.scrap+s.available) s.available=0
 	elseif action=="Sell" then
 		if d.scrap<=0 then return false,"Collect scrap from the blue bin first." end
-		d.cash=C.money(d.cash+d.scrap) d.scrap=0 if s.tutorial==2 then s.tutorial=3 end
+		d.cash=C.money(d.cash+d.scrap) d.scrap=0
 	else return false,"Unknown factory action." end
 	return true,"Done!"
+end
+-- Tutorial: finishing the current step's action moves on and pays its reward.
+function R.tutorialAdvance(d,id)
+	local s=d.crushers local step=C.TutorialSteps[s.tutorial]
+	if not step or step.id~=id then return false end
+	s.tutorial+=1 d.cash=C.money(d.cash+step.reward)
+	if s.tutorial>#C.TutorialSteps then d.cash=C.money(d.cash+C.TutorialBonus) end
+	return true
+end
+-- Skip steps the profile has already done (older saves, steps done out of order).
+function R.tutorialCatchUp(d)
+	local s=d.crushers
+	local function doneStep(id)
+		local inBays=0 for _ in s.equipped do inBays+=1 end
+		if id=="Collect" or id=="Sell" or id=="Roll" then return s.rolls>0 or #s.owned>1 end
+		if id=="Buy" then return #s.owned>1 end
+		if id=="Unlock" then return s.bays>=2 end
+		if id=="Equip" then return inBays>=2 end
+		if id=="Upgrade" then return s.upgrades.Damage+s.upgrades.Speed+s.upgrades.Yield>0 end
+		if id=="Level" then for _,v in s.owned do if v.level>1 then return true end end end
+		return false
+	end
+	while C.TutorialSteps[s.tutorial] and doneStep(C.TutorialSteps[s.tutorial].id) do R.tutorialAdvance(d,C.TutorialSteps[s.tutorial].id) end
+end
+function R.act(d,session,action,args,now,random,guid,perks)
+	local ok,message,result=act(d,session,action,args,now,random,guid,perks)
+	if ok then
+		local id=action
+		if action=="Upgrade" then local u=C.Upgrades[(type(args)=="table" and args.id) or ""] id=if u and u.group=="Production" then "Upgrade" else "" end
+		R.tutorialAdvance(d,id)
+	end
+	return ok,message,result
 end
 function R.step(d,session,now,perks)
 	local events={} session.bays=session.bays or {}

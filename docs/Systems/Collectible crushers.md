@@ -318,3 +318,17 @@ Reload for QA. Profile replacement/reload are explicitly limited to the mock
 store; they reject real Studio API-backed profiles. The test suite does not
 touch a real profile. The rollout flag should be flipped only with a reviewed
 migration/recovery plan.
+
+## Tutorial (24 Oct)
+
+Eight guided steps in `C.TutorialSteps` (Collect, Sell, Roll, Buy, Unlock bay 2,
+Place the crusher, Production upgrade, Level up). The server (`CrusherRules`)
+advances a step only on its own successful action (`R.tutorialAdvance`), pays its
+reward ($10-50) once, and `C.TutorialBonus` ($100) at the end;
+`R.tutorialCatchUp` skips steps a profile already did (old saves, out of order).
+`client/Tutorial.client` draws the step card (STEP n / 8, title, hint, reward
+chip, segmented progress bar), a gold chevron path (Kit/GuidePath) plus bobbing
+label arrow and a pulsing Highlight on the target, and detours to the bin/seller
+when the step costs more cash than you have. Each finished step: green flash,
+check, coin sound, cash flying into the counter; the last one shows a
+TUTORIAL COMPLETE banner.

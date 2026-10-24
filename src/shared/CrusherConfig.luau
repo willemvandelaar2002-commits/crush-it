@@ -117,16 +117,20 @@ C.Upgrades = {
 C.UpgradeOrder = { "Damage", "Speed", "Yield", "Luck", "Pedestals" }
 C.IndividualBase = 16
 C.IndividualGrowth = 1.38
-C.Tutorial = {
-	"Your starter crusher works automatically. Collect scrap at the blue bin.",
-	"Sell carried scrap at the green seller to earn cash.",
-	"Press ROLL at the roll machine (free), then buy a crusher from a pedestal.",
-	"Hold your new crusher from the hotbar (bottom) and press E at a working bay to place it.",
-	"Buy a global upgrade at the PRODUCTION board. Collect and sell to afford it.",
-	"Buy Luck or more Rolling Pedestals at the ROLLING board.",
-	"Use the green LEVEL button on an equipped crusher's bay plaque.",
-	"Keep collecting, selling and rolling. Unlock another working bay for more production!",
+-- Guided tutorial (client/Tutorial): one step at a time, each finished by the
+-- named action; target = what the path/arrow points at; reward = cash on
+-- finishing the step (TutorialBonus on finishing them all).
+C.TutorialSteps = {
+	{ id = "Collect", title = "Collect your scrap", text = "Your crusher made scrap! Walk to the blue bin and press COLLECT.", target = "Collect", reward = 10 },
+	{ id = "Sell", title = "Sell it for cash", text = "Carry it to the green counter and press SELL.", target = "Sell", reward = 10 },
+	{ id = "Roll", title = "Roll a crusher", text = "Press ROLL at the purple roll machine. Rolling is free!", target = "Roll", reward = 10 },
+	{ id = "Buy", title = "Buy your crusher", text = "Walk to the pedestal and press E to buy it.", target = "Pedestal", reward = 15 },
+	{ id = "Unlock", title = "Unlock a new bay", text = "Press UNLOCK on the next bay's plaque.", target = "NextBay", reward = 25 },
+	{ id = "Equip", title = "Place your crusher", text = "Pick it from your hotbar (bottom) and press E at the empty bay.", target = "EmptyBay", reward = 25 },
+	{ id = "Upgrade", title = "Upgrade production", text = "Buy an upgrade on the blue PRODUCTION board.", target = "Production", reward = 25 },
+	{ id = "Level", title = "Level up a crusher", text = "Press LEVEL UP on a crusher's plaque.", target = "LevelBay", reward = 50 },
 }
+C.TutorialBonus = 100
 -- "1 in N" odds of rolling a type with base weights (no luck).
 function C.oddsFor(typeId)
 	local total=0 for _,r in C.Rarities do total+=r.weight end

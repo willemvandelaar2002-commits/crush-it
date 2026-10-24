@@ -19,8 +19,9 @@ function H.start()
  end
  local function act(name,args) Net.event("CrusherAction"):FireServer(name,args) end
  local gui=make("ScreenGui",{Name="CrushHud",ResetOnSpawn=false,DisplayOrder=2,ZIndexBehavior=Enum.ZIndexBehavior.Sibling},p:WaitForChild("PlayerGui"))
- local tutorial=text(gui,"Tutorial","Loading factory...",UDim2.new(.5,0,0,70),UDim2.fromOffset(650,46)) tutorial.AnchorPoint=Vector2.new(.5,0)
- local balances=text(gui,"FactoryBalances","",UDim2.new(.5,0,0,122),UDim2.fromOffset(650,30)) balances.AnchorPoint=Vector2.new(.5,0)
+ -- the tutorial has its own step card now (client/Tutorial); this line stays hidden
+ local tutorial=text(gui,"Tutorial","",UDim2.new(.5,0,0,70),UDim2.fromOffset(650,46)) tutorial.AnchorPoint=Vector2.new(.5,0) tutorial.Visible=false
+ local balances=text(gui,"FactoryBalances","",UDim2.new(.5,0,0,188),UDim2.fromOffset(650,30)) balances.AnchorPoint=Vector2.new(.5,0)
  require(script.Parent.CashHud).start(gui)
  local function fitDesktopHeader()
   local width=math.clamp(workspace.CurrentCamera.ViewportSize.X-580,300,650)
@@ -63,7 +64,6 @@ function H.start()
  local function redraw()
   if not state then return end
   balances.Text="CARRIED "..Format.cash(state.carried).."  |  READY "..Format.cash(state.available)
-  tutorial.Text=C.Tutorial[state.tutorial]
   indexView.update(state)
  end
  -- PlayerGui-hosted SurfaceGuis receive mouse input reliably. Replicated world
@@ -136,6 +136,7 @@ function H.start()
    pending=nil
   end
   -- rolls are revealed on the roll machine's pedestals; no screen spoiler
+  if v.message=="Done!" then v.message=nil end -- success has its own effects
   if v.message then toast.Text=v.message noticeUntil=os.clock()+5 end
   redraw()
  end)

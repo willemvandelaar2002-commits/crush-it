@@ -101,9 +101,7 @@ end
 local function send(p,message,result)
 	local d=Data.get(p) local ctx=sessions[p] if not d or not ctx then return end
 	local s=d.crushers
-	if s.tutorial==5 and (s.upgrades.Damage+s.upgrades.Speed+s.upgrades.Yield)>0 then s.tutorial=6 end
-	if s.tutorial==6 and (s.upgrades.Luck+s.upgrades.Pedestals)>0 then s.tutorial=7 end
-	if s.tutorial==7 then for _,v in s.owned do if v.level>1 then s.tutorial=8 break end end end
+	Rules.tutorialCatchUp(d)
 	Tools.sync(p,d) -- unequipped crushers live in the Roblox backpack
 	p:SetAttribute("Cash",d.cash) p:SetAttribute("Scrap",d.scrap) p:SetAttribute("AvailableScrap",s.available)
 	p:SetAttribute("Plot",ctx.plot.index) p:SetAttribute("Crushed",d.crushed) p:SetAttribute("Tier",d.tier)
