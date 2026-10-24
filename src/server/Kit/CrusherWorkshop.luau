@@ -4,6 +4,7 @@ local RS=game:GetService("ReplicatedStorage")
 local Style=require(RS.Shared.Kit.Style)
 local C=require(RS.Shared.CrusherConfig)
 local Icons=require(RS.Shared.Icons)
+local UpgradeView=require(RS.Shared.CrusherUpgradeView)
 local Build=require(script.Parent.Build)
 local W={}
 W.Blue=Color3.fromRGB(35,99,210) W.Navy=Color3.fromRGB(25,43,73)
@@ -61,6 +62,19 @@ end
 W.UpgradeIcons={Damage=Icons.Power,Speed=Icons.Speed,Yield=Icons.Value,Luck=Icons.Lucky,Pedestals=Icons.Rebirth}
 W.UpgradeColors={Damage=Color3.fromRGB(223,62,62),Speed=Color3.fromRGB(240,180,30),Yield=Color3.fromRGB(53,190,79),
 	Luck=Color3.fromRGB(150,62,229),Pedestals=Color3.fromRGB(106,76,224)}
+-- Attributes also carry the price state to the owner's PlayerGui SurfaceGui.
+function W.purchase(button,view)
+	button.Text=view.button
+	if button:GetAttribute("PurchaseState")~=view.state then Style.setButtonColor(button,UpgradeView.Colors[view.state]) end
+	button:SetAttribute("PurchaseState",view.state)
+	button:SetAttribute("PurchaseCost",view.cost)
+	button:SetAttribute("PurchaseHint",view.hint)
+	button:SetAttribute("SuccessText",view.success)
+end
+function W.clearPurchase(button)
+	if button:GetAttribute("PurchaseState") then Style.setButtonColor(button,W.Green) end
+	for _,key in {"PurchaseState","PurchaseCost","PurchaseHint","SuccessText"} do button:SetAttribute(key,nil) end
+end
 -- Upgrade board: one colour band per upgrade with icon, name, level step and
 -- a green price button (the button is the purchase control).
 function W.board(parent,cf,kind)
@@ -72,9 +86,13 @@ function W.board(parent,cf,kind)
 		W.beacon(m,cf*CFrame.new(x,10.1,0))
 	end
 	local face,gui=W.panel(m,cf*CFrame.new(0,5.4,0),17,8,color)
-	W.text(gui,"Heading",string.upper(kind).." UPGRADES",UDim2.fromScale(.04,.025),UDim2.fromScale(.92,.15))
+	local copy=UpgradeView.Boards[kind]
+	W.text(gui,"Heading",copy.heading,UDim2.fromScale(.04,.025),UDim2.fromScale(.92,.13))
+	local scope=Instance.new("Frame") scope.Name="Scope" scope.Position=UDim2.fromScale(.12,.17) scope.Size=UDim2.fromScale(.76,.09)
+	Style.panel(scope,Style.darken(color,.5),Style.darken(color,.65)) scope.Parent=gui
+	W.text(scope,"ScopeText",copy.scope,UDim2.fromScale(.02,.02),UDim2.fromScale(.96,.96))
 	local rows={} local count=if kind=="Production" then 3 else 2 local rowIndex=0
-	local top,span=.2,.77
+	local top,span=.29,.69
 	for _,id in C.UpgradeOrder do if C.Upgrades[id].group==kind then
 		rowIndex+=1 local row=Instance.new("Frame") row.Name="Row_"..id
 		local h=span/count
@@ -83,27 +101,62 @@ function W.board(parent,cf,kind)
 		W.icon(row,"UpgradeIcon",W.UpgradeIcons[id],UDim2.fromScale(.015,.08),UDim2.fromScale(.15,.84))
 		local title=W.text(row,"UpgradeName",string.upper(C.Upgrades[id].name),UDim2.fromScale(.18,.06),UDim2.fromScale(.5,.5))
 		title.TextXAlignment=Enum.TextXAlignment.Left
-		local level=W.text(row,"LevelStep","Lv 0 > 1",UDim2.fromScale(.18,.56),UDim2.fromScale(.5,.38))
+		local level=W.text(row,"LevelStep","",UDim2.fromScale(.18,.56),UDim2.fromScale(.5,.38))
 		level.TextXAlignment=Enum.TextXAlignment.Left level.TextColor3=Color3.fromRGB(255,240,170)
 		local b=W.button(row,"Buy","$0",UDim2.fromScale(.7,.12),UDim2.fromScale(.28,.76),"Upgrade",id)
 		rows[id]={label=level,button=b}
 	end end
 	return {part=face,rows=rows}
 end
+-- Goals board (reference): three rows - like/favorite, join the group, free
+-- time skip - each with its own button. Same posts/panel as the upgrade boards.
+function W.goals(parent,cf)
+	local color=Color3.fromRGB(255,146,38)
+	local m=Instance.new("Model") m.Name="GoalsStation" m.Parent=parent
+	for _,x in {-6.6,6.6} do
+		W.part(m,"Support",V(1.6,8.6,1.6),cf*CFrame.new(x,4.3,0),W.Navy)
+		W.part(m,"Foot",V(4,1,6),cf*CFrame.new(x,.5,0),W.Blue)
+		W.beacon(m,cf*CFrame.new(x,10.1,0))
+	end
+	local face,gui=W.panel(m,cf*CFrame.new(0,5.4,0),15.5,8,color)
+	W.text(gui,"Heading","GOALS",UDim2.fromScale(.04,.02),UDim2.fromScale(.92,.16))
+	local rows={}
+	local specs={
+		{id="Like",icon="👍",title="LIKE & FAVORITE",sub="Thank you for playing!",button="★ FAVORITE",action="Favorite",color=Color3.fromRGB(64,160,255)},
+		{id="Group",icon="👥",title="JOIN THE GROUP",sub="Unlocks the free time skip",button="JOIN",action="JoinGroup",color=Color3.fromRGB(150,80,230)},
+		{id="Skip",icon="⏱",title="FREE "..C.Goals.SkipMinutes.." MIN TIME SKIP",sub="Instant cash from your crushers",button="CLAIM",action="TimeSkip",color=Color3.fromRGB(53,190,79)},
+	}
+	for i,spec in specs do
+		local row=Instance.new("Frame") row.Name="Row_"..spec.id
+		row.Position=UDim2.fromScale(.03,.2+(i-1)*.265) row.Size=UDim2.fromScale(.94,.24)
+		Style.panel(row,spec.color,Style.darken(spec.color,.35)) row.Parent=gui
+		W.text(row,"Number",i..".",UDim2.fromScale(.01,.1),UDim2.fromScale(.07,.8))
+		W.text(row,"Icon",spec.icon,UDim2.fromScale(.08,.08),UDim2.fromScale(.11,.84))
+		local title=W.text(row,"Title",spec.title,UDim2.fromScale(.2,.06),UDim2.fromScale(.48,.52))
+		title.TextXAlignment=Enum.TextXAlignment.Left
+		local sub=W.text(row,"Sub",spec.sub,UDim2.fromScale(.2,.58),UDim2.fromScale(.48,.36))
+		sub.TextXAlignment=Enum.TextXAlignment.Left sub.TextColor3=Color3.fromRGB(255,240,170)
+		local b=W.button(row,"Go",spec.button,UDim2.fromScale(.69,.12),UDim2.fromScale(.29,.76),spec.action)
+		rows[spec.id]={label=sub,button=b}
+	end
+	return {part=face,rows=rows}
+end
 -- Bay plaque, laid out like a collectible card: name, rarity + modifier,
 -- level + output, a big green level-up price and a small swap button.
 function W.plaque(parent,cf,index)
 	local face,gui=W.panel(parent,cf,8.6,4,W.Blue)
-	local name=W.text(gui,"CrusherName","LOCKED",UDim2.fromScale(.04,.04),UDim2.fromScale(.6,.34))
+	local scope=W.text(gui,"UpgradeScope","BAY "..index,UDim2.fromScale(.04,.025),UDim2.fromScale(.6,.14))
+	scope.TextXAlignment=Enum.TextXAlignment.Left scope.TextColor3=Color3.fromRGB(255,240,170)
+	local name=W.text(gui,"CrusherName","LOCKED",UDim2.fromScale(.04,.19),UDim2.fromScale(.6,.27))
 	name.TextXAlignment=Enum.TextXAlignment.Left
-	local rarity=W.text(gui,"Rarity","",UDim2.fromScale(.04,.39),UDim2.fromScale(.6,.24))
+	local rarity=W.text(gui,"Rarity","",UDim2.fromScale(.04,.48),UDim2.fromScale(.6,.17))
 	rarity.TextXAlignment=Enum.TextXAlignment.Left
-	local stats=W.text(gui,"Output","",UDim2.fromScale(.04,.66),UDim2.fromScale(.6,.28))
+	local stats=W.text(gui,"Output","",UDim2.fromScale(.04,.68),UDim2.fromScale(.6,.29))
 	stats.TextXAlignment=Enum.TextXAlignment.Left stats.TextColor3=Color3.fromRGB(255,240,170)
 	local buy=W.button(gui,"Level","",UDim2.fromScale(.66,.07),UDim2.fromScale(.32,.55),"Bay",nil,index)
 	local manage=W.button(gui,"Manage","SWAP",UDim2.fromScale(.7,.67),UDim2.fromScale(.24,.27),"Manage",nil,index)
 	Style.setButtonColor(manage,Color3.fromRGB(70,140,230))
-	return face,{name=name,rarity=rarity,stats=stats},buy,manage
+	return face,{name=name,rarity=rarity,stats=stats,scope=scope},buy,manage
 end
 -- Yellow/navy hazard band (alternating chunky blocks).
 function W.hazard(parent,cf,width,height,depth)

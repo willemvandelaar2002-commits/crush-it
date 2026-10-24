@@ -1,5 +1,9 @@
 # Crush It
 
+24 Oct upgrade clarity: bay plaques identify THIS CRUSHER and preview its next
+level output. FACTORY UPGRADES affects ALL YOUR CRUSHERS; ROLL UPGRADES affects
+FUTURE ROLLS. Existing prices and progression are retained. See [[Systems/Upgrade controls]].
+
 24 Oct Blender scenery integration: imported duck, teddy and recolourable cars
 replace their procedural displays. Two block shelves also reuse the robot and
 brick models. Place-file templates live in ReplicatedStorage.FactoryToyModels;

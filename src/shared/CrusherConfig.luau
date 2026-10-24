@@ -127,10 +127,14 @@ C.TutorialSteps = {
 	{ id = "Buy", title = "Buy your crusher", text = "Walk to the pedestal and press E to buy it.", target = "Pedestal", reward = 15 },
 	{ id = "Unlock", title = "Unlock a new bay", text = "Press UNLOCK on the next bay's plaque.", target = "NextBay", reward = 25 },
 	{ id = "Equip", title = "Place your crusher", text = "Pick it from your hotbar (bottom) and press E at the empty bay.", target = "EmptyBay", reward = 25 },
-	{ id = "Upgrade", title = "Upgrade production", text = "Buy an upgrade on the blue PRODUCTION board.", target = "Production", reward = 25 },
-	{ id = "Level", title = "Level up a crusher", text = "Press LEVEL UP on a crusher's plaque.", target = "LevelBay", reward = 50 },
+	{ id = "Upgrade", title = "Upgrade production", text = "FACTORY UPGRADES boosts all your crushers. Buy an upgrade on the blue board.", target = "Production", reward = 25 },
+	{ id = "Level", title = "Level up a crusher", text = "THIS CRUSHER: press LEVEL UP on its plaque. Only that crusher levels up; its level stays when swapped.", target = "LevelBay", reward = 50 },
 }
 C.TutorialBonus = 100
+-- Goals board on the plot (reference style): like/favorite, join the group, and
+-- a free time skip (SkipMinutes of your current production as cash) that needs
+-- group membership and then waits SkipCooldownHours.
+C.Goals = { GroupId = 264438399, SkipMinutes = 5, SkipCooldownHours = 24, MinSkipReward = 100 }
 -- "1 in N" odds of rolling a type with base weights (no luck).
 function C.oddsFor(typeId)
 	local total=0 for _,r in C.Rarities do total+=r.weight end

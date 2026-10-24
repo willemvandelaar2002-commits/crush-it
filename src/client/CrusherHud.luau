@@ -9,6 +9,7 @@ local Style=require(RS.Shared.Kit.Style)
 local Icons=require(RS.Shared.Icons)
 local Format=require(RS.Shared.Format)
 local WorldFx=require(script.Parent.WorldFx)
+local UpgradeView=require(RS.Shared.CrusherUpgradeView)
 local H={}
 function H.start()
  local p=Players.LocalPlayer local state local pending
@@ -91,6 +92,19 @@ function H.start()
    for _,prop in (if a:IsA("TextLabel") or a:IsA("TextButton") then {"Text","Visible","TextColor3"} else if a:IsA("GuiObject") then {"Visible"} else {}) do
     table.insert(connections,a:GetPropertyChangedSignal(prop):Connect(function() b[prop]=a[prop] end))
    end
+   if a:IsA("TextButton") then
+    local function purchaseLook()
+     local status=b:GetAttribute("PurchaseState")
+     Style.setButtonColor(b,UpgradeView.Colors[status] or Color3.fromRGB(53,201,79))
+    end
+    for _,key in {"PurchaseState","PurchaseCost","PurchaseHint","SuccessText"} do
+     table.insert(connections,a:GetAttributeChangedSignal(key):Connect(function()
+      b:SetAttribute(key,a:GetAttribute(key))
+      if key=="PurchaseState" then purchaseLook() end
+     end))
+    end
+    if a:GetAttribute("PurchaseState") then purchaseLook() end
+   end
    local ac,bc=a:GetChildren(),b:GetChildren()
    for i,child in ac do if bc[i] then mirror(child,bc[i]) end end
   end
@@ -102,16 +116,39 @@ function H.start()
    v.Activated:Connect(function()
     if not state then return end
     local action=v:GetAttribute("Action") local bay=v:GetAttribute("Bay")
-    if action=="Upgrade" or action=="Bay" then pending={row=WorldFx.rowOf(v),t=os.clock(),unlock=action=="Bay" and not state.bays[tostring(bay)]} end
+    local function purchase(name,args)
+     local status=v:GetAttribute("PurchaseState")
+     if status=="Short" or status=="Max" then
+      toast.Text=v:GetAttribute("PurchaseHint") or "Collect and sell scrap for more cash." noticeUntil=os.clock()+5
+      if status=="Short" then WorldFx.fail(WorldFx.rowOf(v)) end
+      return
+     end
+     pending={row=WorldFx.rowOf(v),t=os.clock(),success=v:GetAttribute("SuccessText") or (if name=="Unlock" then "BAY UNLOCKED!" else nil)}
+     act(name,args)
+    end
     if action=="Manage" then if bay<=state.unlocked then indexView.open(bay) else toast.Text="Unlock bays in order using their green plaques." noticeUntil=os.clock()+4 end
     elseif action=="Bay" then
      local id=state.bays[tostring(bay)]
      local held=heldId()
-     if held and bay<=state.unlocked then act("Equip",{id=held,bay=bay})
-     elseif id then act("Level",{id=id,bay=bay})
-     elseif bay==state.unlocked+1 then act("Unlock",{bay=bay})
+     -- LEVEL UP always levels the crusher named on this plaque, even while
+     -- holding a different backpack tool. Placement still uses E / empty bays.
+     if id then purchase("Level",{id=id,bay=bay})
+     elseif held and bay<=state.unlocked then act("Equip",{id=held,bay=bay})
+     elseif bay==state.unlocked+1 then purchase("Unlock",{bay=bay})
      elseif bay<=state.unlocked then indexView.open(bay)
      else toast.Text="Unlock bay "..(state.unlocked+1).." first." noticeUntil=os.clock()+4 end
+    elseif action=="Upgrade" then purchase(action,{id=v:GetAttribute("UpgradeId")})
+    -- goals board: the favorite / join prompts are Roblox's own (client side)
+    elseif action=="Favorite" then
+     pcall(function() game:GetService("AvatarEditorService"):PromptSetFavorite(game.PlaceId,Enum.AvatarItemType.Asset,true) end)
+    elseif action=="JoinGroup" then
+     task.spawn(function()
+      pcall(function() game:GetService("GroupService"):PromptJoinAsync(C.Goals.GroupId) end)
+      act("GroupCheck")
+     end)
+    elseif action=="TimeSkip" then
+     pending={row=WorldFx.rowOf(v),t=os.clock(),success="+"..C.Goals.SkipMinutes.." MIN!"}
+     act("TimeSkip")
     else act(action,{id=v:GetAttribute("UpgradeId")}) end
    end)
   end end
@@ -131,7 +168,7 @@ function H.start()
   state=v
   -- world purchase feedback: the next answer after a board/plaque click
   if pending and v.message and os.clock()-pending.t<2 then
-   if v.message=="Done!" then WorldFx.success(pending.row,if pending.unlock then "BAY UNLOCKED!" else nil) v.message=nil
+   if v.message=="Done!" then WorldFx.success(pending.row,pending.success) v.message=nil
    else WorldFx.fail(pending.row) end
    pending=nil
   end

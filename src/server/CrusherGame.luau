@@ -11,6 +11,7 @@ local Rules=require(RS.Shared.CrusherRules)
 local Net=require(RS.Shared.Net)
 local Store=require(RS.Shared.Store)
 local Format=require(RS.Shared.Format)
+local UpgradeView=require(RS.Shared.CrusherUpgradeView)
 local Objects=require(RS.Shared.Objects)
 local Data=require(script.Parent.Kit.DataService)
 local Plots=require(script.Parent.Plots)
@@ -98,6 +99,17 @@ local function floorLook(plot,unlocked)
 		f.buy.Text="BUILD "..Format.cash(C.BayCosts[f.first])
 	end
 end
+-- Free time skip: SkipMinutes of the current production, paid as cash.
+local function skipReward(p,d) return math.max(C.Goals.MinSkipReward,math.floor(cps(p,d)*C.Goals.SkipMinutes*60)) end
+-- Group membership (IsInGroup is cached for the session; GetGroupsAsync is fresh).
+local function checkGroup(p,fresh)
+	local ok,inGroup=pcall(function()
+		if not fresh then return p:IsInGroup(C.Goals.GroupId) end
+		for _,g in game:GetService("GroupService"):GetGroupsAsync(p.UserId) do if g.Id==C.Goals.GroupId then return true end end
+		return false
+	end)
+	return ok and inGroup==true
+end
 local function send(p,message,result)
 	local d=Data.get(p) local ctx=sessions[p] if not d or not ctx then return end
 	local s=d.crushers
@@ -127,13 +139,21 @@ local function send(p,message,result)
 	st.Roll.label.Text=if rolling then "Rolling..." else "Free  ·  "..C.pedestals(s.upgrades.Pedestals).." pedestal"..(if C.pedestals(s.upgrades.Pedestals)>1 then "s" else "")
 	st.Roll.button.Text=if rolling then "ROLLING..." else "ROLL"
 	pedestalLook(ctx.plot,C.pedestals(s.upgrades.Pedestals))
+	local displayPerks=perks(p)
 	for _,group in {"Production","Rolling"} do
 		for _,id in C.UpgradeOrder do if C.Upgrades[id].group==group then
-			local lv=s.upgrades[id] local row=ctx.plot.stations[group].rows[id]
-			local max=C.upgradeMax(id)
-			row.label.Text=if lv>=max then "Lv "..lv.."  MAX LEVEL" else "Lv "..lv.." > "..(lv+1).."   "..C.shortBenefit(id,lv)
-			row.button.Text=if lv>=max then "MAX" else Format.cash(C.globalCost(id,lv))
+			local row=ctx.plot.stations[group].rows[id] local view=UpgradeView.board(d,id,displayPerks)
+			row.label.Text=view.effect Workshop.purchase(row.button,view)
 		end end
+	end
+	-- goals board: group row and the free time skip
+	local goals=st.Goals and st.Goals.rows
+	if goals then
+		goals.Group.button.Text=if ctx.inGroup then "✓ JOINED" else "JOIN"
+		goals.Group.label.Text=if ctx.inGroup then "Thanks for joining!" else "Unlocks the free time skip"
+		local left=(d.timeSkipAt or 0)-workspace:GetServerTimeNow()
+		goals.Skip.button.Text=if not ctx.inGroup then "JOIN FIRST" elseif left>0 then string.format("%02d:%02d:%02d",left//3600,left%3600//60,left%60) else "CLAIM"
+		goals.Skip.label.Text="Get "..Format.cash(skipReward(p,d)).." instantly"
 	end
 	floorLook(ctx.plot,s.bays)
 	for i,bay in ctx.plot.bays do
@@ -142,26 +162,31 @@ local function send(p,message,result)
 		local hidden=f~=nil and f.mode~="built"
 		if bay.hidden~=hidden then bay.hidden=hidden bay.shown=nil partsLook(bay.model,if hidden then "hidden" else "built") end
 		if hidden then
-			bay.label.name.Text="" bay.label.rarity.Text="" bay.label.stats.Text="" bay.buy.Visible=false bay.manage.Visible=false bay.lockLabel.Text=""
+			bay.label.name.Text="" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="" bay.buy.Visible=false bay.manage.Visible=false bay.lockLabel.Text=""
 			continue
 		end
 		local item=Rules.find(d,s.equipped[tostring(i)])
 		local state=if item then "busy" elseif i<=s.bays then "open" elseif i==s.bays+1 then "next" else "locked"
 		local card=bay.label
 		if item then
+			card.scope.Text="THIS CRUSHER"
 			local r=C.rarity(item.rarity)
 			card.name.Text=C.typeById(item.type).name
 			card.rarity.Text=item.rarity..(if item.modifier~="Standard" then "  ·  "..item.modifier.." x"..C.modifier(item.modifier).mult else "")
 			card.rarity.TextColor3=r.color:Lerp(Color3.new(1,1,1),.25)
-			card.stats.Text="Level "..item.level.."  ·  "..Format.cash(Rules.stats(d,item,perks(p)).cps*60).."/min"
+			local view=UpgradeView.crusher(d,item,displayPerks)
+			card.stats.Text=view.effect Workshop.purchase(bay.buy,view)
 		else
+			card.scope.Text="BAY "..i
 			card.name.Text=if state=="open" then "EMPTY BAY" elseif state=="next" then "NEXT BAY" else "LOCKED"
 			card.rarity.Text=if state=="open" then "Equip a crusher here" elseif state=="next" then "Unlock for more output" else ""
 			card.rarity.TextColor3=Color3.new(1,1,1)
 			card.stats.Text=""
+			if state=="next" then
+				local view=UpgradeView.purchase(d.cash,C.BayCosts[i],false,"Adds a working bay; does not level a crusher.","BAY UNLOCKED!")
+				view.button="UNLOCK\n"..Format.cash(C.BayCosts[i]) Workshop.purchase(bay.buy,view)
+			else Workshop.clearPurchase(bay.buy) bay.buy.Text="EQUIP" end
 		end
-		bay.buy.Text=if item then (if item.level>=C.MaxLevel then "MAX" else "LEVEL UP\n"..Format.cash(C.individualCost(item)))
-			elseif state=="next" then "UNLOCK\n"..Format.cash(C.BayCosts[i]) else "EQUIP"
 		local plate=if item then C.rarity(item.rarity).color:Lerp(Workshop.Navy,.2) else Workshop.Blue
 		if bay.part.Color~=plate then bay.part.Color=plate end
 		bay.buy.Visible=state~="locked"
@@ -281,7 +306,7 @@ function pedestalLook(plot,count)
 		local open=i<=count
 		ped.part.Color=if open then Workshop.Yellow else Color3.fromRGB(120,128,140)
 		ped.part.Material=if open then Enum.Material.SmoothPlastic else Enum.Material.Slate
-		if not open then card(ped,"LOCKED","More pedestals at","the ROLLING board","","",Color3.fromRGB(200,205,215)) ped.prompt.Enabled=false
+		if not open then card(ped,"LOCKED","More pedestals at","ROLL UPGRADES","","",Color3.fromRGB(200,205,215)) ped.prompt.Enabled=false
 		elseif ped.card.name.Text=="LOCKED" then card(ped,"","","","","") end
 	end
 end
@@ -459,6 +484,7 @@ function G.start()
 		plot.owner=p plot.sign.Text=p.DisplayName.."'s Factory"
 		p.CameraMaxZoomDistance=C.CameraMaxZoom
 		sessions[p]={plot=plot,visuals={},bays={},nextRoll=restoredCooldown(d),lastRequest=0}
+		task.spawn(function() local ctx=sessions[p] if ctx then ctx.inGroup=checkGroup(p,false) end end)
 		local ls=Instance.new("Folder") ls.Name="leaderstats" ls.Parent=p local cash=Instance.new("StringValue") cash.Name="Cash" cash.Parent=ls
 		p:GetAttributeChangedSignal("Cash"):Connect(function() cash.Value=Format.cash(p:GetAttribute("Cash") or 0) end)
 		p.CharacterAdded:Connect(function(char) spawnCharacter(p,char) end)
@@ -497,7 +523,7 @@ function G.start()
 	Players.PlayerRemoving:Connect(function(p)
 		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory" ctx.rollToken=nil
 			for i in ctx.plot.stations.Roll.pedestals do clearOffer(ctx.plot,i) end ctx.plot.pedestalCount=nil pedestalLook(ctx.plot,C.StartPedestals)
-			for _,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
+			for i,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="BAY "..i Workshop.clearPurchase(bay.buy) bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
 			floorLook(ctx.plot,0) for i,bay in ctx.plot.bays do if floorOf(i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
 		sessions[p]=nil
 	end)
@@ -505,6 +531,7 @@ function G.start()
 		local ctx=sessions[p] local d=Data.get(p) if not ctx or not d or type(name)~="string" then return end
 		local now=os.clock() if now-ctx.lastRequest<C.RequestInterval then return end ctx.lastRequest=now
 		if name=="Sync" then send(p) return end
+		if name=="GroupCheck" then ctx.inGroup=checkGroup(p,true) send(p) return end
 		args=if type(args)=="table" then args else {}
 		-- World purchases require the owner's own station and a nearby character.
 		local target local reach=C.Layout.InteractionDistance
@@ -515,11 +542,21 @@ function G.start()
 			local wing=type(args.bay)=="number" and floorOf(args.bay)
 			local f=wing and ctx.plot.floors and ctx.plot.floors[wing]
 			if name=="Unlock" and f and f.first==args.bay and args.bay==d.crushers.bays+1 then target=f.face reach=45 end
+		elseif name=="TimeSkip" then target=ctx.plot.stations.Goals and ctx.plot.stations.Goals.part
 		elseif name=="Buy" then local ped=type(args.slot)=="number" and ctx.plot.stations.Roll.pedestals[args.slot] if ped then target=ped.part end
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
 		if name~="Equip" and name~="Unequip" and name~="Recycle" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
+		end
+		if name=="TimeSkip" then
+			if not ctx.inGroup then ctx.inGroup=checkGroup(p,true) end
+			if not ctx.inGroup then send(p,"Join the group first to unlock the free time skip.") return end
+			local now=workspace:GetServerTimeNow()
+			if now<(d.timeSkipAt or 0) then send(p,"Your next free time skip isn't ready yet.") return end
+			local reward=skipReward(p,d)
+			d.cash=C.money(d.cash+reward) d.timeSkipAt=now+C.Goals.SkipCooldownHours*3600
+			send(p,"Done!") return
 		end
 		action(p,name,args)
 	end)
