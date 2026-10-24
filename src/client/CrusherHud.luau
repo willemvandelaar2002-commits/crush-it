@@ -22,7 +22,7 @@ function H.start()
  local gui=make("ScreenGui",{Name="CrushHud",ResetOnSpawn=false,DisplayOrder=2,ZIndexBehavior=Enum.ZIndexBehavior.Sibling},p:WaitForChild("PlayerGui"))
  -- the tutorial has its own step card now (client/Tutorial); this line stays hidden
  local tutorial=text(gui,"Tutorial","",UDim2.new(.5,0,0,70),UDim2.fromOffset(650,46)) tutorial.AnchorPoint=Vector2.new(.5,0) tutorial.Visible=false
- local balances=text(gui,"FactoryBalances","",UDim2.new(.5,0,0,188),UDim2.fromOffset(650,30)) balances.AnchorPoint=Vector2.new(.5,0)
+ local balances=text(gui,"FactoryBalances","",UDim2.new(.5,0,0,188),UDim2.fromOffset(650,30)) balances.AnchorPoint=Vector2.new(.5,0) balances.Visible=false -- carried/ready line removed (the bin and seller show it)
  require(script.Parent.CashHud).start(gui)
  local function fitDesktopHeader()
   local width=math.clamp(workspace.CurrentCamera.ViewportSize.X-580,300,650)
@@ -64,7 +64,6 @@ function H.start()
  make("TextButton",{Name="CrushButton",Visible=false,Size=UDim2.fromOffset(1,1)},compatibility)
  local function redraw()
   if not state then return end
-  balances.Text="CARRIED "..Format.cash(state.carried).."  |  READY "..Format.cash(state.available)
   indexView.update(state)
  end
  -- PlayerGui-hosted SurfaceGuis receive mouse input reliably. Replicated world
