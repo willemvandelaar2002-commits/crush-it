@@ -1,5 +1,9 @@
 # Hub plaza (factory centre)
 
+24 Oct: Daily Spin is now active through its existing station's E prompt; the
+remaining station descriptions below retain their historical placeholder status.
+See [[Daily Spin]] for images, rewards, cooldown and persistence checks.
+
 22 Oct 2026, from Willem's "hub reference" (`Reference/Our goal/hub reference.png`).
 Built by `server/HubPlaza.luau`, called from `Hub.luau` (station). Everything
 sits inside the train loop (r < 172); +Z is the south spoke (spawn side).

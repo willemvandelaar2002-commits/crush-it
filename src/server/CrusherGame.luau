@@ -578,6 +578,7 @@ function G.start()
 		cashPerSecond=function(p) local d=Data.get(p) return if d then cps(p,d) else 0 end,
 		finishLegacyProduct=function(p) local d=Data.get(p) if d then d.scrap=C.money(d.scrap+d.crushers.available) d.crushers.available=0 action(p,"Sell") end end}
 	require(script.Parent.Shop).start(api) require(script.Parent.Rewards).start(api)
+	require(script.Parent.DailySpin).start(api)
 	-- /credits <amount> (or /cash): test cash, e.g. "/credits 5m". Studio, or the
 	-- place owner in live servers. No amount gives 1M.
 	local SUFFIX={k=1e3,m=1e6,b=1e9,t=1e12,qa=1e15}

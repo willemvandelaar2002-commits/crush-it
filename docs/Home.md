@@ -1,5 +1,10 @@
 # Crush It
 
+24 Oct Daily Spin: the plaza station opens an image-based wheel with one free
+spin every 24 hours. The server selects/persists cash, Golden Rush and crusher
+prizes; paid spins stay disabled. See [[Systems/Daily Spin]] for provisional
+weights, save recovery, Studio checks and remaining live verification.
+
 24 Oct upgrade clarity: bay plaques identify THIS CRUSHER and preview its next
 level output. FACTORY UPGRADES affects ALL YOUR CRUSHERS; ROLL UPGRADES affects
 FUTURE ROLLS. Existing prices and progression are retained. See [[Systems/Upgrade controls]].

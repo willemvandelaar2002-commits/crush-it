@@ -324,9 +324,18 @@ local function stationMesh(m: Model, name: string, f: CFrame, offset: CFrame?): 
 end
 
 -- Station builders. f: frame on the plaza floor, +Z facing the centre.
+local function spinControl(m: Model, f: CFrame)
+	local plate = W.part(m, "SpinControl", V(9, 2, 0.4), f * CFrame.new(0, 2.6, 5.1), W.Purple)
+	local gui = W.sign(plate)
+	W.text(gui, "OpenSpin", "DAILY SPIN  [E]", UDim2.fromScale(.04,.1), UDim2.fromScale(.92,.8))
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "DailySpinPrompt" prompt.ActionText = "Open" prompt.ObjectText = "Daily Spin"
+	prompt.HoldDuration = 0 prompt.MaxActivationDistance = 14 prompt.RequiresLineOfSight = false
+	prompt.Parent = plate CollectionService:AddTag(prompt, "DailySpinPrompt")
+end
 local function dailySpin(m: Model, f: CFrame)
 	if stationMesh(m, "DailySpin", f * CFrame.new(0, 1.2, 0)) then
-		base(m, f, 16, 10) header(m, f * CFrame.new(0, 23, 0), "DAILY SPIN", RED, 12) comingSoon(m, f * CFrame.new(0, 2.6, 5.1)) return
+		base(m, f, 16, 10) header(m, f * CFrame.new(0, 23, 0), "DAILY SPIN", RED, 12) spinControl(m, f) return
 	end
 	base(m, f, 16, 10)
 	W.part(m, "WheelStand", V(4, 6, 3), f * CFrame.new(0, 4, -1.5), W.Navy, true)
@@ -344,7 +353,7 @@ local function dailySpin(m: Model, f: CFrame)
 	cyl(m, "WheelHub", 1.2, 3, hub * CFrame.new(0, 0, 1) * CFrame.Angles(0, math.pi / 2, 0), GOLD)
 	W.part(m, "Pointer", V(1.6, 2.4, 1), hub * CFrame.new(0, 8.6, 1.2), GOLD)
 	header(m, f * CFrame.new(0, 21, 0), "DAILY SPIN", RED, 12)
-	comingSoon(m, f * CFrame.new(0, 2.6, 5.1))
+	spinControl(m, f)
 end
 local function topCrushers(m: Model, f: CFrame)
 	if stationMesh(m, "TopCrushers", f * CFrame.new(0, 1.2, -1)) then
@@ -658,7 +667,7 @@ function HubPlaza.build(parent: Instance, floorY: number)
 		local f = CFrame.lookAt(pos, target) * CFrame.Angles(0, math.pi, 0)
 		local sm = Instance.new("Model")
 		sm.Name = name .. "Station"
-		sm:SetAttribute("Placeholder", true)
+		sm:SetAttribute("Placeholder", name ~= "DailySpin")
 		builders[name](sm, f)
 		sm.WorldPivot = f
 		sm:ScaleTo(spec[3] or HubPlaza.StationScale)

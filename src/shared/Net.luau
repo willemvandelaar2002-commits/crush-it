@@ -30,7 +30,7 @@ local Net = {}
 
 -- Collectible-crusher protocol; legacy names remain available for perks/rewards.
 --   Travel      client -> server : "Hub" | "Plot" — top travel buttons (server teleports)
-for _, name in { "CrusherAction", "CrusherState", "CrusherOpen", "Travel" } do table.insert(NAMES, name) end
+for _, name in { "CrusherAction", "CrusherState", "CrusherOpen", "Travel", "DailySpin" } do table.insert(NAMES, name) end
 
 local folder: Instance
 if RunService:IsServer() then

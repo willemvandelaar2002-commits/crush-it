@@ -18,6 +18,7 @@
 --   DataService.whenLoaded(player) -> data (yields)
 --   DataService.Loaded (BindableEvent.Event: player, data)
 --   DataService.saveNow(player) -> boolean
+--   DataService.canSave(player) -> boolean (loaded and allowed to persist)
 
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
@@ -36,7 +37,7 @@ local store: Store
 local mockActive = false
 local defaults: { [string]: any } = {}
 local sanitizeFn: ((any) -> any)? = nil
-local profiles: { [Player]: { data: any, loaded: boolean, canSave: boolean } } = {}
+local profiles: { [Player]: { data: any, loaded: boolean, canSave: boolean, saving: boolean? } } = {}
 local loadedEvent = Instance.new("BindableEvent")
 DataService.Loaded = loadedEvent.Event
 
@@ -167,6 +168,11 @@ local function save(player: Player, release: boolean): boolean
 	if not profile or not profile.loaded or not profile.canSave then
 		return false
 	end
+	-- Snapshot after acquiring the save lock. Otherwise a slow autosave could
+	-- overwrite a newer spin reservation/delivery with an older profile snapshot.
+	while profile.saving do task.wait(0.05) end
+	if profiles[player] ~= profile or not profile.canSave then return false end
+	profile.saving = true
 	local snapshot = deepCopy(profile.data)
 	local stolen = false
 	local ok = retry(function()
@@ -185,6 +191,7 @@ local function save(player: Player, release: boolean): boolean
 		profile.canSave = false
 		warn(`[DataService] {player.Name}'s profile is owned by another server; stopped saving here`)
 	end
+	profile.saving = false
 	return ok and not stolen
 end
 
@@ -194,6 +201,10 @@ function DataService.get(player: Player): any
 end
 
 function DataService.isMock(): boolean return mockActive end
+function DataService.canSave(player: Player): boolean
+	local p = profiles[player]
+	return p ~= nil and p.loaded and p.canSave
+end
 function DataService.replaceForTest(player: Player, data: any)
 	assert(RunService:IsStudio() and mockActive, "Only the Studio mock profile may be replaced")
 	local p = profiles[player] assert(p and p.loaded)
