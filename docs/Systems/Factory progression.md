@@ -86,8 +86,11 @@ the entrance; maintenance robot and crates beside it.
 it only when the template has the attribute `Ready=true`; otherwise the
 code-built fuser shows. Placement turns it by its input rings and centres it
 by its bounding box, so the imported pivot doesn't matter. First import came
-in at 100x scale and renders black (vertex colours read as black; part Color
-has no effect), so Ready is not set yet.
+in at 100x scale and lying on its back (Blender Z-up); fixed in the template:
+scaled 0.01, turned +90 deg about X, pivot reset to the bottom centre, Ready
+set. Checked in Play: stands on the wing floor facing the entrance, E opens
+the fusion screen. Not used yet: Willem's FusionVisuals.luau (arm/lift
+motion) and crusher miniatures on the input rings.
 
 **Stage props** (`server/PlotStages.luau`, cumulative, built once, shown by
 plot level): rim bolts and lamp collars recoloured per stage (yellow, orange,
