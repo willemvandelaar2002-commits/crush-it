@@ -169,8 +169,10 @@ function I.new(gui, act)
 				local guard=label(frame,"Protected",if equipped then "EQUIPPED" else "LAST OF THIS TYPE",UDim2.new(0,5,1,-39),UDim2.new(1,-10,0,28),15)
 				guard.TextColor3=Color3.fromRGB(233,240,255)
 			end
-			if item.modifier~="Standard" then
-				label(frame,"Modifier",item.modifier,UDim2.fromOffset(5,135),UDim2.new(1,-10,0,22),17)
+			if item.modifier~="Standard" or item.fused then
+				local text=if item.fused and item.modifier~="Standard" then "FUSED · "..item.modifier elseif item.fused then "FUSED x"..C.Fusion.Mult else item.modifier
+				local mod=label(frame,"Modifier",text,UDim2.fromOffset(5,135),UDim2.new(1,-10,0,22),17)
+				if item.fused then mod.TextColor3=Color3.fromRGB(255,205,60) end
 			end
 		else
 			label(frame,"Odds","1 in "..tostring(C.oddsFor(def.id)),UDim2.fromOffset(4,185),UDim2.new(1,-8,0,28),22)
@@ -200,7 +202,7 @@ function I.new(gui, act)
 		ownedButton.TextTransparency=if tab=="Owned" then 0 else .2
 		for name,node in filterButtons do node.TextTransparency=if name==filter then 0 else .2 end
 		local keys={tab,filter,tostring(selectedBay),tostring(state.unlocked)}
-		for _,item in state.items do table.insert(keys,item.id..":"..item.type..":"..item.rarity..":"..item.modifier..":"..item.level..":"..item.stats.cps) end
+		for _,item in state.items do table.insert(keys,item.id..":"..item.type..":"..item.rarity..":"..item.modifier..":"..item.level..":"..item.stats.cps..":"..tostring(item.fused)) end
 		for bay=1,C.MaxBays do table.insert(keys,state.bays[tostring(bay)] or "-") end
 		local nextSignature=table.concat(keys,"|")
 		if signature==nextSignature or not panel.Visible then return end

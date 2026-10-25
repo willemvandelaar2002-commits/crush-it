@@ -74,7 +74,7 @@ end
 local function makeTool(item: any): Tool
 	local tool = Instance.new("Tool")
 	tool.Name = toolName(item)
-	tool.ToolTip = item.rarity .. (if item.modifier~="Standard" then " · "..item.modifier else "") .. " crusher · place it in a bay"
+	tool.ToolTip = (if item.fused then "Fused " else "") .. item.rarity .. (if item.modifier~="Standard" then " · "..item.modifier else "") .. " crusher · place it in a bay"
 	tool.CanBeDropped = false
 	tool.RequiresHandle = true
 	tool.GripPos = Vector3.new(0, -0.6, 0.9)
@@ -82,6 +82,7 @@ local function makeTool(item: any): Tool
 	tool:SetAttribute("CrusherType",item.type) -- portrait lookup only
 	tool:SetAttribute("Level", item.level)
 	tool:SetAttribute("Modifier",item.modifier)
+	tool:SetAttribute("Fused",item.fused==true)
 	local handle = Instance.new("Part")
 	handle.Name = "Handle" handle.Size = Vector3.new(1, 1, 1) handle.Transparency = 1
 	handle.CanCollide = false handle.CanTouch = false handle.CanQuery = false handle.Massless = true
@@ -106,7 +107,7 @@ function T.sync(player: Player, d: any)
 			local id = tool:IsA("Tool") and tool:GetAttribute("InventoryId")
 			if typeof(id) == "string" then
 				local item = want[id]
-				if not item or have[id] or tool:GetAttribute("Level") ~= item.level or tool:GetAttribute("Modifier")~=item.modifier then tool:Destroy()
+				if not item or have[id] or tool:GetAttribute("Level") ~= item.level or tool:GetAttribute("Modifier")~=item.modifier or tool:GetAttribute("Fused")~=(item.fused==true) then tool:Destroy()
 				else have[id] = true end
 			end
 		end
