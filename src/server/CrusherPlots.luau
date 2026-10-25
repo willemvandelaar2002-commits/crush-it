@@ -57,10 +57,8 @@ local function topFloor(parent,o,wing,side)
   local base=W.part(top,name.."Base",V(5.4,.4,5.4),cf*CFrame.new(0,.2,0),W.Navy,true)
   local glow=W.part(top,name.."Glow",V(.3,4.6,4.6),cf*CFrame.new(0,.45,0)*CFrame.Angles(0,0,math.pi/2),Color3.fromRGB(80,235,110))
   glow.Shape=Enum.PartType.Cylinder glow.Material=Enum.Material.Neon glow.CastShadow=false
-  -- sign on a post beside the pad (outer side), clear of the bay plaques
-  local sx=side*4.4
-  W.part(top,name.."Post",V(.5,4.4,.5),cf*CFrame.new(sx,2.2,0),W.Yellow)
-  local board=W.part(top,name.."Sign",V(4.6,2,.3),cf*CFrame.new(sx,5.4,0),Color3.fromRGB(53,170,80))
+  -- floating label high over the pad: out of the walking path and clear of the bay plaques
+  local board=W.part(top,name.."Sign",V(5.6,2.2,.3),cf*CFrame.new(0,8,0),Color3.fromRGB(53,170,80))
   board.CanQuery=false
   W.text(W.sign(board),"Label",label,UDim2.fromScale(.04,.06),UDim2.fromScale(.92,.88))
   local prompt=P.prompt(base,action,"Lift") prompt.MaxActivationDistance=8
