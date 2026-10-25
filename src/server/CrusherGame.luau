@@ -187,7 +187,7 @@ local function send(p,message,result)
 		local hidden=(f~=nil and f.mode~="built") or (C.bayLayout(i).expansion==true and Progression.level(d)<1)
 		if bay.hidden~=hidden then bay.hidden=hidden bay.shown=nil partsLook(bay.model,if hidden then "hidden" else "built") end
 		if hidden then
-			bay.label.name.Text="" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="" bay.buy.Visible=false bay.manage.Visible=false bay.lockLabel.Text=""
+			bay.label.name.Text="" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="" bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false bay.lockLabel.Text=""
 			continue
 		end
 		local item=Rules.find(d,s.equipped[tostring(i)])
@@ -201,6 +201,7 @@ local function send(p,message,result)
 			card.rarity.TextColor3=r.color:Lerp(Color3.new(1,1,1),.25)
 			local view=UpgradeView.crusher(d,item,displayPerks)
 			card.stats.Text=view.effect Workshop.purchase(bay.buy,view)
+			Workshop.purchase(bay.max,UpgradeView.crusherMax(d,item))
 		else
 			card.scope.Text="BAY "..i
 			card.name.Text=if state=="open" then "EMPTY BAY" elseif state=="next" then "NEXT BAY" else "LOCKED"
@@ -216,6 +217,7 @@ local function send(p,message,result)
 		if bay.part.Color~=plate then bay.part.Color=plate end
 		bay.buy.Visible=state~="locked"
 		bay.manage.Visible=state=="busy"
+		bay.max.Visible=state=="busy"
 		-- The direct plaque buttons replace the default prompt overlay, which can
 		-- cover the small level button and intercept its mouse click.
 		bay.prompt.Enabled=false
@@ -531,7 +533,7 @@ function G.start()
 	Data.start("CrushItPlayer_v1",{cash=C.StartCash,scrap=0,purchases={},daily={day=0,streak=0},goldenRush=0,lastSeen=0},function(d) return Rules.migrate(d,guid) end)
 	Plots.create() require(script.Parent.World).create() Friend.start()
 	require(script.Parent.CrusherPreviews).start()
-	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
+	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false end end
 	for _,plot in Plots.all() do pedestalLook(plot,C.StartPedestals) end
 	for _,plot in Plots.all() do floorLook(plot,0) ProgressVisuals.sync(plot,nil,nil,0,"") for i,bay in plot.bays do if floorOf(i) or C.bayLayout(i).expansion then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end end
 	require(script.Parent.Moat).start(function(p) local ctx=sessions[p] return if ctx then Plots.spawnFor(ctx.plot) else CFrame.new(0,5,14) end, G.safeTeleport)
@@ -587,7 +589,7 @@ function G.start()
 	Players.PlayerRemoving:Connect(function(p)
 		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory" ctx.rollToken=nil
 			for i in ctx.plot.stations.Roll.pedestals do clearOffer(ctx.plot,i) end ctx.plot.pedestalCount=nil pedestalLook(ctx.plot,C.StartPedestals)
-			for i,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="BAY "..i Workshop.clearPurchase(bay.buy) bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
+			for i,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="BAY "..i Workshop.clearPurchase(bay.buy) bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false end end
 			floorLook(ctx.plot,0) RowVisuals.sync(ctx.plot,nil) ProgressVisuals.sync(ctx.plot,nil,nil,0,"") for i,bay in ctx.plot.bays do if floorOf(i) or C.bayLayout(i).expansion then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
 		sessions[p]=nil
 	end)
@@ -600,9 +602,9 @@ function G.start()
 		-- World purchases require the owner's own station and a nearby character.
 		local target local reach=C.Layout.InteractionDistance
 		if name=="Upgrade" then local u=C.Upgrades[args.id] if u then target=ctx.plot.stations[u.group].part end
-		elseif name=="Level" or name=="Unlock" then
+		elseif name=="Level" or name=="LevelMax" or name=="Unlock" then
 			local bay=if type(args.bay)=="number" then ctx.plot.bays[args.bay] else nil
-			if bay and (name=="Unlock" and args.bay==d.crushers.bays+1 or name=="Level" and d.crushers.equipped[tostring(args.bay)]==args.id) then target=bay.part end
+			if bay and (name=="Unlock" and args.bay==d.crushers.bays+1 or name~="Unlock" and d.crushers.equipped[tostring(args.bay)]==args.id) then target=bay.part end
 			local wing=type(args.bay)=="number" and floorOf(args.bay)
 			local f=wing and ctx.plot.floors and ctx.plot.floors[wing]
 			if name=="Unlock" and f and f.first==args.bay and args.bay==d.crushers.bays+1 then target=f.face reach=45 end

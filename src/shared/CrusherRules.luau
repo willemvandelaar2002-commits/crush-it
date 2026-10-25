@@ -15,6 +15,17 @@ local function integer(v, default, max) return math.floor(number(v,default,max))
 function R.find(d,id)
 	for _,item in d.crushers.owned do if item.id == id then return item end end
 end
+-- How many levels this crusher can buy in a row with this much cash, and
+-- what they cost together. Stops at C.MaxLevel. Used by MAX on the plaque.
+function R.maxLevels(cash,item)
+	local n,total,level=0,0,item.level
+	while level<C.MaxLevel do
+		local cost=C.individualCost({level=level,rarity=item.rarity})
+		if total+cost>cash then break end
+		total+=cost level+=1 n+=1
+	end
+	return n,total
+end
 function R.migrate(d, guid)
 	d.cash = C.money(number(d.cash,C.StartCash))
 	d.scrap = C.money(number(d.scrap,0))
@@ -171,6 +182,13 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if item.level>=C.MaxLevel then return false,"Crusher is at maximum level." end
 		if not pay(C.individualCost(item)) then return false,"Not enough cash. Collect and sell scrap." end
 		item.level+=1
+	elseif action=="LevelMax" then
+		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
+		if item.level>=C.MaxLevel then return false,"Crusher is at maximum level." end
+		local n=R.maxLevels(d.cash,item)
+		if n<1 then return false,"Not enough cash. Collect and sell scrap." end
+		for _=1,n do pay(C.individualCost(item)) item.level+=1 end
+		return true,"Done!",n
 	elseif action=="Upgrade" then
 		local u=C.Upgrades[args.id] if not u then return false,"Unknown upgrade." end
 		local lv=s.upgrades[args.id] if lv>=C.upgradeMax(args.id) then return false,"Upgrade is at maximum level." end
@@ -216,9 +234,10 @@ function R.act(d,session,action,args,now,random,guid,perks)
 	local ok,message,result=act(d,session,action,args,now,random,guid,perks)
 	if ok then
 		-- counters for quests (QuestRules.stat)
-		local counted=({Sell="sells",Buy="buys",Level="levels",Upgrade="upgrades"})[action]
-		if counted then d.stats=d.stats or {} d.stats[counted]=(d.stats[counted] or 0)+1 end
-		local id=if action=="EquipBest" then "Equip" else action
+		local counted=({Sell="sells",Buy="buys",Level="levels",LevelMax="levels",Upgrade="upgrades"})[action]
+		-- LevelMax counts every level it bought, as if LEVEL UP was pressed that often
+		if counted then d.stats=d.stats or {} d.stats[counted]=(d.stats[counted] or 0)+(if action=="LevelMax" then result else 1) end
+		local id=if action=="EquipBest" then "Equip" elseif action=="LevelMax" then "Level" else action
 		if action=="Upgrade" then local u=C.Upgrades[(type(args)=="table" and args.id) or ""] id=if u and u.group=="Production" then "Upgrade" else "" end
 		R.tutorialAdvance(d,id)
 	end

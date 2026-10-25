@@ -154,9 +154,11 @@ function W.plaque(parent,cf,index)
 	local stats=W.text(gui,"Output","",UDim2.fromScale(.04,.68),UDim2.fromScale(.6,.29))
 	stats.TextXAlignment=Enum.TextXAlignment.Left stats.TextColor3=Color3.fromRGB(255,240,170)
 	local buy=W.button(gui,"Level","",UDim2.fromScale(.66,.07),UDim2.fromScale(.32,.55),"Bay",nil,index)
-	local manage=W.button(gui,"Manage","SWAP",UDim2.fromScale(.7,.67),UDim2.fromScale(.24,.27),"Manage",nil,index)
+	-- bottom row: MAX (buy as many levels as the cash covers) and SWAP
+	local max=W.button(gui,"LevelMax","MAX",UDim2.fromScale(.66,.67),UDim2.fromScale(.17,.27),"LevelMax",nil,index)
+	local manage=W.button(gui,"Manage","SWAP",UDim2.fromScale(.84,.67),UDim2.fromScale(.14,.27),"Manage",nil,index)
 	Style.setButtonColor(manage,Color3.fromRGB(70,140,230))
-	return face,{name=name,rarity=rarity,stats=stats,scope=scope},buy,manage
+	return face,{name=name,rarity=rarity,stats=stats,scope=scope},buy,manage,max
 end
 -- Yellow/navy hazard band (alternating chunky blocks).
 function W.hazard(parent,cf,width,height,depth)

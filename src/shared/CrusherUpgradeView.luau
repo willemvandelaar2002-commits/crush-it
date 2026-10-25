@@ -62,4 +62,14 @@ function V.crusher(d,item,perks)
 	view.button=if maxed then "MAX\nLEVEL" else "LEVEL UP\n"..Format.cash(view.cost)
 	return view
 end
+-- MAX on the plaque: as many LEVEL UPs for this crusher as the cash covers.
+function V.crusherMax(d,item)
+	local maxed=item.level>=C.MaxLevel
+	local n,total=Rules.maxLevels(d.cash,item)
+	-- with n>0 the cash covers total (Ready); with n=0 it misses the next level (Short)
+	local cost=if n>0 then total else C.individualCost(item)
+	local view=V.purchase(d.cash,cost,maxed,"Spends your cash on as many levels for this crusher as it can.","CRUSHER +"..math.max(n,1).."!")
+	view.button=if maxed then "MAX" else "MAX\n+"..n
+	return view
+end
 return V

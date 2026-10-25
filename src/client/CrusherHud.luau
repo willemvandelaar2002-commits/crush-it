@@ -136,6 +136,9 @@ function H.start()
      elseif bay==state.unlocked+1 then purchase("Unlock",{bay=bay})
      elseif bay<=state.unlocked then indexView.open(bay)
      else toast.Text="Unlock bay "..(state.unlocked+1).." first." noticeUntil=os.clock()+4 end
+    elseif action=="LevelMax" then
+     -- MAX: buy as many levels for the crusher on this plaque as the cash covers
+     local id=state.bays[tostring(bay)] if id then purchase("LevelMax",{id=id,bay=bay}) end
     elseif action=="Upgrade" then purchase(action,{id=v:GetAttribute("UpgradeId")})
     elseif action=="UpgradePlot" then purchase(action,{})
     elseif action=="ApplyCoating" then purchase(action,{token=state.coating and state.coating.token})
