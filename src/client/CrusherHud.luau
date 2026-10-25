@@ -137,6 +137,8 @@ function H.start()
      elseif bay<=state.unlocked then indexView.open(bay)
      else toast.Text="Unlock bay "..(state.unlocked+1).." first." noticeUntil=os.clock()+4 end
     elseif action=="Upgrade" then purchase(action,{id=v:GetAttribute("UpgradeId")})
+    elseif action=="UpgradePlot" then purchase(action,{})
+    elseif action=="ApplyCoating" then purchase(action,{token=state.coating and state.coating.token})
     -- goals board: the favorite / join prompts are Roblox's own (client side)
     elseif action=="Favorite" then
      pcall(function() game:GetService("AvatarEditorService"):PromptSetFavorite(game.PlaceId,Enum.AvatarItemType.Asset,true) end)

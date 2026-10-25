@@ -100,3 +100,17 @@ mocked controls as a completed Studio interaction test. The desktop review list
 above, including held-tool LEVEL UP, success feedback, streaming, MAX states
 and persistence/rejoin, remains manual. The test profile used Studio's mock
 store; no live save was changed. No publishing was performed.
+
+25 October outer-bay pointer fix: unbuilt upper-floor stairs were invisible
+and noncolliding but still queryable. Their treads intercepted mouse rays
+over ground bays 6 and 12, leaving those buttons usable only from side angles.
+CrusherGame.partsLook now saves BaseQ alongside BaseT/BaseC, disables queries
+for hidden/ghost geometry, and restores each part's original query flag when
+built. Clickable plaques regain their authored query settings on reveal.
+
+Fresh Studio checked 530 hidden floor parts with collision/query disabled,
+106 built floor parts with original settings restored, and 250 ray samples
+across outer-bay button faces on unbuilt wings; every sample reached its own
+plaque. Rojo build and whitespace checks passed. This verifies the obstruction
+fix; a full real mouse hover/click and streaming review remains manual.
+No profile fixtures, live-save changes or purchases were used for this fix.

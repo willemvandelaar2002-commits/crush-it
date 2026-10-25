@@ -31,11 +31,18 @@ C.Layout.StairFront=C.Layout.WalkFront+C.Layout.StairRun
 -- Roll pedestals, station-local (x, z) with +z out of the machine's front, in
 -- unlock order: centre first, then outwards. #PedestalSpots = MaxPedestals.
 C.PedestalSpots = { Vector2.new(0,23), Vector2.new(-11,21), Vector2.new(11,21), Vector2.new(-20.5,15.5), Vector2.new(20.5,15.5) }
-C.MaxBays = C.Layout.Wings*C.Layout.Tiers*C.Layout.PerWing
+C.BaseMaxBays = C.Layout.Wings*C.Layout.Tiers*C.Layout.PerWing
+C.MaxBays = C.BaseMaxBays+C.Layout.PerWing
+C.Layout.ExpansionZ = C.Layout.BayZ-C.Layout.UpperBack-C.Layout.BayDepth-7
 C.LegacyTypes={"Bumper","Steel","Cobalt","Mega","Titan","Quantum"}
 for i=4,C.MaxBays do C.BayCosts[i]=math.floor(900*1.45^(i-3)) end
+C.PlotUpgrade = {MaxLevel=1,Cost=math.floor(C.BayCosts[C.BaseMaxBays+1]*10)}
+function C.bayCapacity(level) return C.BaseMaxBays+(if type(level)=="number" and level>=1 and level<math.huge then C.Layout.PerWing else 0) end
 function C.bayLayout(index)
 	local l=C.Layout local n=index-1 local perTier=l.Wings*l.PerWing
+	if index>C.BaseMaxBays then local row=index-C.BaseMaxBays
+		return {x=(row-(l.PerWing+1)/2)*l.Pitch,y=0,z=l.ExpansionZ,yaw=0,tier=1,wing=3,row=row,side=0,expansion=true}
+	end
 	-- left wing fills first (inner to outer), then the right; ground, then upper
 	local tier=math.floor(n/perTier) local k=n%perTier
 	local wing=math.floor(k/l.PerWing) local row=k%l.PerWing
@@ -47,6 +54,7 @@ end
 -- Each wing turns about its inner front corner so the outer end comes forward
 -- (an open "V" toward the entrance, like the reference). Plot-local CFrame.
 function C.wingFrame(side)
+	if side==0 then return CFrame.new() end
 	local l=C.Layout local ix=side*(l.WingX-(l.PerWing*l.Pitch+2)/2) local pz=l.BayZ+l.BayDepth/2
 	return CFrame.new(ix,0,pz)*CFrame.Angles(0,-side*l.WingTilt,0)*CFrame.new(-ix,0,-pz)
 end
@@ -54,6 +62,7 @@ end
 function C.floorStart(tier,wing) local l=C.Layout return (tier-1)*l.Wings*l.PerWing+(wing-1)*l.PerWing+1 end
 function C.bayName(index)
 	local v=C.bayLayout(index)
+	if v.expansion then return "Expansion "..v.row end
 	return (if v.tier==1 then "Ground" else "Upper").." "..(if v.wing==1 then "left" else "right").." "..v.row
 end
 function C.nextBenefit(id,lv)
@@ -110,6 +119,15 @@ C.Modifiers = {
 	{ name = "Standard", weight = 80, mult = 1 }, { name = "Rusty", weight = 14, mult = 1.15 },
 	{ name = "Polished", weight = 5, mult = 1.5 }, { name = "Charged", weight = 1, mult = 2 },
 }
+-- Applied at the late-game Coating Lab only; original roll weights stay intact.
+C.CraftModifiers = {{name="Frost",mult=1.65},{name="Fire",mult=1.8}}
+C.Coatings = {
+	{name="Polished",factor=4,color=Color3.fromRGB(215,235,250)},
+	{name="Frost",factor=7,color=Color3.fromRGB(90,225,255)},
+	{name="Fire",factor=10,color=Color3.fromRGB(255,120,35)},
+	{name="Charged",factor=16,color=Color3.fromRGB(185,95,255)},
+}
+C.CoatingQuoteSeconds=20
 C.Upgrades = {
 	Damage = { name = "Damage", group = "Production", base = 20, growth = 1.65 },
 	Speed = { name = "Strike speed", group = "Production", base = 30, growth = 1.7 },
@@ -149,7 +167,10 @@ end
 function C.rarityOf(typeId) for _,r in C.Rarities do for _,t in r.types do if t==typeId then return r end end end end
 function C.typeById(id) for _,v in C.Types do if v.id == id then return v end end end
 function C.rarity(name) for _,v in C.Rarities do if v.name == name then return v end end end
-function C.modifier(name) for _,v in C.Modifiers do if v.name == name then return v end end end
+function C.modifier(name)
+	for _,v in C.Modifiers do if v.name==name then return v end end
+	for _,v in C.CraftModifiers do if v.name==name then return v end end
+end
 function C.money(n) return math.clamp(math.floor(n * 100 + 0.5) / 100, 0, C.MaxMoney) end
 function C.globalCost(id, level) local u = C.Upgrades[id] return math.floor(u.base * u.growth ^ level) end
 function C.individualCost(item) return math.floor(C.IndividualBase * C.IndividualGrowth ^ (item.level - 1) * C.rarity(item.rarity).mult) end

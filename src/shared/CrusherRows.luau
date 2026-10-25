@@ -5,11 +5,12 @@ local R={}
 function R.index(bay)
 	return math.floor((bay-1)/C.Layout.PerWing)+1
 end
-function R.count() return C.Layout.Wings*C.Layout.Tiers end
+function R.count() return math.ceil(C.MaxBays/C.Layout.PerWing) end
 function R.snapshot(d)
 	local s=d.crushers local owned={} local used={}
+	local capacity=math.min(s.bays,C.bayCapacity(s.plotLevel))
 	for _,item in s.owned do owned[item.id]=item end
-	for bay=1,math.min(s.bays,C.MaxBays) do local id=s.equipped[tostring(bay)]
+	for bay=1,capacity do local id=s.equipped[tostring(bay)]
 		if id then used[id]=(used[id] or 0)+1 end
 	end
 	local out={rows={},byItem={}}
@@ -17,11 +18,12 @@ function R.snapshot(d)
 		local first=(index-1)*C.Layout.PerWing+1 local last=first+C.Layout.PerWing-1
 		local layout=C.bayLayout(first)
 		local row={index=index,first=first,last=last,capacity=C.Layout.PerWing,filled=0,matches=0,
-			unlocked=math.clamp(s.bays-first+1,0,C.Layout.PerWing),active=false,bonus=0,multiplier=1,
+			unlocked=math.clamp(capacity-first+1,0,C.Layout.PerWing),active=false,bonus=0,multiplier=1,
 			name=(if layout.tier==1 then "GROUND " else "UPPER ")..(if layout.wing==1 then "LEFT" else "RIGHT")}
+		if layout.expansion then row.name="EXPANSION ROW" end
 		local counts={} local valid={}
 		for bay=first,last do
-			local id=if bay<=s.bays then s.equipped[tostring(bay)] else nil
+			local id=if bay<=capacity then s.equipped[tostring(bay)] else nil
 			local item=id and owned[id] local rarity=item and C.rarityOf(item.type)
 			-- Corrupt duplicate equipment or a mismatched saved rarity cannot
 			-- activate a set. Ordinary transactions/migration already forbid these.

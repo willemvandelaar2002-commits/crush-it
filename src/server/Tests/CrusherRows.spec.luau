@@ -10,7 +10,7 @@ return function()
 	local function guid() serial+=1 return "row-fixture-"..serial end
 	local function fresh()
 		local d=R.migrate({cash=1e9},guid)
-		d.crushers.owned={} d.crushers.equipped={} d.crushers.bays=C.MaxBays
+		d.crushers.owned={} d.crushers.equipped={} d.crushers.bays=C.MaxBays d.crushers.plotLevel=1
 		d.crushers.tutorial=#C.TutorialSteps+1
 		return d
 	end
@@ -23,9 +23,9 @@ return function()
 		end
 		return items
 	end
-	check(Rows.count()==4 and C.Layout.PerWing==6,"four physical six-bay rows")
+	check(Rows.count()==5 and C.BaseMaxBays==24 and C.Layout.PerWing==6,"four base rows plus one expansion row")
 	for bay=1,C.MaxBays do local l=C.bayLayout(bay)
-		check(Rows.index(bay)==(l.tier-1)*C.Layout.Wings+l.wing,"row matches wing/floor layout")
+		check(Rows.index(bay)==(if l.expansion then 5 else (l.tier-1)*C.Layout.Wings+l.wing),"row matches physical layout")
 	end
 	for _,rarity in C.Rarities do for row=1,Rows.count() do
 		local d=fresh() local items=fill(d,row,rarity.name)

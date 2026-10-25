@@ -108,13 +108,13 @@ return function()
 	local oldId=old.crushers.equipped["3"]
 	old=R.migrate(game.HttpService:JSONDecode(game.HttpService:JSONEncode(old)),id)
 	check(old.crushers.bays==3 and old.crushers.equipped["3"]==oldId and R.find(old,oldId).level==7,"three-bay save retains equipment and instance level")
-	for bay=4,C.MaxBays do
+	for bay=4,C.BaseMaxBays do
 		check(act(old,{},"Unlock") and old.crushers.bays==bay,"sequential expanded bay unlock")
 	end
 	check(C.bayLayout(C.Layout.Wings*C.Layout.PerWing).tier==1 and C.bayLayout(C.Layout.Wings*C.Layout.PerWing+1).tier==2,"ground floor unlocks before upper tier")
-	check(act(old,{},"Equip",{id=oldId,bay=C.MaxBays}) and old.crushers.equipped[tostring(C.MaxBays)]==oldId and old.crushers.equipped["3"]==nil,"existing instance equips beyond old capacity")
+	check(act(old,{},"Equip",{id=oldId,bay=C.BaseMaxBays}) and old.crushers.equipped[tostring(C.BaseMaxBays)]==oldId and old.crushers.equipped["3"]==nil,"existing instance equips beyond old capacity")
 	local saved=R.migrate(game.HttpService:JSONDecode(game.HttpService:JSONEncode(old)),id)
-	check(saved.crushers.equipped[tostring(C.MaxBays)]==oldId and saved.crushers.bays==C.MaxBays,"expanded equipment survives save roundtrip")
+	check(saved.crushers.equipped[tostring(C.BaseMaxBays)]==oldId and saved.crushers.bays==C.BaseMaxBays,"expanded equipment survives save roundtrip")
 	local plotConfig=require(game.ReplicatedStorage.Shared.Config).Plots
 	for bay=1,C.MaxBays do local layout=C.bayLayout(bay)
 		check(math.abs(layout.x)+C.Layout.MachineWidth/2<plotConfig.FloorSize/2 and layout.tier<=2,"bay fits the configured two-tier plot")

@@ -1,5 +1,9 @@
 # Matching rarity rows — 25 October 2026
 
+Later on 25 Oct, [[Factory progression]] adds a paid fifth row and craft-only
+Frost/Fire finishes. Base rows retain these rules; the expansion row qualifies
+after the plot upgrade. Different finishes still count toward the same rarity.
+
 A complete physical row of six equipped crushers of the same rarity gets a
 matching colour glow and a scrap-output bonus. Different types, levels and
 Standard/Rusty/Polished/Charged modifiers may form the set. This is a current
@@ -73,8 +77,9 @@ sharing four pulse slots, culling, deactivation and release cleanup.
 
 No connected Studio is available here. Fresh Play must verify actual glow,
 readability, shadows, input, streaming, held models, performance and Output.
-See [[../Apply-rarity-rows]]. Plot expansion, the Upgrade Plot board and
-merging/forging remain future work; no fifth row or item consumption is added.
+See [[../Apply-rarity-rows]] for the original row-only pass. The later
+[[Factory progression]] adds a paid fifth row and Coating Lab. Merging or
+consuming crushers remains outside that implementation.
 
 ## Connected Studio integration — 25 October 2026
 

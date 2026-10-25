@@ -1,5 +1,9 @@
 # Forty collectible crushers and the Index
 
+25 Oct progression: [[Factory progression]] adds applied Polished/Frost/Fire/
+Charged finishes, including craft-only Frost and Fire. Owned/held/bay models
+share finish details; forty type IDs and the weighted roll modifier pool remain.
+
 25 Oct art update: the procedural first pass below is superseded for all
 thirty-five non-imported types by [[Crusher identities]]. The roster, base odds
 and production bands remain current. Five imported special templates remain

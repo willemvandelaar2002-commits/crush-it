@@ -10,6 +10,9 @@ local C=Config.Crushers
 local Rules=require(RS.Shared.CrusherRules)
 local Rows=require(RS.Shared.CrusherRows)
 local RowVisuals=require(script.Parent.CrusherRowVisuals)
+local Progression=require(RS.Shared.FactoryProgression)
+local ProgressVisuals=require(script.Parent.FactoryProgressionVisuals)
+local Finish=require(RS.Shared.CrusherFinish)
 local Net=require(RS.Shared.Net)
 local Store=require(RS.Shared.Store)
 local Format=require(RS.Shared.Format)
@@ -72,9 +75,13 @@ end
 local function partsLook(model,mode)
 	for _,p in model:GetDescendants() do if p:IsA("BasePart") then
 		if p:GetAttribute("BaseT")==nil then p:SetAttribute("BaseT",p.Transparency) p:SetAttribute("BaseC",p.CanCollide) end
+		if p:GetAttribute("BaseQ")==nil then p:SetAttribute("BaseQ",p.CanQuery) end
 		local baseT=p:GetAttribute("BaseT")
 		p.Transparency=if mode=="built" then baseT elseif mode=="ghost" then math.max(baseT,.62) else 1
 		p.CanCollide=mode=="built" and p:GetAttribute("BaseC")==true
+		-- Invisible stairs/ghost floors must not intercept SurfaceGui mouse rays.
+		-- Restore the authored query flag for both solid floors and clickable plaques.
+		p.CanQuery=mode=="built" and p:GetAttribute("BaseQ")==true
 		p.CastShadow=mode=="built"
 	end end
 end
@@ -143,7 +150,7 @@ local function send(p,message,result)
 	Net.event("CrusherState"):FireClient(p,{cash=d.cash,carried=d.scrap,available=s.available,items=items,
 		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
 		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
-		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered})
+		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered,coating=ctx.coatingQuote})
 	local st=ctx.plot.stations
 	st.Collect.label.Text=Format.cash(s.available).." ready"
 	-- The pile grows with ready scrap (about one minute of output fills it).
@@ -177,7 +184,7 @@ local function send(p,message,result)
 	for i,bay in ctx.plot.bays do
 		-- bays on an upper floor that isn't built yet are invisible
 		local wing=floorOf(i) local f=wing and ctx.plot.floors and ctx.plot.floors[wing]
-		local hidden=f~=nil and f.mode~="built"
+		local hidden=(f~=nil and f.mode~="built") or (C.bayLayout(i).expansion==true and Progression.level(d)<1)
 		if bay.hidden~=hidden then bay.hidden=hidden bay.shown=nil partsLook(bay.model,if hidden then "hidden" else "built") end
 		if hidden then
 			bay.label.name.Text="" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="" bay.buy.Visible=false bay.manage.Visible=false bay.lockLabel.Text=""
@@ -216,6 +223,13 @@ local function send(p,message,result)
 		bayLook(bay,state)
 	end
 	RowVisuals.sync(ctx.plot,rowState)
+	local quote=ctx.coatingQuote local preview=""
+	if quote then local item=Rules.find(d,quote.id)
+		if item then local upgraded=table.clone(item) upgraded.modifier=quote.target
+			preview=C.typeById(item.type).name.." · "..item.modifier.." > "..quote.target.."\n"..Format.cash(Rules.stats(d,item,displayPerks).cps*60).." > "..Format.cash(Rules.stats(d,upgraded,displayPerks).cps*60).."/min (before row bonus)"
+		end
+	end
+	ProgressVisuals.sync(ctx.plot,d,quote,os.clock(),preview)
 end
 local function buildBay(p,i,item)
 	local ctx=sessions[p] local bay=ctx.plot.bays[i] local old=ctx.visuals[i]
@@ -226,6 +240,7 @@ local function buildBay(p,i,item)
 	if special then
 		special.id=item.id special.tier=t.input special.model.Name="EquippedCrusher"
 		special.model:SetAttribute("InventoryId",item.id) special.model:SetAttribute("Rarity",item.rarity) special.model:SetAttribute("Modifier",item.modifier)
+		Finish.apply(special.model,item.modifier,o)
 		special.model.Parent=bay.model ctx.visuals[i]=special Feel.track(special,t.id) return
 	end
 	local built=PressBuilder.build(o,t.tier) built.model.WorldPivot=o
@@ -244,7 +259,7 @@ local function buildBay(p,i,item)
 	elseif part:IsA("Light") then part.Enabled=false
 	elseif part:IsA("ParticleEmitter") then emitters+=1 part.Enabled=emitters<=C.MaxPressEmitters part.Rate=math.min(part.Rate,C.PressParticleRate)
 	end end
-	built.model.Parent=bay.model
+	Finish.apply(built.model,item.modifier,o) built.model.Parent=bay.model
 	local colors={Bumper=Color3.fromRGB(235,69,67),Steel=Color3.fromRGB(35,126,235),Cobalt=Color3.fromRGB(52,193,87),Mega=Color3.fromRGB(171,68,228),Titan=Color3.fromRGB(248,194,40),Quantum=Color3.fromRGB(50,208,220)}
 	-- Coloured cap on top of the press (the light strip on the bay beam replaces the old beacon).
 	local header=Workshop.part(built.model,"ToyHeader",Vector3.new(8.4,1,2),o*CFrame.new(0,l.MachineHeight-.5,1),colors[item.type] or Config.Presses[t.tier].accent)
@@ -295,6 +310,7 @@ local function displayModel(typeId,at,item)
 		for _,part in model:GetDescendants() do if part:IsA("BasePart") then part.CanCollide=false part.CanTouch=false part.CanQuery=false
 		elseif part:IsA("Light") or part:IsA("ParticleEmitter") then part.Enabled=false end end
 	end
+	if item then Finish.apply(model,item.modifier,at) end
 	return model
 end
 -- Black silhouette with a white outline (one Highlight per plot follows it).
@@ -463,7 +479,14 @@ local function action(p,name,args)
 	local ctx=sessions[p] local d=Data.get(p) if not ctx or not d then return false,"Profile is loading." end
 	local offer=if name=="Buy" and type(args)=="table" and type(args.slot)=="number" then ctx.offers and ctx.offers[args.slot] else nil
 	local newType=offer and not RollLook.owns(d.crushers.owned,offer.type)
-	local ok,message,result=Rules.act(d,ctx,name,args,os.clock(),random,guid,perks(p))
+	local ok,message,result
+	if name=="QuoteCoating" then
+		local quote,problem=Progression.quote(d,Tools.held(p),args.id,os.clock(),guid())
+		ctx.coatingQuote=quote ok=quote~=nil message=problem or "Review the coating preview, then confirm."
+	elseif name=="ApplyCoating" then
+		ok,message=Progression.apply(d,ctx.coatingQuote,args.token,Tools.held(p),os.clock())
+		ctx.coatingQuote=nil
+	else ok,message,result=Rules.act(d,ctx,name,args,os.clock(),random,guid,perks(p)) end
 	if ok and name=="Roll" then d.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock()) rollShow(p,result) end
 	if ok and name=="Buy" then
 		if newType then ctx.justDiscovered={id=result.id,type=result.type,rarity=result.rarity} end
@@ -510,7 +533,7 @@ function G.start()
 	require(script.Parent.CrusherPreviews).start()
 	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
 	for _,plot in Plots.all() do pedestalLook(plot,C.StartPedestals) end
-	for _,plot in Plots.all() do floorLook(plot,0) for i,bay in plot.bays do if floorOf(i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end end
+	for _,plot in Plots.all() do floorLook(plot,0) ProgressVisuals.sync(plot,nil,nil,0,"") for i,bay in plot.bays do if floorOf(i) or C.bayLayout(i).expansion then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end end
 	require(script.Parent.Moat).start(function(p) local ctx=sessions[p] return if ctx then Plots.spawnFor(ctx.plot) else CFrame.new(0,5,14) end, G.safeTeleport)
 	require(script.Parent.Kit.Leaderboard).start({store="CashBoard_v1",score=function(p) return p:GetAttribute("Cash") or 0 end})
 	local function spawnCharacter(p,char)
@@ -565,7 +588,7 @@ function G.start()
 		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory" ctx.rollToken=nil
 			for i in ctx.plot.stations.Roll.pedestals do clearOffer(ctx.plot,i) end ctx.plot.pedestalCount=nil pedestalLook(ctx.plot,C.StartPedestals)
 			for i,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="BAY "..i Workshop.clearPurchase(bay.buy) bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
-			floorLook(ctx.plot,0) RowVisuals.sync(ctx.plot,nil) for i,bay in ctx.plot.bays do if floorOf(i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
+			floorLook(ctx.plot,0) RowVisuals.sync(ctx.plot,nil) ProgressVisuals.sync(ctx.plot,nil,nil,0,"") for i,bay in ctx.plot.bays do if floorOf(i) or C.bayLayout(i).expansion then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
 		sessions[p]=nil
 	end)
 	Net.event("CrusherAction").OnServerEvent:Connect(function(p,name,args)
@@ -585,6 +608,8 @@ function G.start()
 			if name=="Unlock" and f and f.first==args.bay and args.bay==d.crushers.bays+1 then target=f.face reach=45 end
 		elseif name=="TimeSkip" then target=ctx.plot.stations.Goals and ctx.plot.stations.Goals.part
 		elseif name=="Buy" then local ped=type(args.slot)=="number" and ctx.plot.stations.Roll.pedestals[args.slot] if ped then target=ped.part end
+		elseif name=="UpgradePlot" then target=ctx.plot.progression.upgrade.part
+		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
 		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="EquipBest" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")

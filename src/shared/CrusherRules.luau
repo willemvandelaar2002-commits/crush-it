@@ -2,6 +2,7 @@
 -- Pure, non-yielding profile transactions; shared by server, previews and tests.
 local C = require(script.Parent.CrusherConfig)
 local Rows = require(script.Parent.CrusherRows)
+local Progression = require(script.Parent.FactoryProgression)
 local R = {}
 local function copy(v)
 	if type(v) ~= "table" then return v end
@@ -43,7 +44,9 @@ function R.migrate(d, guid)
 	s.upgrades=if type(s.upgrades)=="table" then s.upgrades else {}
 	s.upgrades.RollSpeed=nil -- retired upgrade (rolling speed became pedestals)
 	for _,id in C.UpgradeOrder do s.upgrades[id]=integer(s.upgrades[id],0,C.upgradeMax(id)) end
-	s.bays=math.clamp(integer(s.bays,1,C.MaxBays),1,C.MaxBays)
+	s.plotLevel=integer(s.plotLevel,0,C.PlotUpgrade.MaxLevel)
+	s.bays=math.clamp(integer(s.bays,1,C.MaxBays),1,C.bayCapacity(s.plotLevel))
+	if s.plotLevel>=1 then s.bays=C.bayCapacity(s.plotLevel) end -- the paid expansion includes its whole row
 	s.available=C.money(number(s.available,0)) s.tutorial=math.clamp(integer(s.tutorial,1,#C.TutorialSteps+1),1,#C.TutorialSteps+1) -- #steps+1 = finished
 	s.rollReadyAt=number(s.rollReadyAt,0,1e12)
 	s.rolls=integer(s.rolls,0,1e9) -- rolls made (the first one is always cheap)
@@ -174,8 +177,9 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if not pay(C.globalCost(args.id,lv)) then return false,"Not enough cash. Collect and sell scrap." end
 		s.upgrades[args.id]+=1
 	elseif action=="Unlock" then
-		if s.bays>=C.MaxBays then return false,"All bays are unlocked." end
+		if s.bays>=C.bayCapacity(s.plotLevel) then return false,"Fill the original rows and use UPGRADE PLOT for more bays." end
 		if not pay(C.BayCosts[s.bays+1]) then return false,"Not enough cash for another bay. Collect and sell." end s.bays+=1
+	elseif action=="UpgradePlot" then return Progression.expand(d)
 	elseif action=="Collect" then
 		if s.available<=0 then return false,"No finished scrap yet. Your crushers are working." end
 		d.scrap=C.money(d.scrap+s.available) s.available=0
@@ -223,7 +227,7 @@ end
 function R.step(d,session,now,perks)
 	local events={} session.bays=session.bays or {}
 	local rows=Rows.snapshot(d)
-	for i=1,C.MaxBays do
+	for i=1,math.min(d.crushers.bays,C.bayCapacity(d.crushers.plotLevel)) do
 		local key=tostring(i) local id=d.crushers.equipped[key] local item=id and R.find(d,id)
 		local r=session.bays[i]
 		if not item then session.bays[i]=nil continue end

@@ -1,5 +1,10 @@
 # Crush It
 
+25 Oct Factory II: filling the original 24 bays reveals UPGRADE PLOT. Purchase
+adds a low six-bay rear extension, trim and Coating Lab. Apply Polished/Frost/
+Fire/Charged finishes to held unequipped crushers with a priced preview and
+confirmation. See [[Systems/Factory progression]] and [[Apply-factory-progression]].
+
 25 Oct rarity rows: six same-rarity crushers in one physical row activate a
 matching glow and row-only scrap bonus (5/10/15/25/40%). World plaques show
 set progress; breaking a set removes future output bonuses. Equip Best protects

@@ -4,6 +4,7 @@
 local RS = game:GetService("ReplicatedStorage")
 local C = require(RS.Shared.CrusherConfig)
 local Rows = require(RS.Shared.CrusherRows)
+local Finish = require(RS.Shared.CrusherFinish)
 local Style = require(RS.Shared.Kit.Style)
 local Icons = require(RS.Shared.Icons)
 local Format = require(RS.Shared.Format)
@@ -109,6 +110,7 @@ function I.new(gui, act)
 			LightDirection=Vector3.new(-1,-1,-1),ZIndex=2,
 			ImageColor3=if record.hidden then Color3.new(0,0,0) else white},record.card)
 		local model=source:Clone() model.Parent=viewport
+		if record.modifier then Finish.apply(model,record.modifier) end
 		local cf,size=model:GetBoundingBox()
 		local camera=make("Camera",{FieldOfView=34},viewport)
 		-- A conservative sphere fit handles tall frames, wide wings and all aspect ratios.
@@ -175,7 +177,7 @@ function I.new(gui, act)
 		else
 			label(frame,"Odds","1 in "..tostring(C.oddsFor(def.id)),UDim2.fromOffset(4,185),UDim2.new(1,-8,0,28),22)
 		end
-		table.insert(records,{card=frame,type=def.id,hidden=not known,fallback=fallback})
+		table.insert(records,{card=frame,type=def.id,hidden=not known,fallback=fallback,modifier=if item then item.modifier else nil})
 	end
 	redraw=function()
 		if not state then return end
