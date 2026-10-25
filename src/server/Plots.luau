@@ -68,10 +68,10 @@ function Plots.studs(p: BasePart, faces: { Enum.NormalId }?)
 	Style.studs(p, faces)
 end
 
--- Plots stand round the toy train loop, between the 4 hub walkways (at 0/90/180/270
--- degrees), each one's +Z pointing at the centre.
+-- Plots stand round the toy train loop (Config.plotAngle), each one's +Z pointing
+-- at the centre.
 function Plots.angleFor(index: number): number
-	return math.rad(22.5 + (index - 1) * 45)
+	return math.rad(Config.plotAngle(index))
 end
 
 function Plots.originFor(index: number): CFrame

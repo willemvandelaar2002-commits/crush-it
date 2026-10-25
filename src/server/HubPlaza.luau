@@ -28,9 +28,9 @@ HubPlaza.StationScale = 1.8
 -- it. The north walkway is gone (a station stands there); the narrowest
 -- stations sit beside the east/west walkways.
 HubPlaza.Stations = { -- angle in degrees (0 = south spoke), radius, scale
-	-- backs toward the railway (ring road starts at Config.Loop.Inner = 160)
-	Quests = { 36, 136 }, DailySpin = { 108, 136 }, Special = { 180, 136 },
-	Boosts = { 252, 136 }, TopCrushers = { 324, 136, 1.45 },
+	-- backs toward the railway (ring road starts at Config.Loop.Inner = 122)
+	Quests = { 36, 98 }, DailySpin = { 108, 98 }, Special = { 180, 98 },
+	Boosts = { 252, 98 }, TopCrushers = { 324, 98, 1.45 },
 }
 HubPlaza.Spokes = { 0, 90, 270 } -- walkways (no north one)
 
@@ -739,7 +739,7 @@ function HubPlaza.build(parent: Instance, floorY: number)
 	end
 	-- Glowing yellow lamp posts along both sides of each spoke (like the reference).
 	for _, a in HubPlaza.Spokes do
-		for _, r in { 60, 85, 110, 135 } do
+		for _, r in { 60, 80, 100 } do
 			for _, side in { -1, 1 } do
 				W.lamp(m, o * CFrame.Angles(0, math.rad(a), 0) * CFrame.new(side * 11, 0, r), 3.6)
 			end

@@ -21,7 +21,7 @@ local C = Color3.fromRGB
 local ALL = { Enum.NormalId.Top, Enum.NormalId.Front, Enum.NormalId.Back, Enum.NormalId.Left, Enum.NormalId.Right }
 local FLOOR_Y = 1.6
 local SEGMENTS = 48
--- walkway directions (degrees; plots sit at 22.5 + 45 k). No north (180) walkway:
+-- walkway directions (degrees; plots sit at Config.plotAngle). No north (180) walkway:
 -- a hub station stands there (HubPlaza.Stations, evenly spread every 72 degrees).
 local SPOKES = { 0, 90, 270 }
 
@@ -163,7 +163,7 @@ local function loop(m: Model, pal: { [string]: Color3 }, rng: Random)
 	local seg = 2 * L.Outer * math.tan(step / 2) + 0.2 -- covers the outer edge; overlaps on the inside
 	local plotAngles = {}
 	for i = 1, Config.Plots.Count do
-		table.insert(plotAngles, 22.5 + (i - 1) * 45)
+		table.insert(plotAngles, Config.plotAngle(i))
 	end
 	local road = C(124, 135, 152)
 	local rail = C(168, 174, 186)
@@ -199,7 +199,7 @@ local function loop(m: Model, pal: { [string]: Color3 }, rng: Random)
 	-- the plot's bridge, roof in toy colours, "TRAIN STOP" sign facing the track
 	local roofs = { C(232, 86, 74), C(244, 190, 46), C(62, 143, 230), C(77, 184, 106) }
 	for i = 1, Config.Plots.Count do
-		local a = math.rad(22.5 + (i - 1) * 45)
+		local a = math.rad(Config.plotAngle(i))
 		local stopM = Instance.new("Model")
 		stopM.Name = "TrainStop" .. i
 		local r = L.Outer - 4
@@ -400,7 +400,7 @@ function Hub.create(parent: Instance)
 		Build.path(m, Vector3.new(0, FLOOR_Y, 0) + dir * 52, Vector3.new(0, FLOOR_Y, 0) + dir * (L.Inner + 1.5), 18, C(62, 96, 168))
 	end
 	for i = 1, L.Trains do
-		train(m, i, (i - 1) * 8 / L.Trains)
+		train(m, i, (i - 1) * Config.Plots.Count / L.Trains)
 	end
 	m.Parent = parent
 end

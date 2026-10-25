@@ -118,7 +118,7 @@ local function hopOff()
 	local spot: Vector3
 	if stop then
 		-- at a stop: onto that plot's bridge end
-		local a = math.rad(22.5 + (stop - 1) * 45)
+		local a = math.rad(Config.plotAngle(stop))
 		local r = Config.Loop.Outer + 2
 		spot = Vector3.new(math.sin(a) * r, cf.Position.Y, math.cos(a) * r)
 	else

@@ -119,7 +119,7 @@ return function()
 	for bay=1,C.MaxBays do local layout=C.bayLayout(bay)
 		check(math.abs(layout.x)+C.Layout.MachineWidth/2<plotConfig.FloorSize/2 and layout.tier<=2,"bay fits the configured two-tier plot")
 	end
-	check(plotConfig.FloorSize/2+3<plotConfig.Ring*math.tan(math.pi/8),"eight radial plot footprints have a gap at the narrow entrance corners")
+	check(plotConfig.FloorSize/2+3<plotConfig.Ring*math.tan(math.pi/plotConfig.Count),"radial plot footprints have a gap at the narrow entrance corners")
 	local finalLegacy=R.migrate({cash=500,tier=13},id)
 	check(finalLegacy.crushers.owned[1].type=="Quantum","new types cannot change legacy tier migration")
 	local special={id=id(),type="TwinTitan",rarity="Epic",modifier="Rusty",level=8}

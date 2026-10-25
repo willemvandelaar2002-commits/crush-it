@@ -431,20 +431,21 @@ Config.World = {
 
 Config.Loop = {
 	Hub = 56, -- radius of the station hub
-	-- (25 Oct: 12 studs smaller so the plaza feels closer; 8 plots of FloorSize 156
-	-- need Plots.Ring >= ~196, see the plot-gap test in Tests/CrusherRules.spec)
-	Inner = 160, -- the ring road runs from this radius ...
-	Outer = 186, -- ... to this one (26 wide)
-	TrainRadius = 173, -- the rails' centre line
+	-- (25 Oct: 6 plots per server, so the loop is much smaller; 6 plots of FloorSize
+	-- 156 need Plots.Ring >= ~141, see the plot-gap test in Tests/CrusherRules.spec)
+	Inner = 122, -- the ring road runs from this radius ...
+	Outer = 148, -- ... to this one (26 wide)
+	TrainRadius = 135, -- the rails' centre line
 	TrainStop = 5, -- seconds a train stands at each plot's stop (shared/TrainRoute.luau)
 	TrainMove = 8, -- seconds to drive on to the next stop (45 degrees)
 	Trains = 2, -- toy trains on the loop, spread evenly
 }
 
--- World layout: 8 plots round the loop (Plots.originFor).
+-- World layout: plots round the loop (Plots.originFor).
 Config.Plots = {
-	Count = 8,
-	Ring = 198, -- distance from the centre to a plot's entrance edge (Loop.Outer + World.HubGap)
+	Count = 6, -- = players per server (set Players.MaxPlayers to match)
+	StartAngle = 30, -- degrees of plot 1; the rest follow every 360 / Count
+	Ring = 160, -- distance from the centre to a plot's entrance edge (Loop.Outer + World.HubGap)
 	FloorSize = 156, -- two low crusher banks with stairs and a broad centre aisle
 	-- Plot depth, measured from the press centre (plot-local +Z points to the hub):
 	--   Front: entrance from the hub bridge, scrap shop (left), upgrade pads (right), scrap pile
@@ -492,4 +493,9 @@ function Config.pressWidth(tier: number): number
 end
 
 Config.Crushers = require(script.Parent.CrusherConfig)
+-- Angle (degrees, 0 = +Z / south spoke) of plot `index` round the loop.
+function Config.plotAngle(index: number): number
+	return Config.Plots.StartAngle + (index - 1) * 360 / Config.Plots.Count
+end
+
 return Config
