@@ -28,6 +28,35 @@ levels (load clamps to the highest caps). Prices follow the existing growth
 formulas. Tests: `Tests/PlotCaps.spec` (13 checks). Add a row to `Caps` per
 future plot level.
 
+## Factory III — third floor (25 Oct)
+
+Second plot upgrade (plot level 2). Becomes buyable once all 30 bays (the 24
+originals plus the Factory II rear row) hold crushers. Price
+`floor(BayCosts[31] * 10)` (`PlotUpgrade.Costs[2]`). It grants 12 bays at
+once: a third floor on both wings (bays 31-36 left, 37-42 right), stepped back
+on top of the upper floor the same way the upper floor sits on the ground
+bays. Rows 6 and 7 (TOP LEFT / TOP RIGHT) join the rarity-row system.
+
+- Built by `CrusherPlots.topFloor`: step under the top bays, a deck that
+  roofs the upper bays, back wall, columns, rails and rear support columns
+  (skipped where they would land in the Factory II rear row). The upper
+  floor's parapet hides once the top floor is built.
+- Access: a green **lift pad** at the top of each wing's stairs on the upper
+  walkway (press E, "Go up") and one straight above on the top walkway
+  ("Go down"). Prompts only work once the floor is built.
+- No ghost or BUILD sign: the floor stays hidden until bought, then rises
+  into place like the upper floors do.
+- Board: shows FACTORY III, +12 BAYS · 3RD FLOOR · HIGHER LV CAPS, grey with
+  "Fill all 30 bays" until full; level plate reads FACTORY III after.
+- Caps with Factory III: upgrades 40, crusher levels 80.
+
+Checked in Studio: all specs pass (FactoryProgression 134, Rows 1138,
+PlotCaps 15). Third floor shown on a plot as a preview (no save change):
+stepped look, rear supports, lift up works. Not yet seen live: the real
+purchase and its rise animation (needs a profile with 30 full bays and the
+cash; not done on Willem's save). Later, with more plot upgrades, the
+Factory II rear row may be moved up as well (Willem, 25 Oct).
+
 ## World upgrade
 
 The new six-bay row is a low rear extension, not another tall wall of machines.

@@ -19,7 +19,7 @@ return function()
 		return d
 	end
 	local d=fresh() local before=d.cash
-	check(C.BaseMaxBays==24 and C.MaxBays==30,"one extra six-bay row")
+	check(C.BaseMaxBays==24 and C.MaxBays==42,"six-bay rear row plus a twelve-bay third floor")
 	check(not P.expand(d) and d.cash==before,"incomplete plot cannot expand or charge")
 	d=full() check(P.full(d),"mixed rarities qualify when all original rows are occupied")
 	d.crushers.equipped["24"]=nil
@@ -42,6 +42,27 @@ return function()
 	check(old.crushers.plotLevel==0 and old.crushers.bays==24,"old saves do not get free expansion from capacity alone")
 	check(not R.act(old,{},"Unlock",{},0,math.random,id,{}),"ordinary Unlock cannot bypass plot upgrade")
 	check(Rows.snapshot(old).rows[5].unlocked==0,"unbought expansion has no row perk")
+	-- Factory III: fill all 30 bays, then a third floor of 12 bays
+	local f3=full() check(P.expand(f3) and f3.crushers.plotLevel==1,"Factory II first")
+	check(not P.full(f3) and not P.expand(f3),"Factory III needs all 30 bays filled")
+	for i=25,30 do
+		local item={id=id(),type="Bumper",rarity="Common",modifier="Standard",level=1}
+		table.insert(f3.crushers.owned,item) f3.crushers.equipped[tostring(i)]=item.id
+	end
+	f3.cash=C.plotCost(2)-1 before=f3.cash
+	check(P.full(f3) and not P.expand(f3) and f3.cash==before,"Factory III unaffordable leaves profile unchanged")
+	f3.cash=C.plotCost(2)
+	check(P.expand(f3) and f3.cash==0 and f3.crushers.plotLevel==2 and f3.crushers.bays==42,"Factory III charges once and grants twelve bays")
+	local ok,message=P.expand(f3)
+	check(not ok and message=="Your plot is fully expanded.","no plot upgrade after Factory III")
+	check(R.migrate(R.copy(f3),id).crushers.bays==42,"Factory III survives migration")
+	for bay=C.TopFirst,C.MaxBays do local layout=C.bayLayout(bay)
+		check(layout.tier==3 and layout.top and layout.y==2*C.Layout.TierHeight and layout.z==C.Layout.BayZ-2*C.Layout.UpperBack,"third floor steps back on top of the upper floor")
+		local under=C.bayLayout(bay-C.floorStart(3,layout.wing)+C.floorStart(2,layout.wing))
+		check(under.tier==2 and under.wing==layout.wing and under.x==layout.x,"each top bay sits above an upper bay")
+	end
+	check(C.floorStart(3,1)==31 and C.floorStart(3,2)==37 and C.bayName(31)=="Top left 1","top floor numbering")
+	check(Rows.snapshot(f3).rows[6].name=="TOP LEFT" and Rows.snapshot(f3).rows[7].name=="TOP RIGHT","top floor rows")
 	for bay=25,30 do local layout=C.bayLayout(bay)
 		check(layout.expansion and layout.y==0 and layout.side==0 and layout.z==-43,"rear expansion stays low and centered")
 		check(math.abs(layout.x)+C.Layout.BayWidth/2<35,"row bays fit expansion width")

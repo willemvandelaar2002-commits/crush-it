@@ -85,16 +85,25 @@ local function partsLook(model,mode)
 		p.CastShadow=mode=="built"
 	end end
 end
-local function floorOf(i) local l=C.bayLayout(i) return if l.tier>1 then l.wing else nil end
+-- The floor model a bay belongs to: upper floor (tier 2) or Factory III top floor (tier 3).
+local function floorFor(plot,i)
+	local l=C.bayLayout(i)
+	if l.tier==2 then return plot.floors and plot.floors[l.wing] end
+	if l.tier==3 then return plot.topFloors and plot.topFloors[l.wing] end
+	return nil
+end
 local function floorLook(plot,unlocked)
-	for _,f in plot.floors or {} do
-		local mode=if unlocked>=f.first then "built" elseif unlocked+1==f.first then "ghost" else "hidden"
+	local all={} for _,f in plot.floors or {} do table.insert(all,f) end for _,f in plot.topFloors or {} do table.insert(all,f) end
+	for _,f in all do
+		-- top floors come with the plot upgrade: no ghost or BUILD sign, they rise when bought
+		local mode=if unlocked>=f.first then "built" elseif unlocked+1==f.first and not f.top then "ghost" else "hidden"
 		if f.mode~=mode then
-			local rise=f.mode=="ghost" and mode=="built"
+			local rise=(f.mode=="ghost" or (f.top==true and plot.riseTop==true)) and mode=="built"
 			f.mode=mode
 			partsLook(f.model,mode)
+			if f.prompts then for _,prompt in f.prompts do prompt.Enabled=mode=="built" end end
 			if rise then
-				-- the new floor (and its bays) rises up out of the ground floor's roof
+				-- the new floor (and its bays) rises up out of the floor below's roof
 				local models={f.model}
 				for i,bay in plot.bays do local l=C.bayLayout(i) if l.tier>1 and C.floorStart(l.tier,l.wing)==f.first then table.insert(models,bay.model) end end
 				local homes={} for k,m in models do homes[k]=m:GetPivot() m:PivotTo(homes[k]*CFrame.new(0,-C.Layout.TierHeight,0)) end
@@ -108,10 +117,19 @@ local function floorLook(plot,unlocked)
 					end
 				end)
 			end
-			partsLook(f.sign,if mode=="ghost" then "built" else "hidden")
-			f.content.Visible=mode=="ghost"
+			if f.sign then
+				partsLook(f.sign,if mode=="ghost" then "built" else "hidden")
+				f.content.Visible=mode=="ghost"
+			end
 		end
-		f.buy.Text="BUILD "..Format.cash(C.BayCosts[f.first])
+		if f.buy then f.buy.Text="BUILD "..Format.cash(C.BayCosts[f.first]) end
+	end
+	plot.riseTop=nil
+	-- the upper floor's parapet makes way for the top floor's deck
+	for wing,f in plot.floors or {} do
+		local top=plot.topFloors and plot.topFloors[wing]
+		local mode=if top and top.mode=="built" then "hidden" else (f.mode or "hidden")
+		if f.parapet and f.parapetMode~=mode then f.parapetMode=mode partsLook(f.parapet,mode) end
 	end
 end
 -- Free time skip: SkipMinutes of the current production, paid as cash.
@@ -183,7 +201,7 @@ local function send(p,message,result)
 	floorLook(ctx.plot,s.bays)
 	for i,bay in ctx.plot.bays do
 		-- bays on an upper floor that isn't built yet are invisible
-		local wing=floorOf(i) local f=wing and ctx.plot.floors and ctx.plot.floors[wing]
+		local f=floorFor(ctx.plot,i)
 		local hidden=(f~=nil and f.mode~="built") or (C.bayLayout(i).expansion==true and Progression.level(d)<1)
 		if bay.hidden~=hidden then bay.hidden=hidden bay.shown=nil partsLook(bay.model,if hidden then "hidden" else "built") end
 		if hidden then
@@ -535,7 +553,7 @@ function G.start()
 	require(script.Parent.CrusherPreviews).start()
 	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false end end
 	for _,plot in Plots.all() do pedestalLook(plot,C.StartPedestals) end
-	for _,plot in Plots.all() do floorLook(plot,0) ProgressVisuals.sync(plot,nil,nil,0,"") for i,bay in plot.bays do if floorOf(i) or C.bayLayout(i).expansion then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end end
+	for _,plot in Plots.all() do floorLook(plot,0) ProgressVisuals.sync(plot,nil,nil,0,"") for i,bay in plot.bays do if floorFor(plot,i) or C.bayLayout(i).expansion then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end end
 	require(script.Parent.Moat).start(function(p) local ctx=sessions[p] return if ctx then Plots.spawnFor(ctx.plot) else CFrame.new(0,5,14) end, G.safeTeleport)
 	require(script.Parent.Kit.Leaderboard).start({store="CashBoard_v1",score=function(p) return p:GetAttribute("Cash") or 0 end})
 	local function spawnCharacter(p,char)
@@ -590,7 +608,7 @@ function G.start()
 		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory" ctx.rollToken=nil
 			for i in ctx.plot.stations.Roll.pedestals do clearOffer(ctx.plot,i) end ctx.plot.pedestalCount=nil pedestalLook(ctx.plot,C.StartPedestals)
 			for i,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="BAY "..i Workshop.clearPurchase(bay.buy) bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false end end
-			floorLook(ctx.plot,0) RowVisuals.sync(ctx.plot,nil) ProgressVisuals.sync(ctx.plot,nil,nil,0,"") for i,bay in ctx.plot.bays do if floorOf(i) or C.bayLayout(i).expansion then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
+			floorLook(ctx.plot,0) RowVisuals.sync(ctx.plot,nil) ProgressVisuals.sync(ctx.plot,nil,nil,0,"") for i,bay in ctx.plot.bays do if floorFor(ctx.plot,i) or C.bayLayout(i).expansion then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
 		sessions[p]=nil
 	end)
 	Net.event("CrusherAction").OnServerEvent:Connect(function(p,name,args)
@@ -605,12 +623,11 @@ function G.start()
 		elseif name=="Level" or name=="LevelMax" or name=="Unlock" then
 			local bay=if type(args.bay)=="number" then ctx.plot.bays[args.bay] else nil
 			if bay and (name=="Unlock" and args.bay==d.crushers.bays+1 or name~="Unlock" and d.crushers.equipped[tostring(args.bay)]==args.id) then target=bay.part end
-			local wing=type(args.bay)=="number" and floorOf(args.bay)
-			local f=wing and ctx.plot.floors and ctx.plot.floors[wing]
-			if name=="Unlock" and f and f.first==args.bay and args.bay==d.crushers.bays+1 then target=f.face reach=45 end
+			local f=type(args.bay)=="number" and floorFor(ctx.plot,args.bay)
+			if name=="Unlock" and f and f.face and f.first==args.bay and args.bay==d.crushers.bays+1 then target=f.face reach=45 end
 		elseif name=="TimeSkip" then target=ctx.plot.stations.Goals and ctx.plot.stations.Goals.part
 		elseif name=="Buy" then local ped=type(args.slot)=="number" and ctx.plot.stations.Roll.pedestals[args.slot] if ped then target=ped.part end
-		elseif name=="UpgradePlot" then target=ctx.plot.progression.upgrade.part
+		elseif name=="UpgradePlot" then target=ctx.plot.progression.upgrade.part ctx.plot.riseTop=true
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
 		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" then

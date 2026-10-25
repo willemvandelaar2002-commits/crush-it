@@ -29,7 +29,7 @@ function V.create(plot)
 	end
 	local gate=W.part(accents,"FactoryLevelPlate",Vector3.new(8,1.4,.25),o*CFrame.new(0,10,89),W.Navy)
 	for _,x in {-3,3} do W.part(accents,"LevelPlateStem",Vector3.new(.25,1.2,.25),o*CFrame.new(x,9.1,88.9),Style.Colors.Gold) end
-	W.text(W.sign(gate),"FactoryLevel","FACTORY II",UDim2.fromScale(.02,.02),UDim2.fromScale(.96,.96))
+	local levelText=W.text(W.sign(gate),"FactoryLevel","FACTORY II",UDim2.fromScale(.02,.02),UDim2.fromScale(.96,.96))
 	for first=1,C.BaseMaxBays,C.Layout.PerWing do for _,bay in {first,first+C.Layout.PerWing-1} do
 		local at=C.bayLayout(bay)
 		local cap=W.part(accents,"FactoryCornerCap",Vector3.new(1.35,.6,1.5),o*C.wingFrame(at.side)*CFrame.new(at.x,at.y+C.Layout.TierHeight-1.3,at.z+C.Layout.BayDepth/2-.5),Style.Colors.Gold)
@@ -64,7 +64,7 @@ function V.create(plot)
 		Style.setButtonColor(b,recipe.color)
 	end
 	lab.button=W.button(lab.content,"ApplyCoating","SELECT A FINISH",UDim2.fromScale(.1,.81),UDim2.fromScale(.8,.16),"ApplyCoating")
-	plot.progression={extension=extension,accents=accents,upgrade=upgrade,lab=lab,gateParts={}}
+	plot.progression={extension=extension,accents=accents,upgrade=upgrade,lab=lab,gateParts={},levelText=levelText}
 	local rear=C.Layout.BayZ-C.Layout.UpperBack-C.Layout.BayDepth/2-4
 	for _,p in plot.model:GetDescendants() do if p:IsA("BasePart") and p.Name=="RimBlock" then
 		local at=o:PointToObjectSpace(p.Position)
@@ -75,7 +75,8 @@ function V.create(plot)
 end
 function V.sync(plot,d,quote,now,preview)
 	local v=plot.progression if not v then return end
-	local expanded=d~=nil and P.level(d)>=1
+	local level=if d then P.level(d) else 0
+	local expanded=level>=1
 	local boardVisible=d and (expanded or P.full(d)) or false
 	local signature=tostring(expanded)..":"..tostring(boardVisible)
 	if v.signature~=signature then
@@ -86,10 +87,21 @@ function V.sync(plot,d,quote,now,preview)
 			part.Transparency=if expanded then 1 else 0 part.CanCollide=not expanded part.CanQuery=not expanded
 		end
 	end
-	local view={state=if expanded then "Max" elseif d and d.cash>=C.PlotUpgrade.Cost then "Ready" else "Short",cost=C.PlotUpgrade.Cost,
-		button=if expanded then "FACTORY II · COMPLETE" else "UPGRADE\n"..Format.cash(C.PlotUpgrade.Cost),hint="Fill all 24 original bays, then upgrade your plot.",success="PLOT UPGRADED!"}
+	-- next upgrade: Factory II (+6 rear bays), then Factory III (third floor), then complete
+	local maxed=level>=C.PlotUpgrade.MaxLevel
+	local cost=if maxed then 0 else C.plotCost(level+1)
+	local full=d~=nil and P.full(d)
+	local state=if maxed then "Max" elseif not full then "Short" elseif d.cash>=cost then "Ready" else "Short"
+	local name=C.PlotUpgrade.Names[math.min(level+1,C.PlotUpgrade.MaxLevel)]
+	local view={state=state,cost=cost,
+		button=if maxed then C.PlotUpgrade.Names[C.PlotUpgrade.MaxLevel].." · COMPLETE" else name.."\n"..Format.cash(cost),
+		hint=if full then "Collect and sell scrap for more cash." else "Fill all "..C.bayCapacity(level).." bays with crushers, then upgrade your plot.",
+		success=if level==0 then "FACTORY II!" else "FACTORY III!"}
 	W.purchase(v.upgrade.button,view)
-	v.upgrade.info.Text=if expanded then "30 BAYS · COATING LAB · LV CAPS RAISED" else "+6 BAYS · COATING LAB · HIGHER LV CAPS"
+	v.upgrade.info.Text=if maxed then C.MaxBays.." BAYS · 3 FLOORS · TOP CAPS"
+		elseif level==1 then "+12 BAYS · 3RD FLOOR · HIGHER LV CAPS"
+		else "+6 BAYS · COATING LAB · HIGHER LV CAPS"
+	if d then v.levelText.Text=C.PlotUpgrade.Names[math.max(1,level)] end
 	local valid=quote and now<quote.expires
 	v.lab.info.Text=if valid then preview else "Hold an unequipped crusher. Select a finish to preview."
 	W.purchase(v.lab.button,{state=if not valid then "Max" elseif d.cash>=quote.cost then "Ready" else "Short",cost=if valid then quote.cost else 0,
