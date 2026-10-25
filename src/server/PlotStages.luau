@@ -58,7 +58,7 @@ local function fusionPrompt(m,cf)
 end
 -- Willem's Blender fuser (place-only template, saved with the place, not in
 -- Git): ServerStorage.FusionMeshes.FusionMachine, 14.4 x 8 x 10 studs, front
--- (input rings) toward -Z, pivot at the bottom centre. Decorative meshes do not
+-- (input rings) toward -Z; placed by its bounding box. Decorative meshes do not
 -- collide; one invisible box keeps players out of it.
 local function fuserModel(parent,cf)
 	local folder=ServerStorage:FindFirstChild("FusionMeshes")
@@ -66,7 +66,13 @@ local function fuserModel(parent,cf)
 	if not template or not template:IsA("Model") then return nil end
 	local m=Instance.new("Model") m.Name="Fuser" m.Parent=parent
 	local mesh=template:Clone()
-	mesh:PivotTo(cf*CFrame.Angles(0,math.pi,0)) -- its front faces the plot entrance
+	-- turn its front toward the plot entrance, then stand it on the floor,
+	-- centred on cf (by its bounding box, whatever the imported pivot is)
+	local turned=cf*CFrame.Angles(0,math.pi,0)
+	mesh:PivotTo(turned)
+	local box,size=mesh:GetBoundingBox()
+	local bottom=box.Position-Vector3.new(0,size.Y/2,0)
+	mesh:PivotTo(CFrame.new(cf.Position-bottom)*turned)
 	for _,p in mesh:GetDescendants() do if p:IsA("BasePart") then p.Anchored=true p.CanCollide=false p.CanTouch=false p.CanQuery=false end end
 	mesh.Parent=m
 	local box=W.part(m,"FuserCollision",V3(14.4,7,10),cf*CFrame.new(0,3.5,0),Navy,true)
