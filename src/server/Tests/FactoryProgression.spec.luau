@@ -58,7 +58,7 @@ return function()
 	check(R.migrate(R.copy(f3),id).crushers.bays==42,"Factory III survives migration")
 	for bay=C.TopFirst,C.MaxBays do local layout=C.bayLayout(bay)
 		check(layout.tier==3 and layout.top and layout.y==2*C.Layout.TierHeight and layout.z==C.Layout.BayZ-2*C.Layout.UpperBack,"third floor steps back on top of the upper floor")
-		local under=C.bayLayout(bay-C.TopFirst+C.floorStart(2,layout.wing))
+		local under=C.bayLayout(bay-C.floorStart(3,layout.wing)+C.floorStart(2,layout.wing))
 		check(under.tier==2 and under.wing==layout.wing and under.x==layout.x,"each top bay sits above an upper bay")
 	end
 	check(C.floorStart(3,1)==31 and C.floorStart(3,2)==37 and C.bayName(31)=="Top left 1","top floor numbering")

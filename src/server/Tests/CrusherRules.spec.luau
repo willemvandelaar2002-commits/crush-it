@@ -117,7 +117,7 @@ return function()
 	check(saved.crushers.equipped[tostring(C.BaseMaxBays)]==oldId and saved.crushers.bays==C.BaseMaxBays,"expanded equipment survives save roundtrip")
 	local plotConfig=require(game.ReplicatedStorage.Shared.Config).Plots
 	for bay=1,C.MaxBays do local layout=C.bayLayout(bay)
-		check(math.abs(layout.x)+C.Layout.MachineWidth/2<plotConfig.FloorSize/2 and layout.tier<=2,"bay fits the configured two-tier plot")
+		check(math.abs(layout.x)+C.Layout.MachineWidth/2<plotConfig.FloorSize/2 and layout.tier<=3,"bay fits the configured three-tier plot")
 	end
 	check(plotConfig.FloorSize/2+3<plotConfig.Ring*math.tan(math.pi/plotConfig.Count),"radial plot footprints have a gap at the narrow entrance corners")
 	local finalLegacy=R.migrate({cash=500,tier=13},id)
