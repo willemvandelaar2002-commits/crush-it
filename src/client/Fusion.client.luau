@@ -245,3 +245,12 @@ PPS.PromptTriggered:Connect(function(prompt)
 	redraw()
 end)
 panel:GetPropertyChangedSignal("Visible"):Connect(function() if panel.Visible then redraw() else pending = false end end)
+-- Studio only: preview the screen with a made-up state (visual only; the
+-- server still owns the real inventory and refuses ids you don't own).
+if game:GetService("RunService"):IsStudio() then
+	local preview = make("BindableFunction", { Name = "FusionPreview" }, script)
+	preview.OnInvoke = function(fake: any)
+		state = fake pending = false fitWindow() Style.setOpen(panel, true) redraw()
+		return true
+	end
+end
