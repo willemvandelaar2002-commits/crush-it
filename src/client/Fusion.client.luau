@@ -104,7 +104,8 @@ local mainIndex = 1
 local pending = false
 local function fitWindow()
 	local view = workspace.CurrentCamera.ViewportSize
-	(panel:FindFirstChild("Fit") :: UIScale).Scale = math.min(1, (view.X - 40) / W, (view.Y - 60) / H)
+	local fit = panel:FindFirstChild("Fit") :: UIScale
+	fit.Scale = math.min(1, (view.X - 40) / W, (view.Y - 60) / H)
 end
 
 -- Fusion candidates for the current state: per type, unfused copies (mains)
