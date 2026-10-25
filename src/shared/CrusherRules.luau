@@ -221,7 +221,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		return true,"Done!",n
 	elseif action=="Upgrade" then
 		local u=C.Upgrades[args.id] if not u then return false,"Unknown upgrade." end
-		local lv=s.upgrades[args.id] if lv>=C.upgradeMax(args.id,s.plotLevel) then return false,if u.max then "Upgrade is at maximum level." else R.capMessage(s.plotLevel) end end
+		local lv=s.upgrades[args.id] if lv>=C.upgradeMax(args.id,s.plotLevel) then return false,if u.max then "Upgrade is at maximum level." else R.capMessage(s.plotLevel) end
 		if not pay(C.globalCost(args.id,lv)) then return false,"Not enough cash. Collect and sell scrap." end
 		s.upgrades[args.id]+=1
 	elseif action=="Unlock" then
