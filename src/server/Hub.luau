@@ -91,25 +91,9 @@ local function commons(parent: Model, pal: { [string]: Color3 })
 		p.CanQuery = false
 		p.CastShadow = false
 	end
-	local rng = Random.new(291)
-	for i, deg in { 45, 135, 225, 315 } do
-		local a = math.rad(deg)
-		local cf = at(a, 118, topY)
-		-- (22 Oct: the work bays with vehicles/containers made way for the factory plaza stations.)
-		-- Small contained planting frames the courts without blocking the roads.
-		local planter = Instance.new("Model")
-		planter.Name = "CommonsPlanter" .. i
-		planter:SetAttribute("EnvironmentProp", true)
-		local pc = at(a, 154, topY)
-		Build.block(planter, "PlanterBase", Vector3.new(34, 1.6, 10), pc * CFrame.new(0, 0.8, 0), pal.edge)
-		Build.block(planter, "Grass", Vector3.new(31, 0.7, 7), pc * CFrame.new(0, 1.6, 0), C(103, 181, 64))
-		if i % 2 == 1 then
-			Build.tree(planter, pc * CFrame.new(-7, 1.95, 0), 1.45, pal, rng)
-		end
-		Build.bush(planter, pc * CFrame.new(9, 1.95, 0), 1.8, pal, rng)
-		scenery(planter)
-		planter.Parent = m
-	end
+	-- (25 Oct: the commons planters stood on the smaller loop's track; the plaza
+	-- stations have their own trees and plants now.)
+	local _ = paint
 	m.Parent = parent
 end
 
@@ -397,7 +381,8 @@ function Hub.create(parent: Instance)
 		local a = math.rad(deg)
 		local dir = Vector3.new(math.sin(a), 0, math.cos(a))
 		-- These spokes now run across solid land, so use wide flush lanes.
-		Build.path(m, Vector3.new(0, FLOOR_Y, 0) + dir * 52, Vector3.new(0, FLOOR_Y, 0) + dir * (L.Inner + 1.5), 18, C(62, 96, 168))
+		-- ends at the curb: nothing lies on the road or the rails
+		Build.path(m, Vector3.new(0, FLOOR_Y, 0) + dir * 52, Vector3.new(0, FLOOR_Y, 0) + dir * (L.Inner - 1 - 9), 18, C(62, 96, 168)) -- (Build.path adds width/2 at each end)
 	end
 	for i = 1, L.Trains do
 		train(m, i, (i - 1) * Config.Plots.Count / L.Trains)

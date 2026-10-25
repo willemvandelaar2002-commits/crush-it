@@ -29,8 +29,8 @@ HubPlaza.StationScale = 1.8
 -- stations sit beside the east/west walkways.
 HubPlaza.Stations = { -- angle in degrees (0 = south spoke), radius, scale
 	-- backs toward the railway (ring road starts at Config.Loop.Inner = 134)
-	Quests = { 36, 110 }, DailySpin = { 108, 110 }, Special = { 180, 110 },
-	Boosts = { 252, 110 }, TopCrushers = { 324, 110, 1.45 },
+	Quests = { 36, 104 }, DailySpin = { 108, 104 }, Special = { 180, 104 },
+	Boosts = { 252, 104 }, TopCrushers = { 324, 104, 1.45 },
 }
 HubPlaza.Spokes = { 0, 90, 270 } -- walkways (no north one)
 
@@ -543,7 +543,9 @@ local function bigBrick(parent: Instance, cf: CFrame, nx: number, nz: number, co
 	return b
 end
 -- Is plaza-local (x, z) within `margin` studs of a walkway's centre line?
+-- (Also true near or past the ring road, so decorations never land on the rails.)
 function HubPlaza.onWalkway(x: number, z: number, margin: number): boolean
+	if math.sqrt(x * x + z * z) > Config.Loop.Inner - 6 then return true end
 	for _, a in HubPlaza.Spokes do
 		local d = Vector3.new(math.sin(math.rad(a)), 0, math.cos(math.rad(a)))
 		local along = x * d.X + z * d.Z
@@ -649,7 +651,7 @@ function HubPlaza.dress(m: Model, o: CFrame, mega: Model)
 	end
 	-- 6) Crossing shelters where each spoke meets the railway: yellow roof on
 	--    navy posts, hazard-striped barriers and lamps.
-	local rr = Config.Loop.Inner - 5
+	local rr = Config.Loop.Inner - 9 -- shelters stand on the plaza, off the road
 	for _, a in HubPlaza.Spokes do
 		local f = o * CFrame.Angles(0, math.rad(a), 0)
 		for _, side in { -1, 1 } do
