@@ -8,6 +8,8 @@ local Http=game:GetService("HttpService")
 local Config=require(RS.Shared.Config)
 local C=Config.Crushers
 local Rules=require(RS.Shared.CrusherRules)
+local Rows=require(RS.Shared.CrusherRows)
+local RowVisuals=require(script.Parent.CrusherRowVisuals)
 local Net=require(RS.Shared.Net)
 local Store=require(RS.Shared.Store)
 local Format=require(RS.Shared.Format)
@@ -49,7 +51,8 @@ local function perks(p)
 	return {autoCrush=Store.hasPass(p,"AutoCrush"),lucky=Store.hasPass(p,"Lucky"),mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*Friend.mult(p)}
 end
 local function cps(p,d)
-	local total=0 for _,id in d.crushers.equipped do local item=Rules.find(d,id) if item then total+=Rules.stats(d,item,perks(p)).cps end end return total
+	local rows=Rows.snapshot(d) local buffs=perks(p)
+	local total=0 for _,id in d.crushers.equipped do local item=Rules.find(d,id) if item then total+=Rules.stats(d,item,buffs,rows).cps end end return total
 end
 -- Frame look per bay state; only touched when the state changes.
 local function bayLook(bay,state)
@@ -115,6 +118,7 @@ end
 local function send(p,message,result)
 	local d=Data.get(p) local ctx=sessions[p] if not d or not ctx then return end
 	local s=d.crushers
+	local rowState=Rows.snapshot(d)
 	-- A first purchase (or spin prize) can make another visible offer of the
 	-- same type known. Keep its badge honest without rebuilding the model.
 	for slot,model in ctx.plot.offerModels or {} do
@@ -131,10 +135,10 @@ local function send(p,message,result)
 	p:SetAttribute("AutoOn",true) p:SetAttribute("GoldenRush",d.goldenRush) p:SetAttribute("Rebirths",d.rebirths)
 	local items={}
 	for _,item in s.owned do
-		local v=Rules.copy(item) v.stats=Rules.stats(d,item,perks(p)) v.cost=C.individualCost(item) table.insert(items,v)
+		local v=Rules.copy(item) v.stats=Rules.stats(d,item,perks(p),rowState) v.cost=C.individualCost(item) table.insert(items,v)
 	end
 	Net.event("CrusherState"):FireClient(p,{cash=d.cash,carried=d.scrap,available=s.available,items=items,
-		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,tutorial=s.tutorial,rate=cps(p,d),
+		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
 		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered})
 	local st=ctx.plot.stations
@@ -208,6 +212,7 @@ local function send(p,message,result)
 		bay.lockLabel.Text=if state=="next" then Format.cash(C.BayCosts[i]) elseif state=="open" then "EMPTY" else ""
 		bayLook(bay,state)
 	end
+	RowVisuals.sync(ctx.plot,rowState)
 end
 local function buildBay(p,i,item)
 	local ctx=sessions[p] local bay=ctx.plot.bays[i] local old=ctx.visuals[i]
@@ -557,7 +562,7 @@ function G.start()
 		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory" ctx.rollToken=nil
 			for i in ctx.plot.stations.Roll.pedestals do clearOffer(ctx.plot,i) end ctx.plot.pedestalCount=nil pedestalLook(ctx.plot,C.StartPedestals)
 			for i,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="BAY "..i Workshop.clearPurchase(bay.buy) bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false end end
-			floorLook(ctx.plot,0) for i,bay in ctx.plot.bays do if floorOf(i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
+			floorLook(ctx.plot,0) RowVisuals.sync(ctx.plot,nil) for i,bay in ctx.plot.bays do if floorOf(i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
 		sessions[p]=nil
 	end)
 	Net.event("CrusherAction").OnServerEvent:Connect(function(p,name,args)

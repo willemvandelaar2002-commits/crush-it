@@ -14,6 +14,9 @@ local C = {
 	CameraMaxZoom = 75, ControlsMaxDistance = 170, -- zoom-out limit; how far board/plaque text shows
 	TravelCooldown = 1.5, HubTravelZ = 62, -- top travel buttons; hub arrival in front of the Mega Crusher
 	CashPacks = { CashSmall = 60, CashMedium = 300, CashLarge = 1200 },
+	-- Complete one physical six-bay row with a single rarity. Scrap only;
+	-- applies to that row, never stacks across rows or changes roll odds.
+	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40 },
 }
 -- Stadium banks: ground bays open to the plaza, the upper row steps back on
 -- top of them (its walkway is the ground bays' roof). Local plot coordinates,

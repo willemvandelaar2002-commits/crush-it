@@ -186,6 +186,10 @@ Individual levels multiply damage by 1.12^(level-1) and scrap value by
 1.10^(level-1). Global upgrades apply on top. Type inputs have 12..120 HP,
 so damage and strike speed affect production independently. Global yield,
 rarity, modifier, Double Cash and friend boost multiply the completed value.
+Since 25 Oct, a full same-rarity six-bay row also multiplies that row's
+completed scrap by 1.05/1.10/1.15/1.25/1.40 (Common through Legendary).
+This derives from the current lineup; breaking it never changes banked scrap.
+See [[Rarity rows]] for scope, glow, progress and Equip Best protection.
 The displayed estimate is value / (ceil(HP/damage) × cycle + input delay);
 actual server scheduling can differ slightly. Low-rarity crushers remain
 useful through their own levels and global upgrades.

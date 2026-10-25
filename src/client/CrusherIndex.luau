@@ -3,6 +3,7 @@
 -- Owned preserves unique instances and sends the existing equip transactions.
 local RS = game:GetService("ReplicatedStorage")
 local C = require(RS.Shared.CrusherConfig)
+local Rows = require(RS.Shared.CrusherRows)
 local Style = require(RS.Shared.Kit.Style)
 local Icons = require(RS.Shared.Icons)
 local Format = require(RS.Shared.Format)
@@ -144,6 +145,10 @@ function I.new(gui, act)
 		if item then
 			local stats=label(frame,"Output",Format.cash(item.stats.cps*60).." scrap/min",UDim2.fromOffset(4,182),UDim2.new(1,-8,0,23),16)
 			stats.TextColor3=Color3.fromRGB(255,241,175)
+			if (item.stats.rowBonus or 0)>0 then
+				stats.Text=Format.cash(item.stats.cps*60).."/min · ROW +"..math.floor(item.stats.rowBonus*100+.5).."%"
+				stats.TextScaled=true
+			end
 			local action=if equipped then "UNEQUIP · BAY "..equipped else "EQUIP · BAY "..selectedBay
 			button(frame,"Equip",action,UDim2.new(0,7,1,-82),UDim2.new(1,-14,0,35),
 				if equipped then Style.Colors.Blue else green,function()
@@ -183,6 +188,11 @@ function I.new(gui, act)
 		count.Text=if tab=="Index" then unique.." / "..#C.Types else #state.items.." / "..C.MaxInventory
 		progress.Text=if tab=="Index" then unique.." / "..#C.Types.." crushers discovered · base odds before luck"
 			else "Choose a bay and equip a crusher. Level up at its world plaque."
+		local row=state.rows and state.rows[Rows.index(selectedBay)]
+		if tab=="Owned" and row then
+			local heading=Rows.label(row)
+			progress.Text=heading.." · "..(if row.active then "+"..math.floor(row.bonus*100+.5).."% SCRAP" else "MATCH A RARITY FOR A SCRAP BOOST")
+		end
 		fill.Size=UDim2.fromScale(unique/math.max(1,#C.Types),1) fill.Visible=tab=="Index"
 		indexButton.TextTransparency=if tab=="Index" then 0 else .2
 		ownedButton.TextTransparency=if tab=="Owned" then 0 else .2

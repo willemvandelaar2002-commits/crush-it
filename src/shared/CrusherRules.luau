@@ -1,6 +1,7 @@
 --!strict
 -- Pure, non-yielding profile transactions; shared by server, previews and tests.
 local C = require(script.Parent.CrusherConfig)
+local Rows = require(script.Parent.CrusherRows)
 local R = {}
 local function copy(v)
 	if type(v) ~= "table" then return v end
@@ -68,13 +69,15 @@ function R.migrate(d, guid)
 	d.tier=integer(d.tier,1,13) d.rebirths=integer(d.rebirths,0,10000)
 	return d
 end
-function R.stats(d,item,perks)
+function R.stats(d,item,perks,rows)
 	perks=perks or {}
 	local s=d.crushers local t=C.typeById(item.type)
 	local damage=t.damage*C.LevelDamage^(item.level-1)*C.DamageFactor^s.upgrades.Damage*(if perks.autoCrush then C.AutoCrushDamage else 1)
 	local cycle=t.cycle*C.SpeedFactor^s.upgrades.Speed
 	local value=t.value*C.LevelYield^(item.level-1)*(1+C.YieldPerLevel*s.upgrades.Yield)*C.rarity(item.rarity).mult*C.modifier(item.modifier).mult*(perks.mult or 1)
-	return {damage=damage,cycle=cycle,hp=t.hp,value=C.money(value),cps=value/(math.ceil(t.hp/damage)*cycle+C.InputDelay)}
+	local multiplier=if rows==false then 1 else Rows.multiplier(rows or Rows.snapshot(d),item.id)
+	value*=multiplier
+	return {damage=damage,cycle=cycle,hp=t.hp,value=C.money(value),cps=value/(math.ceil(t.hp/damage)*cycle+C.InputDelay),rowBonus=multiplier-1}
 end
 function R.weights(luck,lucky)
 	local out={} for i,v in C.Rarities do out[i]=v.weight*(1+C.LuckPerLevel*luck*v.rank)*(if lucky and v.rank>0 then 2 else 1) end return out
@@ -122,7 +125,9 @@ local function act(d,session,action,args,now,random,guid,perks)
 		-- fill the unlocked bays with the highest-output crushers; ones that
 		-- are already in a bay and still make the cut stay where they are
 		local list=table.clone(s.owned)
-		local out={} for _,item in list do out[item.id]=R.stats(d,item,perks).cps end
+		-- Compare raw outputs fairly; current row membership must not bias the
+		-- ranking. Before committing, protect a stronger hand-arranged row set.
+		local out={} for _,item in list do out[item.id]=R.stats(d,item,perks,false).cps end
 		table.sort(list,function(a,b) if out[a.id]==out[b.id] then return a.id<b.id end return out[a.id]>out[b.id] end)
 		local best={} for i=1,math.min(s.bays,#list) do best[list[i].id]=true end
 		local equipped,placed={},{}
@@ -140,6 +145,12 @@ local function act(d,session,action,args,now,random,guid,perks)
 		for key,id in equipped do if s.equipped[key]~=id then same=false end end
 		for key,id in s.equipped do if equipped[key]~=id then same=false end end
 		if same then return false,"You're already using your best crushers!" end
+		local proposed={crushers={owned=s.owned,equipped=equipped,bays=s.bays}}
+		local currentRows,newRows=Rows.snapshot(d),Rows.snapshot(proposed)
+		local before,after=0,0
+		for _,id in s.equipped do before+=(out[id] or 0)*Rows.multiplier(currentRows,id) end
+		for _,id in equipped do after+=(out[id] or 0)*Rows.multiplier(newRows,id) end
+		if after+1e-8<before then return false,"Kept your row bonuses: this setup produces more. Arrange matching rarities manually." end
 		s.equipped=equipped
 		return true,"Equipped your best crushers!"
 	elseif action=="Unequip" then
@@ -211,11 +222,12 @@ function R.act(d,session,action,args,now,random,guid,perks)
 end
 function R.step(d,session,now,perks)
 	local events={} session.bays=session.bays or {}
+	local rows=Rows.snapshot(d)
 	for i=1,C.MaxBays do
 		local key=tostring(i) local id=d.crushers.equipped[key] local item=id and R.find(d,id)
 		local r=session.bays[i]
 		if not item then session.bays[i]=nil continue end
-		local stats=R.stats(d,item,perks)
+		local stats=R.stats(d,item,perks,rows)
 		if not r or r.id~=id then r={id=id,hp=stats.hp,nextStrike=now+C.InputDelay} session.bays[i]=r table.insert(events,{bay=i,kind="Input",hp=r.hp}) end
 		if now>=r.nextStrike then
 			if r.hp<=0 then r.hp=stats.hp r.nextStrike=now+C.InputDelay table.insert(events,{bay=i,kind="Input",hp=r.hp})

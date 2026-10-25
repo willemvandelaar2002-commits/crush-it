@@ -124,6 +124,7 @@ function P.create(root,Plots)
    plot.bays[bay]={model=holder,origin=cf*CFrame.new(0,.4+L.Pedestal,L.MachineZ),label=text,buy=buy,manage=manage,part=face,locked=panel,padlock=lock,strip=strip,lockLabel=lockLabel,
     prompt=P.prompt(face,"Manage",C.bayName(bay))}
   end
+  require(script.Parent.CrusherRowVisuals).create(plot)
   -- Boards stand low and forward, turned toward the walkway, so the banks show over them.
   for _,spec in {{id="Production",x=-22,z=42,yaw=.3},{id="Rolling",x=22,z=42,yaw=-.3},{id="Collect",x=-60,z=60,yaw=math.pi/2},{id="Sell",x=-26,z=80,yaw=math.pi},{id="Roll",x=52,z=66,yaw=-math.pi/2},{id="Goals",x=-44,z=24,yaw=.35}} do
    local cf=o*CFrame.new(spec.x,0,spec.z)*CFrame.Angles(0,spec.yaw or 0,0)
