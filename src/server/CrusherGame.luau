@@ -172,7 +172,7 @@ local function send(p,message,result)
 		local v=Rules.copy(item) v.stats=Rules.stats(d,item,perks(p),rowState) v.cost=C.individualCost(item) table.insert(items,v)
 	end
 	Net.event("CrusherState"):FireClient(p,{cash=d.cash,carried=d.scrap,available=s.available,items=items,
-		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
+		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,plotLevel=s.plotLevel,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
 		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered,coating=ctx.coatingQuote})
 	local st=ctx.plot.stations
@@ -221,7 +221,7 @@ local function send(p,message,result)
 			card.scope.Text="THIS CRUSHER"
 			local r=C.rarity(item.rarity)
 			card.name.Text=C.typeById(item.type).name
-			card.rarity.Text=item.rarity..(if item.modifier~="Standard" then "  ·  "..item.modifier.." x"..C.modifier(item.modifier).mult else "")
+			card.rarity.Text=(if item.fused then "FUSED · " else "")..item.rarity..(if item.modifier~="Standard" then "  ·  "..item.modifier.." x"..C.modifier(item.modifier).mult else "")
 			card.rarity.TextColor3=r.color:Lerp(Color3.new(1,1,1),.25)
 			local view=UpgradeView.crusher(d,item,displayPerks)
 			card.stats.Text=view.effect Workshop.purchase(bay.buy,view)
@@ -257,6 +257,17 @@ local function send(p,message,result)
 	end
 	ProgressVisuals.sync(ctx.plot,d,quote,os.clock(),preview)
 end
+-- Fused crushers get a glowing gold frame round their pedestal (inside the
+-- machine's own model, so it goes when the machine is rebuilt or swapped).
+local function fusedMark(model,o)
+	local l=C.Layout local gold=Color3.fromRGB(255,205,60)
+	local w,dz=l.BayWidth-1.2,l.MachineDepth+1
+	for _,z in {-dz/2+.2,dz/2-.2} do local b=Workshop.part(model,"FusedFrame",Vector3.new(w,.22,.35),o*CFrame.new(0,.1,z),gold) b.Material=Enum.Material.Neon b.CastShadow=false end
+	for _,x in {-w/2+.2,w/2-.2} do local b=Workshop.part(model,"FusedFrame",Vector3.new(.35,.22,dz),o*CFrame.new(x,.1,0),gold) b.Material=Enum.Material.Neon b.CastShadow=false end
+	for _,x in {-1,1} do for _,z in {-1,1} do
+		local c=Workshop.part(model,"FusedCorner",Vector3.new(.8,.8,.8),o*CFrame.new(x*(w/2-.2),.4,z*(dz/2-.2)),Color3.fromRGB(255,140,40)) c.Shape=Enum.PartType.Ball
+	end end
+end
 local function buildBay(p,i,item)
 	local ctx=sessions[p] local bay=ctx.plot.bays[i] local old=ctx.visuals[i]
 	if old then old.model:Destroy() ctx.visuals[i]=nil end
@@ -267,6 +278,7 @@ local function buildBay(p,i,item)
 		special.id=item.id special.tier=t.input special.model.Name="EquippedCrusher"
 		special.model:SetAttribute("InventoryId",item.id) special.model:SetAttribute("Rarity",item.rarity) special.model:SetAttribute("Modifier",item.modifier)
 		Finish.apply(special.model,item.modifier,o)
+		if item.fused then fusedMark(special.model,o) end
 		special.model.Parent=bay.model ctx.visuals[i]=special Feel.track(special,t.id) return
 	end
 	local built=PressBuilder.build(o,t.tier) built.model.WorldPivot=o
@@ -285,7 +297,9 @@ local function buildBay(p,i,item)
 	elseif part:IsA("Light") then part.Enabled=false
 	elseif part:IsA("ParticleEmitter") then emitters+=1 part.Enabled=emitters<=C.MaxPressEmitters part.Rate=math.min(part.Rate,C.PressParticleRate)
 	end end
-	Finish.apply(built.model,item.modifier,o) built.model.Parent=bay.model
+	Finish.apply(built.model,item.modifier,o)
+	if item.fused then fusedMark(built.model,o) end
+	built.model.Parent=bay.model
 	local colors={Bumper=Color3.fromRGB(235,69,67),Steel=Color3.fromRGB(35,126,235),Cobalt=Color3.fromRGB(52,193,87),Mega=Color3.fromRGB(171,68,228),Titan=Color3.fromRGB(248,194,40),Quantum=Color3.fromRGB(50,208,220)}
 	-- Coloured cap on top of the press (the light strip on the bay beam replaces the old beacon).
 	local header=Workshop.part(built.model,"ToyHeader",Vector3.new(8.4,1,2),o*CFrame.new(0,l.MachineHeight-.5,1),colors[item.type] or Config.Presses[t.tier].accent)
@@ -299,7 +313,10 @@ end
 local function reconcile(p)
 	local ctx=sessions[p] local d=Data.get(p) if not ctx or not d then return end
 	for i=1,C.MaxBays do local item=Rules.find(d,d.crushers.equipped[tostring(i)]) local visual=ctx.visuals[i]
-		if (item and item.id or nil)~=(visual and visual.id or nil) then buildBay(p,i,item) end
+		-- a fused crusher keeps its id, so the fused flag is part of the key
+		local want=item and (item.id..(if item.fused then "#fused" else "")) or nil
+		local have=visual and (visual.key or visual.id) or nil
+		if want~=have then buildBay(p,i,item) if ctx.visuals[i] then ctx.visuals[i].key=want end end
 	end
 end
 -- Fit a press model into a box and paint it in the crusher's rarity/modifier.
@@ -523,7 +540,7 @@ local function action(p,name,args)
 	end
 	if ok then reconcile(p) end
 	ctx.justRolled=ok and name=="Roll" or nil
-	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" then result else nil) ctx.justRolled=nil ctx.justDiscovered=nil
+	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" or name=="Fuse" then result else nil) ctx.justRolled=nil ctx.justDiscovered=nil
 	return ok,message,result
 end
 local function visualEvent(p,event)
@@ -634,6 +651,7 @@ function G.start()
 		elseif name=="TimeSkip" then target=ctx.plot.stations.Goals and ctx.plot.stations.Goals.part
 		elseif name=="Buy" then local ped=type(args.slot)=="number" and ctx.plot.stations.Roll.pedestals[args.slot] if ped then target=ped.part end
 		elseif name=="UpgradePlot" then target=ctx.plot.progression.upgrade.part ctx.plot.riseTop=true
+		elseif name=="Fuse" then target=ctx.plot.stages and ctx.plot.stages.fuserPart reach=26
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
 		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" then

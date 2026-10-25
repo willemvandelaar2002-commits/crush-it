@@ -60,6 +60,38 @@ dropped it (too hard to see) in favour of the rear yard.
   Stage screenshots were visual-only previews.
 - Still to do: visual progression per stage; fusion extension + mechanic.
 
+## Fusion and stage props (25-26 Oct)
+
+**Fusion** (`C.Fusion`, unlocks at plot level 2 = Factory III): a main crusher
+plus three unequipped, unfused copies of the same type become one fused
+crusher. The main keeps its id, level, coating and bay; the three copies are
+used up. Fused = 2x scrap value (`R.stats`), saved as `fused=true`, can't fuse
+again (one tier). Type and rarity stay, so rarity rows still count it.
+Server: `Fuse` action (`R.fusionProblem` checks everything, near the fuser
+only); `R.fusionCopies` suggests the weakest unequipped copies.
+Screen: `client/Fusion.client.luau`, opened by the FusionPrompt on your own
+fuser; type list, main (arrows), three USED UP copies, result, FUSE then
+CONFIRM. Fused crushers get a gold neon frame on their bay pedestal and show
+FUSED on the plaque, in the Index and on the backpack tool.
+Tests: `Tests/Fusion.spec` (16 checks).
+
+**Fusion wing**: 34x34 floor sticking out left of the Collect Scrap hopper
+(x -78..-112, z 44..78), its own island and blue/orange rim; the left plot rim
+opens there from Factory III. Fuser (code-built, Blender model later) faces
+the entrance; maintenance robot and crates beside it.
+
+**Stage props** (`server/PlotStages.luau`, cumulative, built once, shown by
+plot level): rim bolts and lamp collars recoloured per stage (yellow, orange,
+silver, gold); Factory II cobalt road edging, compressor beside the right
+stairs, tool trolley by the hopper; Factory III fusion wing, cyan pipes with
+orange brackets; Factory IV cyan neon floor channels, pipe gauges;
+Factory V gold-capped light towers at the front corners.
+
+Checked in Studio: all specs pass, prompt opens the screen at the fuser,
+screen layout checked with a made-up inventory (Studio-only preview hook),
+props previewed for stage 5. Not yet done live: a real fuse (Willem's save has
+no type with 4 copies; it would change the real save).
+
 ## Factory III — third floor (25 Oct)
 
 Second plot upgrade (plot level 2). Becomes buyable once all 30 bays (the 24

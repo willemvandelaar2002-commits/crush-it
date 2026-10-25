@@ -7,6 +7,7 @@ local Format=require(RS.Shared.Format)
 local W=require(script.Parent.Kit.CrusherWorkshop)
 local Build=require(script.Parent.Kit.Build)
 local World=require(RS.Shared.Config).World
+local Stages=require(script.Parent.PlotStages)
 local V={}
 local function show(model,visible)
 	for _,p in model:GetDescendants() do if p:IsA("BasePart") then
@@ -94,6 +95,7 @@ function V.create(plot)
 		local at=o:PointToObjectSpace(p.Position)
 		if math.abs(at.Z-(plotRear+1))<.2 then p:SetAttribute("RimX",at.X) table.insert(plot.progression.gateParts,p) end
 	end end
+	Stages.create(plot)
 	show(yard,false) show(accents,false) show(upgrade.model,false) show(lab.model,false)
 	upgrade.content.Visible=false lab.content.Visible=false
 end
@@ -102,6 +104,7 @@ function V.sync(plot,d,quote,now,preview)
 	local level=if d then P.level(d) else 0
 	local expanded=level>=1
 	local boardVisible=d and (expanded or P.full(d)) or false
+	Stages.sync(plot,level)
 	local yardOpen=level>=2
 	local signature=tostring(level)..":"..tostring(boardVisible)
 	if v.signature~=signature then
@@ -126,7 +129,7 @@ function V.sync(plot,d,quote,now,preview)
 	W.purchase(v.upgrade.button,view)
 	v.upgrade.info.Text=if maxed then C.MaxBays.." BAYS · MASTER FACTORY"
 		elseif level==0 then "+12 BAYS · 3RD FLOOR · COATING LAB"
-		elseif level==1 then "+12 BAYS · REAR YARD · HIGHER LV CAPS"
+		elseif level==1 then "+12 BAYS · REAR YARD · FUSION MACHINE"
 		elseif level==2 then "+6 BAYS · REAR UPPER LEFT · HIGHER LV CAPS"
 		else "+6 BAYS · REAR UPPER RIGHT · HIGHER LV CAPS"
 	if d then v.levelText.Text=C.PlotUpgrade.Names[math.max(1,level)] end
