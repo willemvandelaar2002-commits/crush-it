@@ -15,6 +15,24 @@ local function integer(v, default, max) return math.floor(number(v,default,max))
 function R.find(d,id)
 	for _,item in d.crushers.owned do if item.id == id then return item end end
 end
+-- Duplicates that RECYCLE DUPES removes: every equipped copy stays, and so
+-- does the strongest copy of each type (score, then level, then id), equipped
+-- or not, so a better roll you haven't equipped yet is never thrown away.
+-- score(item) gives a crusher's output; the server and client pass their own.
+function R.duplicateExtras(owned,equipped,score)
+	local busy={} for _,id in equipped do busy[id]=true end
+	local best={}
+	for _,item in owned do
+		local keep=best[item.type]
+		if not keep then best[item.type]=item else
+			local a,b=score(item),score(keep)
+			if a>b or (a==b and (item.level>keep.level or (item.level==keep.level and item.id<keep.id))) then best[item.type]=item end
+		end
+	end
+	local extras={}
+	for _,item in owned do if best[item.type]~=item and not busy[item.id] then table.insert(extras,item) end end
+	return extras
+end
 -- How many levels this crusher can buy in a row with this much cash, and
 -- what they cost together. Stops at C.MaxLevel. Used by MAX on the plaque.
 function R.maxLevels(cash,item)
@@ -177,6 +195,12 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if copies<2 then return false,"Keep your last crusher of each type for the Index." end
 		for i,other in s.owned do if other.id==item.id then table.remove(s.owned,i) break end end
 		return true,"Duplicate recycled. Inventory space freed."
+	elseif action=="RecycleDuplicates" then
+		local extras=R.duplicateExtras(s.owned,s.equipped,function(item) return R.stats(d,item,perks or {}).cps end)
+		if #extras==0 then return false,"No duplicates to recycle. Equipped crushers and your best copy of each type are kept." end
+		local gone={} for _,item in extras do gone[item.id]=true end
+		for i=#s.owned,1,-1 do if gone[s.owned[i].id] then table.remove(s.owned,i) end end
+		return true,"Recycled "..#extras.." duplicate"..(if #extras==1 then "" else "s")..". Inventory space freed.",#extras
 	elseif action=="Level" then
 		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
 		if item.level>=C.MaxLevel then return false,"Crusher is at maximum level." end

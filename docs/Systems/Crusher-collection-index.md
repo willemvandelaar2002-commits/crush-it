@@ -127,6 +127,15 @@ The server checks ownership, equipped state and remaining copies at transaction
 time. Equipped machines and the last copy of every type are protected. There
 is no refund, payout or cash exploit. Cancelling/closing expires confirmation.
 
+**RECYCLE DUPES (25 Oct).** A red trash-can button in the Owned view (next to
+the bay arrows) recycles every duplicate in one go, after a confirmation click
+that shows how many. It keeps every equipped crusher and the strongest copy of
+each type (highest output, then level), even if that copy isn't equipped, so a
+better roll is never thrown away. Shows NO DUPES (grey) when there is nothing
+to remove. Same server action rules as single recycling, no payout
+(`RecycleDuplicates`, `CrusherRules.duplicateExtras`,
+`Tests/CrusherRecycleDuplicates.spec`, 10 checks).
+
 Since the last copy of each type remains owned, discovery is still derived from
 owned types without a new save schema. If last-copy deletion or trading is added
 later, introduce a permanent discovered-type ledger before allowing it.
