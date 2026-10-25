@@ -19,7 +19,7 @@ return function()
 		return d
 	end
 	local d=fresh() local before=d.cash
-	check(C.BaseMaxBays==24 and C.MaxBays==66 and C.bayCapacity(1)==30 and C.bayCapacity(2)==42 and C.bayCapacity(3)==54 and C.bayCapacity(4)==66,"five stages: 24, 30, 42, 54, 66 bays")
+	check(C.BaseMaxBays==24 and C.MaxBays==60 and C.bayCapacity(1)==36 and C.bayCapacity(2)==48 and C.bayCapacity(3)==54 and C.bayCapacity(4)==60,"five stages: 24, 36, 48, 54, 60 bays")
 	check(not P.expand(d) and d.cash==before,"incomplete plot cannot expand or charge")
 	d=full() check(P.full(d),"mixed rarities qualify when all original rows are occupied")
 	d.crushers.equipped["24"]=nil
@@ -30,67 +30,76 @@ return function()
 	check(not P.expand(d) and d.cash==before and d.crushers.plotLevel==0,"unaffordable plot upgrade leaves profile unchanged")
 	d.cash=C.PlotUpgrade.Cost
 	local original=R.copy(d.crushers.owned)
-	check(P.expand(d) and d.cash==0 and d.crushers.plotLevel==1 and d.crushers.bays==30,"upgrade charges once and grants six bays")
+	check(P.expand(d) and d.cash==0 and d.crushers.plotLevel==1 and d.crushers.bays==36,"Factory II charges once and grants the twelve third-floor bays")
 	check(not P.expand(d) and d.cash==0,"repeated expansion cannot grant or charge again")
 	for i,item in original do check(d.crushers.owned[i].id==item.id and d.crushers.owned[i].level==item.level,"expansion retains crushers") end
 	local saved=R.migrate(R.copy(d),id)
-	check(saved.crushers.plotLevel==1 and saved.crushers.bays==30,"expansion survives migration")
+	check(saved.crushers.plotLevel==1 and saved.crushers.bays==36,"expansion survives migration")
 	saved.crushers.bays=24 saved=R.migrate(saved,id)
-	check(saved.crushers.bays==30,"paid row entitlement repairs partial capacity")
-	local old=full();old.crushers.bays=30;old.crushers.plotLevel=nil
+	check(saved.crushers.bays==36,"paid floor entitlement repairs partial capacity")
+	local old=full();old.crushers.bays=36;old.crushers.plotLevel=nil
 	old=R.migrate(old,id)
 	check(old.crushers.plotLevel==0 and old.crushers.bays==24,"old saves do not get free expansion from capacity alone")
 	check(not R.act(old,{},"Unlock",{},0,math.random,id,{}),"ordinary Unlock cannot bypass plot upgrade")
-	check(Rows.snapshot(old).rows[5].unlocked==0,"unbought expansion has no row perk")
-	-- Factory III: fill all 30 bays, then a third floor of 12 bays
-	local f3=full() check(P.expand(f3) and f3.crushers.plotLevel==1,"Factory II first")
-	check(not P.full(f3) and not P.expand(f3),"Factory III needs all 30 bays filled")
-	for i=25,30 do
-		local item={id=id(),type="Bumper",rarity="Common",modifier="Standard",level=1}
-		table.insert(f3.crushers.owned,item) f3.crushers.equipped[tostring(i)]=item.id
-	end
-	f3.cash=C.plotCost(2)-1 before=f3.cash
-	check(P.full(f3) and not P.expand(f3) and f3.cash==before,"Factory III unaffordable leaves profile unchanged")
-	f3.cash=C.plotCost(2)
-	check(P.expand(f3) and f3.cash==0 and f3.crushers.plotLevel==2 and f3.crushers.bays==42,"Factory III charges once and grants twelve bays")
-	local ok,message=P.expand(f3)
-	check(not ok and message=="Fill all 42 bays before upgrading your plot.","Factory IV needs all 42 bays filled")
-	check(R.migrate(R.copy(f3),id).crushers.bays==42,"Factory III survives migration")
-	-- Factory IV and V: fill every bay, upgrade, twelve more each time
-	local function fill(d,a,b)
+	check(Rows.snapshot(old).rows[5].unlocked==0,"unbought third floor has no row perk")
+	-- Factory III to V: fill every bay, upgrade
+	local function fill(p,a,b)
 		for i=a,b do
 			local item={id=id(),type="Bumper",rarity="Common",modifier="Standard",level=1}
-			table.insert(d.crushers.owned,item) d.crushers.equipped[tostring(i)]=item.id
+			table.insert(p.crushers.owned,item) p.crushers.equipped[tostring(i)]=item.id
 		end
 	end
-	fill(f3,31,42) f3.cash=C.plotCost(3)
-	check(P.expand(f3) and f3.cash==0 and f3.crushers.plotLevel==3 and f3.crushers.bays==54,"Factory IV grants twelve rear yard bays")
-	fill(f3,43,54) f3.cash=C.plotCost(4)
-	check(P.expand(f3) and f3.crushers.plotLevel==4 and f3.crushers.bays==66,"Factory V grants twelve rear upper bays")
-	ok,message=P.expand(f3)
+	local f=full() f.cash=C.plotCost(1) check(P.expand(f),"Factory II")
+	local ok,message=P.expand(f)
+	check(not ok and message=="Fill all 36 bays before upgrading your plot.","Factory III needs all 36 bays filled")
+	fill(f,25,36) f.cash=C.plotCost(2)-1 before=f.cash
+	check(P.full(f) and not P.expand(f) and f.cash==before,"Factory III unaffordable leaves profile unchanged")
+	f.cash=C.plotCost(2)
+	check(P.expand(f) and f.cash==0 and f.crushers.plotLevel==2 and f.crushers.bays==48,"Factory III grants the twelve rear yard ground bays")
+	fill(f,37,48) f.cash=C.plotCost(3)
+	check(P.expand(f) and f.crushers.plotLevel==3 and f.crushers.bays==54,"Factory IV grants rear upper left")
+	fill(f,49,54) f.cash=C.plotCost(4)
+	check(P.expand(f) and f.crushers.plotLevel==4 and f.crushers.bays==60,"Factory V grants rear upper right")
+	ok,message=P.expand(f)
 	check(not ok and message=="Your plot is fully expanded.","no plot upgrade after Factory V")
-	check(R.migrate(R.copy(f3),id).crushers.bays==66,"Factory V survives migration")
+	check(R.migrate(R.copy(f),id).crushers.bays==60,"Factory V survives migration")
 	check(C.plotCost(1)<C.plotCost(2) and C.plotCost(2)<C.plotCost(3) and C.plotCost(3)<C.plotCost(4),"each plot upgrade costs more")
 	for bay=C.RearFirst,C.MaxBays do local layout=C.bayLayout(bay)
 		check(layout.rear and layout.tier<=2 and layout.z==C.Layout.BayZ+C.Layout.RearShift-(layout.tier-1)*C.Layout.UpperBack,"rear yard banks: max two floors")
 		check(math.abs(layout.x)-C.Layout.BayWidth/2>C.Layout.RoadHalf and math.abs(layout.x)+C.Layout.BayWidth/2<78,"rear yard bays clear the road and fit the plot width")
 		check(C.bayFrame(layout)==CFrame.new(),"rear yard is not tilted")
 	end
-	check(C.rearStart(1,1)==43 and C.rearStart(1,2)==49 and C.rearStart(2,1)==55 and C.rearStart(2,2)==61,"rear yard numbering")
-	check(C.bayName(43)=="Rear left 1" and C.bayName(61)=="Rear upper right 1","rear yard names")
-	local rows=Rows.snapshot(f3).rows
-	check(rows[8].name=="REAR LEFT" and rows[11].name=="REAR UPPER RIGHT","rear yard rows")
+	check(C.rearStart(1,1)==37 and C.rearStart(1,2)==43 and C.rearStart(2,1)==49 and C.rearStart(2,2)==55,"rear yard numbering")
+	check(C.bayName(37)=="Rear left 1" and C.bayName(55)=="Rear upper right 1","rear yard names")
+	local rows=Rows.snapshot(f).rows
+	check(rows[7].name=="REAR LEFT" and rows[10].name=="REAR UPPER RIGHT","rear yard rows")
 	for bay=C.TopFirst,C.RearFirst-1 do local layout=C.bayLayout(bay)
 		check(layout.tier==3 and layout.top and layout.y==2*C.Layout.TierHeight and layout.z==C.Layout.BayZ-2*C.Layout.UpperBack,"third floor steps back on top of the upper floor")
 		local under=C.bayLayout(bay-C.floorStart(3,layout.wing)+C.floorStart(2,layout.wing))
 		check(under.tier==2 and under.wing==layout.wing and under.x==layout.x,"each top bay sits above an upper bay")
 	end
-	check(C.floorStart(3,1)==31 and C.floorStart(3,2)==37 and C.bayName(31)=="Top left 1","top floor numbering")
-	check(Rows.snapshot(f3).rows[6].name=="TOP LEFT" and Rows.snapshot(f3).rows[7].name=="TOP RIGHT","top floor rows")
-	for bay=25,30 do local layout=C.bayLayout(bay)
-		check(layout.expansion and layout.y==0 and layout.side==0 and layout.z==C.Layout.ExpansionZ,"rear row stays low and centered")
-		check(math.abs(layout.x)-C.Layout.BayWidth/2>C.Layout.RoadHalf and math.abs(layout.x)+C.Layout.BayWidth/2<38,"rear row splits around the road and fits its deck")
+	check(C.floorStart(3,1)==25 and C.floorStart(3,2)==31 and C.bayName(25)=="Top left 1","top floor numbering")
+	check(rows[5].name=="TOP LEFT" and rows[6].name=="TOP RIGHT","top floor rows")
+	-- Layout v1 saves (middle rear row at 25-30) convert without losing crushers
+	local function v1(level,equip)
+		local p=fresh() p.crushers.layout=nil p.crushers.plotLevel=level p.crushers.owned={} p.crushers.equipped={}
+		for _,i in equip do local item={id="v1-"..i,type="Bumper",rarity="Common",modifier="Standard",level=1}
+			table.insert(p.crushers.owned,item) p.crushers.equipped[tostring(i)]=item.id end
+		return R.migrate(p,id)
 	end
+	local m1=v1(1,{1,24,25,30})
+	check(m1.crushers.layout==C.LayoutVersion and m1.crushers.plotLevel==1 and m1.crushers.bays==36,"v1 Factory II keeps its level, now 36 bays")
+	check(m1.crushers.equipped["1"]=="v1-1" and m1.crushers.equipped["24"]=="v1-24","base bays unchanged")
+	local placed={} for _,v in m1.crushers.equipped do placed[v]=true end
+	check(placed["v1-25"] and placed["v1-30"],"rear row crushers stay equipped in free bays")
+	local m2=v1(2,{25,26,27,28,29,30,31,36,37,42})
+	check(m2.crushers.equipped["25"]=="v1-31" and m2.crushers.equipped["30"]=="v1-36" and m2.crushers.equipped["31"]=="v1-37" and m2.crushers.equipped["36"]=="v1-42","v1 third floor bays move to 25-36")
+	placed={} for k,v in m2.crushers.equipped do placed[v]=tonumber(k) end
+	for i=25,30 do check(placed["v1-"..i] and placed["v1-"..i]<=C.bayCapacity(2),"v1 rear row crushers land in a bay of the new level") end
+	local m4=v1(4,{25,43,66})
+	check(m4.crushers.equipped["37"]=="v1-43" and m4.crushers.equipped["60"]=="v1-66","v1 rear yard bays shift down by six")
+	check(#m4.crushers.owned==3,"conversion never removes crushers")
+	check(R.migrate(R.copy(m4),id).crushers.equipped["37"]=="v1-43","conversion runs once")
 	-- Coatings apply to owned, held, unequipped instances with one-use previews.
 	d=full() local item={id=id(),type="Titan",rarity="Epic",modifier="Standard",level=7}
 	table.insert(d.crushers.owned,item)
