@@ -28,8 +28,9 @@ HubPlaza.StationScale = 1.8
 -- it. The north walkway is gone (a station stands there); the narrowest
 -- stations sit beside the east/west walkways.
 HubPlaza.Stations = { -- angle in degrees (0 = south spoke), radius, scale
-	Quests = { 36, 112 }, DailySpin = { 108, 112 }, Special = { 180, 112 },
-	Boosts = { 252, 112 }, TopCrushers = { 324, 114, 1.45 },
+	-- backs toward the railway (ring road starts at Config.Loop.Inner = 172)
+	Quests = { 36, 148 }, DailySpin = { 108, 148 }, Special = { 180, 148 },
+	Boosts = { 252, 148 }, TopCrushers = { 324, 148, 1.45 },
 }
 HubPlaza.Spokes = { 0, 90, 270 } -- walkways (no north one)
 
