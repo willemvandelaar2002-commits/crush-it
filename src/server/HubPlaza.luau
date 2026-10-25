@@ -491,9 +491,19 @@ local function quests(m: Model, f: CFrame)
 	header(m, f * CFrame.new(0, 15, 1), "QUESTS", W.Blue, 12)
 	questControl(m, f * CFrame.new(0, 3, 4.15))
 end
+-- Boosts booth: a purple plate with an [E] prompt that opens the Boosts window.
+local function boostControl(m: Model, cf: CFrame)
+	local plate = W.part(m, "BoostsControl", V(9, 1.6, 0.4), cf, W.Purple)
+	local gui = W.sign(plate)
+	W.text(gui, "OpenBoosts", "BOOSTS  [E]", UDim2.fromScale(.04,.1), UDim2.fromScale(.92,.8))
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "BoostsPrompt" prompt.ActionText = "Open" prompt.ObjectText = "Boosts"
+	prompt.HoldDuration = 0 prompt.MaxActivationDistance = 14 prompt.RequiresLineOfSight = false
+	prompt.Parent = plate CollectionService:AddTag(prompt, "BoostsPrompt")
+end
 local function boosts(m: Model, f: CFrame)
 	if stationMesh(m, "Boosts", f * CFrame.new(0, 1.2, -1)) then
-		base(m, f, 18, 10) header(m, f * CFrame.new(0, 18.4, -1), "BOOSTS", W.Purple, 12) comingSoon(m, f * CFrame.new(0, 2.6, 5.1)) return
+		base(m, f, 18, 10) header(m, f * CFrame.new(0, 18.4, -1), "BOOSTS", W.Purple, 12) boostControl(m, f * CFrame.new(0, 2.6, 5.1)) return
 	end
 	base(m, f, 18, 10)
 	W.part(m, "Vending", V(15, 13, 6), f * CFrame.new(0, 7.6, -1), W.Purple, true)
@@ -507,7 +517,7 @@ local function boosts(m: Model, f: CFrame)
 	end
 	W.part(m, "Slot", V(6, 1.2, 0.4), f * CFrame.new(0, 3.4, 2.1), BLACK)
 	header(m, f * CFrame.new(0, 17.4, -1), "BOOSTS", W.Purple, 12)
-	comingSoon(m, f * CFrame.new(0, 2.6, 5.1))
+	boostControl(m, f * CFrame.new(0, 2.6, 5.1))
 end
 local function special(m: Model, f: CFrame)
 	local pedestalTop = 2.6

@@ -28,6 +28,10 @@ Store.Products = {
 	{ id = "FinishSmelt", productId = 0, price = 19, title = "Finish Now", desc = "Your smelter finishes all its scrap at once", color = Color3.fromRGB(255, 140, 40) },
 	{ id = "GoldenRush", productId = 0, price = 49, title = "Golden Rush", desc = "Your next 10 objects are Golden", color = Color3.fromRGB(255, 200, 50) },
 	-- Rewards panel "Skip All": every playtime gift unlocks now (not in the shop list)
+	-- Hub Boosts station (Shared/BoostConfig); hidden from the shop list
+	{ id = "BoostCash", productId = 0, price = 49, title = "2x Cash Boost", desc = "15 minutes of double cash", color = Color3.fromRGB(230, 70, 60), hidden = true },
+	{ id = "BoostLuck", productId = 0, price = 49, title = "2x Luck Boost", desc = "15 minutes of double luck", color = Color3.fromRGB(60, 190, 90), hidden = true },
+	{ id = "BoostSuper", productId = 0, price = 79, title = "Super Boost", desc = "15 minutes of 2x cash and 2x luck", color = Color3.fromRGB(160, 80, 235), hidden = true },
 	{ id = "SkipRewards", productId = 0, price = 99, title = "Skip All", desc = "Unlock every playtime gift now", color = Color3.fromRGB(255, 200, 40), hidden = true },
 } :: { Product }
 

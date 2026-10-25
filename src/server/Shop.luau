@@ -110,6 +110,10 @@ local function grant(player: Player, productId: string)
 		if api.finishLegacyProduct then api.finishLegacyProduct(player) Purchased:FireClient(player,{id=productId,text="All scrap sold!"}) return end
 		require(script.Parent.Scrap).finishSmelt(player, data)
 		Purchased:FireClient(player, { id = productId, text = "Smelting done!" })
+	elseif productId == "BoostCash" or productId == "BoostLuck" or productId == "BoostSuper" then
+		local b = require(ReplicatedStorage.Shared.BoostConfig).find(productId:sub(6))
+		require(script.Parent.Boosts).add(player, b.id, b.minutes)
+		Purchased:FireClient(player, { id = productId, text = b.title .. " for " .. b.minutes .. " minutes!" })
 	elseif productId == "SkipRewards" then
 		require(script.Parent.Rewards).skipAll(player)
 		Purchased:FireClient(player, { id = productId, text = "All playtime gifts unlocked!" })

@@ -47,8 +47,11 @@ local function random() return rng:NextNumber() end
 local function restoredCooldown(d)
 	return os.clock()+math.clamp((d.crushers.rollReadyAt or 0)-workspace:GetServerTimeNow(),0,C.RollSeconds)
 end
+local Boost=require(RS.Shared.BoostConfig)
 local function perks(p)
-	return {autoCrush=Store.hasPass(p,"AutoCrush"),lucky=Store.hasPass(p,"Lucky"),mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*Friend.mult(p)}
+	local now=workspace:GetServerTimeNow() -- hub Boosts (server/Boosts) stack with the passes
+	return {autoCrush=Store.hasPass(p,"AutoCrush"),lucky=Store.hasPass(p,"Lucky") or Boost.active(p,"Luck",now),
+		mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)}
 end
 local function cps(p,d)
 	local rows=Rows.snapshot(d) local buffs=perks(p)
@@ -628,6 +631,7 @@ function G.start()
 	require(script.Parent.DailySpin).start(api)
 	require(script.Parent.Quests).start(api)
 	require(script.Parent.TopBoards).start(api)
+	require(script.Parent.Boosts).start(api)
 	-- /credits <amount> (or /cash): test cash, e.g. "/credits 5m". Studio, or the
 	-- place owner in live servers. No amount gives 1M.
 	local SUFFIX={k=1e3,m=1e6,b=1e9,t=1e12,qa=1e15}
