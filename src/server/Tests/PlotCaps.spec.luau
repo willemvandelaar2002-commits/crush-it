@@ -30,11 +30,17 @@ return function()
 	check(act(d,"Level",{id=item.id}) and item.level==C.MaxLevel+1,"crusher levels past the old cap")
 	check(act(d,"LevelMax",{id=item.id}) and item.level==caps.level,"MAX stops at the new cap")
 	ok,message=act(d,"Level",{id=item.id})
+	check(not ok and message:find("UPGRADE PLOT"),"Factory II cap points at Factory III")
+	s.plotLevel=2
+	check(act(d,"LevelMax",{id=item.id}) and item.level==C.levelCap(2),"Factory III raises the cap again")
+	ok,message=act(d,"Level",{id=item.id})
 	check(not ok and message=="Maximum level reached.","final cap message")
+	s.plotLevel=1
 	for _=1,caps.global do act(d,"Upgrade",{id="Damage"}) end
 	check(s.upgrades.Damage==caps.global,"factory upgrade stops at the new cap")
 
 	-- saves above the base caps survive a reload
+	item.level=caps.level
 	local saved=R.migrate(d,id)
 	check(saved.crushers.owned[1].level==caps.level and saved.crushers.upgrades.Damage==caps.global,"raised levels are kept on load")
 	return {passed=checks}

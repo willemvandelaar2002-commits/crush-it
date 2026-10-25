@@ -11,11 +11,74 @@ function P.prompt(part,action,title)
  local p=Instance.new("ProximityPrompt") p.Name="FactoryPrompt" p.ActionText=action p.ObjectText=title
  p.KeyboardKeyCode=Enum.KeyCode.E p.HoldDuration=0 p.MaxActivationDistance=12 p.RequiresLineOfSight=false p.Parent=part return p
 end
+-- Factory III: a third floor per wing, stepped back on top of the upper floor
+-- the same way the upper floor sits on the ground bays. Its deck roofs the
+-- upper bays; a lift pad on the upper walkway takes players up and down.
+-- Hidden until plot level 2 (CrusherGame.floorLook raises it into place).
+local function topFloor(parent,o,wing,side)
+ local top=Instance.new("Model") top.Name="TopFloor"..wing top.Parent=parent
+ local width=L.PerWing*L.Pitch+2 local T=L.TierHeight local x=side*L.WingX
+ local back2=L.BayZ-L.UpperBack-L.BayDepth/2 -- back face of the upper bays
+ local back3=back2-L.UpperBack -- back face of the top bays
+ local walk3=L.WalkFront-L.UpperBack -- front edge of the top walkway
+ local deckDepth=walk3-back3
+ local inner=x-side*width/2 local outer=x+side*width/2
+ -- under the top bays: a solid step from the upper floor up (its front is the
+ -- upper floor's back wall), carried at the back by columns down to the ground
+ local stepFront=back2-1.2
+ W.part(top,"TopStep",V(width,T-.8,stepFront-back3),o*CFrame.new(x,T+(T-.8)/2,(stepFront+back3)/2),W.Blue,true)
+ local deck=W.part(top,"TopDeck",V(width,.8,deckDepth),o*CFrame.new(x,2*T-.4,back3+deckDepth/2),Color3.fromRGB(125,159,199),true)
+ Style.materialStuds(deck,true,{Enum.NormalId.Top},2)
+ W.part(top,"TopFascia",V(width,1.4,.8),o*CFrame.new(x,2*T-.9,walk3+.2),W.Navy)
+ W.part(top,"TopFasciaStripe",V(width,.3,.9),o*CFrame.new(x,2*T-.05,walk3+.2),W.Yellow)
+ W.part(top,"TopBackWall",V(width,T+2,1.2),o*CFrame.new(x,2*T+(T+2)/2,back3-.6),W.Blue,true)
+ W.part(top,"TopBackWallCap",V(width+.4,.6,1.6),o*CFrame.new(x,3*T+2.3,back3-.6),W.Yellow)
+ for row=0,L.PerWing do
+  local px=side*(L.WingX+(row-L.PerWing/2)*L.Pitch)
+  W.part(top,"TopColumn",V(.9,T,.9),o*CFrame.new(px,2*T+T/2,L.BayZ-2*L.UpperBack+L.BayDepth/2-.2),W.Blue,true)
+  -- rear supports, skipped where they would land in the Factory II rear row
+  local rel=(C.wingFrame(side)*CFrame.new(px,0,back3+.8)).Position -- plot-local
+  if not (math.abs(rel.X)<31 and rel.Z<-35) then
+   W.part(top,"TopSupport",V(1.4,T+1,1.4),o*CFrame.new(px,(T-1)/2,back3+.8),W.Navy,true)
+  end
+ end
+ -- safety rails along the front and both ends of the top walkway
+ for _,h in {1.2,3} do
+  W.part(top,"TopRail",V(width,.4,.4),o*CFrame.new(x,2*T+h,walk3-.4),W.Yellow,true)
+  for _,ex in {inner,outer} do W.part(top,"TopEndRail",V(.4,.4,deckDepth),o*CFrame.new(ex,2*T+h,back3+deckDepth/2),W.Yellow,true) end
+ end
+ for i=0,math.floor(width/L.Pitch) do
+  W.part(top,"TopRailPost",V(.5,3.2,.5),o*CFrame.new(inner+side*i*L.Pitch,2*T+1.6,walk3-.4),W.Yellow,true)
+ end
+ -- lift pads: one on the upper walkway, one straight above on the top walkway
+ local liftX=side*(L.WingX+1.8*L.Pitch)
+ local function pad(name,y,z,label,action)
+  local cf=o*CFrame.new(liftX,y,z)
+  local base=W.part(top,name.."Base",V(5.4,.4,5.4),cf*CFrame.new(0,.2,0),W.Navy,true)
+  local glow=W.part(top,name.."Glow",V(.3,4.6,4.6),cf*CFrame.new(0,.45,0)*CFrame.Angles(0,0,math.pi/2),Color3.fromRGB(80,235,110))
+  glow.Shape=Enum.PartType.Cylinder glow.Material=Enum.Material.Neon glow.CastShadow=false
+  local post=W.part(top,name.."Sign",V(4,1.6,.3),cf*CFrame.new(0,4.2,-2.4),W.Navy)
+  W.text(W.sign(post),"Label",label,UDim2.fromScale(.04,.06),UDim2.fromScale(.92,.88))
+  local prompt=P.prompt(base,action,"Lift") prompt.MaxActivationDistance=8
+  return base,prompt
+ end
+ local lowBase,lowPrompt=pad("LiftLower",T,L.WalkFront-4.5,"LIFT · FLOOR 3","Go up")
+ local highBase,highPrompt=pad("LiftUpper",2*T,walk3-4.5,"LIFT · FLOOR 2","Go down")
+ local function ride(prompt,target)
+  prompt.Triggered:Connect(function(player)
+   local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+   if root then player.Character:PivotTo(CFrame.new(target.Position+Vector3.new(0,3.5,0))*root.CFrame.Rotation) end
+  end)
+ end
+ ride(lowPrompt,highBase) ride(highPrompt,lowBase)
+ lowPrompt.Enabled=false highPrompt.Enabled=false
+ return {model=top,first=C.floorStart(3,wing),prompts={lowPrompt,highPrompt},top=true}
+end
 -- Ground banks plus, per wing, an "UpperFloor" model (back wall, columns, rails,
 -- stairs) that only appears once that floor is bought (CrusherGame.floorLook).
 local function banks(parent,o)
  local m=Instance.new("Model") m.Name="WorkshopBanks" m.Parent=parent
- local floors={}
+ local floors={} local tops={}
  local width=L.PerWing*L.Pitch+2 local T=L.TierHeight
  local back=L.BayZ-L.UpperBack-L.BayDepth/2 -- back face of the upper bays
  local riserFront=L.BayZ-L.BayDepth/2 -- back face of the ground bays
@@ -25,9 +88,12 @@ local function banks(parent,o)
   local up=Instance.new("Model") up.Name="UpperFloor"..wing up.Parent=m floors[wing]=up
   local x=side*L.WingX local inner=x-side*width/2 local stairX=side*L.StairX
   -- Back wall: the ground part stays, the upper part belongs to the upper floor.
+  -- Its top 2 studs and cap (the parapet) give way to the third floor's deck.
   W.part(m,"BankBackWall",V(width,T,1.2),o*CFrame.new(x,T/2,back-.6),W.Blue,true)
-  W.part(up,"BankBackWallUpper",V(width,T+2,1.2),o*CFrame.new(x,T+(T+2)/2,back-.6),W.Blue,true)
-  W.part(up,"BackWallCap",V(width+.4,.6,1.6),o*CFrame.new(x,2*T+2.3,back-.6),W.Yellow)
+  W.part(up,"BankBackWallUpper",V(width,T,1.2),o*CFrame.new(x,T+T/2,back-.6),W.Blue,true)
+  local parapet=Instance.new("Model") parapet.Name="UpperParapet"..wing parapet.Parent=m
+  W.part(parapet,"BackWallParapet",V(width,2,1.2),o*CFrame.new(x,2*T+1,back-.6),W.Blue,true)
+  W.part(parapet,"BackWallCap",V(width+.4,.6,1.6),o*CFrame.new(x,2*T+2.3,back-.6),W.Yellow)
   -- The step: a solid block under the upper row; its front is the ground bays' back.
   W.part(m,"BankStep",V(width,T-.8,riserFront-back),o*CFrame.new(x,(T-.8)/2,(riserFront+back)/2),W.Blue,true)
   -- The deck: roof of the ground bays (and floor of the upper floor once built).
@@ -74,9 +140,10 @@ local function banks(parent,o)
   local info=W.text(box,"Info","6 more crusher bays",UDim2.fromScale(.04,.34),UDim2.fromScale(.92,.18))
   info.TextColor3=Color3.fromRGB(255,240,170)
   local buy=W.button(box,"Buy","BUILD",UDim2.fromScale(.12,.56),UDim2.fromScale(.76,.38),"Bay",nil,C.floorStart(2,wing))
-  floors[wing]={model=up,sign=sm,face=face,content=box,buy=buy,first=C.floorStart(2,wing)}
+  floors[wing]={model=up,sign=sm,face=face,content=box,buy=buy,first=C.floorStart(2,wing),parapet=parapet}
+  tops[wing]=topFloor(m,o,wing,side)
  end
- return floors
+ return floors,tops
 end
 -- One bay's frame: floor, beam with a status strip, back panel and padlock.
 local function bayFrame(holder,cf)
@@ -113,8 +180,8 @@ function P.create(root,Plots)
   W.border(decor,o,F,rear,front,14)
   local sign=W.entrance(decor,o*CFrame.new(0,0,front-4),14)
   W.walkway(m,o,12,rear+2,front)
-  local floors=banks(m,o)
-  local plot={index=i,origin=o,model=m,owner=nil,sign=sign,bays={},stations={},floors=floors}
+  local floors,tops=banks(m,o)
+  local plot={index=i,origin=o,model=m,owner=nil,sign=sign,bays={},stations={},floors=floors,topFloors=tops}
   for bay=1,C.MaxBays do
    local l=C.bayLayout(bay) local cf=o*C.wingFrame(l.side)*CFrame.new(l.x,l.y,l.z)*CFrame.Angles(0,l.yaw,0)
    local holder=Instance.new("Model") holder.Name="WorkingBay"..bay holder:SetAttribute("Bay",bay) holder.Parent=m
