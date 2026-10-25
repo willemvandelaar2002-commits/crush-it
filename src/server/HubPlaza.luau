@@ -28,9 +28,9 @@ HubPlaza.StationScale = 1.8
 -- it. The north walkway is gone (a station stands there); the narrowest
 -- stations sit beside the east/west walkways.
 HubPlaza.Stations = { -- angle in degrees (0 = south spoke), radius, scale
-	-- backs toward the railway (ring road starts at Config.Loop.Inner = 122)
-	Quests = { 36, 98 }, DailySpin = { 108, 98 }, Special = { 180, 98 },
-	Boosts = { 252, 98 }, TopCrushers = { 324, 98, 1.45 },
+	-- backs toward the railway (ring road starts at Config.Loop.Inner = 134)
+	Quests = { 36, 110 }, DailySpin = { 108, 110 }, Special = { 180, 110 },
+	Boosts = { 252, 110 }, TopCrushers = { 324, 110, 1.45 },
 }
 HubPlaza.Spokes = { 0, 90, 270 } -- walkways (no north one)
 
@@ -552,18 +552,6 @@ function HubPlaza.onWalkway(x: number, z: number, margin: number): boolean
 	end
 	return false
 end
-local function clear(o: CFrame, p: Vector3, pads: { { CFrame | Vector3 } }): boolean
-	local l = o:PointToObjectSpace(p)
-	local r = Vector3.new(l.X, 0, l.Z).Magnitude
-	if r < HubPlaza.Stage[1] + 4 or r > Config.Loop.Inner - 12 then return false end
-	if HubPlaza.onWalkway(l.X, l.Z, 26) then return false end -- spokes (clusters spread ~10)
-	for _, pad in pads do
-		local q = (pad[1] :: CFrame):PointToObjectSpace(p)
-		local half = (pad[2] :: Vector3) / 2 + Vector3.new(10, 0, 10)
-		if math.abs(q.X) < half.X and math.abs(q.Z) < half.Z then return false end
-	end
-	return true
-end
 function HubPlaza.dress(m: Model, o: CFrame, mega: Model)
 	local rng = Random.new(2210)
 	local deco = Instance.new("Model")
@@ -612,26 +600,24 @@ function HubPlaza.dress(m: Model, o: CFrame, mega: Model)
 			end
 		end
 	end
-	-- 3) Brick clusters (2-4 big bricks, some stacked) spread over the plaza,
-	--    clear of the spokes, stage and pads.
-	local placed = 0
-	for _ = 1, 400 do
-		if placed >= 26 then break end
-		local a = rng:NextNumber(0, math.pi * 2)
-		local r = rng:NextNumber(HubPlaza.Stage[1] + 8, Config.Loop.Inner - 16)
-		local p = (o * CFrame.new(math.sin(a) * r, 0, math.cos(a) * r)).Position
-		if clear(o, p, pads) then
-			placed += 1
-			local cf = CFrame.new(p) * CFrame.Angles(0, rng:NextNumber(0, 6), 0)
-			local S = rng:NextNumber(2.6, 3.2)
-			local h = 1.6 * S
-			bigBrick(deco, cf, 2, 2, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], S)
-			bigBrick(deco, cf * CFrame.new(3.4 * S, 0, rng:NextNumber(-1, 1)) * CFrame.Angles(0, rng:NextNumber(-0.5, 0.5), 0), 2, 1, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], S)
-			if rng:NextNumber() < 0.6 then
-				bigBrick(deco, cf * CFrame.new(rng:NextNumber(-0.5, 0.5), h, rng:NextNumber(-0.5, 0.5)) * CFrame.Angles(0, rng:NextNumber(0, 3), 0), 2, 1, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], S)
-			end
-			if rng:NextNumber() < 0.4 then
-				bigBrick(deco, cf * CFrame.new(-2.6 * S, 0, 1.4 * S) * CFrame.Angles(0, rng:NextNumber(0, 3), 0), 1, 1, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], S)
+	-- 3) Brick clusters (2-4 big bricks, some stacked): one beside each station,
+	--    on its outer side, clear of the walkways (no random scatter).
+	local function cluster(cf: CFrame)
+		local S = rng:NextNumber(2.6, 3.1)
+		local h = 1.6 * S
+		bigBrick(deco, cf, 2, 2, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], S)
+		bigBrick(deco, cf * CFrame.new(3.4 * S, 0, rng:NextNumber(-1, 1)) * CFrame.Angles(0, rng:NextNumber(-0.5, 0.5), 0), 2, 1, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], S)
+		bigBrick(deco, cf * CFrame.new(rng:NextNumber(-0.5, 0.5), h, rng:NextNumber(-0.5, 0.5)) * CFrame.Angles(0, rng:NextNumber(0, 3), 0), 2, 1, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], S)
+	end
+	for i, pad in pads do
+		local cf, size = pad[1] :: CFrame, pad[2] :: Vector3
+		-- alternate sides round the ring; use the other side if that one is a walkway
+		for _, side in (if i % 2 == 0 then { 1, -1 } else { -1, 1 }) do
+			local at = cf * CFrame.new(side * (size.X / 2 + 13), 0, -size.Z / 4)
+			local lp = o:PointToObjectSpace(at.Position)
+			if not HubPlaza.onWalkway(lp.X, lp.Z, 20) then
+				cluster(at * CFrame.Angles(0, rng:NextNumber(0, 6), 0))
+				break
 			end
 		end
 	end
@@ -739,7 +725,7 @@ function HubPlaza.build(parent: Instance, floorY: number)
 	end
 	-- Glowing yellow lamp posts along both sides of each spoke (like the reference).
 	for _, a in HubPlaza.Spokes do
-		for _, r in { 60, 80, 100 } do
+		for _, r in { 60, 85, 110 } do
 			for _, side in { -1, 1 } do
 				W.lamp(m, o * CFrame.Angles(0, math.rad(a), 0) * CFrame.new(side * 11, 0, r), 3.6)
 			end

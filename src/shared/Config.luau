@@ -426,16 +426,16 @@ Config.Look = {
 -- bridge onto the loop.
 Config.World = {
 	SeaY = -3, -- the yard floor under the islands; falling down there puts you back on your plot
-	HubGap = 12, -- gap between a plot island and the loop road (the plot's bridge)
+	HubGap = 18, -- gap between a plot island and the loop road (the plot's bridge)
 }
 
 Config.Loop = {
 	Hub = 56, -- radius of the station hub
 	-- (25 Oct: 6 plots per server, so the loop is much smaller; 6 plots of FloorSize
 	-- 156 need Plots.Ring >= ~141, see the plot-gap test in Tests/CrusherRules.spec)
-	Inner = 122, -- the ring road runs from this radius ...
-	Outer = 148, -- ... to this one (26 wide)
-	TrainRadius = 135, -- the rails' centre line
+	Inner = 134, -- the ring road runs from this radius ...
+	Outer = 160, -- ... to this one (26 wide)
+	TrainRadius = 147, -- the rails' centre line
 	TrainStop = 5, -- seconds a train stands at each plot's stop (shared/TrainRoute.luau)
 	TrainMove = 8, -- seconds to drive on to the next stop (45 degrees)
 	Trains = 2, -- toy trains on the loop, spread evenly
@@ -445,7 +445,7 @@ Config.Loop = {
 Config.Plots = {
 	Count = 6, -- = players per server (set Players.MaxPlayers to match)
 	StartAngle = 30, -- degrees of plot 1; the rest follow every 360 / Count
-	Ring = 160, -- distance from the centre to a plot's entrance edge (Loop.Outer + World.HubGap)
+	Ring = 178, -- distance from the centre to a plot's entrance edge (Loop.Outer + World.HubGap)
 	FloorSize = 156, -- two low crusher banks with stairs and a broad centre aisle
 	-- Plot depth, measured from the press centre (plot-local +Z points to the hub):
 	--   Front: entrance from the hub bridge, scrap shop (left), upgrade pads (right), scrap pile

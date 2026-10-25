@@ -20,7 +20,7 @@ local YardProps = require(script.Parent.Kit.YardProps)
 local Moat = {}
 
 Moat.FRONT_BRIDGE_X = 0 -- local X of the hub bridge (centre of the front edge; the conveyor is at the back)
-Moat.BRIDGE_WIDTH = 9
+Moat.BRIDGE_WIDTH = 13 -- as wide as the plot's centre walkway
 
 local function palette(): { [string]: Color3 }
 	return Style.theme(Config.Look.Theme)
