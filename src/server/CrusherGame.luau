@@ -208,7 +208,7 @@ local function send(p,message,result)
 	for i,bay in ctx.plot.bays do
 		-- bays on an upper floor that isn't built yet are invisible
 		local f=floorFor(ctx.plot,i)
-		local hidden=(f~=nil and f.mode~="built") or (C.bayLayout(i).expansion==true and Progression.level(d)<1)
+		local hidden=(f~=nil and f.mode~="built")
 		if bay.hidden~=hidden then bay.hidden=hidden bay.shown=nil partsLook(bay.model,if hidden then "hidden" else "built") end
 		if hidden then
 			bay.label.name.Text="" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="" bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false bay.lockLabel.Text=""
@@ -559,7 +559,7 @@ function G.start()
 	require(script.Parent.CrusherPreviews).start()
 	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false end end
 	for _,plot in Plots.all() do pedestalLook(plot,C.StartPedestals) end
-	for _,plot in Plots.all() do floorLook(plot,0) ProgressVisuals.sync(plot,nil,nil,0,"") for i,bay in plot.bays do if floorFor(plot,i) or C.bayLayout(i).expansion then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end end
+	for _,plot in Plots.all() do floorLook(plot,0) ProgressVisuals.sync(plot,nil,nil,0,"") for i,bay in plot.bays do if floorFor(plot,i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end end
 	require(script.Parent.Moat).start(function(p) local ctx=sessions[p] return if ctx then Plots.spawnFor(ctx.plot) else CFrame.new(0,5,14) end, G.safeTeleport)
 	require(script.Parent.Kit.Leaderboard).start({store="CashBoard_v1",score=function(p) return p:GetAttribute("Cash") or 0 end})
 	local function spawnCharacter(p,char)
@@ -614,7 +614,7 @@ function G.start()
 		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory" ctx.rollToken=nil
 			for i in ctx.plot.stations.Roll.pedestals do clearOffer(ctx.plot,i) end ctx.plot.pedestalCount=nil pedestalLook(ctx.plot,C.StartPedestals)
 			for i,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="BAY "..i Workshop.clearPurchase(bay.buy) bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false end end
-			floorLook(ctx.plot,0) RowVisuals.sync(ctx.plot,nil) ProgressVisuals.sync(ctx.plot,nil,nil,0,"") for i,bay in ctx.plot.bays do if floorFor(ctx.plot,i) or C.bayLayout(i).expansion then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
+			floorLook(ctx.plot,0) RowVisuals.sync(ctx.plot,nil) ProgressVisuals.sync(ctx.plot,nil,nil,0,"") for i,bay in ctx.plot.bays do if floorFor(ctx.plot,i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
 		sessions[p]=nil
 	end)
 	Net.event("CrusherAction").OnServerEvent:Connect(function(p,name,args)

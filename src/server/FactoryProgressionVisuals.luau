@@ -17,37 +17,19 @@ local function show(model,visible)
 end
 function V.create(plot)
 	local root=Instance.new("Model") root.Name="FactoryProgression" root.Parent=plot.model
-	local extension=Instance.new("Model") extension.Name="RearExpansion" extension.Parent=root
 	local o=plot.origin
-	-- Factory II deck behind the wings: the rear row (split around the road)
-	-- and the road running on toward where the rear yard will be
+	-- Factory III rear yard behind the wings: island body, studded floor, rim,
+	-- lamps and the road running on from the plot (its banks are in CrusherPlots)
 	local plotRear=C.Layout.BayZ-C.Layout.UpperBack-C.Layout.BayDepth/2-4 -- back edge of the plot floor
-	local deckBack=C.Layout.ExpansionZ-C.Layout.BayDepth/2-8 local deckHalf=38
-	local deckDepth=plotRear-deckBack local deckZ=(plotRear+deckBack)/2
-	local floor=W.part(extension,"ExpansionDeck",Vector3.new(deckHalf*2,2,deckDepth),o*CFrame.new(0,-1,deckZ),Style.theme("Island").platform,true)
-	Style.studs(floor)
-	W.walkway(extension,o,C.Layout.RoadHalf*2,deckBack,plotRear)
-	-- its open edges, replaced by the rear yard from Factory IV on
-	local edge=Instance.new("Model") edge.Name="ExpansionEdge" edge.Parent=root
-	for _,x in {-deckHalf,deckHalf} do W.part(edge,"ExpansionSide",Vector3.new(.8,1,deckDepth),o*CFrame.new(x,.5,deckZ),W.Navy,true) end
-	W.part(edge,"ExpansionRearTrim",Vector3.new(deckHalf*2,1,.8),o*CFrame.new(0,.5,deckBack),Style.Colors.Gold,true)
-	for _,x in {-deckHalf+3,deckHalf-3} do W.lamp(edge,o*CFrame.new(x,0,deckBack+3),3) end
-	-- Factory IV rear yard: island body, floor round the Factory II deck, rim and road
 	local yard=Instance.new("Model") yard.Name="RearYard" yard.Parent=root
 	local F=156 local half=F/2 local yardBack=C.Layout.BayZ+C.Layout.RearShift-C.Layout.UpperBack-C.Layout.BayDepth/2-6
 	local yardDepth=plotRear-yardBack
 	Build.island(yard,o*CFrame.new(0,0,(plotRear+yardBack)/2),F,yardDepth,World.SeaY,
 		{dirt=Color3.fromRGB(25,43,73),stone=Color3.fromRGB(46,84,156),stoneDark=Color3.fromRGB(25,43,73)},{rng=Random.new(77),curb=false,rocks=false})
 	local platform=Style.theme("Island").platform
-	for _,side in {-1,1} do
-		local w=half-deckHalf
-		local strip=W.part(yard,"YardSideFloor",Vector3.new(w,2,deckDepth),o*CFrame.new(side*(deckHalf+w/2),-1,deckZ),platform,true)
-		Style.studs(strip)
-	end
-	local backDepth=deckBack-yardBack
-	local back=W.part(yard,"YardFloor",Vector3.new(F,2,backDepth),o*CFrame.new(0,-1,(deckBack+yardBack)/2),platform,true)
-	Style.studs(back)
-	W.walkway(yard,o,C.Layout.RoadHalf*2,yardBack+4,deckBack)
+	local floor=W.part(yard,"YardFloor",Vector3.new(F,2,yardDepth),o*CFrame.new(0,-1,(plotRear+yardBack)/2),platform,true)
+	Style.studs(floor)
+	W.walkway(yard,o,C.Layout.RoadHalf*2,yardBack+4,plotRear)
 	local light=Color3.fromRGB(78,140,232)
 	local function rim(a,b,fixed,alongX)
 		local len=b-a local n=math.max(1,math.floor(len/6+.5)) local seg=len/n
@@ -106,13 +88,13 @@ function V.create(plot)
 		Style.setButtonColor(b,recipe.color)
 	end
 	lab.button=W.button(lab.content,"ApplyCoating","SELECT A FINISH",UDim2.fromScale(.1,.81),UDim2.fromScale(.8,.16),"ApplyCoating")
-	plot.progression={extension=extension,edge=edge,yard=yard,accents=accents,upgrade=upgrade,lab=lab,gateParts={},levelText=levelText}
-	-- the plot's rear rim opens behind the Factory II deck, and fully for the rear yard
+	plot.progression={yard=yard,accents=accents,upgrade=upgrade,lab=lab,gateParts={},levelText=levelText}
+	-- the plot's rear rim opens onto the rear yard
 	for _,p in plot.model:GetDescendants() do if p:IsA("BasePart") and (p.Name=="RimBlock" or p.Name=="RimCorner" or p.Name=="LampPost" or p.Name=="LampLight" or p.Name=="LampCap") and p.Parent and p.Parent.Name=="PlotBorder" then
 		local at=o:PointToObjectSpace(p.Position)
 		if math.abs(at.Z-(plotRear+1))<.2 then p:SetAttribute("RimX",at.X) table.insert(plot.progression.gateParts,p) end
 	end end
-	show(extension,false) show(edge,false) show(yard,false) show(accents,false) show(upgrade.model,false) show(lab.model,false)
+	show(yard,false) show(accents,false) show(upgrade.model,false) show(lab.model,false)
 	upgrade.content.Visible=false lab.content.Visible=false
 end
 function V.sync(plot,d,quote,now,preview)
@@ -120,14 +102,14 @@ function V.sync(plot,d,quote,now,preview)
 	local level=if d then P.level(d) else 0
 	local expanded=level>=1
 	local boardVisible=d and (expanded or P.full(d)) or false
-	local yardOpen=level>=3
+	local yardOpen=level>=2
 	local signature=tostring(level)..":"..tostring(boardVisible)
 	if v.signature~=signature then
-		v.signature=signature show(v.extension,expanded) show(v.edge,expanded and not yardOpen) show(v.yard,yardOpen) show(v.accents,expanded)
+		v.signature=signature show(v.yard,yardOpen) show(v.accents,expanded)
 		show(v.upgrade.model,boardVisible) v.upgrade.content.Visible=boardVisible
 		show(v.lab.model,expanded) v.lab.content.Visible=expanded
 		for _,part in v.gateParts do
-			local open=yardOpen or (expanded and math.abs(part:GetAttribute("RimX") or 99)<39)
+			local open=yardOpen
 			part.Transparency=if open then 1 else 0 part.CanCollide=not open part.CanQuery=not open
 		end
 	end
@@ -143,10 +125,10 @@ function V.sync(plot,d,quote,now,preview)
 		success=name.."!"}
 	W.purchase(v.upgrade.button,view)
 	v.upgrade.info.Text=if maxed then C.MaxBays.." BAYS · MASTER FACTORY"
-		elseif level==0 then "+6 BAYS · COATING LAB · HIGHER LV CAPS"
-		elseif level==1 then "+12 BAYS · 3RD FLOOR · HIGHER LV CAPS"
-		elseif level==2 then "+12 BAYS · REAR YARD · HIGHER LV CAPS"
-		else "+12 BAYS · REAR UPPER FLOORS · HIGHER LV CAPS"
+		elseif level==0 then "+12 BAYS · 3RD FLOOR · COATING LAB"
+		elseif level==1 then "+12 BAYS · REAR YARD · HIGHER LV CAPS"
+		elseif level==2 then "+6 BAYS · REAR UPPER LEFT · HIGHER LV CAPS"
+		else "+6 BAYS · REAR UPPER RIGHT · HIGHER LV CAPS"
 	if d then v.levelText.Text=C.PlotUpgrade.Names[math.max(1,level)] end
 	local valid=quote and now<quote.expires
 	v.lab.info.Text=if valid then preview else "Hold an unequipped crusher. Select a finish to preview."

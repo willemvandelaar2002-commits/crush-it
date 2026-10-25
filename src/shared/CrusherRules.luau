@@ -76,6 +76,26 @@ function R.migrate(d, guid)
 		d.crusherSchema=C.Schema
 	end
 	local s=d.crushers
+	-- Bay layout v2 (25 Oct): the middle rear row is gone. v1 numbering: 25-30
+	-- rear row, 31-42 third floor, 43-66 rear yard; v2: 25-36 third floor, 37-60
+	-- rear yard. Equipped crushers move with their bay; rear-row crushers go to
+	-- the first free bay of the new plot level, otherwise back to the inventory.
+	-- Plot levels keep their number (v1 30/42/54/66 bays -> v2 36/48/54/60).
+	if (tonumber(s.layout) or 1)<2 and type(s.equipped)=="table" then
+		local moved,rowItems={},{}
+		for key,id in s.equipped do local i=tonumber(key)
+			if i and i==math.floor(i) then
+				if i>=1 and i<=C.BaseMaxBays then moved[tostring(i)]=id
+				elseif i>C.BaseMaxBays and i<=C.BaseMaxBays+6 then table.insert(rowItems,{i=i,id=id})
+				elseif i>C.BaseMaxBays+6 and i<=C.MaxBays+6 then moved[tostring(i-6)]=id end
+			end
+		end
+		table.sort(rowItems,function(a,b) return a.i<b.i end)
+		local cap=C.bayCapacity(integer(s.plotLevel,0,C.PlotUpgrade.MaxLevel))
+		for _,r in rowItems do for b=1,cap do if moved[tostring(b)]==nil then moved[tostring(b)]=r.id break end end end
+		s.equipped=moved
+	end
+	s.layout=C.LayoutVersion
 	s.upgrades=if type(s.upgrades)=="table" then s.upgrades else {}
 	s.upgrades.RollSpeed=nil -- retired upgrade (rolling speed became pedestals)
 	for _,id in C.UpgradeOrder do s.upgrades[id]=integer(s.upgrades[id],0,C.topUpgradeMax(id)) end

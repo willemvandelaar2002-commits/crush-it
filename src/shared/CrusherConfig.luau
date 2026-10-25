@@ -32,34 +32,34 @@ C.Layout.StairFront=C.Layout.WalkFront+C.Layout.StairRun
 -- unlock order: centre first, then outwards. #PedestalSpots = MaxPedestals.
 C.PedestalSpots = { Vector2.new(0,23), Vector2.new(-11,21), Vector2.new(11,21), Vector2.new(-20.5,15.5), Vector2.new(20.5,15.5) }
 C.BaseMaxBays = C.Layout.Wings*C.Layout.Tiers*C.Layout.PerWing
--- Five plot stages (plot level 0..4):
+-- Five plot stages (plot level 0..4), bay layout v2 (25 Oct):
 --   bays  1..24  Starter Workshop: two floors per wing
---   bays 25..30  Factory II rear row, split 3+3 around the extended road
---   bays 31..42  Factory III third floor (left wing, then right)
---   bays 43..54  Factory IV rear yard banks, ground floor (left, then right)
---   bays 55..66  Factory V rear yard banks, upper floor
+--   bays 25..36  Factory II third floor (left wing, then right)
+--   bays 37..48  Factory III rear yard banks, ground floor (left, then right)
+--   bays 49..54  Factory IV rear yard upper floor, left
+--   bays 55..60  Factory V rear yard upper floor, right
 -- The rear yard banks copy the wing banks, shifted back by RearShift, untilted.
-C.ExpansionFirst = C.BaseMaxBays+1
-C.TopFirst = C.BaseMaxBays+C.Layout.PerWing+1
+-- (Layout v1 had a 6-bay rear row at 25..30; CrusherRules.migrate converts.)
+C.LayoutVersion = 2
+C.TopFirst = C.BaseMaxBays+1
 C.RearFirst = C.TopFirst+C.Layout.Wings*C.Layout.PerWing
 C.MaxBays = C.RearFirst-1+2*C.Layout.Wings*C.Layout.PerWing
-C.Layout.ExpansionZ = -58 -- rear row, between the wings' back and the rear yard
 C.Layout.RearShift = -78 -- rear yard banks: ground bays at BayZ+RearShift
-C.Layout.RoadHalf = 6 -- central road half-width (the rear row splits around it)
+C.Layout.RoadHalf = 6 -- central road half-width (rear yard banks keep clear of it)
 C.LegacyTypes={"Bumper","Steel","Cobalt","Mega","Titan","Quantum"}
 for i=4,C.MaxBays do C.BayCosts[i]=math.floor(900*1.45^(i-3)) end
 -- Caps[n] = upgrade caps from plot level n on: factory/roll upgrades (global)
 -- and each crusher's level. Below plot level 1 the base MaxGlobal/MaxLevel apply.
--- Level 1 = Factory II (+6 rear row, Coating Lab), 2 = Factory III (+12 third
--- floor, fusion), 3 = Factory IV (+12 rear yard), 4 = Factory V (+12 rear yard
--- upper floors). Costs[n] buys level n; Cost = Costs[1] (old name). Caps: +10
--- factory upgrades and +20 crusher levels per plot upgrade.
+-- Level 1 = Factory II (+12 third floor, Coating Lab), 2 = Factory III (+12
+-- rear yard, fusion), 3 = Factory IV (+6 rear upper left), 4 = Factory V (+6
+-- rear upper right). Costs[n] = 10x the price of its first new bay; Cost =
+-- Costs[1] (old name). Caps: +10 factory upgrades, +20 crusher levels each.
 C.PlotUpgrade = {MaxLevel=4,
-	Costs={math.floor(C.BayCosts[C.ExpansionFirst]*10),math.floor(C.BayCosts[C.TopFirst]*10),
-		math.floor(C.BayCosts[C.RearFirst]*10),math.floor(C.BayCosts[C.RearFirst+12]*10)},
+	Costs={math.floor(C.BayCosts[C.TopFirst]*10),math.floor(C.BayCosts[C.RearFirst]*10),
+		math.floor(C.BayCosts[C.RearFirst+12]*10),math.floor(C.BayCosts[C.RearFirst+18]*10)},
 	Names={"FACTORY II","FACTORY III","FACTORY IV","FACTORY V"},
 	Titles={"REINFORCED WORKSHOP","FUSION WORKSHOP","ADVANCED FACTORY","MASTER FACTORY"},
-	Adds={6,12,12,12},
+	Adds={12,12,6,6},
 	Caps={{global=30,level=60},{global=40,level=80},{global=50,level=100},{global=60,level=120}}}
 C.PlotUpgrade.Cost=C.PlotUpgrade.Costs[1]
 function C.plotCost(level) return C.PlotUpgrade.Costs[level] end
@@ -82,12 +82,6 @@ function C.bayLayout(index)
 		local k=index-C.TopFirst local wing=math.floor(k/l.PerWing) local row=k%l.PerWing
 		local side=if wing==0 then -1 else 1
 		return {x=side*(l.WingX+(row-(l.PerWing-1)/2)*l.Pitch),y=2*l.TierHeight,z=l.BayZ-2*l.UpperBack,yaw=0,tier=3,wing=wing+1,row=row+1,side=side,top=true}
-	end
-	if index>C.BaseMaxBays then local row=index-C.BaseMaxBays
-		-- three each side of the road, left to right
-		local half=l.PerWing/2 local inner=l.RoadHalf+l.BayWidth/2+1.2
-		local x=if row<=half then -(inner+(half-row)*l.Pitch) else inner+(row-half-1)*l.Pitch
-		return {x=x,y=0,z=l.ExpansionZ,yaw=0,tier=1,wing=3,row=row,side=0,expansion=true}
 	end
 	-- left wing fills first (inner to outer), then the right; ground, then upper
 	local tier=math.floor(n/perTier) local k=n%perTier
@@ -119,7 +113,6 @@ function C.floorStart(tier,wing) local l=C.Layout
 end
 function C.bayName(index)
 	local v=C.bayLayout(index)
-	if v.expansion then return "Expansion "..v.row end
 	if v.rear then return "Rear "..(if v.tier==2 then "upper " else "")..(if v.wing==1 then "left" else "right").." "..v.row end
 	return (if v.tier==1 then "Ground" elseif v.tier==2 then "Upper" else "Top").." "..(if v.wing==1 then "left" else "right").." "..v.row
 end

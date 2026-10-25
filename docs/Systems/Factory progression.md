@@ -28,35 +28,37 @@ levels (load clamps to the highest caps). Prices follow the existing growth
 formulas. Tests: `Tests/PlotCaps.spec` (13 checks). Add a row to `Caps` per
 future plot level.
 
-## Five plot stages — blockout (25 Oct)
+## Five plot stages — layout v2 (25 Oct)
 
-Plan agreed with Willem from his ChatGPT concept pictures (pictures are for
-look and feel, not construction plans). Measured in Studio first: at least
-135 studs of empty floor behind every plot before the factory wall, ~130
-studs to the neighbours' banks at the sides, train/hub only in front.
+Plan from Willem's ChatGPT concept pictures (look and feel only, not
+construction plans). Measured in Studio first: at least 135 studs of empty
+floor behind every plot before the factory wall, ~130 studs to neighbours.
+A first blockout had a 6-bay row in the middle behind the wings; Willem
+dropped it (too hard to see) in favour of the rear yard.
 
 | Stage (plot level) | Bays | Adds | Caps (upgrades / crusher LV) |
 | --- | --- | --- | --- |
 | 1 Starter Workshop (0) | 24 | two floors per wing | 20 / 40 |
-| 2 Reinforced Workshop (1) | 30 | rear row (bays 25-30) + Coating Lab | 30 / 60 |
-| 3 Fusion Workshop (2) | 42 | third floor (31-42) + fusion extension (todo) | 40 / 80 |
-| 4 Advanced Factory (3) | 54 | rear yard ground banks (43-54) | 50 / 100 |
-| 5 Master Factory (4) | 66 | rear yard upper floors (55-66) | 60 / 120 |
+| 2 Factory II (1) | 36 | third floor on both wings (25-36) + Coating Lab | 30 / 60 |
+| 3 Factory III (2) | 48 | rear yard: island, floor, road, both ground banks (37-48); fusion (todo) | 40 / 80 |
+| 4 Factory IV (3) | 54 | rear yard upper floor, left (49-54) | 50 / 100 |
+| 5 Factory V (4) | 60 | rear yard upper floor, right (55-60) | 60 / 120 |
 
-- Every upgrade needs every current bay filled, then costs `BayCosts[first new bay] * 10`.
-- Rear row now sits at z=-58 and splits 3+3 around the extended road
-  (`ExpansionZ`, `RoadHalf`); its crushers keep their bay numbers.
+- Every upgrade needs every current bay filled; costs 10x the price of its first new bay.
 - Rear yard = the same bank builder as the wings (`CrusherPlots.bankWing`),
-  shifted back by `RearShift` (-78) and not tilted; max two floors back there,
-  normal stairs. Rows 8-11 (REAR LEFT/RIGHT, REAR UPPER LEFT/RIGHT).
-- `C.bayFrame(layout)` gives the frame a bay's coordinates are in (wings are
-  tilted, rear row and rear yard are not); use it instead of `wingFrame`.
-- Factory IV yard: island body, studded floor round the Factory II deck,
-  rim, lamps and the road; the plot's rear rim opens (behind the deck from
-  Factory II, fully from Factory IV).
-- Screenshots of all stages were taken in Studio as visual-only previews
-  (no save changes). Still to do: the visual progression per stage (colours,
-  trim, props) and the Plot 3 fusion extension + fusion mechanic.
+  shifted back by `RearShift` (-78) and not tilted; max two floors, normal
+  stairs. Rows 7-10 (REAR LEFT/RIGHT, REAR UPPER LEFT/RIGHT).
+- `C.bayFrame(layout)` gives the frame bay coordinates are in (wings tilted,
+  rear yard not); use it instead of `wingFrame`.
+- **Save conversion** (`CrusherRules.migrate`, `crushers.layout` 1 -> 2): v1
+  bays 31-66 move down by 6; v1 rear-row crushers (25-30) go to the first
+  free bay of the plot level, otherwise back to the inventory. Plot levels
+  keep their number. Never removes a crusher; runs once.
+- Tested in Studio: all specs pass (FactoryProgression 213 incl. conversion
+  cases, Rows 1756, Rules 371, PlotCaps 16), clean Output; Willem's
+  Factory III save converted (48 bays shown, 30 crushers still on bays).
+  Stage screenshots were visual-only previews.
+- Still to do: visual progression per stage; fusion extension + mechanic.
 
 ## Factory III — third floor (25 Oct)
 
