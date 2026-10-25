@@ -19,7 +19,7 @@ return function()
 		return d
 	end
 	local d=fresh() local before=d.cash
-	check(C.BaseMaxBays==24 and C.MaxBays==42,"six-bay rear row plus a twelve-bay third floor")
+	check(C.BaseMaxBays==24 and C.MaxBays==66 and C.bayCapacity(1)==30 and C.bayCapacity(2)==42 and C.bayCapacity(3)==54 and C.bayCapacity(4)==66,"five stages: 24, 30, 42, 54, 66 bays")
 	check(not P.expand(d) and d.cash==before,"incomplete plot cannot expand or charge")
 	d=full() check(P.full(d),"mixed rarities qualify when all original rows are occupied")
 	d.crushers.equipped["24"]=nil
@@ -54,9 +54,33 @@ return function()
 	f3.cash=C.plotCost(2)
 	check(P.expand(f3) and f3.cash==0 and f3.crushers.plotLevel==2 and f3.crushers.bays==42,"Factory III charges once and grants twelve bays")
 	local ok,message=P.expand(f3)
-	check(not ok and message=="Your plot is fully expanded.","no plot upgrade after Factory III")
+	check(not ok and message=="Fill all 42 bays before upgrading your plot.","Factory IV needs all 42 bays filled")
 	check(R.migrate(R.copy(f3),id).crushers.bays==42,"Factory III survives migration")
-	for bay=C.TopFirst,C.MaxBays do local layout=C.bayLayout(bay)
+	-- Factory IV and V: fill every bay, upgrade, twelve more each time
+	local function fill(d,a,b)
+		for i=a,b do
+			local item={id=id(),type="Bumper",rarity="Common",modifier="Standard",level=1}
+			table.insert(d.crushers.owned,item) d.crushers.equipped[tostring(i)]=item.id
+		end
+	end
+	fill(f3,31,42) f3.cash=C.plotCost(3)
+	check(P.expand(f3) and f3.cash==0 and f3.crushers.plotLevel==3 and f3.crushers.bays==54,"Factory IV grants twelve rear yard bays")
+	fill(f3,43,54) f3.cash=C.plotCost(4)
+	check(P.expand(f3) and f3.crushers.plotLevel==4 and f3.crushers.bays==66,"Factory V grants twelve rear upper bays")
+	ok,message=P.expand(f3)
+	check(not ok and message=="Your plot is fully expanded.","no plot upgrade after Factory V")
+	check(R.migrate(R.copy(f3),id).crushers.bays==66,"Factory V survives migration")
+	check(C.plotCost(1)<C.plotCost(2) and C.plotCost(2)<C.plotCost(3) and C.plotCost(3)<C.plotCost(4),"each plot upgrade costs more")
+	for bay=C.RearFirst,C.MaxBays do local layout=C.bayLayout(bay)
+		check(layout.rear and layout.tier<=2 and layout.z==C.Layout.BayZ+C.Layout.RearShift-(layout.tier-1)*C.Layout.UpperBack,"rear yard banks: max two floors")
+		check(math.abs(layout.x)-C.Layout.BayWidth/2>C.Layout.RoadHalf and math.abs(layout.x)+C.Layout.BayWidth/2<78,"rear yard bays clear the road and fit the plot width")
+		check(C.bayFrame(layout)==CFrame.new(),"rear yard is not tilted")
+	end
+	check(C.rearStart(1,1)==43 and C.rearStart(1,2)==49 and C.rearStart(2,1)==55 and C.rearStart(2,2)==61,"rear yard numbering")
+	check(C.bayName(43)=="Rear left 1" and C.bayName(61)=="Rear upper right 1","rear yard names")
+	local rows=Rows.snapshot(f3).rows
+	check(rows[8].name=="REAR LEFT" and rows[11].name=="REAR UPPER RIGHT","rear yard rows")
+	for bay=C.TopFirst,C.RearFirst-1 do local layout=C.bayLayout(bay)
 		check(layout.tier==3 and layout.top and layout.y==2*C.Layout.TierHeight and layout.z==C.Layout.BayZ-2*C.Layout.UpperBack,"third floor steps back on top of the upper floor")
 		local under=C.bayLayout(bay-C.floorStart(3,layout.wing)+C.floorStart(2,layout.wing))
 		check(under.tier==2 and under.wing==layout.wing and under.x==layout.x,"each top bay sits above an upper bay")
@@ -64,8 +88,8 @@ return function()
 	check(C.floorStart(3,1)==31 and C.floorStart(3,2)==37 and C.bayName(31)=="Top left 1","top floor numbering")
 	check(Rows.snapshot(f3).rows[6].name=="TOP LEFT" and Rows.snapshot(f3).rows[7].name=="TOP RIGHT","top floor rows")
 	for bay=25,30 do local layout=C.bayLayout(bay)
-		check(layout.expansion and layout.y==0 and layout.side==0 and layout.z==-43,"rear expansion stays low and centered")
-		check(math.abs(layout.x)+C.Layout.BayWidth/2<35,"row bays fit expansion width")
+		check(layout.expansion and layout.y==0 and layout.side==0 and layout.z==C.Layout.ExpansionZ,"rear row stays low and centered")
+		check(math.abs(layout.x)-C.Layout.BayWidth/2>C.Layout.RoadHalf and math.abs(layout.x)+C.Layout.BayWidth/2<38,"rear row splits around the road and fits its deck")
 	end
 	-- Coatings apply to owned, held, unequipped instances with one-use previews.
 	d=full() local item={id=id(),type="Titan",rarity="Epic",modifier="Standard",level=7}

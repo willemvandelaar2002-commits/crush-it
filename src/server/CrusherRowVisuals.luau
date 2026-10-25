@@ -12,7 +12,7 @@ function V.create(plot)
 	for index=1,Rows.count() do
 		local first=(index-1)*C.Layout.PerWing+1 local layout=C.bayLayout(first)
 		local last=C.bayLayout(first+C.Layout.PerWing-1)
-		local origin=plot.origin*C.wingFrame(layout.side)
+		local origin=plot.origin*C.bayFrame(layout)
 		local model=Instance.new("Model") model.Name="RarityRow"..index model.Parent=plot.model
 		model:SetAttribute("RowIndex",index) model:SetAttribute("RowSetActive",false)
 		local record={model=model,rails={},first=first}

@@ -28,6 +28,36 @@ levels (load clamps to the highest caps). Prices follow the existing growth
 formulas. Tests: `Tests/PlotCaps.spec` (13 checks). Add a row to `Caps` per
 future plot level.
 
+## Five plot stages — blockout (25 Oct)
+
+Plan agreed with Willem from his ChatGPT concept pictures (pictures are for
+look and feel, not construction plans). Measured in Studio first: at least
+135 studs of empty floor behind every plot before the factory wall, ~130
+studs to the neighbours' banks at the sides, train/hub only in front.
+
+| Stage (plot level) | Bays | Adds | Caps (upgrades / crusher LV) |
+| --- | --- | --- | --- |
+| 1 Starter Workshop (0) | 24 | two floors per wing | 20 / 40 |
+| 2 Reinforced Workshop (1) | 30 | rear row (bays 25-30) + Coating Lab | 30 / 60 |
+| 3 Fusion Workshop (2) | 42 | third floor (31-42) + fusion extension (todo) | 40 / 80 |
+| 4 Advanced Factory (3) | 54 | rear yard ground banks (43-54) | 50 / 100 |
+| 5 Master Factory (4) | 66 | rear yard upper floors (55-66) | 60 / 120 |
+
+- Every upgrade needs every current bay filled, then costs `BayCosts[first new bay] * 10`.
+- Rear row now sits at z=-58 and splits 3+3 around the extended road
+  (`ExpansionZ`, `RoadHalf`); its crushers keep their bay numbers.
+- Rear yard = the same bank builder as the wings (`CrusherPlots.bankWing`),
+  shifted back by `RearShift` (-78) and not tilted; max two floors back there,
+  normal stairs. Rows 8-11 (REAR LEFT/RIGHT, REAR UPPER LEFT/RIGHT).
+- `C.bayFrame(layout)` gives the frame a bay's coordinates are in (wings are
+  tilted, rear row and rear yard are not); use it instead of `wingFrame`.
+- Factory IV yard: island body, studded floor round the Factory II deck,
+  rim, lamps and the road; the plot's rear rim opens (behind the deck from
+  Factory II, fully from Factory IV).
+- Screenshots of all stages were taken in Studio as visual-only previews
+  (no save changes). Still to do: the visual progression per stage (colours,
+  trim, props) and the Plot 3 fusion extension + fusion mechanic.
+
 ## Factory III — third floor (25 Oct)
 
 Second plot upgrade (plot level 2). Becomes buyable once all 30 bays (the 24
