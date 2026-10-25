@@ -69,14 +69,18 @@ local function fuserModel(parent,cf)
 	-- turn its front (the input rings) toward the plot entrance (+Z of cf),
 	-- then stand it on the floor centred on cf, by its bounding box, so the
 	-- imported pivot's position and turn don't matter
-	mesh:PivotTo(cf)
+	local function centre()
+		local box,size=mesh:GetBoundingBox()
+		local bottom=box.Position-Vector3.new(0,size.Y/2,0)
+		mesh:PivotTo(mesh:GetPivot()+(cf.Position-bottom))
+	end
+	mesh:PivotTo(cf) centre()
 	local ring=mesh:FindFirstChild("Input1Ring",true)
 	if ring and ring:IsA("BasePart") and cf:PointToObjectSpace(ring.Position).Z<0 then
-		mesh:PivotTo(cf*CFrame.Angles(0,math.pi,0))
+		-- half a turn round its own centre (cf), not round the imported pivot
+		mesh:PivotTo(cf*CFrame.Angles(0,math.pi,0)*cf:Inverse()*mesh:GetPivot())
+		centre()
 	end
-	local box,size=mesh:GetBoundingBox()
-	local bottom=box.Position-Vector3.new(0,size.Y/2,0)
-	mesh:PivotTo(mesh:GetPivot()+(cf.Position-bottom))
 	for _,p in mesh:GetDescendants() do if p:IsA("BasePart") then p.Anchored=true p.CanCollide=false p.CanTouch=false p.CanQuery=false end end
 	mesh.Parent=m
 	local box=W.part(m,"FuserCollision",V3(14.4,7,10),cf*CFrame.new(0,3.5,0),Navy,true)
