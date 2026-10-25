@@ -28,9 +28,9 @@ HubPlaza.StationScale = 1.8
 -- it. The north walkway is gone (a station stands there); the narrowest
 -- stations sit beside the east/west walkways.
 HubPlaza.Stations = { -- angle in degrees (0 = south spoke), radius, scale
-	-- backs toward the railway (ring road starts at Config.Loop.Inner = 172)
-	Quests = { 36, 148 }, DailySpin = { 108, 148 }, Special = { 180, 148 },
-	Boosts = { 252, 148 }, TopCrushers = { 324, 148, 1.45 },
+	-- backs toward the railway (ring road starts at Config.Loop.Inner = 160)
+	Quests = { 36, 136 }, DailySpin = { 108, 136 }, Special = { 180, 136 },
+	Boosts = { 252, 136 }, TopCrushers = { 324, 136, 1.45 },
 }
 HubPlaza.Spokes = { 0, 90, 270 } -- walkways (no north one)
 
@@ -555,7 +555,7 @@ end
 local function clear(o: CFrame, p: Vector3, pads: { { CFrame | Vector3 } }): boolean
 	local l = o:PointToObjectSpace(p)
 	local r = Vector3.new(l.X, 0, l.Z).Magnitude
-	if r < HubPlaza.Stage[1] + 4 or r > 160 then return false end
+	if r < HubPlaza.Stage[1] + 4 or r > Config.Loop.Inner - 12 then return false end
 	if HubPlaza.onWalkway(l.X, l.Z, 26) then return false end -- spokes (clusters spread ~10)
 	for _, pad in pads do
 		local q = (pad[1] :: CFrame):PointToObjectSpace(p)
@@ -618,7 +618,7 @@ function HubPlaza.dress(m: Model, o: CFrame, mega: Model)
 	for _ = 1, 400 do
 		if placed >= 26 then break end
 		local a = rng:NextNumber(0, math.pi * 2)
-		local r = rng:NextNumber(HubPlaza.Stage[1] + 8, 156)
+		local r = rng:NextNumber(HubPlaza.Stage[1] + 8, Config.Loop.Inner - 16)
 		local p = (o * CFrame.new(math.sin(a) * r, 0, math.cos(a) * r)).Position
 		if clear(o, p, pads) then
 			placed += 1
@@ -739,7 +739,7 @@ function HubPlaza.build(parent: Instance, floorY: number)
 	end
 	-- Glowing yellow lamp posts along both sides of each spoke (like the reference).
 	for _, a in HubPlaza.Spokes do
-		for _, r in { 60, 90, 120, 150 } do
+		for _, r in { 60, 85, 110, 135 } do
 			for _, side in { -1, 1 } do
 				W.lamp(m, o * CFrame.Angles(0, math.rad(a), 0) * CFrame.new(side * 11, 0, r), 3.6)
 			end
