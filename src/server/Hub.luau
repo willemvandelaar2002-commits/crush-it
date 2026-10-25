@@ -21,7 +21,9 @@ local C = Color3.fromRGB
 local ALL = { Enum.NormalId.Top, Enum.NormalId.Front, Enum.NormalId.Back, Enum.NormalId.Left, Enum.NormalId.Right }
 local FLOOR_Y = 1.6
 local SEGMENTS = 48
-local SPOKES = { 0, 90, 180, 270 } -- walkway directions (degrees; plots sit at 22.5 + 45 k)
+-- walkway directions (degrees; plots sit at 22.5 + 45 k). No north (180) walkway:
+-- a hub station stands there (HubPlaza.Stations, evenly spread every 72 degrees).
+local SPOKES = { 0, 90, 270 }
 
 local function at(angle: number, r: number, y: number): CFrame
 	-- a point on the ground at `angle` (radians, 0 = +Z) and radius r, local -Z pointing at the centre

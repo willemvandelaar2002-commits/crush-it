@@ -24,10 +24,14 @@ HubPlaza.MegaMeshScale = 1.35 -- AI mesh version
 HubPlaza.TruckScale = 1.7
 HubPlaza.ModelScale = 1.8 -- Willem's MegaCrusherModel
 HubPlaza.StationScale = 1.8
+-- Stations spread evenly round the Mega Crusher (every 72 degrees) and all face
+-- it. The north walkway is gone (a station stands there); the narrowest
+-- stations sit beside the east/west walkways.
 HubPlaza.Stations = { -- angle in degrees (0 = south spoke), radius, scale
-	Boosts = { 35, 112 }, Quests = { 325, 112 }, Special = { 135, 114 },
-	TopCrushers = { 215, 116, 1.45 }, DailySpin = { 250, 108 },
+	Quests = { 36, 112 }, DailySpin = { 108, 112 }, Special = { 180, 112 },
+	Boosts = { 252, 112 }, TopCrushers = { 324, 114, 1.45 },
 }
+HubPlaza.Spokes = { 0, 90, 270 } -- walkways (no north one)
 
 local function cyl(parent: Instance, name: string, length: number, d: number, cf: CFrame, color: Color3, solid: boolean?): BasePart
 	-- cylinder whose axis is cf's X axis
@@ -537,11 +541,21 @@ local function bigBrick(parent: Instance, cf: CFrame, nx: number, nz: number, co
 	b:PivotTo(cf)
 	return b
 end
+-- Is plaza-local (x, z) within `margin` studs of a walkway's centre line?
+function HubPlaza.onWalkway(x: number, z: number, margin: number): boolean
+	for _, a in HubPlaza.Spokes do
+		local d = Vector3.new(math.sin(math.rad(a)), 0, math.cos(math.rad(a)))
+		local along = x * d.X + z * d.Z
+		local side = math.abs(x * d.Z - z * d.X)
+		if along > 0 and side < margin then return true end
+	end
+	return false
+end
 local function clear(o: CFrame, p: Vector3, pads: { { CFrame | Vector3 } }): boolean
 	local l = o:PointToObjectSpace(p)
 	local r = Vector3.new(l.X, 0, l.Z).Magnitude
 	if r < HubPlaza.Stage[1] + 4 or r > 160 then return false end
-	if math.abs(l.X) < 26 or math.abs(l.Z) < 26 then return false end -- spokes (clusters spread ~10)
+	if HubPlaza.onWalkway(l.X, l.Z, 26) then return false end -- spokes (clusters spread ~10)
 	for _, pad in pads do
 		local q = (pad[1] :: CFrame):PointToObjectSpace(p)
 		local half = (pad[2] :: Vector3) / 2 + Vector3.new(10, 0, 10)
@@ -588,6 +602,8 @@ function HubPlaza.dress(m: Model, o: CFrame, mega: Model)
 			-- a few bricks and plants hugging each pad's corners
 			for k, corner in { V(-1, 0, 1), V(1, 0, 1), V(-1, 0, -1), V(1, 0, -1) } do
 				local p = pad * CFrame.new(corner.X * (w / 2 + 5), 0, corner.Z * (d / 2 + 4))
+				local lp = o:PointToObjectSpace(p.Position)
+				if HubPlaza.onWalkway(lp.X, lp.Z, 14) then continue end
 				bigBrick(deco, p * CFrame.Angles(0, rng:NextNumber(0, 3), 0), 2, if k % 2 == 0 then 2 else 1, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], 2.6)
 				if k <= 2 then
 					bigBrick(deco, p * CFrame.new(rng:NextNumber(-1, 1), 4.16, rng:NextNumber(-1, 1)) * CFrame.Angles(0, rng:NextNumber(0, 3), 0), 1, 1, BRICK_COLORS[rng:NextInteger(1, #BRICK_COLORS)], 2.6)
@@ -638,13 +654,16 @@ function HubPlaza.dress(m: Model, o: CFrame, mega: Model)
 	end
 	for _, pad in pads do
 		local cf, size = pad[1] :: CFrame, pad[2] :: Vector3
-		plant(cactus, cf * CFrame.new(size.X / 2 + 3, 0, 0), 2.2)
-		plant(bush, cf * CFrame.new(-size.X / 2 - 3, 0, 0), 2.2)
+		for _, pair in { { cactus, 1 }, { bush, -1 } } do
+			local at = cf * CFrame.new(pair[2] * (size.X / 2 + 3), 0, 0)
+			local lp = o:PointToObjectSpace(at.Position)
+			if not HubPlaza.onWalkway(lp.X, lp.Z, 12) then plant(pair[1], at, 2.2) end
+		end
 	end
 	-- 6) Crossing shelters where each spoke meets the railway: yellow roof on
 	--    navy posts, hazard-striped barriers and lamps.
 	local rr = Config.Loop.Inner - 5
-	for _, a in { 0, 90, 180, 270 } do
+	for _, a in HubPlaza.Spokes do
 		local f = o * CFrame.Angles(0, math.rad(a), 0)
 		for _, side in { -1, 1 } do
 			local s = f * CFrame.new(side * 16, 0, rr)
@@ -688,12 +707,8 @@ function HubPlaza.build(parent: Instance, floorY: number)
 	for name, spec in HubPlaza.Stations do
 		local a = math.rad(spec[1])
 		local pos = (o * CFrame.new(math.sin(a) * spec[2], 0, math.cos(a) * spec[2])).Position
-		-- +Z (the model fronts) faces the nearest spoke walkway, so people walking
-		-- the spokes see the fronts (like the reference)
-		local spoke = math.rad(math.floor((spec[1] + 45) / 90) % 4 * 90)
-		local along = math.cos(a - spoke) * spec[2]
-		local target = Vector3.new(math.sin(spoke) * along, floorY, math.cos(spoke) * along)
-		local f = CFrame.lookAt(pos, target) * CFrame.Angles(0, math.pi, 0)
+		-- +Z (the model fronts) faces the Mega Crusher in the middle
+		local f = CFrame.lookAt(pos, Vector3.new(o.X, floorY, o.Z)) * CFrame.Angles(0, math.pi, 0)
 		local sm = Instance.new("Model")
 		sm.Name = name .. "Station"
 		sm:SetAttribute("Placeholder", name ~= "DailySpin")
@@ -716,11 +731,13 @@ function HubPlaza.build(parent: Instance, floorY: number)
 		c.Parent = m
 	end
 	for _, spec in HubPlaza.Stations do
-		drop(tree, spec[1] - 13, spec[2] - 6, 1.6)
-		drop(tree, spec[1] + 13, spec[2] - 6, 1.6)
+		for _, side in { -1, 1 } do
+			local a, r = spec[1] + side * 13, spec[2] - 6
+			if not HubPlaza.onWalkway(math.sin(math.rad(a)) * r, math.cos(math.rad(a)) * r, 14) then drop(tree, a, r, 1.6) end
+		end
 	end
 	-- Glowing yellow lamp posts along both sides of each spoke (like the reference).
-	for _, a in { 0, 90, 180, 270 } do
+	for _, a in HubPlaza.Spokes do
 		for _, r in { 60, 90, 120, 150 } do
 			for _, side in { -1, 1 } do
 				W.lamp(m, o * CFrame.Angles(0, math.rad(a), 0) * CFrame.new(side * 11, 0, r), 3.6)
