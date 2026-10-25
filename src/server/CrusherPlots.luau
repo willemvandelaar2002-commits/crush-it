@@ -120,8 +120,8 @@ function P.create(root,Plots)
    local holder=Instance.new("Model") holder.Name="WorkingBay"..bay holder:SetAttribute("Bay",bay) holder.Parent=m
    local panel,lock,strip,lockLabel=bayFrame(holder,cf)
    -- Low desk-style plaque in front of the bay: readable from above, never covers the press.
-   local face,text,buy,manage=W.plaque(holder,cf*CFrame.new(0,1.2,L.BayDepth/2+2.4)*CFrame.Angles(math.rad(-66),0,0),bay)
-   plot.bays[bay]={model=holder,origin=cf*CFrame.new(0,.4+L.Pedestal,L.MachineZ),label=text,buy=buy,manage=manage,part=face,locked=panel,padlock=lock,strip=strip,lockLabel=lockLabel,
+   local face,text,buy,manage,max=W.plaque(holder,cf*CFrame.new(0,1.2,L.BayDepth/2+2.4)*CFrame.Angles(math.rad(-66),0,0),bay)
+   plot.bays[bay]={model=holder,origin=cf*CFrame.new(0,.4+L.Pedestal,L.MachineZ),label=text,buy=buy,manage=manage,max=max,part=face,locked=panel,padlock=lock,strip=strip,lockLabel=lockLabel,
     prompt=P.prompt(face,"Manage",C.bayName(bay))}
   end
   require(script.Parent.CrusherRowVisuals).create(plot)

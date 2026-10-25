@@ -27,6 +27,17 @@ rate. Luck shows the normalised chance of Uncommon-or-better, including Lucky
 pass when owned; it does not claim a raw weight bonus is final probability.
 Pedestals describe choices per roll; each chosen offer still costs cash.
 
+## MAX button (25 Oct)
+
+Each occupied plaque has a small MAX button next to SWAP. It buys as many
+levels for that crusher as your cash covers in one go (`LevelMax` action,
+`CrusherRules.maxLevels`), stopping at `MaxLevel`. The button shows how many
+levels it will buy (`MAX +17`), is grey when not even one level is affordable,
+and reads `MAX` at the level cap. It costs exactly the same as pressing
+LEVEL UP that many times, and quest level counters count every level.
+Server checks (ownership, bay, distance) are the same as LEVEL UP.
+Tests: `Tests/CrusherLevelMax.spec` (10 checks).
+
 ## Purchase feedback and routing
 
 Green means affordable; grey means short of cash or MAX. An unaffordable click
