@@ -58,7 +58,7 @@ local function fusionPrompt(m,cf)
 end
 -- Willem's Blender fuser (place-only template, saved with the place, not in
 -- Git): ServerStorage.FusionMeshes.FusionMachine, 14.4 x 8 x 10 studs, front
--- (input rings) toward -Z; placed by its bounding box. Decorative meshes do not
+-- = the input rings; turned and placed by those and its bounding box. Decorative meshes do not
 -- collide; one invisible box keeps players out of it.
 local function fuserModel(parent,cf)
 	local folder=ServerStorage:FindFirstChild("FusionMeshes")
@@ -66,13 +66,17 @@ local function fuserModel(parent,cf)
 	if not template or not template:IsA("Model") then return nil end
 	local m=Instance.new("Model") m.Name="Fuser" m.Parent=parent
 	local mesh=template:Clone()
-	-- turn its front toward the plot entrance, then stand it on the floor,
-	-- centred on cf (by its bounding box, whatever the imported pivot is)
-	local turned=cf*CFrame.Angles(0,math.pi,0)
-	mesh:PivotTo(turned)
+	-- turn its front (the input rings) toward the plot entrance (+Z of cf),
+	-- then stand it on the floor centred on cf, by its bounding box, so the
+	-- imported pivot's position and turn don't matter
+	mesh:PivotTo(cf)
+	local ring=mesh:FindFirstChild("Input1Ring",true)
+	if ring and ring:IsA("BasePart") and cf:PointToObjectSpace(ring.Position).Z<0 then
+		mesh:PivotTo(cf*CFrame.Angles(0,math.pi,0))
+	end
 	local box,size=mesh:GetBoundingBox()
 	local bottom=box.Position-Vector3.new(0,size.Y/2,0)
-	mesh:PivotTo(CFrame.new(cf.Position-bottom)*turned)
+	mesh:PivotTo(mesh:GetPivot()+(cf.Position-bottom))
 	for _,p in mesh:GetDescendants() do if p:IsA("BasePart") then p.Anchored=true p.CanCollide=false p.CanTouch=false p.CanQuery=false end end
 	mesh.Parent=m
 	local box=W.part(m,"FuserCollision",V3(14.4,7,10),cf*CFrame.new(0,3.5,0),Navy,true)
