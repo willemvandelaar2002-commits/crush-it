@@ -31,8 +31,9 @@ return function()
 	check(act(d,"LevelMax",{id=item.id}) and item.level==caps.level,"MAX stops at the new cap")
 	ok,message=act(d,"Level",{id=item.id})
 	check(not ok and message:find("UPGRADE PLOT"),"Factory II cap points at Factory III")
-	s.plotLevel=2
-	check(act(d,"LevelMax",{id=item.id}) and item.level==C.levelCap(2),"Factory III raises the cap again")
+	s.plotLevel=C.PlotUpgrade.MaxLevel
+	check(act(d,"LevelMax",{id=item.id}) and item.level==C.levelCap(C.PlotUpgrade.MaxLevel),"every plot upgrade raises the cap again")
+	check(C.upgradeMax("Damage",4)==60 and C.levelCap(4)==120 and C.upgradeMax("Damage",3)==50 and C.levelCap(3)==100,"+10 upgrades and +20 levels per plot")
 	ok,message=act(d,"Level",{id=item.id})
 	check(not ok and message=="Maximum level reached.","final cap message")
 	s.plotLevel=1

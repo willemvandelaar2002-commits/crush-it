@@ -88,12 +88,18 @@ end
 -- The floor model a bay belongs to: upper floor (tier 2) or Factory III top floor (tier 3).
 local function floorFor(plot,i)
 	local l=C.bayLayout(i)
+	if l.rear then
+		local first=C.rearStart(l.tier,l.wing)
+		for _,f in plot.rearFloors or {} do if f.first==first then return f end end
+		return nil
+	end
 	if l.tier==2 then return plot.floors and plot.floors[l.wing] end
 	if l.tier==3 then return plot.topFloors and plot.topFloors[l.wing] end
 	return nil
 end
 local function floorLook(plot,unlocked)
-	local all={} for _,f in plot.floors or {} do table.insert(all,f) end for _,f in plot.topFloors or {} do table.insert(all,f) end
+	local all={}
+	for _,list in {plot.floors,plot.topFloors,plot.rearFloors} do for _,f in list or {} do table.insert(all,f) end end
 	for _,f in all do
 		-- top floors come with the plot upgrade: no ghost or BUILD sign, they rise when bought
 		local mode=if unlocked>=f.first then "built" elseif unlocked+1==f.first and not f.top then "ghost" else "hidden"
@@ -105,7 +111,7 @@ local function floorLook(plot,unlocked)
 			if rise then
 				-- the new floor (and its bays) rises up out of the floor below's roof
 				local models={f.model}
-				for i,bay in plot.bays do local l=C.bayLayout(i) if l.tier>1 and C.floorStart(l.tier,l.wing)==f.first then table.insert(models,bay.model) end end
+				for i,bay in plot.bays do if floorFor(plot,i)==f then table.insert(models,bay.model) end end
 				local homes={} for k,m in models do homes[k]=m:GetPivot() m:PivotTo(homes[k]*CFrame.new(0,-C.Layout.TierHeight,0)) end
 				task.spawn(function()
 					local t0=os.clock()

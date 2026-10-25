@@ -36,9 +36,9 @@ local function topFloor(parent,o,wing,side)
  for row=0,L.PerWing do
   local px=side*(L.WingX+(row-L.PerWing/2)*L.Pitch)
   W.part(top,"TopColumn",V(.9,T,.9),o*CFrame.new(px,2*T+T/2,L.BayZ-2*L.UpperBack+L.BayDepth/2-.2),W.Blue,true)
-  -- rear supports, skipped where they would land in the Factory II rear row
+  -- rear supports down to the ground (kept off the central road)
   local rel=(C.wingFrame(side)*CFrame.new(px,0,back3+.8)).Position -- plot-local
-  if not (math.abs(rel.X)<31 and rel.Z<-35) then
+  if math.abs(rel.X)>7 then
    W.part(top,"TopSupport",V(1.4,T+1,1.4),o*CFrame.new(px,(T-1)/2,back3+.8),W.Navy,true)
   end
  end
@@ -76,36 +76,31 @@ local function topFloor(parent,o,wing,side)
  lowPrompt.Enabled=false highPrompt.Enabled=false
  return {model=top,first=C.floorStart(3,wing),prompts={lowPrompt,highPrompt},top=true}
 end
--- Ground banks plus, per wing, an "UpperFloor" model (back wall, columns, rails,
--- stairs) that only appears once that floor is bought (CrusherGame.floorLook).
-local function banks(parent,o)
- local m=Instance.new("Model") m.Name="WorkshopBanks" m.Parent=parent
- local floors={} local tops={}
+-- One bank: ground step, deck and columns (in ground), the upper floor's wall,
+-- columns, rails and stairs (in up), and the upper wall's top (in parapet).
+-- o is the bank's frame: a wing's turned frame, or the rear yard's offset frame.
+local function bankWing(ground,up,parapet,o,side)
  local width=L.PerWing*L.Pitch+2 local T=L.TierHeight
  local back=L.BayZ-L.UpperBack-L.BayDepth/2 -- back face of the upper bays
  local riserFront=L.BayZ-L.BayDepth/2 -- back face of the ground bays
  local deckDepth=L.WalkFront-back
- for wing,side in {-1,1} do
-  local o=o*C.wingFrame(side) -- build the whole wing in its turned frame
-  local up=Instance.new("Model") up.Name="UpperFloor"..wing up.Parent=m floors[wing]=up
   local x=side*L.WingX local inner=x-side*width/2 local stairX=side*L.StairX
   -- Back wall: the ground part stays, the upper part belongs to the upper floor.
   -- Its top 2 studs and cap (the parapet) give way to the third floor's deck.
-  W.part(m,"BankBackWall",V(width,T,1.2),o*CFrame.new(x,T/2,back-.6),W.Blue,true)
+  W.part(ground,"BankBackWall",V(width,T,1.2),o*CFrame.new(x,T/2,back-.6),W.Blue,true)
   W.part(up,"BankBackWallUpper",V(width,T,1.2),o*CFrame.new(x,T+T/2,back-.6),W.Blue,true)
-  local parapet=Instance.new("Model") parapet.Name="UpperParapet"..wing parapet.Parent=m
   W.part(parapet,"BackWallParapet",V(width,2,1.2),o*CFrame.new(x,2*T+1,back-.6),W.Blue,true)
   W.part(parapet,"BackWallCap",V(width+.4,.6,1.6),o*CFrame.new(x,2*T+2.3,back-.6),W.Yellow)
   -- The step: a solid block under the upper row; its front is the ground bays' back.
-  W.part(m,"BankStep",V(width,T-.8,riserFront-back),o*CFrame.new(x,(T-.8)/2,(riserFront+back)/2),W.Blue,true)
+  W.part(ground,"BankStep",V(width,T-.8,riserFront-back),o*CFrame.new(x,(T-.8)/2,(riserFront+back)/2),W.Blue,true)
   -- The deck: roof of the ground bays (and floor of the upper floor once built).
-  local deck=W.part(m,"UpperDeck",V(width,.8,deckDepth),o*CFrame.new(x,T-.4,back+deckDepth/2),Color3.fromRGB(125,159,199),true)
+  local deck=W.part(ground,"UpperDeck",V(width,.8,deckDepth),o*CFrame.new(x,T-.4,back+deckDepth/2),Color3.fromRGB(125,159,199),true)
   Style.materialStuds(deck,true,{Enum.NormalId.Top},2)
-  W.part(m,"DeckFascia",V(width,1.4,.8),o*CFrame.new(x,T-.9,L.WalkFront+.2),W.Navy)
-  W.part(m,"FasciaStripe",V(width,.3,.9),o*CFrame.new(x,T-.05,L.WalkFront+.2),W.Yellow)
+  W.part(ground,"DeckFascia",V(width,1.4,.8),o*CFrame.new(x,T-.9,L.WalkFront+.2),W.Navy)
+  W.part(ground,"FasciaStripe",V(width,.3,.9),o*CFrame.new(x,T-.05,L.WalkFront+.2),W.Yellow)
   for row=0,L.PerWing do
    local px=side*(L.WingX+(row-L.PerWing/2)*L.Pitch)
-   W.part(m,"GroundColumn",V(.9,T-.8,.9),o*CFrame.new(px,(T-.8)/2,L.BayZ+L.BayDepth/2-.2),W.Blue,true)
+   W.part(ground,"GroundColumn",V(.9,T-.8,.9),o*CFrame.new(px,(T-.8)/2,L.BayZ+L.BayDepth/2-.2),W.Blue,true)
    W.part(up,"UpperColumn",V(.9,T,.9),o*CFrame.new(px,T+T/2,L.BayZ-L.UpperBack+L.BayDepth/2-.2),W.Blue,true)
   end
   local railEnd=stairX-side*(L.StairWidth/2+.4)
@@ -131,6 +126,18 @@ local function banks(parent,o)
     W.part(up,"StairPost",V(.7,3,.7),o*CFrame.new(ex,(if z==L.StairFront then 0 else T)+1.5,z),W.Blue,true)
    end
   end
+end
+-- Ground banks plus, per wing, an "UpperFloor" model (back wall, columns, rails,
+-- stairs) that only appears once that floor is bought (CrusherGame.floorLook).
+local function banks(parent,o)
+ local m=Instance.new("Model") m.Name="WorkshopBanks" m.Parent=parent
+ local floors={} local tops={} local rears={}
+ for wing,side in {-1,1} do
+  local o=o*C.wingFrame(side) -- build the whole wing in its turned frame
+  local up=Instance.new("Model") up.Name="UpperFloor"..wing up.Parent=m
+  local parapet=Instance.new("Model") parapet.Name="UpperParapet"..wing parapet.Parent=m
+  bankWing(m,up,parapet,o,side)
+  local x=side*L.WingX local T=L.TierHeight
   -- "NEW FLOOR" sign standing on the roof, shown when this floor is next to buy.
   local sm=Instance.new("Model") sm.Name="FloorSign"..wing sm.Parent=m
   local cf=o*CFrame.new(x,T,L.BayZ-L.UpperBack+1)
@@ -145,7 +152,18 @@ local function banks(parent,o)
   floors[wing]={model=up,sign=sm,face=face,content=box,buy=buy,first=C.floorStart(2,wing),parapet=parapet}
   tops[wing]=topFloor(m,o,wing,side)
  end
- return floors,tops
+ -- Factory IV and V: the same two banks again in the rear yard, behind the
+ -- rear row and without the wing tilt. Ground banks come with Factory IV,
+ -- their upper floors with Factory V (hidden until bought, see floorLook).
+ for wing,side in {-1,1} do
+  local ro=o*CFrame.new(0,0,L.RearShift)
+  local ground=Instance.new("Model") ground.Name="RearGround"..wing ground.Parent=m
+  local up=Instance.new("Model") up.Name="RearUpper"..wing up.Parent=m
+  bankWing(ground,up,up,ro,side)
+  table.insert(rears,{model=ground,first=C.rearStart(1,wing),top=true})
+  table.insert(rears,{model=up,first=C.rearStart(2,wing),top=true})
+ end
+ return floors,tops,rears
 end
 -- One bay's frame: floor, beam with a status strip, back panel and padlock.
 local function bayFrame(holder,cf)
@@ -182,10 +200,10 @@ function P.create(root,Plots)
   W.border(decor,o,F,rear,front,14)
   local sign=W.entrance(decor,o*CFrame.new(0,0,front-4),14)
   W.walkway(m,o,12,rear+2,front)
-  local floors,tops=banks(m,o)
-  local plot={index=i,origin=o,model=m,owner=nil,sign=sign,bays={},stations={},floors=floors,topFloors=tops}
+  local floors,tops,rears=banks(m,o)
+  local plot={index=i,origin=o,model=m,owner=nil,sign=sign,bays={},stations={},floors=floors,topFloors=tops,rearFloors=rears}
   for bay=1,C.MaxBays do
-   local l=C.bayLayout(bay) local cf=o*C.wingFrame(l.side)*CFrame.new(l.x,l.y,l.z)*CFrame.Angles(0,l.yaw,0)
+   local l=C.bayLayout(bay) local cf=o*C.bayFrame(l)*CFrame.new(l.x,l.y,l.z)*CFrame.Angles(0,l.yaw,0)
    local holder=Instance.new("Model") holder.Name="WorkingBay"..bay holder:SetAttribute("Bay",bay) holder.Parent=m
    local panel,lock,strip,lockLabel=bayFrame(holder,cf)
    -- Low desk-style plaque in front of the bay: readable from above, never covers the press.
