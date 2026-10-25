@@ -9,18 +9,24 @@ local function level(d)
 	return math.clamp(math.floor(n),0,C.PlotUpgrade.MaxLevel)
 end
 function P.level(d) return level(d) end
+-- Every bay the current plot level has (24, then 30) holds a crusher:
+-- the next plot upgrade can be bought.
 function P.full(d)
-	if d.crushers.bays<C.BaseMaxBays then return false end
+	local need=C.bayCapacity(level(d))
+	if d.crushers.bays<need then return false end
 	local state=Rows.snapshot(d)
-	for i=1,C.BaseMaxBays/C.Layout.PerWing do if state.rows[i].filled<C.Layout.PerWing then return false end end
+	for i=1,need/C.Layout.PerWing do if state.rows[i].filled<C.Layout.PerWing then return false end end
 	return true
 end
+function P.needed(d) return C.bayCapacity(level(d)) end
 function P.expand(d)
-	if level(d)>=C.PlotUpgrade.MaxLevel then return false,"Your plot is fully expanded." end
-	if not P.full(d) then return false,"Fill all 24 original bays before upgrading your plot." end
-	if d.cash<C.PlotUpgrade.Cost then return false,"Not enough cash for the plot upgrade." end
-	d.cash=C.money(d.cash-C.PlotUpgrade.Cost)
-	d.crushers.plotLevel=1 d.crushers.bays=C.bayCapacity(1)
+	local now=level(d)
+	if now>=C.PlotUpgrade.MaxLevel then return false,"Your plot is fully expanded." end
+	if not P.full(d) then return false,"Fill all "..P.needed(d).." bays before upgrading your plot." end
+	local cost=C.plotCost(now+1)
+	if d.cash<cost then return false,"Not enough cash for the plot upgrade." end
+	d.cash=C.money(d.cash-cost)
+	d.crushers.plotLevel=now+1 d.crushers.bays=C.bayCapacity(now+1)
 	return true,"Done!"
 end
 function P.recipe(name) for _,r in C.Coatings do if r.name==name then return r end end end

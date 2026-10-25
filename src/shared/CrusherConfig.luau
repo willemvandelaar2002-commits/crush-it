@@ -32,16 +32,33 @@ C.Layout.StairFront=C.Layout.WalkFront+C.Layout.StairRun
 -- unlock order: centre first, then outwards. #PedestalSpots = MaxPedestals.
 C.PedestalSpots = { Vector2.new(0,23), Vector2.new(-11,21), Vector2.new(11,21), Vector2.new(-20.5,15.5), Vector2.new(20.5,15.5) }
 C.BaseMaxBays = C.Layout.Wings*C.Layout.Tiers*C.Layout.PerWing
-C.MaxBays = C.BaseMaxBays+C.Layout.PerWing
+-- Bays 25..30: Factory II rear row. Bays 31..42: Factory III third floor
+-- (left wing, then right), stepped back on top of the upper floor.
+C.ExpansionFirst = C.BaseMaxBays+1
+C.TopFirst = C.BaseMaxBays+C.Layout.PerWing+1
+C.MaxBays = C.TopFirst-1+C.Layout.Wings*C.Layout.PerWing
 C.Layout.ExpansionZ = C.Layout.BayZ-C.Layout.UpperBack-C.Layout.BayDepth-7
 C.LegacyTypes={"Bumper","Steel","Cobalt","Mega","Titan","Quantum"}
 for i=4,C.MaxBays do C.BayCosts[i]=math.floor(900*1.45^(i-3)) end
 -- Caps[n] = upgrade caps from plot level n on: factory/roll upgrades (global)
 -- and each crusher's level. Below plot level 1 the base MaxGlobal/MaxLevel apply.
-C.PlotUpgrade = {MaxLevel=1,Cost=math.floor(C.BayCosts[C.BaseMaxBays+1]*10),Caps={{global=30,level=60}}}
-function C.bayCapacity(level) return C.BaseMaxBays+(if type(level)=="number" and level>=1 and level<math.huge then C.Layout.PerWing else 0) end
+-- Level 1 = Factory II (+6 rear bays, Coating Lab), level 2 = Factory III
+-- (+12 bays on a third floor). Costs[n] buys level n; Cost = Costs[1] (old name).
+C.PlotUpgrade = {MaxLevel=2,Costs={math.floor(C.BayCosts[C.ExpansionFirst]*10),math.floor(C.BayCosts[C.TopFirst]*10)},
+	Names={"FACTORY II","FACTORY III"},Caps={{global=30,level=60},{global=40,level=80}}}
+C.PlotUpgrade.Cost=C.PlotUpgrade.Costs[1]
+function C.plotCost(level) return C.PlotUpgrade.Costs[level] end
+function C.bayCapacity(level)
+	if type(level)~="number" or level~=level or level==math.huge then level=0 end
+	return C.BaseMaxBays+(if level>=1 then C.Layout.PerWing else 0)+(if level>=2 then C.Layout.Wings*C.Layout.PerWing else 0)
+end
 function C.bayLayout(index)
 	local l=C.Layout local n=index-1 local perTier=l.Wings*l.PerWing
+	if index>=C.TopFirst then
+		local k=index-C.TopFirst local wing=math.floor(k/l.PerWing) local row=k%l.PerWing
+		local side=if wing==0 then -1 else 1
+		return {x=side*(l.WingX+(row-(l.PerWing-1)/2)*l.Pitch),y=2*l.TierHeight,z=l.BayZ-2*l.UpperBack,yaw=0,tier=3,wing=wing+1,row=row+1,side=side,top=true}
+	end
 	if index>C.BaseMaxBays then local row=index-C.BaseMaxBays
 		return {x=(row-(l.PerWing+1)/2)*l.Pitch,y=0,z=l.ExpansionZ,yaw=0,tier=1,wing=3,row=row,side=0,expansion=true}
 	end
@@ -61,11 +78,14 @@ function C.wingFrame(side)
 	return CFrame.new(ix,0,pz)*CFrame.Angles(0,-side*l.WingTilt,0)*CFrame.new(-ix,0,-pz)
 end
 -- First bay of an upper wing (buying it builds that wing's upper floor).
-function C.floorStart(tier,wing) local l=C.Layout return (tier-1)*l.Wings*l.PerWing+(wing-1)*l.PerWing+1 end
+function C.floorStart(tier,wing) local l=C.Layout
+	if tier>=3 then return C.TopFirst+(wing-1)*l.PerWing end
+	return (tier-1)*l.Wings*l.PerWing+(wing-1)*l.PerWing+1
+end
 function C.bayName(index)
 	local v=C.bayLayout(index)
 	if v.expansion then return "Expansion "..v.row end
-	return (if v.tier==1 then "Ground" else "Upper").." "..(if v.wing==1 then "left" else "right").." "..v.row
+	return (if v.tier==1 then "Ground" elseif v.tier==2 then "Upper" else "Top").." "..(if v.wing==1 then "left" else "right").." "..v.row
 end
 function C.nextBenefit(id,lv)
 	local nextLv=math.min(C.MaxGlobal,lv+1)

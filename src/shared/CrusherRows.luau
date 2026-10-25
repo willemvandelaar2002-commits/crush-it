@@ -19,7 +19,7 @@ function R.snapshot(d)
 		local layout=C.bayLayout(first)
 		local row={index=index,first=first,last=last,capacity=C.Layout.PerWing,filled=0,matches=0,
 			unlocked=math.clamp(capacity-first+1,0,C.Layout.PerWing),active=false,bonus=0,multiplier=1,
-			name=(if layout.tier==1 then "GROUND " else "UPPER ")..(if layout.wing==1 then "LEFT" else "RIGHT")}
+			name=(if layout.tier==1 then "GROUND " elseif layout.tier==2 then "UPPER " else "TOP ")..(if layout.wing==1 then "LEFT" else "RIGHT")}
 		if layout.expansion then row.name="EXPANSION ROW" end
 		local counts={} local valid={}
 		for bay=first,last do
