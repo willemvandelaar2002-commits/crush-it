@@ -175,7 +175,7 @@ local function displays(parent: Instance)
 	part(m, "MascotPlinth", V(51, 3, 51), duckCf * CFrame.new(0, 35, 0), P.Yellow)
 	FactoryProps.duck(m, duckCf * CFrame.new(0, 36.5, 0), 8)
 	FactoryProps.packingBooth(m, CFrame.new(-HALF + 78, FLOOR_Y, HALF - 85) * CFrame.Angles(0, -math.pi / 4, 0))
-	FactoryProps.crane(m, CFrame.new(0, FLOOR_Y, HALF - 27))
+	-- (25 Oct: the gantry crane in front of the CRUSH IT sign was removed; it hid the letters)
 	-- Supply belts hug the other walls; they never cross the train or bridges.
 	FactoryProps.conveyor(m, CFrame.new(0, FLOOR_Y, -HALF + 24) * CFrame.Angles(0, math.pi, 0), 300)
 	FactoryProps.conveyor(m, CFrame.new(HALF - 24, FLOOR_Y, 0) * CFrame.Angles(0, math.pi / 2, 0), 250)
