@@ -1,27 +1,29 @@
 --!strict
 -- Every uploaded icon (Willem's account, 512x512 PNGs, 20 Oct).
--- Swap an icon by changing its id here; nothing else needs to change.
--- These ids don't load as plain rbxassetid:// in an ImageLabel (likely decal
--- ids), but Roblox's thumbnail URL works for any asset type, so we use that.
+-- These are the Image ids behind the uploaded decals, so they load for every
+-- player. Don't go back to decal ids through rbxthumb://: a private decal's
+-- thumbnail only shows to its owner, so other players saw blank icons.
+-- To swap an icon: upload the PNG, open the decal in Studio (InsertService:
+-- LoadAsset(decalId)) and copy its Decal.Texture id here.
 
 local function id(n: string): string
-	return "rbxthumb://type=Asset&id=" .. n .. "&w=420&h=420"
+	return "rbxassetid://" .. n
 end
 
 return {
-	Book = id("139326189029321"),
-	Shop = id("108694086790169"),
-	Rewards = id("130608162750164"),
-	Cash = id("105818491449765"),
-	Power = id("133827925413773"),
-	Speed = id("125971454243604"),
-	Value = id("80257410856032"),
-	Press = id("102684655405763"),
-	Rebirth = id("118805133054994"), -- WarChest's rebirth icon: 119986205257706
-	AutoCrush = id("105926085988328"),
-	DoubleCash = id("124084693349196"),
-	Offline = id("126844943827021"),
-	Lucky = id("136809184380141"),
-	Golden = id("77768517736981"),
-	Trophy = id("139626264780814"),
+	Book = id("81331205840113"), -- decal 139326189029321
+	Shop = id("85820261067278"), -- decal 108694086790169
+	Rewards = id("129215110267001"), -- decal 130608162750164
+	Cash = id("98244872810376"), -- decal 105818491449765
+	Power = id("138851581750358"), -- decal 133827925413773
+	Speed = id("103295262884876"), -- decal 125971454243604
+	Value = id("129681169460956"), -- decal 80257410856032
+	Press = id("123814414980756"), -- decal 102684655405763
+	Rebirth = id("90818789034514"), -- decal 118805133054994
+	AutoCrush = id("79330874809591"), -- decal 105926085988328
+	DoubleCash = id("97833325663750"), -- decal 124084693349196
+	Offline = id("104060508227706"), -- decal 126844943827021
+	Lucky = id("138780104233345"), -- decal 136809184380141
+	Golden = id("85828350065088"), -- decal 77768517736981
+	Trophy = id("101098329602259"), -- decal 139626264780814
 }

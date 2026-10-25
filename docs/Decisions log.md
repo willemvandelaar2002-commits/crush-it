@@ -184,3 +184,4 @@
 - 2026-10-25: Removed the yellow gantry crane in front of the CRUSH IT sign (it hid the letters).
 - 2026-10-25: Correction: the gantry crane is back; the red wall column behind the middle of the CRUSH IT sign (wall 1, column 4) is left out instead, it ran through the letters.
 - 2026-10-25: Boosts station live: 2x Cash, 2x Luck and Super Boost (both), 15 min each for Robux (products BoostCash/BoostLuck/BoostSuper in Store, id 0 = "Coming soon") and one free 5-minute boost of your choice per day. Time stacks (max 4 h), real-time, saved in d.boosts; perks() reads player attributes Boost_<id>. Active boosts show as timer chips on the left. Checked: earning rate doubled (178 -> 357/s), free boost once per day.
+- 2026-10-25: HUD/shop icons use the Image ids behind the decals (rbxassetid) instead of rbxthumb decal thumbnails, which only loaded for the owner, so other players saw blank icons.
