@@ -80,7 +80,7 @@ return function()
 	check(C.bayName(43)=="Rear left 1" and C.bayName(61)=="Rear upper right 1","rear yard names")
 	local rows=Rows.snapshot(f3).rows
 	check(rows[8].name=="REAR LEFT" and rows[11].name=="REAR UPPER RIGHT","rear yard rows")
-	for bay=C.TopFirst,C.MaxBays do local layout=C.bayLayout(bay)
+	for bay=C.TopFirst,C.RearFirst-1 do local layout=C.bayLayout(bay)
 		check(layout.tier==3 and layout.top and layout.y==2*C.Layout.TierHeight and layout.z==C.Layout.BayZ-2*C.Layout.UpperBack,"third floor steps back on top of the upper floor")
 		local under=C.bayLayout(bay-C.floorStart(3,layout.wing)+C.floorStart(2,layout.wing))
 		check(under.tier==2 and under.wing==layout.wing and under.x==layout.x,"each top bay sits above an upper bay")
