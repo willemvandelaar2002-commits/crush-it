@@ -63,7 +63,8 @@ end
 local function fuserModel(parent,cf)
 	local folder=ServerStorage:FindFirstChild("FusionMeshes")
 	local template=folder and folder:FindFirstChild("FusionMachine")
-	if not template or not template:IsA("Model") then return nil end
+	-- only once it's checked in Studio: set the attribute Ready=true on the template
+	if not template or not template:IsA("Model") or template:GetAttribute("Ready")~=true then return nil end
 	local m=Instance.new("Model") m.Name="Fuser" m.Parent=parent
 	local mesh=template:Clone()
 	-- turn its front (the input rings) toward the plot entrance (+Z of cf),

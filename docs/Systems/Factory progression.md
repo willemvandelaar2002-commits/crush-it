@@ -80,6 +80,15 @@ Tests: `Tests/Fusion.spec` (16 checks).
 opens there from Factory III. Fuser (code-built, Blender model later) faces
 the entrance; maintenance robot and crates beside it.
 
+**Blender fuser (26 Oct)**: Willem's model lives in the place file at
+`ServerStorage.FusionMeshes.FusionMachine` (20 MeshParts, scaled to 14.4 x 8 x
+10, glass/neon set, no collisions; Willem must Publish to keep it). Code uses
+it only when the template has the attribute `Ready=true`; otherwise the
+code-built fuser shows. Placement turns it by its input rings and centres it
+by its bounding box, so the imported pivot doesn't matter. First import came
+in at 100x scale and renders black (vertex colours read as black; part Color
+has no effect), so Ready is not set yet.
+
 **Stage props** (`server/PlotStages.luau`, cumulative, built once, shown by
 plot level): rim bolts and lamp collars recoloured per stage (yellow, orange,
 silver, gold); Factory II cobalt road edging, compressor beside the right
