@@ -217,7 +217,9 @@ fuse.Activated:Connect(function()
 	actionRemote:FireServer("Fuse", { main = main, inputs = string.split(inputs, ",") })
 end)
 
+local previewing = false
 Net.event("CrusherState").OnClientEvent:Connect(function(v)
+	if previewing then return end
 	state = v
 	if panel.Visible and v.message then
 		if v.message == "Done!" and v.result and v.result.fused then
@@ -244,13 +246,13 @@ PPS.PromptTriggered:Connect(function(prompt)
 	actionRemote:FireServer("Sync")
 	redraw()
 end)
-panel:GetPropertyChangedSignal("Visible"):Connect(function() if panel.Visible then redraw() else pending = false end end)
+panel:GetPropertyChangedSignal("Visible"):Connect(function() if panel.Visible then redraw() else pending = false previewing = false end end)
 -- Studio only: preview the screen with a made-up state (visual only; the
 -- server still owns the real inventory and refuses ids you don't own).
 if game:GetService("RunService"):IsStudio() then
 	local preview = make("BindableFunction", { Name = "FusionPreview" }, script)
 	preview.OnInvoke = function(fake: any)
-		state = fake pending = false fitWindow() Style.setOpen(panel, true) redraw()
+		previewing = true state = fake pending = false fitWindow() Style.setOpen(panel, true) redraw()
 		return true
 	end
 end
