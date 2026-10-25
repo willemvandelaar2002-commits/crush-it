@@ -406,9 +406,19 @@ local function topCrushers(m: Model, f: CFrame)
 	header(m, f * CFrame.new(0, 16.4, -1), "TOP CRUSHERS", W.Navy, 16)
 	comingSoon(m, f * CFrame.new(0, 2.6, 4.6))
 end
+-- Quests booth: a blue plate with an [E] prompt that opens the Quests window.
+local function questControl(m: Model, cf: CFrame)
+	local plate = W.part(m, "QuestsControl", V(9, 1.6, 0.4), cf, W.Blue)
+	local gui = W.sign(plate)
+	W.text(gui, "OpenQuests", "QUESTS  [E]", UDim2.fromScale(.04,.1), UDim2.fromScale(.92,.8))
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "QuestsPrompt" prompt.ActionText = "Open" prompt.ObjectText = "Quests"
+	prompt.HoldDuration = 0 prompt.MaxActivationDistance = 14 prompt.RequiresLineOfSight = false
+	prompt.Parent = plate CollectionService:AddTag(prompt, "QuestsPrompt")
+end
 local function quests(m: Model, f: CFrame)
 	if stationMesh(m, "Quests", f * CFrame.new(0, 1.2, 0)) then
-		base(m, f, 20, 14) header(m, f * CFrame.new(0, 17, 1), "QUESTS", W.Blue, 12) comingSoon(m, f * CFrame.new(0, 2.6, 7.1)) return
+		base(m, f, 20, 14) header(m, f * CFrame.new(0, 17, 1), "QUESTS", W.Blue, 12) questControl(m, f * CFrame.new(0, 2.6, 7.1)) return
 	end
 	base(m, f, 18, 12)
 	W.part(m, "Counter", V(14, 4, 4), f * CFrame.new(0, 3.1, 2), W.Blue, true)
@@ -427,7 +437,7 @@ local function quests(m: Model, f: CFrame)
 	W.part(m, "NoticePost", V(0.8, 5, 0.8), n * CFrame.new(0, 3.5, 0), W.Navy, true)
 	W.part(m, "NoticeBoard", V(3.6, 4.4, 0.4), n * CFrame.new(0, 7, 0), C(240, 236, 220))
 	header(m, f * CFrame.new(0, 15, 1), "QUESTS", W.Blue, 12)
-	comingSoon(m, f * CFrame.new(0, 3, 4.15))
+	questControl(m, f * CFrame.new(0, 3, 4.15))
 end
 local function boosts(m: Model, f: CFrame)
 	if stationMesh(m, "Boosts", f * CFrame.new(0, 1.2, -1)) then

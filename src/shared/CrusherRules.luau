@@ -62,6 +62,7 @@ function R.migrate(d, guid)
 	d.purchases=if type(d.purchases)=="table" then d.purchases else {}
 	d.daily=if type(d.daily)=="table" then d.daily else {day=0,streak=0}
 	d.dailySpin=require(script.Parent.DailySpinRules).migrate(d.dailySpin)
+	require(script.Parent.QuestRules).migrate(d) -- quest tokens, quest lists, stat counters
 	d.timeSkipAt=number(d.timeSkipAt,0,1e12) -- next free time skip (server time)
 	d.goldenRush=integer(d.goldenRush,0,100000) d.crushed=integer(d.crushed,0,C.MaxMoney)
 	d.tier=integer(d.tier,1,13) d.rebirths=integer(d.rebirths,0,10000)
@@ -199,6 +200,9 @@ end
 function R.act(d,session,action,args,now,random,guid,perks)
 	local ok,message,result=act(d,session,action,args,now,random,guid,perks)
 	if ok then
+		-- counters for quests (QuestRules.stat)
+		local counted=({Sell="sells",Buy="buys",Level="levels",Upgrade="upgrades"})[action]
+		if counted then d.stats=d.stats or {} d.stats[counted]=(d.stats[counted] or 0)+1 end
 		local id=if action=="EquipBest" then "Equip" else action
 		if action=="Upgrade" then local u=C.Upgrades[(type(args)=="table" and args.id) or ""] id=if u and u.group=="Production" then "Upgrade" else "" end
 		R.tutorialAdvance(d,id)

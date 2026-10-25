@@ -48,6 +48,7 @@ function Spin.start(api)
 				if not p.Parent then return end
 				local delivered,result=R.deliver(d)
 				if not delivered then send(p,open,result) return end
+				d.stats=d.stats or {} d.stats.spins=(d.stats.spins or 0)+1 -- for quests
 				local saved=Data.saveNow(p)
 				p:SetAttribute("GoldenRush",d.goldenRush) api.sync(p)
 				send(p,open,if saved then "Reward granted!" else "Reward granted. Saving will retry automatically.",result)
