@@ -4,6 +4,7 @@
 local RS = game:GetService("ReplicatedStorage")
 local C = require(RS.Shared.CrusherConfig)
 local Rows = require(RS.Shared.CrusherRows)
+local Rules = require(RS.Shared.CrusherRules)
 local Finish = require(RS.Shared.CrusherFinish)
 local Style = require(RS.Shared.Kit.Style)
 local Icons = require(RS.Shared.Icons)
@@ -78,10 +79,26 @@ function I.new(gui, act)
 	button(bayControls,"PreviousBay","<",UDim2.new(),UDim2.fromOffset(48,40),blue,function()
 		selectedBay=math.max(1,selectedBay-1) signature="" redraw()
 	end)
-	local selector=label(bayControls,"BaySelection","BAY 1",UDim2.fromOffset(60,0),UDim2.new(1,-120,1,0),24)
-	button(bayControls,"NextBay",">",UDim2.new(1,-48,0,0),UDim2.fromOffset(48,40),blue,function()
+	local selector=label(bayControls,"BaySelection","BAY 1",UDim2.fromOffset(60,0),UDim2.new(1,-370,1,0),24)
+	button(bayControls,"NextBay",">",UDim2.new(1,-298,0,0),UDim2.fromOffset(48,40),blue,function()
 		selectedBay=math.min(state and state.unlocked or 1,selectedBay+1) signature="" redraw()
 	end)
+	-- Trash can: recycle every unequipped duplicate in one go (second click confirms).
+	-- Keeps equipped crushers and the strongest copy of each type.
+	local dupesPending=false
+	local function extras()
+		if not state then return {} end
+		local equipped={} for bay,id in state.bays do equipped[bay]=id end
+		return Rules.duplicateExtras(state.items,equipped,function(item) return item.stats.cps end)
+	end
+	local dupes dupes=button(bayControls,"RecycleDuplicates","🗑 RECYCLE DUPES",UDim2.new(1,-240,0,0),UDim2.fromOffset(240,40),Style.Colors.Red,function()
+		local n=#extras()
+		if n==0 then dupesPending=false dupes.Text="🗑 NO DUPES" return end
+		if dupesPending then dupesPending=false act("RecycleDuplicates",{}) return end
+		dupesPending=true dupes.Text="CONFIRM · "..n.." CRUSHER"..(if n==1 then "" else "S")
+		task.delay(3,function() if dupesPending then dupesPending=false signature="" redraw() end end)
+	end)
+	dupes.TextSize=18
 	local content=make("ScrollingFrame",{Name="Content",Position=UDim2.fromOffset(10,145),
 		Size=UDim2.new(1,-20,1,-207),BackgroundTransparency=1,BorderSizePixel=0,
 		AutomaticCanvasSize=Enum.AutomaticSize.Y,CanvasSize=UDim2.new(),ScrollBarThickness=7,ZIndex=2},panel)
@@ -196,6 +213,8 @@ function I.new(gui, act)
 			progress.Text=heading.." · "..(if row.active then "+"..math.floor(row.bonus*100+.5).."% SCRAP" else "MATCH A RARITY FOR A SCRAP BOOST")
 		end
 		fill.Size=UDim2.fromScale(unique/math.max(1,#C.Types),1) fill.Visible=tab=="Index"
+		if not dupesPending then local n=#extras() dupes.Text=if n>0 then "🗑 RECYCLE "..n.." DUPE"..(if n==1 then "" else "S") else "🗑 NO DUPES"
+			Style.setButtonColor(dupes,if n>0 then Style.Colors.Red else Color3.fromRGB(104,116,138)) end
 		indexButton.TextTransparency=if tab=="Index" then 0 else .2
 		ownedButton.TextTransparency=if tab=="Owned" then 0 else .2
 		for name,node in filterButtons do node.TextTransparency=if name==filter then 0 else .2 end
@@ -254,7 +273,7 @@ function I.new(gui, act)
 	if previewFolder then bindFolder(previewFolder) end
 	RS.ChildAdded:Connect(function(folder) if folder.Name=="CrusherPreviewModels" then bindFolder(folder) end end)
 	panel:GetPropertyChangedSignal("Visible"):Connect(function()
-		recyclePending=nil
+		recyclePending=nil dupesPending=false
 		if panel.Visible then fitDesktop() redraw() else
 			for _,record in records do if record.viewport then record.viewport:Destroy() record.viewport=nil record.rendered=false record.fallback.Visible=true end end
 		end
