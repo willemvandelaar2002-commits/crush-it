@@ -36,7 +36,9 @@ C.MaxBays = C.BaseMaxBays+C.Layout.PerWing
 C.Layout.ExpansionZ = C.Layout.BayZ-C.Layout.UpperBack-C.Layout.BayDepth-7
 C.LegacyTypes={"Bumper","Steel","Cobalt","Mega","Titan","Quantum"}
 for i=4,C.MaxBays do C.BayCosts[i]=math.floor(900*1.45^(i-3)) end
-C.PlotUpgrade = {MaxLevel=1,Cost=math.floor(C.BayCosts[C.BaseMaxBays+1]*10)}
+-- Caps[n] = upgrade caps from plot level n on: factory/roll upgrades (global)
+-- and each crusher's level. Below plot level 1 the base MaxGlobal/MaxLevel apply.
+C.PlotUpgrade = {MaxLevel=1,Cost=math.floor(C.BayCosts[C.BaseMaxBays+1]*10),Caps={{global=30,level=60}}}
 function C.bayCapacity(level) return C.BaseMaxBays+(if type(level)=="number" and level>=1 and level<math.huge then C.Layout.PerWing else 0) end
 function C.bayLayout(index)
 	local l=C.Layout local n=index-1 local perTier=l.Wings*l.PerWing
@@ -175,7 +177,19 @@ function C.money(n) return math.clamp(math.floor(n * 100 + 0.5) / 100, 0, C.MaxM
 function C.globalCost(id, level) local u = C.Upgrades[id] return math.floor(u.base * u.growth ^ level) end
 function C.individualCost(item) return math.floor(C.IndividualBase * C.IndividualGrowth ^ (item.level - 1) * C.rarity(item.rarity).mult) end
 function C.rollSeconds() return C.RollSeconds end
-function C.upgradeMax(id) return C.Upgrades[id].max or C.MaxGlobal end
+-- Caps grow with the plot upgrade (PlotUpgrade.Caps). Pedestals keep their own max.
+function C.upgradeMax(id,plotLevel)
+	local u=C.Upgrades[id] if u.max then return u.max end
+	local caps=C.PlotUpgrade.Caps[math.min(plotLevel or 0,#C.PlotUpgrade.Caps)]
+	return if caps then caps.global else C.MaxGlobal
+end
+function C.levelCap(plotLevel)
+	local caps=C.PlotUpgrade.Caps[math.min(plotLevel or 0,#C.PlotUpgrade.Caps)]
+	return if caps then caps.level else C.MaxLevel
+end
+-- highest caps any plot can reach (save clamping)
+function C.topLevelCap() return C.levelCap(C.PlotUpgrade.MaxLevel) end
+function C.topUpgradeMax(id) return C.upgradeMax(id,C.PlotUpgrade.MaxLevel) end
 function C.pedestals(level) return math.clamp(C.StartPedestals + (level or 0), 1, C.MaxPedestals) end
 -- Price of a rolled offer on a pedestal (rarity price x modifier multiplier).
 function C.offerPrice(item) return math.floor(C.rarity(item.rarity).price * C.modifier(item.modifier).mult) end

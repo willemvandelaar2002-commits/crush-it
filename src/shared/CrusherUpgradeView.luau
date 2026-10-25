@@ -23,7 +23,7 @@ local function uncommonChance(level,lucky)
 end
 
 function V.board(d,id,perks)
-	local u=C.Upgrades[id] local lv=d.crushers.upgrades[id] local max=C.upgradeMax(id)
+	local u=C.Upgrades[id] local lv=d.crushers.upgrades[id] local max=C.upgradeMax(id,d.crushers.plotLevel)
 	local n=math.min(max,lv+1) local maxed=lv>=max local effect
 	if id=="Damage" then
 		effect=if maxed then string.format("Damage x%.2f",C.DamageFactor^lv) else string.format("x%.2f > x%.2f damage",C.DamageFactor^lv,C.DamageFactor^n)
@@ -43,15 +43,17 @@ function V.board(d,id,perks)
 		elseif id=="Speed" then "Shorter strike cycles for every crusher you own or equip later."
 		else "Applies to every crusher you own or equip later."
 	local view=V.purchase(d.cash,C.globalCost(id,lv),maxed,hint,V.Boards[u.group].success)
+	if maxed and not u.max then view.hint=Rules.capMessage(d.crushers.plotLevel) end
 	view.effect=effect
 	view.button=if maxed then "MAX\nLV "..lv else "LV "..lv.." > "..n.."\n"..Format.cash(view.cost)
 	return view
 end
 
 function V.crusher(d,item,perks)
-	local maxed=item.level>=C.MaxLevel local current=Rules.stats(d,item,perks)
+	local maxed=item.level>=C.levelCap(d.crushers.plotLevel) local current=Rules.stats(d,item,perks)
 	local view=V.purchase(d.cash,C.individualCost(item),maxed,
 		"Only this crusher. Its level stays with it when swapped.","CRUSHER +1!")
+	if maxed then view.hint=Rules.capMessage(d.crushers.plotLevel) end
 	if maxed then
 		view.effect="LV "..item.level.."  MAX\n"..Format.cash(current.cps*60).."/min"
 	else
@@ -64,11 +66,13 @@ function V.crusher(d,item,perks)
 end
 -- MAX on the plaque: as many LEVEL UPs for this crusher as the cash covers.
 function V.crusherMax(d,item)
-	local maxed=item.level>=C.MaxLevel
-	local n,total=Rules.maxLevels(d.cash,item)
+	local cap=C.levelCap(d.crushers.plotLevel)
+	local maxed=item.level>=cap
+	local n,total=Rules.maxLevels(d.cash,item,cap)
 	-- with n>0 the cash covers total (Ready); with n=0 it misses the next level (Short)
 	local cost=if n>0 then total else C.individualCost(item)
 	local view=V.purchase(d.cash,cost,maxed,"Spends your cash on as many levels for this crusher as it can.","CRUSHER +"..math.max(n,1).."!")
+	if maxed then view.hint=Rules.capMessage(d.crushers.plotLevel) end
 	view.button=if maxed then "MAX" else "MAX\n+"..n
 	return view
 end
