@@ -83,11 +83,12 @@ local function fuser(parent,cf)
 	local plate=W.part(m,"FuserSign",V3(8,1.5,.3),cf*CFrame.new(0,1.1,5.1)*CFrame.Angles(math.rad(-15),0,0),Navy)
 	W.text(W.sign(plate),"Label","FUSION",UDim2.fromScale(.03,.05),UDim2.fromScale(.94,.9))
 	-- the prompt the owner's client listens for (Fusion.client opens the screen)
-	local hit=W.part(m,"FusionPromptPart",V3(15,6,10),cf*CFrame.new(0,3,0),Navy)
+	-- small, at the front where you stand (prompt range counts from this part)
+	local hit=W.part(m,"FusionPromptPart",V3(2,2,1),cf*CFrame.new(0,2.6,5.6),Navy)
 	hit.Transparency=1 hit.CanQuery=false
 	local prompt=Instance.new("ProximityPrompt") prompt.Name="FusionPrompt" prompt.ActionText="Fuse crushers"
 	prompt.ObjectText="Fusion Machine" prompt.KeyboardKeyCode=Enum.KeyCode.E prompt.HoldDuration=0
-	prompt.MaxActivationDistance=14 prompt.RequiresLineOfSight=false prompt.Parent=hit
+	prompt.MaxActivationDistance=12 prompt.RequiresLineOfSight=false prompt.Parent=hit
 	return m,hit
 end
 
