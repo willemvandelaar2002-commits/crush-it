@@ -4,6 +4,7 @@
 -- plot, hidden, then shown by plot level in V.sync. Coordinates are plot-local
 -- (+Z toward the entrance, -X is left when you face the plot from its entrance).
 local RS=game:GetService("ReplicatedStorage")
+local ServerStorage=game:GetService("ServerStorage")
 local C=require(RS.Shared.CrusherConfig)
 local Style=require(RS.Shared.Kit.Style)
 local World=require(RS.Shared.Config).World
@@ -24,10 +25,10 @@ V.TrimColors={Yellow,Orange,Silver,Gold}
 local function show(model,visible)
 	for _,p in model:GetDescendants() do
 		if p:IsA("BasePart") then
-			if p:GetAttribute("StageT")==nil then p:SetAttribute("StageT",p.Transparency) p:SetAttribute("StageC",p.CanCollide) p:SetAttribute("StageQ",p.CanQuery) end
+			if p:GetAttribute("StageT")==nil then p:SetAttribute("StageT",p.Transparency) p:SetAttribute("StageC",p.CanCollide) p:SetAttribute("StageQ",p.CanQuery) p:SetAttribute("StageS",p.CastShadow) end
 			p.Transparency=if visible then p:GetAttribute("StageT") else 1
 			p.CanCollide=visible and p:GetAttribute("StageC") p.CanQuery=visible and p:GetAttribute("StageQ")
-			p.CastShadow=visible
+			p.CastShadow=visible and p:GetAttribute("StageS")
 		elseif p:IsA("SurfaceGui") then p.Enabled=visible
 		elseif p:IsA("Light") then p.Enabled=visible
 		elseif p:IsA("ProximityPrompt") then p.Enabled=visible end
@@ -45,7 +46,52 @@ local UP=CFrame.Angles(0,0,math.pi/2) -- turns a cylinder upright
 local ALONG_Z=CFrame.Angles(0,math.pi/2,0) -- turns a cylinder to run along Z
 
 -- The fuser: navy base, glowing tank, four input rings, two orange arms.
+-- The prompt the owner's client listens for (Fusion.client opens the screen):
+-- small, at the front where you stand (prompt range counts from this part).
+local function fusionPrompt(m,cf)
+	local hit=W.part(m,"FusionPromptPart",V3(2,2,1),cf*CFrame.new(0,2.6,5.6),Navy)
+	hit.Transparency=1 hit.CanQuery=false
+	local prompt=Instance.new("ProximityPrompt") prompt.Name="FusionPrompt" prompt.ActionText="Fuse crushers"
+	prompt.ObjectText="Fusion Machine" prompt.KeyboardKeyCode=Enum.KeyCode.E prompt.HoldDuration=0
+	prompt.MaxActivationDistance=12 prompt.RequiresLineOfSight=false prompt.Parent=hit
+	return hit
+end
+-- Willem's Blender fuser (place-only template, saved with the place, not in
+-- Git): ServerStorage.FusionMeshes.FusionMachine, 14.4 x 8 x 10 studs, front
+-- = the input rings; turned and placed by those and its bounding box. Decorative meshes do not
+-- collide; one invisible box keeps players out of it.
+local function fuserModel(parent,cf)
+	local folder=ServerStorage:FindFirstChild("FusionMeshes")
+	local template=folder and folder:FindFirstChild("FusionMachine")
+	-- only once it's checked in Studio: set the attribute Ready=true on the template
+	if not template or not template:IsA("Model") or template:GetAttribute("Ready")~=true then return nil end
+	local m=Instance.new("Model") m.Name="Fuser" m.Parent=parent
+	local mesh=template:Clone()
+	-- turn its front (the input rings) toward the plot entrance (+Z of cf),
+	-- then stand it on the floor centred on cf, by its bounding box, so the
+	-- imported pivot's position and turn don't matter
+	local function centre()
+		local box,size=mesh:GetBoundingBox()
+		local bottom=box.Position-Vector3.new(0,size.Y/2,0)
+		mesh:PivotTo(mesh:GetPivot()+(cf.Position-bottom))
+	end
+	mesh:PivotTo(cf) centre()
+	local ring=mesh:FindFirstChild("Input1Ring",true)
+	if ring and ring:IsA("BasePart") and cf:PointToObjectSpace(ring.Position).Z<0 then
+		-- half a turn round its own centre (cf), not round the imported pivot
+		mesh:PivotTo(cf*CFrame.Angles(0,math.pi,0)*cf:Inverse()*mesh:GetPivot())
+		centre()
+	end
+	for _,p in mesh:GetDescendants() do if p:IsA("BasePart") then p.Anchored=true p.CanCollide=false p.CanTouch=false p.CanQuery=false end end
+	mesh.Parent=m
+	local box=W.part(m,"FuserCollision",V3(14.4,7,10),cf*CFrame.new(0,3.5,0),Navy,true)
+	box.Transparency=1 box.CanQuery=false
+	return m,fusionPrompt(m,cf)
+end
+-- Code-built fuser, used when the Blender template is missing.
 local function fuser(parent,cf)
+	local built,hit=fuserModel(parent,cf)
+	if built then return built,hit end
 	local m=Instance.new("Model") m.Name="Fuser" m.Parent=parent
 	W.part(m,"FuserBase",V3(15,1.6,10),cf*CFrame.new(0,.8,0),Navy,true)
 	W.part(m,"FuserDeck",V3(13.6,.3,8.6),cf*CFrame.new(0,1.75,0),Color3.fromRGB(46,70,120),true)
@@ -82,14 +128,7 @@ local function fuser(parent,cf)
 	-- front name plate
 	local plate=W.part(m,"FuserSign",V3(8,1.5,.3),cf*CFrame.new(0,1.1,5.1)*CFrame.Angles(math.rad(-15),0,0),Navy)
 	W.text(W.sign(plate),"Label","FUSION",UDim2.fromScale(.03,.05),UDim2.fromScale(.94,.9))
-	-- the prompt the owner's client listens for (Fusion.client opens the screen)
-	-- small, at the front where you stand (prompt range counts from this part)
-	local hit=W.part(m,"FusionPromptPart",V3(2,2,1),cf*CFrame.new(0,2.6,5.6),Navy)
-	hit.Transparency=1 hit.CanQuery=false
-	local prompt=Instance.new("ProximityPrompt") prompt.Name="FusionPrompt" prompt.ActionText="Fuse crushers"
-	prompt.ObjectText="Fusion Machine" prompt.KeyboardKeyCode=Enum.KeyCode.E prompt.HoldDuration=0
-	prompt.MaxActivationDistance=12 prompt.RequiresLineOfSight=false prompt.Parent=hit
-	return m,hit
+	return m,fusionPrompt(m,cf)
 end
 
 -- Small maintenance robot: tracks, orange body, cyan eyes.
