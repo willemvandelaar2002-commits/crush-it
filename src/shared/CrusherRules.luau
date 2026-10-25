@@ -33,11 +33,17 @@ function R.duplicateExtras(owned,equipped,score)
 	for _,item in owned do if best[item.type]~=item and not busy[item.id] then table.insert(extras,item) end end
 	return extras
 end
+-- Message at a cap: points at the plot upgrade while it can still raise caps.
+function R.capMessage(plotLevel)
+	if (plotLevel or 0)<C.PlotUpgrade.MaxLevel then return "Maximum level for now. UPGRADE PLOT raises the cap." end
+	return "Maximum level reached."
+end
 -- How many levels this crusher can buy in a row with this much cash, and
--- what they cost together. Stops at C.MaxLevel. Used by MAX on the plaque.
-function R.maxLevels(cash,item)
+-- what they cost together. Stops at cap (the plot's level cap). Used by MAX on the plaque.
+function R.maxLevels(cash,item,cap)
+	cap=cap or C.MaxLevel
 	local n,total,level=0,0,item.level
-	while level<C.MaxLevel do
+	while level<cap do
 		local cost=C.individualCost({level=level,rarity=item.rarity})
 		if total+cost>cash then break end
 		total+=cost level+=1 n+=1
@@ -54,10 +60,10 @@ function R.migrate(d, guid)
 		local oldTier=integer(d.tier,1,13)
 		local t=C.typeById(C.LegacyTypes[math.clamp(math.ceil(oldTier/2),1,#C.LegacyTypes)])
 		local item={id=guid(),type=t.id,rarity=C.Rarities[math.clamp(math.ceil(oldTier/2)-1,1,#C.Rarities)].name,modifier="Standard",
-			level=math.clamp(1+math.floor((number(levels.Power,0,50)+number(levels.Value,0,50))/2),1,C.MaxLevel)}
+			level=math.clamp(1+math.floor((number(levels.Power,0,50)+number(levels.Value,0,50))/2),1,C.topLevelCap())}
 		local owned={item}
 		for _,lv in (if type(d.helpers)=="table" then d.helpers else {}) do
-			if #owned < C.MaxInventory and type(lv)=="number" then table.insert(owned,{id=guid(),type="Steel",rarity="Common",modifier="Rusty",level=math.clamp(integer(lv,1,C.MaxLevel),1,C.MaxLevel)}) end
+			if #owned < C.MaxInventory and type(lv)=="number" then table.insert(owned,{id=guid(),type="Steel",rarity="Common",modifier="Rusty",level=math.clamp(integer(lv,1,C.topLevelCap()),1,C.topLevelCap())}) end
 		end
 		local equipped={ ["1"]=item.id }
 		local bays=math.min(C.MaxBays,#owned)
@@ -72,7 +78,7 @@ function R.migrate(d, guid)
 	local s=d.crushers
 	s.upgrades=if type(s.upgrades)=="table" then s.upgrades else {}
 	s.upgrades.RollSpeed=nil -- retired upgrade (rolling speed became pedestals)
-	for _,id in C.UpgradeOrder do s.upgrades[id]=integer(s.upgrades[id],0,C.upgradeMax(id)) end
+	for _,id in C.UpgradeOrder do s.upgrades[id]=integer(s.upgrades[id],0,C.topUpgradeMax(id)) end
 	s.plotLevel=integer(s.plotLevel,0,C.PlotUpgrade.MaxLevel)
 	s.bays=math.clamp(integer(s.bays,1,C.MaxBays),1,C.bayCapacity(s.plotLevel))
 	if s.plotLevel>=1 then s.bays=C.bayCapacity(s.plotLevel) end -- the paid expansion includes its whole row
@@ -83,7 +89,7 @@ function R.migrate(d, guid)
 	for _,v in (if type(s.owned)=="table" then s.owned else {}) do
 		if type(v)=="table" and C.typeById(v.type) and C.rarity(v.rarity) and C.modifier(v.modifier) and #owned<C.MaxInventory then
 			local id=if type(v.id)=="string" and #v.id<=64 and #v.id>0 and not ids[v.id] then v.id else guid()
-			ids[id]=true table.insert(owned,{id=id,type=v.type,rarity=v.rarity,modifier=v.modifier,level=math.clamp(integer(v.level,1,C.MaxLevel),1,C.MaxLevel)})
+			ids[id]=true table.insert(owned,{id=id,type=v.type,rarity=v.rarity,modifier=v.modifier,level=math.clamp(integer(v.level,1,C.topLevelCap()),1,C.topLevelCap())})
 		end
 	end
 	if #owned==0 then local id=guid() table.insert(owned,{id=id,type="Bumper",rarity="Common",modifier="Standard",level=1}) ids[id]=true end
@@ -203,19 +209,19 @@ local function act(d,session,action,args,now,random,guid,perks)
 		return true,"Recycled "..#extras.." duplicate"..(if #extras==1 then "" else "s")..". Inventory space freed.",#extras
 	elseif action=="Level" then
 		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
-		if item.level>=C.MaxLevel then return false,"Crusher is at maximum level." end
+		if item.level>=C.levelCap(s.plotLevel) then return false,R.capMessage(s.plotLevel) end
 		if not pay(C.individualCost(item)) then return false,"Not enough cash. Collect and sell scrap." end
 		item.level+=1
 	elseif action=="LevelMax" then
 		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
-		if item.level>=C.MaxLevel then return false,"Crusher is at maximum level." end
-		local n=R.maxLevels(d.cash,item)
+		if item.level>=C.levelCap(s.plotLevel) then return false,R.capMessage(s.plotLevel) end
+		local n=R.maxLevels(d.cash,item,C.levelCap(s.plotLevel))
 		if n<1 then return false,"Not enough cash. Collect and sell scrap." end
 		for _=1,n do pay(C.individualCost(item)) item.level+=1 end
 		return true,"Done!",n
 	elseif action=="Upgrade" then
 		local u=C.Upgrades[args.id] if not u then return false,"Unknown upgrade." end
-		local lv=s.upgrades[args.id] if lv>=C.upgradeMax(args.id) then return false,"Upgrade is at maximum level." end
+		local lv=s.upgrades[args.id] if lv>=C.upgradeMax(args.id,s.plotLevel) then return false,if u.max then "Upgrade is at maximum level." else R.capMessage(s.plotLevel) end
 		if not pay(C.globalCost(args.id,lv)) then return false,"Not enough cash. Collect and sell scrap." end
 		s.upgrades[args.id]+=1
 	elseif action=="Unlock" then

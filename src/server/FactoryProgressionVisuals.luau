@@ -89,7 +89,7 @@ function V.sync(plot,d,quote,now,preview)
 	local view={state=if expanded then "Max" elseif d and d.cash>=C.PlotUpgrade.Cost then "Ready" else "Short",cost=C.PlotUpgrade.Cost,
 		button=if expanded then "FACTORY II · COMPLETE" else "UPGRADE\n"..Format.cash(C.PlotUpgrade.Cost),hint="Fill all 24 original bays, then upgrade your plot.",success="PLOT UPGRADED!"}
 	W.purchase(v.upgrade.button,view)
-	v.upgrade.info.Text=if expanded then "30 BAYS · COATING LAB UNLOCKED" else "+6 BAYS · NEW ROW · COATING LAB"
+	v.upgrade.info.Text=if expanded then "30 BAYS · COATING LAB · LV CAPS RAISED" else "+6 BAYS · COATING LAB · HIGHER LV CAPS"
 	local valid=quote and now<quote.expires
 	v.lab.info.Text=if valid then preview else "Hold an unequipped crusher. Select a finish to preview."
 	W.purchase(v.lab.button,{state=if not valid then "Max" elseif d.cash>=quote.cost then "Ready" else "Short",cost=if valid then quote.cost else 0,

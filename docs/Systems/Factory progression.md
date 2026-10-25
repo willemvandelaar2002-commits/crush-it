@@ -13,6 +13,21 @@ Ordinary Unlock cannot bypass the base 24-bay cap. Saved `crushers.plotLevel`
 defaults to zero; level one preserves/repairs the paid entitlement to 30 bays.
 Schema/store names stay unchanged and no inventory is reset or consumed.
 
+## Higher caps (25 Oct)
+
+Factory II also raises the upgrade caps (`PlotUpgrade.Caps` in CrusherConfig):
+
+| Cap | Before Factory II | With Factory II |
+| --- | --- | --- |
+| Factory/roll upgrades (Damage, Speed, Yield, Luck) | 20 | 30 |
+| Each crusher's level | 40 | 60 |
+| Pedestals | 4 | 4 (own max) |
+
+At a base cap the MAX hint says UPGRADE PLOT raises it. Saves keep raised
+levels (load clamps to the highest caps). Prices follow the existing growth
+formulas. Tests: `Tests/PlotCaps.spec` (13 checks). Add a row to `Caps` per
+future plot level.
+
 ## World upgrade
 
 The new six-bay row is a low rear extension, not another tall wall of machines.

@@ -187,3 +187,4 @@
 - 2026-10-25: HUD/shop icons use the Image ids behind the decals (rbxassetid) instead of rbxthumb decal thumbnails, which only loaded for the owner, so other players saw blank icons.
 - 2026-10-25: MAX button on every crusher plaque: buys as many levels for that crusher as your cash covers in one click (same total price as repeated LEVEL UP, stops at max level). Checked in Studio: bay at LV 12 went +28 to LV 40 in one click.
 - 2026-10-25: RECYCLE DUPES button in the Owned view: removes all duplicates at once, keeping equipped crushers and the strongest copy of each type. No payout (same as single recycle). Checked in Studio: 63 -> 41 crushers.
+- 2026-10-25: Factory II raises the caps: factory/roll upgrades 20 -> 30, crusher levels 40 -> 60 (pedestals stay 4). Caps per plot level in PlotUpgrade.Caps. Checked in Studio on an upgraded plot: LV 40 crusher shows LEVEL UP again, boards show LV 20 > 21.
