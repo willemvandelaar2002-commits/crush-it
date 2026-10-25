@@ -4,7 +4,7 @@ local C=require(script.Parent.CrusherConfig)
 local Rules=require(script.Parent.CrusherRules)
 local Format=require(script.Parent.Format)
 local V={}
-V.Colors={Ready=Color3.fromRGB(53,201,79),Short=Color3.fromRGB(104,116,138),Max=Color3.fromRGB(77,91,115)}
+V.Colors={Ready=Color3.fromRGB(45,230,45),Short=Color3.fromRGB(104,116,138),Max=Color3.fromRGB(77,91,115)}
 V.Boards={
 	Production={heading="FACTORY UPGRADES",scope="ALL YOUR CRUSHERS",success="FACTORY +1!"},
 	Rolling={heading="ROLL UPGRADES",scope="FUTURE ROLLS",success="ROLLING +1!"},

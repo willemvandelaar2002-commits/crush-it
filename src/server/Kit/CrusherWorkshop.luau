@@ -8,7 +8,7 @@ local UpgradeView=require(RS.Shared.CrusherUpgradeView)
 local Build=require(script.Parent.Build)
 local W={}
 W.Blue=Color3.fromRGB(35,99,210) W.Navy=Color3.fromRGB(25,43,73)
-W.Yellow=Color3.fromRGB(248,199,53) W.Green=Color3.fromRGB(53,201,79)
+W.Yellow=Style.Colors.Yellow W.Green=Style.Colors.Green
 W.Purple=Color3.fromRGB(156,66,221)
 local V=Vector3.new
 function W.part(parent,name,size,cf,color,solid)
@@ -60,7 +60,7 @@ function W.panel(parent,cf,width,height,color)
 	return face,W.surface(face)
 end
 W.UpgradeIcons={Damage=Icons.Power,Speed=Icons.Speed,Yield=Icons.Value,Luck=Icons.Lucky,Pedestals=Icons.Rebirth}
-W.UpgradeColors={Damage=Color3.fromRGB(223,62,62),Speed=Color3.fromRGB(240,180,30),Yield=Color3.fromRGB(53,190,79),
+W.UpgradeColors={Damage=Style.Colors.Red,Speed=Style.Colors.Yellow,Yield=Style.Colors.Green,
 	Luck=Color3.fromRGB(150,62,229),Pedestals=Color3.fromRGB(106,76,224)}
 -- Attributes also carry the price state to the owner's PlayerGui SurfaceGui.
 function W.purchase(button,view)

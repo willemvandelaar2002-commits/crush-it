@@ -1,5 +1,9 @@
 # Crush It
 
+25 Oct colour polish: brighter red, green and yellow upgrade bands, stronger
+colour-matched panel studs and less washed-out glossy buttons. Shared Style
+helpers retain their APIs. See [[Systems/Style kit]].
+
 25 Oct remaining crusher identities: twenty-two Common/Uncommon/Rare rigs join
 the thirteen hero rigs. All forty types now use authored code-built shapes or
 the five existing imported specials. See [[Systems/Crusher identities]].

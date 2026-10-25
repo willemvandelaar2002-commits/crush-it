@@ -26,7 +26,8 @@ local INK = C(19, 23, 42) -- #13172A
 
 Style.Colors = {
 	Ink = INK, Blue = C(65, 151, 255), Purple = C(153, 83, 238),
-	Pink = C(255, 89, 135), Gold = C(255, 210, 68), Red = C(245, 78, 81),
+	Pink = C(255, 89, 135), Gold = C(255, 210, 68), Red = C(250, 42, 48),
+	Green = C(45, 230, 45), Yellow = C(255, 222, 24),
 	Cobalt = C(48, 111, 224), CobaltDark = C(30, 64, 139),
 	Steel = C(119, 145, 169), SteelDark = C(62, 82, 110),
 	Safety = C(255, 216, 72), Chrome = C(211, 231, 245),
@@ -142,13 +143,14 @@ function Style.text(label: TextLabel | TextButton, strokeThickness: number?)
 end
 
 -- A chunky panel: top-to-bottom gradient between two colours, dark outline,
--- thin white inner border and a faint stud pattern.
+-- thin white inner border and visible, colour-matched studs. Tinting the grey
+-- imported colour map keeps its flat areas from washing bright paint pastel.
 function Style.panel(frame: Frame, a: Color3, b: Color3?)
 	frame.BackgroundColor3 = Color3.new(1, 1, 1)
 	frame.BackgroundTransparency = 0
 	frame.BorderSizePixel = 0
 	decoration(frame, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(0, 12) })
-	decoration(frame, "UIGradient", "PanelFill", { Name = "PanelFill", Color = ColorSequence.new(Style.lighten(a, 0.12), b or Style.darken(a, 0.3)), Rotation = 90 })
+	decoration(frame, "UIGradient", "PanelFill", { Name = "PanelFill", Color = ColorSequence.new(Style.lighten(a, 0.035), b or Style.darken(a, 0.3)), Rotation = 90 })
 	decoration(frame, "UIStroke", "Outline", { Name = "Outline", Thickness = 4, Color = INK, ApplyStrokeMode = Enum.ApplyStrokeMode.Border })
 	local inner = decoration(frame, "Frame", "InnerBorder", {
 		Name = "InnerBorder", Position = UDim2.fromOffset(3, 3), Size = UDim2.new(1, -6, 1, -6), BackgroundTransparency = 1,
@@ -156,7 +158,8 @@ function Style.panel(frame: Frame, a: Color3, b: Color3?)
 	})
 	decoration(inner, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(0, 9) })
 	decoration(inner, "UIStroke", "Shine", { Name = "Shine", Thickness = 2, Color = Color3.new(1, 1, 1), Transparency = 0.5, ApplyStrokeMode = Enum.ApplyStrokeMode.Border })
-	local studs = Style.studsImage(frame, 28, 0.82) -- texture supports text rather than competing with it
+	local studs = Style.studsImage(frame, 26, 0.42)
+	studs.ImageColor3 = a
 	studs.ZIndex = 0
 end
 
@@ -233,14 +236,14 @@ function Style.pressureGauge(parent: GuiObject): (Frame, Frame)
 	return dial, needle
 end
 
-local GREEN = C(104, 232, 65)
+local GREEN = Style.Colors.Green
 
 local function buttonFill(c: Color3): ColorSequence
 	return ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Style.lighten(c, 0.4)),
-		ColorSequenceKeypoint.new(0.48, Style.lighten(c, 0.12)),
+		ColorSequenceKeypoint.new(0, Style.lighten(c, 0.28)),
+		ColorSequenceKeypoint.new(0.48, Style.lighten(c, 0.04)),
 		ColorSequenceKeypoint.new(0.5, c),
-		ColorSequenceKeypoint.new(1, Style.darken(c, 0.25)),
+		ColorSequenceKeypoint.new(1, Style.darken(c, 0.18)),
 	})
 end
 

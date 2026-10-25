@@ -5,6 +5,32 @@ copy `src/shared/Kit/` and `src/server/Kit/` (DataService, Analytics, Build)
 and require them.
 
 ## shared/Kit/Style.luau (client + server)
+
+25 October colour pass: `Style.Colors.Red/Green/Yellow` provide vivid upgrade
+and action accents. `Style.panel` uses a 3.5% white top highlight and tiles the
+existing imported UI stud image at 26 pixels / 0.42 transparency, tinted to the
+panel's base colour. This makes relief visible without a pale grey overlay.
+Text, outlines and decoration ZIndex stay unchanged. Glossy button highlights
+use less white and brighter lower shading; recolouring keeps the same gloss.
+The world upgrade rows and ready purchase buttons use the matching palette.
+Grey Short/Max purchase states remain distinct. Existing helper signatures,
+explicit `studsImage` opacity/tint choices (including Rewards), and world
+MaterialService assets are preserved. Restart Play after syncing the shared
+Style module and Workshop builder; review both upgrade boards, bay plaques,
+Index/Shop/Rewards and affordable/unaffordable/MAX buttons. No new textures
+need uploading. Offline checks do not replace a fresh Studio appearance test.
+
+Integration check, 25 October: applied cleanly over the newer roll/model and
+standing-wheel work, preserving concurrent quest changes. Rojo build and
+whitespace checks passed. In fresh Studio Play, 441 upgrade-view checks and
+shared Workshop/Style/ready-state palette comparisons passed. A disposable
+fresh-module helper check confirmed stable decoration counts after repeated
+styling, explicit stud tile/opacity overrides and button gloss recolouring.
+Studio mode changed during the visual pass, so the board/panel appearance,
+hover/click interaction and comparison with the reference remain unverified.
+The reference image itself was not supplied with this request. No imported
+assets, lighting, player profiles or gameplay files were changed by this patch.
+
 - Approved world adoption (21 Oct): `Style.Studs.UseWorldMaterials = true` drives `server/Kit/WorldStuds.luau`, called after world construction. Set false and restart Play for legacy textures. Only selected plastic scenery opts in; press builders and UI remain unchanged. Material conversion preserves effective physics and restores default physics on rollback.
 - `Style.materialStuds(part, enabled, fallbackFaces?, fallbackPerTile?)` explicit whole-part world-material opt-in, with lossless texture/material rollback and missing-variant fallback. Default variant is the place-only `MaterialService.Studs`; legacy world calls and UI remain on image textures. See [[Stud material comparison]] for the temporary Studio rig and all-face versus selected-face distinction.
 - Current Crush It theme (20 Oct): `Island` keeps its legacy keys but now supplies blue-grey platforms, navy borders and steel bridge finishes. See [[Toy workshop]] for the permitted changes and remaining world work; the earlier Teal/Decor description below is historical.
