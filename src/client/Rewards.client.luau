@@ -19,6 +19,7 @@ local Format = require(ReplicatedStorage.Shared.Format)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Icons = require(ReplicatedStorage.Shared.Icons)
+local CrusherIcon = require(script.Parent.CrusherIcon)
 
 local player = Players.LocalPlayer
 local Claim = Net.event("ClaimReward")
@@ -129,19 +130,9 @@ local function grid(name: string): Frame
 	return f
 end
 
--- 3D preview of a crusher type (server: CrusherPreviewModels), for crusher tiles
+-- Shared portrait; rarity reward art represents a random member of that rarity
 local function preview(parent: GuiObject, typeId: string)
-	local folder = ReplicatedStorage:FindFirstChild("CrusherPreviewModels") or ReplicatedStorage:WaitForChild("CrusherPreviewModels", 10)
-	local source = folder and folder:FindFirstChild(typeId)
-	if not (source and source:IsA("Model")) then return end
-	local vp = make("ViewportFrame", { Name = "Preview", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = parent.ZIndex + 1,
-		Ambient = C(200, 210, 235), LightColor = Color3.new(1, 1, 1), LightDirection = Vector3.new(-1, -1, -1) }, parent)
-	local model = source:Clone()
-	model.Parent = vp
-	local cf, size = model:GetBoundingBox()
-	local cam = make("Camera", { FieldOfView = 34 }, vp)
-	cam.CFrame = CFrame.lookAt(cf.Position + Vector3.new(0.35, 0.18, 1).Unit * (size.Magnitude / 2) / math.sin(math.rad(17)) * 0.82, cf.Position)
-	vp.CurrentCamera = cam
+	CrusherIcon.new(parent,typeId,{zIndex=parent.ZIndex+1})
 end
 
 local function makeTile(parent: Frame, order: number, color: Color3, image: string, reward: any, onClaim: () -> ()): Tile
@@ -161,9 +152,9 @@ local function makeTile(parent: Frame, order: number, color: Color3, image: stri
 	}, b)
 	if reward.kind == "crusher" then
 		icon.Size = UDim2.fromOffset(96, 70)
-		-- a crusher of that rarity, shown in 3D (the reward is a random one of the rarity)
+		-- Representative portrait; server reward selection is unchanged.
 		local r = Config.Crushers.rarity(reward.rarity)
-		if r then task.spawn(preview, icon, r.types[1]) end
+		if r then preview(icon, r.types[1]) end
 	end
 	-- bottom: a dark pill with the timer / CLAIMED!, or a green CLAIM! button
 	local pill = make("Frame", {

@@ -1,0 +1,396 @@
+{
+  "date": "2026-10-25",
+  "rendered": 35,
+  "pending": 5,
+  "crushers": [
+    {
+      "id": "Bench",
+      "name": "Bench Crusher",
+      "rarity": "Common",
+      "file": "Crusher_Bench.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "c95edbee7a7ef22f0eb2b496d95dcf2961b9f40ae1af593cc01586dd6bb6f768",
+      "imageUri": "rbxassetid://79719083127025",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Bottle",
+      "name": "Bottle Squasher",
+      "rarity": "Common",
+      "file": "Crusher_Bottle.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "2ce6e268effc167e6286d9f2a801f9d20b332b5b594aac34b3d2872e34f931a8",
+      "imageUri": "rbxassetid://136908564407956",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Bumper",
+      "name": "Bumper Press",
+      "rarity": "Common",
+      "file": "Crusher_Bumper.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "fc03368161185bc65ddec42ad231ca06ca9152c666b749a2c58bbcc9b9476234",
+      "imageUri": "rbxassetid://74524246034812",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Clamp",
+      "name": "Clamp Crusher",
+      "rarity": "Common",
+      "file": "Crusher_Clamp.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "3a605006d3b314a69544d8d128e4cb73f99727c420c71f8391b3b14f0bcf94d4",
+      "imageUri": "rbxassetid://115834500404949",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Rivet",
+      "name": "Rivet Press",
+      "rarity": "Common",
+      "file": "Crusher_Rivet.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "5eef69fa41ba94bb6b24a8a9c227b9627d4671be2c8d465c3d66fa50d941542e",
+      "imageUri": "rbxassetid://110716375711851",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Screw",
+      "name": "Screw Press",
+      "rarity": "Common",
+      "file": "Crusher_Screw.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "8f3ba292ffd88c2369f33b926c44fb7ad4f8fce9a3a4a90cef9504f856421eb3",
+      "imageUri": "rbxassetid://110742848533015",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Spring",
+      "name": "Spring Stamp",
+      "rarity": "Common",
+      "file": "Crusher_Spring.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "ffee80cc52fc394731d318acb4935c20ff1a32255364394bc02009c78cfddd8e",
+      "imageUri": "rbxassetid://120889457829052",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Steel",
+      "name": "Steel Stamp",
+      "rarity": "Common",
+      "file": "Crusher_Steel.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "33f7df7dc682f29035bde684bf0de7c13af7a1f84e287ceabac65f976555a698",
+      "imageUri": "rbxassetid://120668077807036",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Boiler",
+      "name": "Boiler Press",
+      "rarity": "Uncommon",
+      "file": "Crusher_Boiler.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "e79007098b70c7c0da1236ff715e86488ba22e4d278339a96aa73f0fb6dc3ce9",
+      "imageUri": "rbxassetid://128485049172429",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Cobalt",
+      "name": "Cobalt Crusher",
+      "rarity": "Uncommon",
+      "file": "Crusher_Cobalt.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "57330eec6b41654b18316ff23d84a57ab1621c7ea7f7b0cb4c70845fbf6b4661",
+      "imageUri": "rbxassetid://88879667321103",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Conveyor",
+      "name": "Conveyor Crusher",
+      "rarity": "Uncommon",
+      "file": "Crusher_Conveyor.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "32cc1f2efd53b876d9e362b863cbdb70e1af179581692a01d275206fac77279a",
+      "imageUri": "rbxassetid://138902731662627",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "DoubleStamp",
+      "name": "Double Stamp",
+      "rarity": "Uncommon",
+      "file": "Crusher_DoubleStamp.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "ef110781f31878c76169f72e8016fb94b82278556412853179ab081e479a8669",
+      "imageUri": "rbxassetid://81487076089282",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Flywheel",
+      "name": "Flywheel Press",
+      "rarity": "Uncommon",
+      "file": "Crusher_Flywheel.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "f27df79b1156c7dcdaae1c0ae05e7d888960a0bd542022a92edc834fc87afd56",
+      "imageUri": "rbxassetid://114265124107464",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Gearbox",
+      "name": "Gearbox Crusher",
+      "rarity": "Uncommon",
+      "file": "Crusher_Gearbox.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "7a28145392b0b76fd36f2e46b2ff10a65257b0d98dceb00744a3bf7876d3fdeb",
+      "imageUri": "rbxassetid://83749251037061",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Pneumatic",
+      "name": "Pneumatic Press",
+      "rarity": "Uncommon",
+      "file": "Crusher_Pneumatic.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "6d6db5c314a2d90cc815e37083f1b5a43183c7aa6d3b4094f45fed6d2db3b2cf",
+      "imageUri": "rbxassetid://111144052831483",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Frost",
+      "name": "Frostbite Press",
+      "rarity": "Rare",
+      "file": "Crusher_Frost.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "42831472e16604127fa1cfa9c9c38baac7a2cc877a8e37bb2e12c59a2754d7d5",
+      "imageUri": "rbxassetid://80388778578245",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Furnace",
+      "name": "Furnace Crusher",
+      "rarity": "Rare",
+      "file": "Crusher_Furnace.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "07d8d31c5606610f4d5d48cc4551ff0f233423a4c047c03f560fc1b901c5deb8",
+      "imageUri": "rbxassetid://133576142187494",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "JunkyardJaw",
+      "name": "Junkyard Jaw",
+      "rarity": "Rare",
+      "file": "Crusher_JunkyardJaw.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "eae6c744a701e18da0df9cb261192dd8377e68461ee66c64df75b7d555a3fcbd",
+      "imageUri": "rbxassetid://84259457296508",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Mega",
+      "name": "Mega Piston",
+      "rarity": "Rare",
+      "file": "Crusher_Mega.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "c1c00fbb7ccbe75f7071575184b02732e5d758eea7f37445f4b22812090d511c",
+      "imageUri": "rbxassetid://83458352865806",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "ScrapShark",
+      "name": "Scrap Shark",
+      "rarity": "Rare",
+      "file": "Crusher_ScrapShark.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "568f61ef8d2909c62cbf2275f6c923068e1841c68b0ec9be792cc1ddf3a826a7",
+      "imageUri": "rbxassetid://103271677428161",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "SteamHammer",
+      "name": "Steam Hammer",
+      "rarity": "Rare",
+      "file": "Crusher_SteamHammer.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "557943e1ace8120ba04f53e0ec8bd2adb96051ebc1aa992cb2c6540c1be71cd6",
+      "imageUri": "rbxassetid://76591643349075",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Thunder",
+      "name": "Thunder Press",
+      "rarity": "Rare",
+      "file": "Crusher_Thunder.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "074c3c8b52319e9ac42bdbc7fee5404937867f934d3c9432e01adcf2c596bd5b",
+      "imageUri": "rbxassetid://126706827501232",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Cyclone",
+      "name": "Cyclone Crusher",
+      "rarity": "Epic",
+      "file": "Crusher_Cyclone.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "c4939aee4197151759b8cd8e4f1e20795530e05dcda119a999cb5ecda86d498f",
+      "imageUri": "rbxassetid://130819856264891",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Gravity",
+      "name": "Gravity Well",
+      "rarity": "Epic",
+      "file": "Crusher_Gravity.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "37b285df515f00d04240b387eac2b325c7ea0d4e28b7b79d5d9262a64b482b1c",
+      "imageUri": "rbxassetid://140489774787044",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Laser",
+      "name": "Laser Press",
+      "rarity": "Epic",
+      "file": "Crusher_Laser.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "d6ed33fb3c2ababdb96f3ce6535a28416881ff4ae4aac9904fe9708ec7f604ec",
+      "imageUri": "rbxassetid://126202679885390",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Mecha",
+      "name": "Mecha Fist",
+      "rarity": "Epic",
+      "file": "Crusher_Mecha.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "ad7753a417b8b58f415e36ae9338b67f729510905d65a67efbcf50af3144a98a",
+      "imageUri": "rbxassetid://133844615284226",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Plasma",
+      "name": "Plasma Piston",
+      "rarity": "Epic",
+      "file": "Crusher_Plasma.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "81c7b802cf2e581b2d175d11380c05543a9a37cbbd0b692d885138126ff80137",
+      "imageUri": "rbxassetid://75962279482979",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Quake",
+      "name": "Quake Hammer",
+      "rarity": "Epic",
+      "file": "Crusher_Quake.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "150a2be886da4c427bf8a6b5d8bebbc66b75903cc1f3751e13a9becc33a81318",
+      "imageUri": "rbxassetid://70381068849610",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Titan",
+      "name": "Titan Hydraulic",
+      "rarity": "Epic",
+      "file": "Crusher_Titan.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "98657dd50b710a6c0670e2d424ff60359c3ef3c9b7c3906305ec49c25e2dd82b",
+      "imageUri": "rbxassetid://85273013130634",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "BlackHole",
+      "name": "Black Hole Engine",
+      "rarity": "Legendary",
+      "file": "Crusher_BlackHole.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "0a0d00e1347df18356e3d14db17c2e23e35891eb20cfbbd844c093b846f32e1a",
+      "imageUri": "rbxassetid://71766010804910",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Clockwork",
+      "name": "Clockwork Colossus",
+      "rarity": "Legendary",
+      "file": "Crusher_Clockwork.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "d94bda6ec3ec16c2b03a7d130079d82e5be62330d9b43a75b5be55e9ade9e9ae",
+      "imageUri": "rbxassetid://106268597418524",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "DragonJaw",
+      "name": "Dragon Jaw",
+      "rarity": "Legendary",
+      "file": "Crusher_DragonJaw.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "f84b21183a016f6490b691567051766f6106b019ee9bb19ec724f9984d3a4e45",
+      "imageUri": "rbxassetid://126907883991741",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "FactoryHeart",
+      "name": "Factory Heart",
+      "rarity": "Legendary",
+      "file": "Crusher_FactoryHeart.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "dadf811b016ae33889eb67ef3ad9835ac2550dc53a53113f9322d48cf744863f",
+      "imageUri": "rbxassetid://102981849282332",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Quantum",
+      "name": "Quantum Press",
+      "rarity": "Legendary",
+      "file": "Crusher_Quantum.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "7d1b2be9117352b25f60cd99af1e7746afb3406c0ce5365f3993c905713bb1ff",
+      "imageUri": "rbxassetid://76047476059921",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "Starforge",
+      "name": "Starforge",
+      "rarity": "Legendary",
+      "file": "Crusher_Starforge.png",
+      "status": "uploaded-verified-in-studio",
+      "sha256": "2b08130ca6391e7cd694c43dacfcecd82dbdd918bfe2cd2827f094319862bb5a",
+      "imageUri": "rbxassetid://100677266625280",
+      "uploadedByUserId": 124358167
+    },
+    {
+      "id": "RocketPress",
+      "rarity": "Uncommon",
+      "file": "Crusher_RocketPress.png",
+      "status": "needs-studio-mesh-export"
+    },
+    {
+      "id": "Magnetron",
+      "rarity": "Rare",
+      "file": "Crusher_Magnetron.png",
+      "status": "needs-studio-mesh-export"
+    },
+    {
+      "id": "TwinTitan",
+      "rarity": "Epic",
+      "file": "Crusher_TwinTitan.png",
+      "status": "needs-studio-mesh-export"
+    },
+    {
+      "id": "GoldenKing",
+      "rarity": "Legendary",
+      "file": "Crusher_GoldenKing.png",
+      "status": "needs-studio-mesh-export"
+    },
+    {
+      "id": "Toyzilla",
+      "rarity": "Legendary",
+      "file": "Crusher_Toyzilla.png",
+      "status": "needs-studio-mesh-export"
+    }
+  ],
+  "uploaded": 35,
+  "uploadPlaceId": 132070482662061,
+  "loadCheck": {
+    "date": "2026-10-25",
+    "loaded": 35,
+    "failed": 0,
+    "pendingSpecials": 5,
+    "note": "Fresh Studio Play verified actual ImageLabel preloads, Index portraits/silhouettes and native tool pictures. Raw URI preload checks were misleading; loader corrected."
+  }
+}

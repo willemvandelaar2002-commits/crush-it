@@ -5,7 +5,7 @@ local RS = game:GetService("ReplicatedStorage")
 local C = require(RS.Shared.CrusherConfig)
 local Rows = require(RS.Shared.CrusherRows)
 local Rules = require(RS.Shared.CrusherRules)
-local Finish = require(RS.Shared.CrusherFinish)
+local CrusherIcon = require(script.Parent.CrusherIcon)
 local Style = require(RS.Shared.Kit.Style)
 local Icons = require(RS.Shared.Icons)
 local Format = require(RS.Shared.Format)
@@ -112,33 +112,14 @@ function I.new(gui, act)
 	local progress=label(footer,"ProgressText","Loading collection...",UDim2.new(),UDim2.fromScale(1,1),21)
 	local empty=label(content,"Empty","",UDim2.new(),UDim2.fromOffset(200,220),24)
 	empty.Visible=false
-	local previewFolder = RS:FindFirstChild("CrusherPreviewModels")
 	local function clear()
 		for _,record in records do record.card:Destroy() end
 		table.clear(records)
 	end
 	local function preview(record)
 		if record.rendered or not panel.Visible then return end
-		local source=previewFolder and previewFolder:FindFirstChild(record.type)
-		if not source or not source:IsA("Model") or not source:FindFirstChildWhichIsA("BasePart",true) then return end
-		local viewport=make("ViewportFrame",{Name="CrusherPreview",BackgroundTransparency=1,
-			Position=UDim2.fromOffset(5,32),Size=UDim2.new(1,-10,0,126),
-			Ambient=Color3.fromRGB(200,210,235),LightColor=white,
-			LightDirection=Vector3.new(-1,-1,-1),ZIndex=2,
-			ImageColor3=if record.hidden then Color3.new(0,0,0) else white},record.card)
-		local model=source:Clone() model.Parent=viewport
-		if record.modifier then Finish.apply(model,record.modifier) end
-		local cf,size=model:GetBoundingBox()
-		local camera=make("Camera",{FieldOfView=34},viewport)
-		-- A conservative sphere fit handles tall frames, wide wings and all aspect ratios.
-		local function fit()
-			local aspect=math.max(.25,viewport.AbsoluteSize.X/math.max(1,viewport.AbsoluteSize.Y))
-			local half=math.min(math.rad(camera.FieldOfView/2),math.atan(math.tan(math.rad(camera.FieldOfView/2))*aspect))
-			local distance=(size.Magnitude/2)/math.sin(half)*1.06
-			camera.CFrame=CFrame.lookAt(cf.Position+Vector3.new(.35,.18,1).Unit*distance,cf.Position)
-		end
-		fit() viewport:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
-		viewport.CurrentCamera=camera record.rendered=true record.viewport=viewport record.fallback.Visible=false
+		record.viewport=CrusherIcon.new(record.card,record.type,{position=UDim2.fromOffset(0,30),size=UDim2.new(1,0,0,133),hidden=record.hidden,modifier=record.modifier,zIndex=2})
+		record.rendered=true record.fallback.Visible=false
 	end
 	hydrate=function()
 		if not panel.Visible then return end
@@ -262,16 +243,6 @@ function I.new(gui, act)
 	content:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitDesktop)
 	content:GetPropertyChangedSignal("CanvasPosition"):Connect(hydrate)
 	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitDesktop)
-	local previewRefresh=false
-	local function refreshPreviews()
-		if previewRefresh then return end previewRefresh=true
-		task.delay(.2,function() previewRefresh=false hydrate() end)
-	end
-	local function bindFolder(folder)
-		previewFolder=folder folder.DescendantAdded:Connect(refreshPreviews) refreshPreviews()
-	end
-	if previewFolder then bindFolder(previewFolder) end
-	RS.ChildAdded:Connect(function(folder) if folder.Name=="CrusherPreviewModels" then bindFolder(folder) end end)
 	panel:GetPropertyChangedSignal("Visible"):Connect(function()
 		recyclePending=nil dupesPending=false
 		if panel.Visible then fitDesktop() redraw() else

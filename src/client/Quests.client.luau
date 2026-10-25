@@ -16,6 +16,7 @@ if not Config.Crushers.Enabled then return end
 local Net = require(ReplicatedStorage.Shared.Net)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Icons = require(ReplicatedStorage.Shared.Icons)
+local CrusherIcon = require(script.Parent.CrusherIcon)
 local Format = require(ReplicatedStorage.Shared.Format)
 local QC = require(ReplicatedStorage.Shared.QuestConfig)
 
@@ -181,16 +182,7 @@ end
 type Card = { frame: Frame, button: TextButton, price: TextLabel, cost: number }
 local cards: { [string]: Card } = {}
 local function preview(parent: GuiObject, typeId: string)
-	local folder = ReplicatedStorage:FindFirstChild("CrusherPreviewModels")
-	local source = folder and folder:FindFirstChild(typeId)
-	if not (source and source:IsA("Model")) then return end
-	local vp = make("ViewportFrame", { BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 10, Ambient = C(200, 210, 235),
-		LightColor = Color3.new(1, 1, 1), LightDirection = Vector3.new(-1, -1, -1) }, parent)
-	local model = source:Clone() model.Parent = vp
-	local cf, size = model:GetBoundingBox()
-	local cam = make("Camera", { FieldOfView = 34 }, vp)
-	cam.CFrame = CFrame.lookAt(cf.Position + Vector3.new(0.35, 0.18, 1).Unit * (size.Magnitude / 2) / math.sin(math.rad(17)) * 0.85, cf.Position)
-	vp.CurrentCamera = cam
+	CrusherIcon.new(parent,typeId,{zIndex=parent.ZIndex+1})
 end
 local function card(item: any, order: number): Card
 	local c = cards[item.id]
@@ -206,7 +198,7 @@ local function card(item: any, order: number): Card
 		if r then
 			local glow = make("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.55), Size = UDim2.fromOffset(84, 84), BackgroundColor3 = r.color, BackgroundTransparency = 0.55, ZIndex = 9 }, art)
 			corner(glow, 42)
-			task.spawn(preview, art, r.types[1])
+			preview(art, r.types[1])
 		end
 	else
 		make("ImageLabel", { Image = (Icons :: any)[item.icon] or Icons.Cash, BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ScaleType = Enum.ScaleType.Fit, ZIndex = 10 }, art)

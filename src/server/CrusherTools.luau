@@ -79,6 +79,7 @@ local function makeTool(item: any): Tool
 	tool.RequiresHandle = true
 	tool.GripPos = Vector3.new(0, -0.6, 0.9)
 	tool:SetAttribute("InventoryId", item.id)
+	tool:SetAttribute("CrusherType",item.type) -- portrait lookup only
 	tool:SetAttribute("Level", item.level)
 	tool:SetAttribute("Modifier",item.modifier)
 	local handle = Instance.new("Part")

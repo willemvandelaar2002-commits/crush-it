@@ -141,3 +141,7 @@ Islands: every plot is an island in a bright lava sea with wooden bridges to a h
 Next ideas: helper units (like the capybaras/tanks), Halloween event; create the passes/products and fill Store ids; proper thumbnail.
 
 21 Oct environment update: approved server art pass replaces exterior lava with a sandy scrapyard, stepped green-capped cliffs, concrete routes, workshop prop clusters and a CRUSH IT entrance. See [[Systems/Scrapyard environment]] for checks and remaining manual tests.
+
+25 Oct row effects: full Epic rows get purple sparkles, a travelling energy glint and a short activation burst; Legendary gets gold. See [[Systems/Row set effects]].
+
+25 Oct crusher icons: 35 actual-model PNG portraits and shared collection/reward/shop/native-backpack loading; five Studio-only special portraits await export. See [[Systems/Crusher icons]].
