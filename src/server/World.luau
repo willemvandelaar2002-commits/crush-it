@@ -72,6 +72,8 @@ local function wall(parent: Instance, cf: CFrame, index: number)
 	end
 	for i = 0, 8 do
 		local x = -HALF + i * width
+		-- the middle column of wall 1 stood right behind the CRUSH IT sign: leave it out
+		if index == 1 and i == 4 then continue end
 		part(m, "RedColumn", V(14, HEIGHT, 16), cf * CFrame.new(x, HEIGHT / 2, -5), P.Red)
 		part(m, "ColumnBoot", V(22, 18, 24), cf * CFrame.new(x, 9, -5), P.Navy)
 		part(m, "ColumnJoint", V(20, 14, 22), cf * CFrame.new(x, HEIGHT - 14, -5), P.Yellow)
@@ -175,7 +177,7 @@ local function displays(parent: Instance)
 	part(m, "MascotPlinth", V(51, 3, 51), duckCf * CFrame.new(0, 35, 0), P.Yellow)
 	FactoryProps.duck(m, duckCf * CFrame.new(0, 36.5, 0), 8)
 	FactoryProps.packingBooth(m, CFrame.new(-HALF + 78, FLOOR_Y, HALF - 85) * CFrame.Angles(0, -math.pi / 4, 0))
-	-- (25 Oct: the gantry crane in front of the CRUSH IT sign was removed; it hid the letters)
+	FactoryProps.crane(m, CFrame.new(0, FLOOR_Y, HALF - 27))
 	-- Supply belts hug the other walls; they never cross the train or bridges.
 	FactoryProps.conveyor(m, CFrame.new(0, FLOOR_Y, -HALF + 24) * CFrame.Angles(0, math.pi, 0), 300)
 	FactoryProps.conveyor(m, CFrame.new(HALF - 24, FLOOR_Y, 0) * CFrame.Angles(0, math.pi / 2, 0), 250)
