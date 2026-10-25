@@ -33,6 +33,43 @@ function R.duplicateExtras(owned,equipped,score)
 	for _,item in owned do if best[item.type]~=item and not busy[item.id] then table.insert(extras,item) end end
 	return extras
 end
+-- Fusion check, shared by the server action and the fuser screen. inputs are
+-- the ids of the copies that get used up. Returns main or nil, problem.
+function R.fusionProblem(d,mainId,inputs)
+	local s=d.crushers
+	if (tonumber(s.plotLevel) or 0)<C.Fusion.PlotLevel then return nil,"Upgrade to Factory III to unlock fusion." end
+	local main=R.find(d,mainId) if not main then return nil,"Choose one of your crushers first." end
+	if main.fused then return nil,"This crusher is already fused." end
+	if type(inputs)~="table" or #inputs~=C.Fusion.Copies then return nil,"Pick "..C.Fusion.Copies.." copies of the same crusher." end
+	local busy={} for _,id in s.equipped do busy[id]=true end
+	local seen={[main.id]=true}
+	for _,id in inputs do
+		local item=type(id)=="string" and R.find(d,id)
+		if not item or seen[id] then return nil,"Pick "..C.Fusion.Copies.." different copies you own." end
+		seen[id]=true
+		if item.type~=main.type then return nil,"All four must be the same crusher." end
+		if item.fused then return nil,"Fused crushers can't be used up." end
+		if busy[id] then return nil,"Unequip the copies first. Equipped crushers are never used up." end
+	end
+	return main
+end
+-- Copies fusion would use for this main: unequipped, unfused, same type,
+-- weakest first (lowest level, uncoated first), so the best ones stay.
+function R.fusionCopies(d,main)
+	local busy={} for _,id in d.crushers.equipped do busy[id]=true end
+	local list={}
+	for _,item in d.crushers.owned do
+		if item.id~=main.id and item.type==main.type and not item.fused and not busy[item.id] then table.insert(list,item) end
+	end
+	table.sort(list,function(a,b)
+		local ma,mb=C.modifier(a.modifier).mult,C.modifier(b.modifier).mult
+		if a.level~=b.level then return a.level<b.level end
+		if ma~=mb then return ma<mb end
+		return a.id<b.id
+	end)
+	local out={} for i=1,math.min(C.Fusion.Copies,#list) do out[i]=list[i] end
+	return out,#list
+end
 -- Message at a cap: points at the plot upgrade while it can still raise caps.
 function R.capMessage(plotLevel)
 	if (plotLevel or 0)<C.PlotUpgrade.MaxLevel then return "Maximum level for now. UPGRADE PLOT raises the cap." end
@@ -109,7 +146,8 @@ function R.migrate(d, guid)
 	for _,v in (if type(s.owned)=="table" then s.owned else {}) do
 		if type(v)=="table" and C.typeById(v.type) and C.rarity(v.rarity) and C.modifier(v.modifier) and #owned<C.MaxInventory then
 			local id=if type(v.id)=="string" and #v.id<=64 and #v.id>0 and not ids[v.id] then v.id else guid()
-			ids[id]=true table.insert(owned,{id=id,type=v.type,rarity=v.rarity,modifier=v.modifier,level=math.clamp(integer(v.level,1,C.topLevelCap()),1,C.topLevelCap())})
+			ids[id]=true table.insert(owned,{id=id,type=v.type,rarity=v.rarity,modifier=v.modifier,level=math.clamp(integer(v.level,1,C.topLevelCap()),1,C.topLevelCap()),
+				fused=if v.fused==true then true else nil})
 		end
 	end
 	if #owned==0 then local id=guid() table.insert(owned,{id=id,type="Bumper",rarity="Common",modifier="Standard",level=1}) ids[id]=true end
@@ -132,7 +170,7 @@ function R.stats(d,item,perks,rows)
 	local s=d.crushers local t=C.typeById(item.type)
 	local damage=t.damage*C.LevelDamage^(item.level-1)*C.DamageFactor^s.upgrades.Damage*(if perks.autoCrush then C.AutoCrushDamage else 1)
 	local cycle=t.cycle*C.SpeedFactor^s.upgrades.Speed
-	local value=t.value*C.LevelYield^(item.level-1)*(1+C.YieldPerLevel*s.upgrades.Yield)*C.rarity(item.rarity).mult*C.modifier(item.modifier).mult*(perks.mult or 1)
+	local value=t.value*C.LevelYield^(item.level-1)*(1+C.YieldPerLevel*s.upgrades.Yield)*C.rarity(item.rarity).mult*C.modifier(item.modifier).mult*(perks.mult or 1)*(if item.fused then C.Fusion.Mult else 1)
 	local multiplier=if rows==false then 1 else Rows.multiplier(rows or Rows.snapshot(d),item.id)
 	value*=multiplier
 	return {damage=damage,cycle=cycle,hp=t.hp,value=C.money(value),cps=value/(math.ceil(t.hp/damage)*cycle+C.InputDelay),rowBonus=multiplier-1}
@@ -239,6 +277,13 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if n<1 then return false,"Not enough cash. Collect and sell scrap." end
 		for _=1,n do pay(C.individualCost(item)) item.level+=1 end
 		return true,"Done!",n
+	elseif action=="Fuse" then
+		local main,problem=R.fusionProblem(d,args.main,args.inputs)
+		if not main then return false,problem end
+		local gone={} for _,id in args.inputs do gone[id]=true end
+		for i=#s.owned,1,-1 do if gone[s.owned[i].id] then table.remove(s.owned,i) end end
+		main.fused=true
+		return true,"Done!",main
 	elseif action=="Upgrade" then
 		local u=C.Upgrades[args.id] if not u then return false,"Unknown upgrade." end
 		local lv=s.upgrades[args.id] if lv>=C.upgradeMax(args.id,s.plotLevel) then return false,if u.max then "Upgrade is at maximum level." else R.capMessage(s.plotLevel) end

@@ -179,6 +179,10 @@ C.Coatings = {
 	{name="Charged",factor=16,color=Color3.fromRGB(185,95,255)},
 }
 C.CoatingQuoteSeconds=20
+-- Fusion (unlocks with Factory III, plot level 2): a main crusher plus three
+-- unequipped copies of the same type become one fused crusher. The main keeps
+-- its id, level and coating; the three copies are used up. One tier for now.
+C.Fusion = { PlotLevel=2, Copies=3, Mult=2 }
 C.Upgrades = {
 	Damage = { name = "Damage", group = "Production", base = 20, growth = 1.65 },
 	Speed = { name = "Strike speed", group = "Production", base = 30, growth = 1.7 },
