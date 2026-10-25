@@ -622,6 +622,7 @@ function G.start()
 	require(script.Parent.Shop).start(api) require(script.Parent.Rewards).start(api)
 	require(script.Parent.DailySpin).start(api)
 	require(script.Parent.Quests).start(api)
+	require(script.Parent.TopBoards).start(api)
 	-- /credits <amount> (or /cash): test cash, e.g. "/credits 5m". Studio, or the
 	-- place owner in live servers. No amount gives 1M.
 	local SUFFIX={k=1e3,m=1e6,b=1e9,t=1e12,qa=1e15}

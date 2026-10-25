@@ -379,9 +379,56 @@ local function dailySpin(m: Model, f: CFrame)
 	header(m, f * CFrame.new(0, 21, 0), "DAILY SPIN", RED, 12)
 	spinControl(m, f)
 end
+-- Leaderboard screens on the Top Crushers boards (filled by server/TopBoards).
+-- One SurfaceGui per screen: title, then rows (rank, name, score). Tag "TopBoard",
+-- attribute BoardId = which board. Sizes in unscaled station studs.
+HubPlaza.Boards = {
+	{ id = "Cash", title = "RICHEST" },
+	{ id = "Crushed", title = "MOST CRUSHED" },
+	{ id = "Collection", title = "COLLECTION" },
+}
+HubPlaza.BoardRows = 8
+local function boardScreen(m: Model, cf: CFrame, w: number, h: number, board: any)
+	local screen = W.part(m, "LeaderboardScreen", V(w, h, 0.1), cf, C(16, 18, 36))
+	screen.Transparency = 1 -- the mesh's own screen shows behind the text
+	local gui = Instance.new("SurfaceGui")
+	gui.Name = "Board" gui.Face = Enum.NormalId.Back gui.SizingMode = Enum.SurfaceGuiSizingMode.FixedSize
+	gui.CanvasSize = Vector2.new(260, math.floor(260 * h / w)) -- low canvas = big, readable text gui.LightInfluence = 0 gui.MaxDistance = 260
+	gui.Parent = screen
+	local H = gui.CanvasSize.Y
+	local title = W.text(gui, "Title", board.title, UDim2.fromOffset(6, 4), UDim2.new(1, -12, 0, 34))
+	title.TextColor3 = GOLD
+	local rowH = (H - 44) / HubPlaza.BoardRows
+	for i = 1, HubPlaza.BoardRows do
+		local row = Instance.new("Frame")
+		row.Name = "Row" .. i
+		row.Position = UDim2.fromOffset(4, 40 + (i - 1) * rowH)
+		row.Size = UDim2.new(1, -8, 0, rowH - 3)
+		row.BackgroundColor3 = if i == 1 then C(120, 92, 20) elseif i == 2 then C(90, 96, 112) elseif i == 3 then C(110, 66, 36) else C(30, 36, 66)
+		row.BackgroundTransparency = 0.15
+		row.BorderSizePixel = 0
+		row.Parent = gui
+		local corner = Instance.new("UICorner") corner.CornerRadius = UDim.new(0, 6) corner.Parent = row
+		local rank = W.text(row, "Rank", "#" .. i, UDim2.fromScale(0.01, 0.1), UDim2.fromScale(0.14, 0.8))
+		rank.TextColor3 = if i == 1 then GOLD elseif i == 2 then C(220, 226, 236) elseif i == 3 then C(240, 160, 90) else C(200, 210, 240)
+		local name = W.text(row, "PlayerName", "", UDim2.fromScale(0.16, 0.1), UDim2.fromScale(0.52, 0.8))
+		name.TextXAlignment = Enum.TextXAlignment.Left
+		local score = W.text(row, "Score", "", UDim2.fromScale(0.68, 0.1), UDim2.fromScale(0.31, 0.8))
+		score.TextXAlignment = Enum.TextXAlignment.Right
+		score.TextColor3 = C(140, 255, 120)
+	end
+	screen:SetAttribute("BoardId", board.id)
+	CollectionService:AddTag(screen, "TopBoard")
+end
 local function topCrushers(m: Model, f: CFrame)
-	if stationMesh(m, "TopCrushers", f * CFrame.new(0, 1.2, -1)) then
-		base(m, f, 30, 11) header(m, f * CFrame.new(0, 18.5, -1), "TOP CRUSHERS", W.Navy, 16) comingSoon(m, f * CFrame.new(0, 2.6, 5.6)) return
+	-- (the imported mesh is turned ~10.6 degrees inside its template: square it up)
+	if stationMesh(m, "TopCrushers", f * CFrame.new(0, 1.2, -1) * CFrame.Angles(0, -0.185, 0)) then
+		base(m, f, 30, 11) header(m, f * CFrame.new(0, 18.5, -1), "TOP CRUSHERS", W.Navy, 16)
+		-- the mesh's three screens (measured by raycasts; centres in station studs)
+		for i, x in { -8.62, -0.28, 8.28 } do
+			boardScreen(m, f * CFrame.new(x, 7.93, 3.78), 5.6, 6.2, HubPlaza.Boards[i])
+		end
+		return
 	end
 	base(m, f, 30, 9)
 	for i, x in { -9.5, 0, 9.5 } do

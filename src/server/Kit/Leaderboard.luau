@@ -29,23 +29,45 @@ function Leaderboard.decode(value: number): number
 	return 10 ^ (value / SCALE) - 1
 end
 
-export type Options = { store: string, score: (Player) -> number, top: number?, every: number? }
+-- name: the StringValue it publishes to (default "KitLeaderboard"); onUpdate gets
+-- the entries after every read. Without DataStore access (Studio) it falls back
+-- to the players in this server so the boards still show something.
+export type Options = { store: string, score: (Player) -> number, top: number?, every: number?, name: string?,
+	onUpdate: ((entries: { any }, live: boolean) -> ())? }
 
 function Leaderboard.start(opts: Options)
 	local top = opts.top or 50
 	local every = opts.every or 120
-	local out = ReplicatedStorage:FindFirstChild("KitLeaderboard") :: StringValue? or Instance.new("StringValue")
+	local name = opts.name or "KitLeaderboard"
+	local out = ReplicatedStorage:FindFirstChild(name) :: StringValue? or Instance.new("StringValue")
 	assert(out)
-	out.Name = "KitLeaderboard"
+	out.Name = name
 	out.Value = HttpService:JSONEncode({ updated = 0, entries = {} })
 	out:SetAttribute("Status", "loading")
 	out.Parent = ReplicatedStorage
+
+	-- this server's players, best first (used when the DataStore can't be read)
+	local function localEntries()
+		local entries = {}
+		for _, p in Players:GetPlayers() do
+			table.insert(entries, { id = p.UserId, name = p.DisplayName, score = opts.score(p) })
+		end
+		table.sort(entries, function(a, b) return a.score > b.score end)
+		while #entries > top do table.remove(entries) end
+		return entries
+	end
+	local function fallback()
+		out:SetAttribute("Status", "unavailable")
+		if opts.onUpdate then opts.onUpdate(localEntries(), false) end
+	end
 
 	local ok, store = pcall(function()
 		return DataStoreService:GetOrderedDataStore(opts.store)
 	end)
 	if not ok then
-		out:SetAttribute("Status", "unavailable")
+		task.spawn(function()
+			while true do fallback() task.wait(math.min(every, 30)) end
+		end)
 		return
 	end
 
@@ -86,7 +108,7 @@ function Leaderboard.start(opts: Options)
 			return store:GetSortedAsync(false, top)
 		end)
 		if not success then
-			out:SetAttribute("Status", "unavailable")
+			fallback()
 			return
 		end
 		local entries = {}
@@ -98,6 +120,7 @@ function Leaderboard.start(opts: Options)
 		end
 		out.Value = HttpService:JSONEncode({ updated = os.time(), entries = entries })
 		out:SetAttribute("Status", "ok")
+		if opts.onUpdate then opts.onUpdate(entries, true) end
 	end
 
 	Players.PlayerRemoving:Connect(function(player)
