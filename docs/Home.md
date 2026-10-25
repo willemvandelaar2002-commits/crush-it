@@ -1,5 +1,13 @@
 # Crush It
 
+25 Oct remaining crusher identities: twenty-two Common/Uncommon/Rare rigs join
+the thirteen hero rigs. All forty types now use authored code-built shapes or
+the five existing imported specials. See [[Systems/Crusher identities]].
+
+25 Oct roll presentation: rarity-scaled world reveals, roll-specific Luck/pass
+odds, UNOWNED offer badges and a first-purchase NEW DISCOVERY banner. Existing
+roll timing and purchase rules remain. See [[Systems/Crusher roll reveals]].
+
 24 Oct Daily Spin: the plaza station opens an image-based wheel with one free
 spin every 24 hours. The server selects/persists cash, Golden Rush and crusher
 prizes; paid spins stay disabled. See [[Systems/Daily Spin]] for provisional

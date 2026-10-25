@@ -60,8 +60,10 @@ return function()
 		end end
 		v.model:Destroy()
 	end
-	check(#R.Types==13 and #C.Types==40,"thirteen presentation replacements; forty catalogue types")
+	check(#R.Types==35 and #C.Types==40,"thirty-five authored rigs plus five imported types")
 	check(not R.supports("GoldenKing") and not R.supports("Toyzilla") and not R.supports("TwinTitan"),"imported specials preserved")
+	check(not R.supports("Magnetron") and not R.supports("RocketPress"),"all five imports preserved")
+	for _,def in C.Types do check(R.supports(def.id)==(def.template==nil),"every code-built type covered; imported templates retained") end
 	for i=0,200 do check(M.glow(0,i/13)>=0 and M.glow(0,i/13)<=1,"bounded core glow") end
 	return {passed=checks,identities=#R.Types}
 end

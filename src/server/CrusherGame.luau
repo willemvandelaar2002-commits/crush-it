@@ -11,6 +11,7 @@ local Rules=require(RS.Shared.CrusherRules)
 local Net=require(RS.Shared.Net)
 local Store=require(RS.Shared.Store)
 local Format=require(RS.Shared.Format)
+local RollLook=require(RS.Shared.CrusherRollPresentation)
 local UpgradeView=require(RS.Shared.CrusherUpgradeView)
 local Objects=require(RS.Shared.Objects)
 local Data=require(script.Parent.Kit.DataService)
@@ -114,6 +115,15 @@ end
 local function send(p,message,result)
 	local d=Data.get(p) local ctx=sessions[p] if not d or not ctx then return end
 	local s=d.crushers
+	-- A first purchase (or spin prize) can make another visible offer of the
+	-- same type known. Keep its badge honest without rebuilding the model.
+	for slot,model in ctx.plot.offerModels or {} do
+		if model.Parent and model:GetAttribute("RevealUnowned") and RollLook.owns(s.owned,model:GetAttribute("RevealType")) then
+			model:SetAttribute("RevealUnowned",false)
+			local card=ctx.plot.stations.Roll.pedestals[slot].card
+			card.rarity.Text=card.rarity.Text:gsub(" · UNOWNED","")
+		end
+	end
 	Rules.tutorialCatchUp(d)
 	Tools.sync(p,d) -- unequipped crushers live in the Roblox backpack
 	p:SetAttribute("Cash",d.cash) p:SetAttribute("Scrap",d.scrap) p:SetAttribute("AvailableScrap",s.available)
@@ -126,7 +136,7 @@ local function send(p,message,result)
 	Net.event("CrusherState"):FireClient(p,{cash=d.cash,carried=d.scrap,available=s.available,items=items,
 		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,tutorial=s.tutorial,rate=cps(p,d),
 		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
-		message=message,result=result,lastRoll=ctx.lastRoll})
+		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered})
 	local st=ctx.plot.stations
 	st.Collect.label.Text=Format.cash(s.available).." ready"
 	-- The pile grows with ready scrap (about one minute of output fills it).
@@ -332,6 +342,8 @@ end
 local function rollShow(p,offers)
 	local ctx=sessions[p] local plot=ctx.plot local st=plot.stations.Roll
 	local seconds=math.max(1.2,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
+	local rollId=guid() local rollData=Data.get(p) local rollPerks=perks(p)
+	local rollLuck=rollData.crushers.upgrades.Luck local first=rollData.crushers.rolls==1
 	for i in st.pedestals do clearOffer(plot,i) end
 	plot.offerModels={}
 	-- silhouettes are built lazily per pedestal and type, then reused
@@ -364,10 +376,10 @@ local function rollShow(p,offers)
 		for _,e in pool do x-=e.w if x<=0 then return e.id end end return pool[#pool].id
 	end
 	-- turn a model slowly about its pedestal centre, from its stored base pose
-	local function turn(m,centre,a)
+	local function turn(m,centre,a,lift)
 		local basePivot=m:GetAttribute("BasePivot")
 		if typeof(basePivot)~="CFrame" then basePivot=m:GetPivot() m:SetAttribute("BasePivot",basePivot) end
-		m:PivotTo(CFrame.new(centre)*CFrame.Angles(0,a,0)*CFrame.new(-centre)*basePivot)
+		m:PivotTo(CFrame.new(0,lift or 0,0)*CFrame.new(centre)*CFrame.Angles(0,a,0)*CFrame.new(-centre)*basePivot)
 	end
 	local shown={} local nextFlick={}
 	local function flick(slot,id)
@@ -379,7 +391,7 @@ local function rollShow(p,offers)
 			hl.OutlineColor=Color3.new(1,1,1) hl.DepthMode=Enum.HighlightDepthMode.Occluded plot.outlines[slot]=hl
 		end
 		hl.Parent=m hl.Enabled=true
-		card(st.pedestals[slot],"???","???",oddsText(id),"???","")
+		card(st.pedestals[slot],"???","???","Rolling...","???","")
 	end
 	local function stop()
 		for slot,m in shown do showModel(m,false) if plot.outlines[slot] then plot.outlines[slot].Enabled=false end end
@@ -399,17 +411,26 @@ local function rollShow(p,offers)
 				-- reveal the pedestals one after another, centre first
 				task.delay((slot-1)*.12,function()
 					if ctx.rollToken~=token or sessions[p]~=ctx or not item then return end
+					if not ctx.offers or ctx.offers[slot]~=item then return end -- already bought/replaced during the stagger
 					local ped=st.pedestals[slot] local r=C.rarity(item.rarity)
-					flash(plot,ped.top,r.color:Lerp(Color3.new(1,1,1),.5))
-					local model=displayModel(item.type,ped.top,item) model.Name="OfferCrusher" model.Parent=plot.model
+					local odds=RollLook.odds(item.type,rollLuck,rollPerks.lucky,first)
+					local unowned=d and not RollLook.owns(d.crushers.owned,item.type)
+					local model=displayModel(item.type,ped.top,item) model.Name="OfferCrusher"
+					model:SetAttribute("RevealOwner",p.UserId) model:SetAttribute("RevealRoll",rollId)
+					model:SetAttribute("RevealSlot",slot) model:SetAttribute("RevealAt",workspace:GetServerTimeNow())
+					model:SetAttribute("RevealRarity",item.rarity) model:SetAttribute("RevealType",item.type)
+					model:SetAttribute("RevealUnowned",unowned==true) model:SetAttribute("RevealOdds",odds)
+					model.Parent=plot.model game:GetService("CollectionService"):AddTag(model,RollLook.Tag)
 					plot.offerModels[slot]=model
 					task.spawn(function()
 						local t0=os.clock() local centre=ped.top.Position
-						while model.Parent and os.clock()-t0<30 do turn(model,centre,(os.clock()-t0)*0.8) task.wait(1/20) end
+						while model.Parent and os.clock()-t0<30 do
+							local age=os.clock()-t0 turn(model,centre,age*.8,RollLook.lift(item.rarity,age)) task.wait(1/20)
+						end
 					end)
 					local perMin=d and Rules.stats(d,{type=item.type,rarity=item.rarity,modifier=item.modifier,level=1},perks(p)).cps*60 or 0
 					local name=C.typeById(item.type).name
-					card(ped,name,item.rarity..(if item.modifier~="Standard" then " · "..item.modifier else ""),oddsText(item.type),
+					card(ped,name,item.rarity..(if item.modifier~="Standard" then " · "..item.modifier else "")..(if unowned then " · UNOWNED" else ""),RollLook.oddsText(odds),
 						Format.cash(perMin).."/min",Format.cash(C.offerPrice(item)),r.color:Lerp(Color3.new(1,1,1),.15))
 					ped.prompt.ActionText="Buy "..Format.cash(C.offerPrice(item)) ped.prompt.ObjectText=name ped.prompt.Enabled=true
 				end)
@@ -432,9 +453,12 @@ local function rollShow(p,offers)
 end
 local function action(p,name,args)
 	local ctx=sessions[p] local d=Data.get(p) if not ctx or not d then return false,"Profile is loading." end
+	local offer=if name=="Buy" and type(args)=="table" and type(args.slot)=="number" then ctx.offers and ctx.offers[args.slot] else nil
+	local newType=offer and not RollLook.owns(d.crushers.owned,offer.type)
 	local ok,message,result=Rules.act(d,ctx,name,args,os.clock(),random,guid,perks(p))
 	if ok and name=="Roll" then d.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock()) rollShow(p,result) end
 	if ok and name=="Buy" then
+		if newType then ctx.justDiscovered={id=result.id,type=result.type,rarity=result.rarity} end
 		local ped=ctx.plot.stations.Roll.pedestals[args.slot]
 		flash(ctx.plot,ped.top,Color3.fromRGB(120,255,140)) clearOffer(ctx.plot,args.slot)
 		card(ped,"BOUGHT!","","","","",Color3.fromRGB(120,255,140))
@@ -442,7 +466,7 @@ local function action(p,name,args)
 	end
 	if ok then reconcile(p) end
 	ctx.justRolled=ok and name=="Roll" or nil
-	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" then result else nil) ctx.justRolled=nil
+	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" then result else nil) ctx.justRolled=nil ctx.justDiscovered=nil
 	return ok,message,result
 end
 local function visualEvent(p,event)

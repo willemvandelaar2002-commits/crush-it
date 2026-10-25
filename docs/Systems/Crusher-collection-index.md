@@ -1,8 +1,9 @@
 # Forty collectible crushers and the Index
 
-24 Oct art update: the procedural first pass below is superseded for thirteen
-Epic/Legendary types by [[Crusher identities]]. The roster, odds and production
-bands remain current. Imported special templates remain unchanged.
+25 Oct art update: the procedural first pass below is superseded for all
+thirty-five non-imported types by [[Crusher identities]]. The roster, base odds
+and production bands remain current. Five imported special templates remain
+unchanged. Live roll cards additionally show odds for the draw's Luck/pass state.
 
 2026-10-23. The combined patch now implements **40 live, rollable types**, eight
 per existing rarity: the original eleven plus twenty-nine code-built rigs.

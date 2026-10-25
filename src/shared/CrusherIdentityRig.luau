@@ -6,7 +6,10 @@ local C = require(script.Parent.CrusherConfig)
 local R = {}
 R.Tag = "CrusherIdentity"
 R.Types = {"Titan","Laser","Plasma","Gravity","Quake","Cyclone","Mecha",
-	"Quantum","Starforge","DragonJaw","BlackHole","Clockwork","FactoryHeart"}
+	"Quantum","Starforge","DragonJaw","BlackHole","Clockwork","FactoryHeart",
+	"Mega","Thunder","Frost","Furnace","ScrapShark","SteamHammer","JunkyardJaw",
+	"Cobalt","Gearbox","Flywheel","Pneumatic","DoubleStamp","Boiler","Conveyor",
+	"Bumper","Steel","Clamp","Spring","Screw","Rivet","Bottle","Bench"}
 local supported = {} for _, id in R.Types do supported[id] = true end
 function R.supports(id) return supported[id] == true end
 local V, F, A = Vector3.new, CFrame.new, CFrame.Angles
@@ -15,7 +18,8 @@ local silver = Color3.fromRGB(208,231,247)
 local gold = Color3.fromRGB(255,199,50)
 local cyan = Color3.fromRGB(77,235,255)
 local pink = Color3.fromRGB(255,94,145)
-local colors = {Titan=gold,Quantum=cyan}
+local colors = {Titan=gold,Quantum=cyan,Bumper=Color3.fromRGB(238,79,83),Steel=Color3.fromRGB(62,139,239),
+	Cobalt=Color3.fromRGB(72,198,123),Mega=Color3.fromRGB(166,85,236)}
 
 function R.build(origin, id)
 	if not R.supports(id) then return nil end
@@ -89,11 +93,12 @@ function R.build(origin, id)
 		table.insert(groups,{node=node,axis=V(0,-1,0),stroke=stroke or 2.7,pivot=pivot,angle=angle,rest={},rods={}})
 		return node
 	end
-	local function shoe(node,y,w,d)
-		box(node,"Navy crushing die",0,y,0,w,.72,d,ink)
-		box(node,"Glossy die armour",0,y+.48,0,w+.06,.32,d+.06,accent)
-		box(node,"Steel sole",0,y-.4,0,w-.15,.1,d-.15,silver)
-		for x=-1,1 do box(node,"Gold safety block",x*w*.27,y,d/2+.06,w*.14,.36,.12,gold) end
+	local function shoe(node,y,w,d,offset)
+		local x=offset or 0
+		box(node,"Navy crushing die",x,y,0,w,.72,d,ink)
+		box(node,"Glossy die armour",x,y+.48,0,w+.06,.32,d+.06,accent)
+		box(node,"Steel sole",x,y-.4,0,w-.15,.1,d-.15,silver)
+		for side=-1,1 do box(node,"Gold safety block",x+side*w*.27,y,d/2+.06,w*.14,.36,.12,gold) end
 	end
 	local function rod(node,x,z,y,h)
 		local p=cyl(node,"Telescoping piston",x,y,z,h,.35,silver,"Y")
@@ -106,6 +111,20 @@ function R.build(origin, id)
 			beam(frame,"Painted buttress face",V(side*3.2,1.3,-.88),V(side*spread,top-.2,-.53),.38,.15,accent)
 		end
 	end
+	local function arch(height,width)
+		for side=-1,1,2 do
+			box(frame,"Navy upright",side*width/2,(height+1)/2,-.6,.8,height-1,1.8,ink)
+			box(frame,"Upright paint",side*width/2,(height+1)/2,.34,.43,height-1.35,.12,accent)
+			cyl(frame,"Beam bolt",side*width/2,height,.5,.2,.5,gold,"Z")
+		end
+		box(frame,"Navy top beam",0,height,-.6,width+1,.8,2.2,ink)
+		box(frame,"Painted beam face",0,height,.56,width+.6,.48,.12,accent)
+	end
+	local function gauge(x,y,z,d)
+		cyl(frame,"Gauge bezel",x,y,z,.3,d,ink,"Z")
+		cyl(frame,"Gauge dial",x,y,z+.19,.1,d*.78,silver,"Z")
+		box(frame,"Gauge needle",x+.08,y+.12,z+.27,.1,d*.36,.07,accent,A(0,0,-.6))
+	end
 	box(frame,"Plinth",0,.38,0,8,.76,6.7,ink)
 	box(frame,"Coloured base fascia",0,.42,3.39,7.55,.38,.12,accent)
 	box(frame,"Bed",0,1,0,5.6,.55,4.9,silver)
@@ -113,7 +132,206 @@ function R.build(origin, id)
 		cyl(frame,"Base bolt",side*3.25,.81,z,.12,.37,gold,"Y")
 	end end
 	local ram
-	if id=="DragonJaw" then
+	if id=="Mega" then
+		-- A heavy industrial cylinder, below the supernatural Epic/Legendary tier.
+		arch(8,6.1)
+		cyl(frame,"Oversized hydraulic housing",0,6.9,-.5,2.6,2.65,ink,"Y")
+		cyl(frame,"Purple pressure jacket",0,7.0,-.5,1.65,2.8,accent,"Y")
+		for y=6.3,7.7,1.4 do cyl(frame,"Housing flange",0,y,-.5,.25,3.1,gold,"Y") end
+		gauge(0,7.1,1.02,1.0)
+		ram=group("Ram",2.65) shoe(ram,4.45,4.8,3.9)
+		rod(ram,0,-.5,5.3,1.8)
+	elseif id=="Thunder" then
+		for side=-1,1,2 do
+			cyl(frame,"Tesla pillar",side*2.7,4.6,-.7,6.7,.55,ink,"Y")
+			for y=3,6.7,.75 do cyl(frame,"Yellow insulator",side*2.7,y,-.7,.33,1.2,accent,"Y") end
+			ball(frame,"Tesla cap",side*2.7,8,-.7,1.25,gold)
+			beam(frame,"Navy lightning brace",V(side*1.9,7.2,.2),V(side*1.3,6,.2),.6,.4,ink)
+			glow(beam(frame,"Electric blue zig",V(side*1.9,7.2,.45),V(side*1.3,6,.45),.25,.12,cyan))
+			glow(beam(frame,"Electric blue zag",V(side*1.3,6,.45),V(side*2.0,4.9,.45),.25,.12,cyan))
+		end
+		beam(frame,"Conducting top bridge",V(-2.7,7.5,-.7),V(2.7,7.5,-.7),.55,.6,ink)
+		ram=group("Ram",2.7) shoe(ram,4.5,4.4,3.8)
+		cyl(ram,"Charged hammer cap",0,5.25,0,.7,2.7,gold,"Y") rod(ram,0,-.7,6.1,2.0)
+	elseif id=="Frost" then
+		supports(7.4,2.4)
+		for side=-1,1,2 do for n=1,3 do
+			local x=side*(2.5+n*.3) local y=3.4+n*.5 local h=1.2+n*.7
+			triangle(frame,"Navy ice spike",V(x,y+h/2,-.5),V(x-.45,y-h/2,-.5),V(x+.45,y-h/2,-.5),.85,ink)
+			triangle(frame,"Cyan ice facet",V(x,y+h/2-.15,.0),V(x-.3,y-h/2+.12,.0),V(x+.3,y-h/2+.12,.0),.18,accent)
+		end end
+		box(frame,"Ice arch cap",0,7.7,-.6,4.1,.9,1.6,accent,A(0,0,.07))
+		ram=group("Ram",2.7) shoe(ram,4.5,4.3,3.8)
+		box(ram,"Faceted frozen die",0,5.1,0,2.8,.8,2.5,silver,A(0,.5,0)) rod(ram,0,-.6,6.1,1.6)
+	elseif id=="Furnace" then
+		box(frame,"Furnace back shell",0,4.5,-1.95,5.8,6.3,1.2,ink)
+		box(frame,"Orange furnace lining",0,4.5,-1.28,4.9,5.35,.15,accent)
+		glow(box(frame,"Hot furnace window",0,5.9,-1.14,2.8,1.2,.12,gold))
+		for x=-.9,.9,.6 do box(frame,"Window grate",x,5.9,-.99,.15,1.3,.12,ink) end
+		for side=-1,1,2 do
+			cyl(frame,"Factory chimney",side*1.9,7.7,-1.7,2.1,.8,ink,"Y")
+			cyl(frame,"Chimney rim",side*1.9,8.7,-1.7,.2,1.0,accent,"Y")
+			box(frame,"Insulated side cheek",side*2.6,3.4,0,.85,4.2,3.9,accent)
+		end
+		ram=group("Ram",2.6) shoe(ram,4.4,4.2,3.6)
+		glow(box(ram,"Hot stamping sole",0,3.94,0,3.6,.08,3.0,gold))
+	elseif id=="ScrapShark" then
+		box(frame,"Shark lower jaw",0,1.62,.45,5.5,.66,4.8,accent)
+		box(frame,"Tail hinge support",0,3.2,-1.8,3.5,4.8,2.0,ink)
+		ram=group("Ram",0,V(0,5.5,-2),math.rad(27))
+		box(ram,"Shark head",0,5.35,-.2,5.0,1.5,4.6,accent)
+		box(ram,"Shark nose",0,5.02,2.0,4.15,.9,1.3,accent)
+		triangle(ram,"Navy dorsal fin",V(0,8,-1.3),V(0,6,-2.6),V(0,6,0),.75,ink)
+		triangle(ram,"Blue dorsal fin",V(.44,7.7,-1.3),V(.44,6.2,-2.3),V(.44,6.2,-.3),.16,accent)
+		for side=-1,1,2 do
+			ball(ram,"Shark eye socket",side*2.35,5.7,1,.8,ink)
+			ball(ram,"Shark eye",side*2.45,5.73,1.18,.42,silver)
+			for n=0,2 do box(ram,"Shark gill",side*2.55,5.4,-.4-n*.5,.1,.65,.13,ink,A(.15,0,0)) end
+			for z=-.2,2.1,1.15 do box(ram,"Upper shark fang",side*1.8,4.18,z,.4,.85,.5,silver) end
+		end
+	elseif id=="SteamHammer" then
+		arch(8.6,5.3)
+		for side=-1,1,2 do
+			cyl(frame,"Copper steam riser",side*2.5,4.9,-1.4,6.8,.65,gold,"Y")
+			cyl(frame,"Stack cap",side*2.5,8.4,-1.4,.3,1.0,ink,"Y")
+		end
+		gauge(0,7.7,.7,1.7)
+		local valve=spin("Turning steam valve",V(-2.5,6.4,.7),V(0,0,1),.38)
+		ring(valve,"Valve rim",V(-2.5,6.4,.7),.68,accent,"XY",10)
+		box(valve,"Valve spoke",-2.5,6.4,.7,1.1,.18,.2,gold)
+		ram=group("Ram",2.6) shoe(ram,4.4,4.0,3.8)
+		cyl(ram,"Copper pile driver",0,5.7,0,2.15,2.55,accent,"Y")
+		cyl(ram,"Black hammer band",0,5.7,0,.4,2.7,ink,"Y") rod(ram,0,-.3,7.0,1.4)
+	elseif id=="JunkyardJaw" then
+		box(frame,"Excavator swivel base",-2.4,2.8,-1.3,2.0,4.0,2.9,ink)
+		beam(frame,"Yellow excavator boom",V(-2.4,4,-1.3),V(-1.65,8.1,-1.3),.95,1.1,accent)
+		beam(frame,"Excavator dipper",V(-1.65,8.1,-1.3),V(1.1,6.8,-1.3),.85,1.0,accent)
+		for _,v in {V(-2.4,4,-.7),V(-1.65,8.1,-.7),V(1.1,6.8,-.7)} do cyl(frame,"Black arm pivot",v.X,v.Y,v.Z,.25,.8,ink,"Z") end
+		ram=group("Ram",2.2)
+		box(ram,"Hydraulic grabber spine",.3,4.5,-.1,4.4,.8,2.6,ink)
+		for side=-1,1,2 do
+			beam(ram,"Curved claw finger",V(side*1.9,4.5,0),V(side*1.45,3.9,1.9),.7,.8,accent)
+			box(ram,"Claw tooth",side*1.4,3.8,2.1,.65,.35,.75,gold)
+		end
+		rod(ram,1,-1,5.55,2.5)
+	elseif id=="Cobalt" or id=="Pneumatic" then
+		local air=id=="Pneumatic"
+		arch(7.4,5.9)
+		for side=-1,1,2 do
+			cyl(frame,"Rounded pressure tank",side*2.35,4.4,-1.35,3.7,1.35,accent,"Y")
+			ball(frame,"Tank dome",side*2.35,6.25,-1.35,1.35,accent)
+			cyl(frame,"Tank strap",side*2.35,4.5,-1.35,.22,1.45,ink,"Y")
+		end
+		gauge(0,6.6,.75,if air then 1.75 else 1.05)
+		if not air then
+			box(frame,"Cobalt double pump",0,7.65,-.6,3.4,.65,2.2,accent)
+			for x=-1,1,2 do cyl(frame,"Pump cap",x,8,-.6,.3,.85,gold,"Y") end
+		end
+		ram=group("Ram",2.65) shoe(ram,4.45,4.25,3.7)
+		for x=-1,1,2 do rod(ram,x,-.4,5.7,1.5) end
+	elseif id=="Gearbox" or id=="Flywheel" then
+		local fly=id=="Flywheel"
+		arch(7.4,5.8)
+		if fly then
+			gear("Huge offset flywheel",-2.1,5.7,1.0,1.65,.65)
+			box(frame,"Flywheel bearing",-2.1,3.0,.7,1.0,2.1,1.0,ink)
+		else
+			box(frame,"Gearbox casing",0,6.3,-.8,4.7,2.8,1.6,accent)
+			gear("Main exposed drive gear",-1.25,6.15,.5,1.2,.65)
+			gear("Counter rotating gear",1.1,6.7,.5,.85,-.9)
+		end
+		ram=group("Ram",2.6) shoe(ram,4.4,4.2,3.7)
+		rod(ram,if fly then 1 else 0,-.7,5.6,1.7)
+	elseif id=="DoubleStamp" then
+		arch(7.5,6.1)
+		for side=-1,1,2 do
+			local x=side*1.4 local head=group(if side<0 then "Ram_L" else "Ram_R",2.65)
+			shoe(head,4.45,2.2,3.8,x) rod(head,x,-.5,5.8,2)
+			cyl(frame,"Twin cylinder housing",x,7,-.5,1.2,1.1,accent,"Y")
+		end
+	elseif id=="Boiler" then
+		for side=-1,1,2 do box(frame,"Boiler leg",side*2.5,3.8,-1.0,.8,5.8,1.4,ink) end
+		cyl(frame,"Round boiler shell",0,6.4,-.8,3.1,3.6,ink,"Y")
+		cyl(frame,"Copper boiler jacket",0,6.4,-.8,2.7,3.35,accent,"Y")
+		ball(frame,"Boiler dome",0,7.8,-.8,2.4,accent)
+		gauge(0,6.7,1.0,1.5)
+		for side=-1,1,2 do cyl(frame,"Short exhaust",side*2.2,7.3,-.8,2.2,.6,ink,"Y") end
+		ram=group("Ram",2.6) shoe(ram,4.4,4.2,3.6)
+		cyl(ram,"Bell shaped hammer",0,5.2,0,1.1,2.5,gold,"Y") rod(ram,0,-.8,5.9,1.2)
+	elseif id=="Conveyor" then
+		arch(7.3,6.2)
+		-- Each roller gets its own local axle, so the belt silhouette stays fixed.
+		for z=-2.7,2.7,.9 do
+			local node=spin("Feed roller axle",V(0,1.5,z),V(1,0,0),.8)
+			cyl(node,"Rubber feed roller",0,1.5,z,5.4,.5,ink,"X")
+			cyl(node,"Coloured roller end",2.75,1.5,z,.2,.54,accent,"X")
+		end
+		for side=-1,1,2 do box(frame,"Belt guard",side*2.95,1.5,0,.38,.7,6.4,accent) end
+		ram=group("Ram",2.5) shoe(ram,4.7,4.5,3.8) rod(ram,0,-.6,5.9,1.8)
+	elseif id=="Bench" then
+		-- Low horizontal vise, with the moving jaw sliding along an exposed rail.
+		for z=-1.5,1.5,3 do cyl(frame,"Vise guide rail",0,1.4,z,6.8,.28,silver,"X") end
+		box(frame,"Fixed vise jaw",-2.45,2.7,0,.8,2.7,3.8,accent)
+		box(frame,"Fixed jaw teeth",-1.99,2.7,0,.1,2.35,3.6,ink)
+		ram=group("Ram",3.3) groups[#groups].axis=V(-1,0,0)
+		box(ram,"Sliding vise jaw",2.45,2.7,0,.8,2.7,3.8,accent)
+		box(ram,"Sliding jaw teeth",1.99,2.7,0,.1,2.35,3.6,ink)
+		cyl(ram,"Vise threaded shaft",3.1,2.7,0,1.4,.5,silver,"X")
+		cyl(ram,"Vise handle",3.8,2.7,0,2.2,.22,gold,"Y")
+	elseif id=="Clamp" or id=="Rivet" then
+		local rivet=id=="Rivet"
+		box(frame,"Open C spine",-2.7,3.9,-.6,1.2,6.2,2.2,ink)
+		beam(frame,"Offset pressure arm",V(-2.7,6.6,-.6),V(.2,6.3,-.6),.95,1.4,accent)
+		if rivet then
+			cyl(frame,"Round rivet anvil",0,1.5,0,.4,3.3,ink,"Y")
+			ram=group("Ram",.85)
+			cyl(ram,"Narrow steel punch",0,3.65,0,2.1,.8,silver,"Y")
+			cyl(ram,"Red punch collar",0,4.7,0,.5,1.6,accent,"Y") rod(ram,0,-.3,5.6,1.3)
+		else
+			ram=group("Ram",2.2) shoe(ram,4.0,4.4,3.8) rod(ram,0,-.6,5.15,2.3)
+			box(frame,"C clamp upper jaw",0,6.3,-.6,4.6,.65,2.8,accent)
+		end
+	elseif id=="Screw" or id=="Spring" then
+		local spring=id=="Spring"
+		arch(7.3,5.8)
+		ram=group("Ram",2.6) shoe(ram,4.4,4.2,3.7) rod(ram,0,-.6,5.8,1.8)
+		if spring then
+			for side=-1,1,2 do
+				for i=0,19 do
+					local a=i*math.pi*.6 local b=(i+1)*math.pi*.6
+					beam(frame,"Exposed yellow return spring",V(side*2.6+math.cos(a)*.4,2.1+i*.24,math.sin(a)*.4),V(side*2.6+math.cos(b)*.4,2.1+(i+1)*.24,math.sin(b)*.4),.16,.16,gold)
+				end
+			end
+		else
+			for y=5.2,7.6,.3 do cyl(ram,"Exposed screw thread",0,y,-.6,.12,.65,gold,"Y") end
+			local wheel=spin("Turning screw handwheel",V(0,7.85,-.6),V(0,1,0),.5)
+			ring(wheel,"Screw handwheel rim",V(0,7.85,-.6),1.35,accent,"XZ",12)
+			box(wheel,"Handwheel crossbar",0,7.85,-.6,2.4,.2,.2,ink)
+		end
+	elseif id=="Bottle" then
+		arch(6.7,5.9)
+		for side=-1,1,2 do
+			box(frame,"Bottle chute side",side*2.5,2.2,-1.4,.25,1.7,2.0,accent)
+		end
+		for x=-1.4,1.4,1.4 do
+			cyl(frame,"Bottle guide mould",x,2.0,-1.85,.8,.65,accent,"Y")
+			cyl(frame,"Bottle guide neck",x,2.6,-1.85,.5,.3,gold,"Y")
+		end
+		ram=group("Ram",2.4) shoe(ram,4.2,4.2,3.7) rod(ram,0,-.6,5.3,1.7)
+		for x=-1.3,1.3,1.3 do box(ram,"Flattening rib",x,3.75,0,.2,.12,3.2,silver) end
+	elseif id=="Bumper" or id=="Steel" then
+		local starter=id=="Bumper"
+		arch(if starter then 6.3 else 7.0,if starter then 5.2 else 5.8)
+		ram=group("Ram",if starter then 2.0 else 2.5)
+		shoe(ram,if starter then 3.8 else 4.3,if starter then 3.8 else 4.5,3.5)
+		rod(ram,0,-.6,if starter then 4.9 else 5.55,if starter then 1.5 else 1.8)
+		if starter then
+			cyl(frame,"Rounded red bumper cap",0,6.45,-.6,.65,2.4,accent,"Y")
+		else
+			box(frame,"Steel pump housing",0,7,-.6,3.2,1.0,2.0,accent)
+			gauge(0,7,.5,1.0)
+		end
+	elseif id=="DragonJaw" then
 		-- A horizontal creature silhouette, rather than a press with horns attached.
 		box(frame,"Fixed lower jaw",0,1.62,.5,5.45,.66,5.2,accent)
 		box(frame,"Rear hinge pedestal",0,3.15,-2.0,3.8,4.8,2.2,ink)
@@ -309,9 +527,9 @@ function R.build(origin, id)
 		for _,p in node:GetDescendants() do if p:IsA("BasePart") then
 			for x=-1,1,2 do for y=-1,1,2 do for z=-1,1,2 do
 				local v=pivot:PointToObjectSpace(p.CFrame*V(x*p.Size.X/2,y*p.Size.Y/2,z*p.Size.Z/2))
-				local r=if axis.Y==1 then math.sqrt(v.X*v.X+v.Z*v.Z) else math.sqrt(v.X*v.X+v.Y*v.Y)
+				local r=if axis.Y==1 then math.sqrt(v.X*v.X+v.Z*v.Z) elseif axis.X==1 then math.sqrt(v.Y*v.Y+v.Z*v.Z) else math.sqrt(v.X*v.X+v.Y*v.Y)
 				local extent=if node:GetAttribute("IdentityBeat") then V(math.abs(v.X)+.12,math.abs(v.Y)+.18,math.abs(v.Z))
-					elseif axis.Y==1 then V(r,math.abs(v.Y),r) else V(r,r,math.abs(v.Z))
+					elseif axis.Y==1 then V(r,math.abs(v.Y),r) elseif axis.X==1 then V(math.abs(v.X),r,r) else V(r,r,math.abs(v.Z))
 				local a=pivot.Position-extent local b=pivot.Position+extent
 				lo=V(math.min(lo.X,a.X),math.min(lo.Y,a.Y),math.min(lo.Z,a.Z))
 				hi=V(math.max(hi.X,b.X),math.max(hi.Y,b.Y),math.max(hi.Z,b.Z))
@@ -321,7 +539,7 @@ function R.build(origin, id)
 	local fit=math.min(1,l.MachineWidth/(2*math.max(math.abs(lo.X),math.abs(hi.X))),
 		l.MachineHeight/hi.Y,l.MachineDepth/(2*math.max(math.abs(lo.Z),math.abs(hi.Z))))
 	model:ScaleTo(fit) model:PivotTo(origin)
-	local bedTop=(if id=="DragonJaw" then 1.95 else 1.275)*fit
+	local bedTop=(if id=="DragonJaw" or id=="ScrapShark" then 1.95 elseif id=="Rivet" then 1.7 elseif id=="Conveyor" then 1.75 else 1.275)*fit
 	local lowest=math.huge
 	for _,g in groups do
 		for _,p in g.node:GetDescendants() do if p:IsA("BasePart") then
@@ -338,9 +556,17 @@ function R.build(origin, id)
 		g.stroke*=fit
 		if g.pivot then g.pivot=origin*F(g.pivot*fit) end
 	end
-	model:SetAttribute("CrusherType",id) model:SetAttribute("IdentityVersion",1)
-	model:SetAttribute("RigFit",fit) Tags:AddTag(model,R.Tag)
+	model:SetAttribute("CrusherType",id) model:SetAttribute("IdentityVersion",2)
+	model:SetAttribute("RigFit",fit)
+	-- Plain starter rigs have no idle ornaments; do not let them occupy the
+	-- four-machine cosmetic budget while a nearby special has moving parts.
+	for _,node in model:GetDescendants() do
+		if node:GetAttribute("IdentityPulse") or node:GetAttribute("IdentityBeat")
+			or (node:GetAttribute("IdentityRate") and node:GetAttribute("IdentityRate")~=0) then
+			Tags:AddTag(model,R.Tag) break
+		end
+	end
 	return {model=model,frame=frame,catalog=true,origin=origin,groups=groups,
-		base=origin*F(0,bedTop,0),clearance=lowest-bedTop,bedWidth=3.65*fit,strikes=0}
+		base=origin*F(0,bedTop,0),clearance=if id=="Bench" then 2.4*fit else lowest-bedTop,bedWidth=3.65*fit,strikes=0}
 end
 return R

@@ -15,7 +15,7 @@ local Net = require(ReplicatedStorage.Shared.Net)
 local me = Players.LocalPlayer
 local NEAR = 60 -- only when you're at your own roll machine
 local ZOOM_IN = 8 -- degrees of FOV narrower while rolling
-local PUNCH = 7 -- degrees wider for a moment at the reveal
+local PUNCH = 3 -- restrained shared kick; rarity accents stay on the pedestals
 
 local function machine(): BasePart?
 	local index = me:GetAttribute("Plot")

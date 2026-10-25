@@ -1,9 +1,10 @@
-# Crusher identities — 24 October 2026
+# Crusher identities — 25 October 2026
 
-This presentation pass replaces thirteen prototype rigs, covering every Epic
-and Legendary type except the three existing imported specials. TwinTitan,
-GoldenKing and Toyzilla retain their place templates and existing ram motion.
-Common, Uncommon and Rare art is unchanged in this first priority pass.
+The 25 October expansion finishes the code-built model pass: thirty-five
+authored rigs and the existing five imported templates cover all forty types.
+The twenty-two additional replacements cover every Common, Uncommon and Rare
+type that is not an imported special. All five imported models, the thirteen
+Epic/Legendary shapes, gameplay stats and saved type IDs remain in place.
 
 | Type | Silhouette and mechanical identity |
 | --- | --- |
@@ -20,17 +21,41 @@ Common, Uncommon and Rare art is unchanged in this first priority pass.
 | Quake | Low wide outriggers, shock columns and an enormous orange barrel hammer. |
 | Cyclone | Large six-blade rear turbine, dark circular housing and twin telescoping guide rods. |
 | Mecha | Broad armoured shoulders, robot visor and a giant articulated-looking four-knuckle fist with a gold thumb. |
+| Mega | Oversized purple hydraulic cylinder with gold flanges, pressure dial and a broad die. |
+| Thunder | Twin Tesla columns, yellow insulators, conducting caps and blue lightning braces. |
+| Frost | Tall navy-edged ice spikes, pale crystal facets and a frozen angular die. |
+| Furnace | Orange insulated furnace, grilled hot window, twin chimneys and a heated stamp. |
+| ScrapShark | Long blue nose, side eyes/gills, triangular dorsal fin and hinged toothed jaw. |
+| SteamHammer | Tall copper steam risers, large pressure gauge, rotating valve and a cylindrical pile driver. |
+| JunkyardJaw | Asymmetric excavator boom with large pivot bolts and a hydraulic two-finger grabber. |
+| Cobalt | Green twin pressure tanks, capped double pump and twin telescoping rods. |
+| Gearbox | Broad exposed drive casing with two counter-rotating toothed gears. |
+| Flywheel | One enormous offset flywheel, visible bearing and narrow driver linkage. |
+| Pneumatic | Rounded cyan air tanks and an oversized front pressure gauge. |
+| DoubleStamp | Two separate green stamps and cylinders; alternate ordinary strokes, finish together. |
+| Boiler | Round copper-jacket boiler, dome, short exhausts, gauge and bell hammer. |
+| Conveyor | Long guarded roller bed with seven separate rotating axles and a gate press. |
+| Bumper | Simple low red starter press, rounded pump cap and compact bumper die. |
+| Steel | Taller blue uprights, steel pump housing and a front pressure dial. |
+| Clamp | Open-sided orange C-clamp, offset arm and broad pressure shoe. |
+| Spring | Twin exposed helical yellow return springs and a compact yellow stamp. |
+| Screw | Threaded pressure screw and a slowly turning top handwheel. |
+| Rivet | Slim offset red arm, round raised anvil and narrow punching pin. |
+| Bottle | Three bottle-shaped guide moulds, feeding chute and ribbed flattening sole. |
+| Bench | Low blue workbench vise, exposed rails, threaded handle and a horizontal sliding jaw. |
 
 These are anchored Roblox Part/WedgePart rigs built by code. No asset IDs,
 Blender imports or changes to stored meshes are required. Navy structures,
 large coloured armour and a few bright accents match the toy-factory style.
 Open centres and the existing bay envelope preserve background visibility.
-This is a finished implementation pass for these thirteen shapes, subject to
-in-engine art review; it does not claim all forty have final mesh artwork.
+Common rigs use simpler shapes and fewer visual effects. Rare rigs have larger
+distinctive mechanisms, while Epic/Legendary retain their hero ornaments. All
+forty now have an authored or imported model; Studio art review of the new
+twenty-two remains required. Code-built models are not custom mesh artwork.
 
 ## Routing and animation
 
-`shared/CrusherIdentityRig` builds the thirteen shapes and returns the existing
+`shared/CrusherIdentityRig` builds the thirty-five shapes and returns the existing
 CatalogCrushers rig contract. The catalogue delegates only these IDs. Bay and
 pedestal routing now asks the catalogue before trying an imported template;
 the static Index builder follows the same path. Held Tools inherit the same
@@ -41,7 +66,10 @@ Actual crushing uses existing CatalogCrushers server tweens and contact
 timing. Piston rods telescope with fixed upper endpoints; DragonJaw rotates
 around its rear hinge. Whole rigs fit uniformly, including conservative full
 rotation extents of every animated ornament. Work surfaces and available
-input space come from the real fitted ram geometry.
+input space come from the real fitted ram geometry. Bench has a horizontal
+working chamber instead of overhead ram clearance. Conveyor's moving axle
+sweeps include the X axis; raised anvils, jaw beds and rollers have explicit
+bed heights.
 
 `CrusherIdentities.client` only animates tagged, equipped Workspace models
 that have an InventoryId. Index, held Tools and rolling previews remain static
@@ -51,6 +79,8 @@ second. Animation uses absolute server time and captured rest transforms;
 it does not accumulate rotation. Culled or untagged rigs restore rest poses.
 Late-streamed ornament descendants are collected without recapturing the
 already animated transforms. Disappearing nodes are discarded safely.
+Only rigs with actual ornaments or pulsing parts receive the animation tag;
+twenty plain starters therefore do not displace a nearby clockwork or turbine.
 
 Core effects are subtle local transparency pulses on a few Neon parts. There
 are no added sounds, PointLights, ParticleEmitters, per-hit allocations, hit
@@ -75,6 +105,22 @@ materials will differ. Offline tween checks validate endpoints, not Roblox
 interpolation or replication. Studio Play, clean Output, real roll/equip/held
 previews, input squash, replication and appearance remain unverified here.
 Phone layout work remains deferred. See [[../Apply-crusher-identities]].
+
+## Expansion verification — 25 October 2026
+
+Offline assertions: 189,343 identity geometry/endpoint checks over all thirty-five
+rigs; 12,010 existing catalogue checks; and 117 local animation/coverage checks.
+The runtime fixture places twenty plain starters in front of five decorated
+rigs and confirms that four decorated machines animate, the fifth stays still,
+culling restores transforms and steady animation creates no Instances. All
+forty types are covered by an authored rig or an unchanged imported template.
+
+The roll-presentation fixtures and all 335 CrusherRules assertions also pass.
+All source files compile with LF endings. Config, roster, production rules,
+Store and Net remain unchanged by either 25 October patch. The Studio results
+below describe the earlier thirteen-rig pass only. Fresh Play verification of
+the new twenty-two, real held models, actual tween interpolation, streaming and
+engine performance still needs the connected Studio agent.
 
 ## Integration and Studio verification — 24 October 2026
 
@@ -113,3 +159,26 @@ These tests used disposable Studio mock profiles, not live saves. Full manual
 front/back art review of every rig, real stream-out/re-entry, multiplayer/device
 performance and phone work remain outstanding. Studio was returned to Edit
 mode and the temporary Play fixtures were discarded. Nothing was published.
+
+## Combined-patch Studio verification — 25 October 2026
+
+The expansion now passes actual Studio suites: 189,343 identity checks across
+35 authored rigs, 12,010 catalogue checks, 3,656 roll-presentation checks and
+1,311 existing gameplay/feedback/spin/upgrade/import checks (206,320 total).
+All forty preview models regenerated; the five imported-template tests passed.
+No place assets were edited by this integration.
+
+A disposable mock profile equipped all twenty-two new rigs within a working
+24-machine factory. All 24 had production inputs at the sampled moment, and
+a desktop screenshot was reviewed. ScrapShark was unequipped, held with 32
+unanchored/noncolliding parts and 31 welds, and equipped again. Collect, Sell
+and Equip Best actions passed. A separate client fixture with twenty plain
+starters and five decorated rigs selected four decorated machines, animated
+their ornaments without increasing its 737 descendants, and restored positions
+and orientations when the camera moved away. This is a culling fixture, not
+an actual network streaming test or frame-time benchmark.
+
+Rojo build and whitespace checks passed. Output contained only existing
+disabled-DataStore and asset 203785492 warnings. Full front/back/held art review
+of every type, real stream-out/re-entry, human audio and device performance
+remain outstanding; no phone work or publishing was performed.
