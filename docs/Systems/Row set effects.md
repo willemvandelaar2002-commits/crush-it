@@ -40,3 +40,12 @@ a non-owned row outside camera range and an owned row outside both ranges,
 immediate set-break cleanup/re-enable, and constant 13 effect descendants for
 the one active slot. Local fixtures were removed and attributes restored;
 no profile injection or purchase was used. Rojo build and whitespace passed.
+
+
+## Stronger glow (26 Oct)
+
+- Bloom is almost off in this place, so neon parts don't glow; the glow is built from translucent layers instead.
+- Per bay, per active row (`RowSetEffects.luau`): a camera-facing `RowCurtain` beam rising 9 studs from the rail (pulsing transparency 0.4–0.6 at the base), a `RowHaze` smoke emitter (rate 4) and `RowSparkles` box emitters across the bay width.
+- `RowOutline` Highlights (outline only, Occluded) on the crushers of the 2 nearest active rows (`HIGHLIGHT_ROWS`), 12 in total, staying under Roblox's 31 limit.
+- Server aura (`CrusherRowVisuals`): pillars 0.7 thick, plus a new Top bar, both at 0.05 base transparency.
+- Avoid the `forcefield_glow_main` texture for the haze: it reads as grey shards.
