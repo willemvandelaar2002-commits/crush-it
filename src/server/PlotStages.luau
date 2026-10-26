@@ -14,7 +14,7 @@ local Assets=require(script.Parent.PlotAssets)
 -- Blender props (ServerStorage.PlotAssets, see PlotAssets.luau) per plot level,
 -- plot-local x/z and the way the front faces (yaw: 0 = toward the entrance).
 -- Ones that replace a code-built prop list it as `replaces`.
-V.Props={
+local PROPS={
 	{level=0,name="ToolCabinet",x=-46,z=79,yaw=math.rad(60),replaces="ToolTrolley"},
 	{level=0,name="ScrapBin",x=-40,z=56,yaw=math.rad(90)},
 	{level=1,name="AirCompressor",x=71.5,z=30,yaw=math.rad(-90),replaces="Compressor"},
@@ -302,7 +302,7 @@ function V.create(plot)
 
 	-- Blender props, each in the stage model of its plot level
 	local byLevel={} for _,r in records do byLevel[r.level]=byLevel[r.level] or r.model end
-	for _,prop in V.Props do
+	for _,prop in PROPS do
 		local parent=byLevel[prop.level] or stage(prop.level,"Stage"..(prop.level+1).."Props")
 		byLevel[prop.level]=parent
 		-- yaw 0: front toward +Z (entrance); the template's front is its pivot LookVector (-Z)
