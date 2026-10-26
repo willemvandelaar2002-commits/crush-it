@@ -108,3 +108,13 @@ DataStore and asset 203785492 warnings; no new game-script errors appeared.
 Live rejoin, actual network streaming, device performance, full interaction/art
 review and phone work remain untested. Studio was returned to Edit mode and
 Play fixtures discarded; nothing was published.
+
+## Full-set aura (26 Oct)
+
+The thin rail was barely visible (Willem). A complete same-rarity row now also
+lights an aura per bay in the rarity colour: a neon floor plate round the
+pedestal, two light pillars at the bay front, a glowing back panel with a
+PointLight (`RowAura` parts in `RarityRowN`, hidden until active, set by
+`CrusherRowVisuals.sync`). The client pulses them around their `Base`
+transparency, and sparkles now play for every rarity (softer for
+Common/Uncommon/Rare). Bonus numbers are unchanged.

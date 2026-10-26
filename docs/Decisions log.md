@@ -201,3 +201,4 @@
 - 2026-10-26: Added the authored coating-booth visual (beside the Coating Lab board, colour per plot stage, animation after a confirmed coating) and reusable plot props from ServerStorage.PlotAssets, preserving existing coating behaviour and plot interactions. Stations and boards are now solid; bay plaques stay walk-through.
 - 2026-10-26: Coating Lab board removed (Willem): the coating booth opens a coating screen where you pick the crusher from a list (no more holding it). Same server checks and prices.
 - 2026-10-26: Stage 5 felt empty (Willem). Added master-factory dressing: gold column caps, walkway light strips, gold entrance arch, rear banners, gold beacon tower; stripes on all back walls from Factory III. All Blender props/variants now set up as templates.
+- 2026-10-26: Full rarity sets get a strong aura (floor plate, light pillars, glowing back panel and light per bay) plus sparkles for every rarity; visual only.
