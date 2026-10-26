@@ -168,10 +168,12 @@ local function play(info: any)
 	local lo, hi = Vector3.new(math.huge, math.huge, math.huge), Vector3.new(-math.huge, -math.huge, -math.huge)
 	for _, root in roots do
 		local inBay = root.Name:match("^WorkingBay") ~= nil
+		-- the camera and the sweep frame the new floor itself, not the walls or yard around the plot
+		local main = inBay or table.find(def.banks, root.Name) ~= nil
 		for _, p in root:GetDescendants() do
 			if p:IsA("BasePart") and p.Transparency < 1 and not KEEP[p.Name] then
 				local rel = origin:PointToObjectSpace(p.Position)
-				lo = lo:Min(rel) hi = hi:Max(rel)
+				if main then lo = lo:Min(rel) hi = hi:Max(rel) end
 				local copy = p:Clone()
 				for _, c in copy:GetChildren() do if not (c:IsA("Decal") or c:IsA("Texture") or c:IsA("SpecialMesh")) then c:Destroy() end end
 				copy.Anchored = true copy.CanCollide = false copy.CanQuery = false copy.CanTouch = false
@@ -187,12 +189,12 @@ local function play(info: any)
 			for _, root in roots do if g.Adornee:IsDescendantOf(root) then s.guis[g] = true g.Enabled = false break end end
 		end
 	end
-	if #copies == 0 then finish() return end
+	if #copies == 0 or lo.X == math.huge then finish() return end
 	local centre = (lo + hi) / 2 local size = hi - lo
 	-- the sweep runs along the section's long side; copies rise in that order too
 	local alongX = size.X >= size.Z
 	for _, c in copies do
-		local k = if alongX then (c.rel.X - lo.X) / math.max(size.X, 1) else (c.rel.Z - lo.Z) / math.max(size.Z, 1)
+		local k = math.clamp(if alongX then (c.rel.X - lo.X) / math.max(size.X, 1) else (c.rel.Z - lo.Z) / math.max(size.Z, 1), 0, 1)
 		c.start = GROUP_START[c.group] + k * .35
 		c.drop = if c.group == 1 then 6 else 9
 	end
@@ -208,7 +210,7 @@ local function play(info: any)
 	local span = math.max(size.X, size.Z, 30)
 	local function viewOf(c: Vector3, sp: number, back: boolean): CFrame
 		local dir = if back then -1 else 1
-		local eye = origin * Vector3.new(c.X + sp * .12, c.Y + sp * .55 + 12, c.Z + dir * (sp * .8 + 18))
+		local eye = origin * Vector3.new(c.X + sp * .1, c.Y + sp * .42 + 14, c.Z + dir * (sp * .5 + 22))
 		return CFrame.lookAt(eye, origin * c)
 	end
 	local mainView = viewOf(centre, span, fromBack)
