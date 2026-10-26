@@ -340,15 +340,16 @@ function V.create(plot)
 		local top=W.part(s5,"ArchFinial",V3(1.4,1.4,1.4),arch*CFrame.new(x,16.2,0),Gold) top.Shape=Enum.PartType.Ball top.Material=Enum.Material.Metal
 	end
 	W.part(s5,"ArchBeam",V3(22,2,2.2),arch*CFrame.new(0,15.5,0),Gold).Material=Enum.Material.Metal
-	-- sign faces the bridge (+Z); W.sign draws on the part's -Z side, so turn it round
-	local plate=W.part(s5,"ArchSign",V3(15,3.2,.4),arch*CFrame.new(0,18.3,0)*CFrame.Angles(0,math.pi,0),Navy)
+	-- W.sign draws on the part's Back face (+Z), which here faces the bridge
+	local plate=W.part(s5,"ArchSign",V3(15,3.2,.4),arch*CFrame.new(0,18.3,0),Navy)
 	W.part(s5,"ArchSignFrame",V3(15.8,4,.3),arch*CFrame.new(0,18.3,-.3),Gold)
 	local gui=W.sign(plate)
 	local t=W.text(gui,"Label","MASTER FACTORY",UDim2.fromScale(.03,.08),UDim2.fromScale(.94,.84)) t.TextColor3=Gold
 	-- banners on the rear yard's upper back walls
 	for _,wall in backWalls do
 		if wall:FindFirstAncestor("RearUpper1") or wall:FindFirstAncestor("RearUpper2") then
-			local banner=W.part(s5,"RearBanner",V3(24,5,.3),wall.CFrame*CFrame.new(0,0,-wall.Size.Z/2-.35),Navy)
+			-- turned round so its Back face (+Z, where W.sign draws) points away from the wall
+			local banner=W.part(s5,"RearBanner",V3(24,5,.3),wall.CFrame*CFrame.new(0,0,-wall.Size.Z/2-.35)*CFrame.Angles(0,math.pi,0),Navy)
 			W.part(s5,"RearBannerTrim",V3(25,6,.2),wall.CFrame*CFrame.new(0,0,-wall.Size.Z/2-.2),Gold)
 			local g=W.sign(banner)
 			local l=W.text(g,"Label","CRUSH IT",UDim2.fromScale(.03,.08),UDim2.fromScale(.94,.84)) l.TextColor3=Gold
