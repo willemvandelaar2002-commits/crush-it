@@ -86,28 +86,43 @@ function V.create(plot)
 	W.text(upgrade.content,"Heading","UPGRADE PLOT",UDim2.fromScale(.03,.03),UDim2.fromScale(.94,.22))
 	upgrade.info=W.text(upgrade.content,"Benefits","+6 BAYS · NEW ROW · COATING LAB",UDim2.fromScale(.03,.28),UDim2.fromScale(.94,.23))
 	upgrade.button=W.button(upgrade.content,"UpgradePlot","",UDim2.fromScale(.12,.58),UDim2.fromScale(.76,.33),"UpgradePlot")
-	local lab=board("CoatingLab",22,15,18,10,Style.Colors.Purple)
+	-- Coating Lab: Willem's booth with a prompt that opens the coating screen
+	-- (Coating.client); the old board only when the booth template is missing.
+	local lab
 	local boothVersion=boothName(1)
 	if boothVersion then
-		lab.booth=Assets.place(boothVersion,lab.model,plot.origin*BOOTH_AT,{inset=.8})
-		if lab.booth then lab.booth.Name="CoatingBooth" lab.booth:SetAttribute("Version",boothVersion) end
+		local m=Instance.new("Model") m.Name="CoatingLab" m.Parent=root
+		lab={model=m}
+		lab.booth=Assets.place(boothVersion,m,plot.origin*BOOTH_AT,{inset=.8})
 	end
-	-- the code-built cartridge dispenser only when there's no booth model
-	if not lab.booth then W.part(lab.model,"DispenserBase",Vector3.new(19,1,5),lab.frame*CFrame.new(0,.5,-.3),W.Navy) end
-	for i,recipe in (if lab.booth then {} else C.Coatings) do
-		local x=(i-2.5)*4
-		local tank=W.part(lab.model,"FinishCartridge",Vector3.new(2,1.6,1.6),lab.frame*CFrame.new(x,11.8,-.5)*CFrame.Angles(0,0,math.pi/2),recipe.color)
-		tank.Shape=Enum.PartType.Cylinder
-		W.part(lab.model,"CartridgeCap",Vector3.new(1.8,.25,1.8),lab.frame*CFrame.new(x,12.9,-.5),W.Navy)
+	if lab and lab.booth then
+		lab.booth.Name="CoatingBooth" lab.booth:SetAttribute("Version",boothVersion)
+		-- small part at the booth's front: prompt range and the server's reach check
+		local front=W.part(lab.model,"CoatingPromptPart",Vector3.new(2,2,1),plot.origin*BOOTH_AT*CFrame.new(0,2.6,-5.6),W.Navy)
+		front.Transparency=1 front.CanQuery=false
+		local prompt=Instance.new("ProximityPrompt") prompt.Name="CoatingPrompt" prompt.ActionText="Coat a crusher"
+		prompt.ObjectText="Coating Lab" prompt.KeyboardKeyCode=Enum.KeyCode.E prompt.HoldDuration=0
+		prompt.MaxActivationDistance=12 prompt.RequiresLineOfSight=false prompt.Enabled=false prompt.Parent=front
+		lab.part=front lab.prompt=prompt
+	else
+		if lab then lab.model:Destroy() end
+		lab=board("CoatingLab",22,15,18,10,Style.Colors.Purple)
+		W.part(lab.model,"DispenserBase",Vector3.new(19,1,5),lab.frame*CFrame.new(0,.5,-.3),W.Navy)
+		for i,recipe in C.Coatings do
+			local x=(i-2.5)*4
+			local tank=W.part(lab.model,"FinishCartridge",Vector3.new(2,1.6,1.6),lab.frame*CFrame.new(x,11.8,-.5)*CFrame.Angles(0,0,math.pi/2),recipe.color)
+			tank.Shape=Enum.PartType.Cylinder
+			W.part(lab.model,"CartridgeCap",Vector3.new(1.8,.25,1.8),lab.frame*CFrame.new(x,12.9,-.5),W.Navy)
+		end
+		W.text(lab.content,"Heading","COATING LAB",UDim2.fromScale(.03,.02),UDim2.fromScale(.94,.13))
+		lab.info=W.text(lab.content,"Preview","Hold a crusher, then select a finish.",UDim2.fromScale(.04,.16),UDim2.fromScale(.92,.19))
+		for i,recipe in C.Coatings do
+			local x=if i%2==1 then .03 else .52 local y=if i<=2 then .38 else .59
+			local b=W.button(lab.content,recipe.name,recipe.name.." x"..C.modifier(recipe.name).mult,UDim2.fromScale(x,y),UDim2.fromScale(.45,.17),"QuoteCoating",recipe.name)
+			Style.setButtonColor(b,recipe.color)
+		end
+		lab.button=W.button(lab.content,"ApplyCoating","SELECT A FINISH",UDim2.fromScale(.1,.81),UDim2.fromScale(.8,.16),"ApplyCoating")
 	end
-	W.text(lab.content,"Heading","COATING LAB",UDim2.fromScale(.03,.02),UDim2.fromScale(.94,.13))
-	lab.info=W.text(lab.content,"Preview","Hold a crusher, then select a finish.",UDim2.fromScale(.04,.16),UDim2.fromScale(.92,.19))
-	for i,recipe in C.Coatings do
-		local x=if i%2==1 then .03 else .52 local y=if i<=2 then .38 else .59
-		local b=W.button(lab.content,recipe.name,recipe.name.." x"..C.modifier(recipe.name).mult,UDim2.fromScale(x,y),UDim2.fromScale(.45,.17),"QuoteCoating",recipe.name)
-		Style.setButtonColor(b,recipe.color)
-	end
-	lab.button=W.button(lab.content,"ApplyCoating","SELECT A FINISH",UDim2.fromScale(.1,.81),UDim2.fromScale(.8,.16),"ApplyCoating")
 	plot.progression={yard=yard,accents=accents,upgrade=upgrade,lab=lab,gateParts={},levelText=levelText}
 	-- the plot's rear rim opens onto the rear yard
 	for _,p in plot.model:GetDescendants() do if p:IsA("BasePart") and (p.Name=="RimBlock" or p.Name=="RimCorner" or p.Name=="LampPost" or p.Name=="LampLight" or p.Name=="LampCap") and p.Parent and p.Parent.Name=="PlotBorder" then
@@ -116,7 +131,7 @@ function V.create(plot)
 	end end
 	Stages.create(plot)
 	show(yard,false) show(accents,false) show(upgrade.model,false) show(lab.model,false)
-	upgrade.content.Visible=false lab.content.Visible=false
+	upgrade.content.Visible=false if lab.content then lab.content.Visible=false end
 end
 function V.sync(plot,d,quote,now,preview)
 	local v=plot.progression if not v then return end
@@ -136,7 +151,9 @@ function V.sync(plot,d,quote,now,preview)
 			v.lab.booth=Assets.place(want,v.lab.model,plot.origin*BOOTH_AT,{inset=.8})
 			if v.lab.booth then v.lab.booth.Name="CoatingBooth" v.lab.booth:SetAttribute("Version",want) end
 		end
-		show(v.lab.model,expanded) v.lab.content.Visible=expanded
+		show(v.lab.model,expanded)
+		if v.lab.content then v.lab.content.Visible=expanded end
+		if v.lab.prompt then v.lab.prompt.Enabled=expanded end
 		for _,part in v.gateParts do
 			local open=yardOpen
 			part.Transparency=if open then 1 else 0 part.CanCollide=not open part.CanQuery=not open
@@ -159,6 +176,7 @@ function V.sync(plot,d,quote,now,preview)
 		elseif level==2 then "+6 BAYS · REAR UPPER LEFT · HIGHER LV CAPS"
 		else "+6 BAYS · REAR UPPER RIGHT · HIGHER LV CAPS"
 	if d then v.levelText.Text=C.PlotUpgrade.Names[math.max(1,level)] end
+	if not v.lab.info then return end -- booth: the coating screen shows the preview
 	local valid=quote and now<quote.expires
 	v.lab.info.Text=if valid then preview else "Hold an unequipped crusher. Select a finish to preview."
 	W.purchase(v.lab.button,{state=if not valid then "Max" elseif d.cash>=quote.cost then "Ready" else "Short",cost=if valid then quote.cost else 0,
