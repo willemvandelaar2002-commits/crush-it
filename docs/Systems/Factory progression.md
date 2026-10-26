@@ -137,7 +137,16 @@ them and adds one invisible collision box each.
 - **Solid stations**: Collect hopper walls, Sell counter, Roll machine body,
   station feet, board casings and legs now collide (`W.panel(...,solid)`);
   bay plaques stay walk-through.
-- Not used yet: CornerBrace / SupportBeam / BoardFrame trim (need fitting).
+- All 23 templates imported and set up 26 Oct (props, coater colour
+  versions, trim pieces). Not placed yet: CornerBrace / SupportBeam /
+  BoardFrame trim (need fitting).
+- **Rear yard look (Factory III on)**: red/yellow/green stripes on every bank
+  back wall (they're what you see from behind).
+- **Master factory (Factory V)**: gold caps and feet on every bank column,
+  warm neon strips under every walkway, a gold entrance arch with a MASTER
+  FACTORY sign over the bridge, gold-trimmed CRUSH IT banners on the rear yard
+  upper back walls, and a 57-stud gold beacon at the end of the rear yard
+  road (visible above the wings). Note: `W.sign` draws on the Back face (+Z).
 
 ## Factory III — third floor (25 Oct)
 

@@ -290,6 +290,10 @@ function V.create(plot)
 
 	-- Factory V: light towers at the front corners with gold caps.
 	local s5=stage(4,"Stage5Props")
+	local function byLevelModel(level,name)
+		for _,r in records do if r.level==level then return r.model end end
+		return stage(level,name)
+	end
 	for _,x in {-half+4,half-4} do
 		local cf=o*CFrame.new(x,0,front-4)
 		W.part(s5,"TowerFoot",V3(2.4,1,2.4),cf*CFrame.new(0,.5,0),Navy,true)
@@ -299,6 +303,68 @@ function V.create(plot)
 		W.part(s5,"TowerCap",V3(2.8,.6,2.8),cf*CFrame.new(0,14.7,0),Gold)
 		local pl=Instance.new("PointLight") pl.Color=Color3.fromRGB(255,225,170) pl.Range=26 pl.Brightness=1.2 pl.Parent=lamp
 	end
+
+	-- Rear yard (Factory III on): toy-coloured stripes on the plain back walls
+	local s3b=byLevelModel(2,"Stage3Props")
+	local stripeColors={Color3.fromRGB(250,60,70),Yellow,Color3.fromRGB(45,200,70)}
+	local banks=plot.model:FindFirstChild("WorkshopBanks")
+	local backWalls={}
+	for _,p in (banks and banks:GetDescendants() or {}) do
+		if p:IsA("BasePart") and (p.Name=="BankBackWall" or p.Name=="BankBackWallUpper" or p.Name=="TopBackWall") then table.insert(backWalls,p) end
+	end
+	for _,wall in backWalls do
+		-- the back face is the wall's -Z side (bays face +Z)
+		for i,y in {-wall.Size.Y*.25,wall.Size.Y*.25} do
+			local band=W.part(s3b,"BackStripe",V3(wall.Size.X-.6,1.1,.2),wall.CFrame*CFrame.new(0,y,-wall.Size.Z/2-.1),stripeColors[(i+#wall.Name)%#stripeColors+1])
+			band.CastShadow=false
+		end
+	end
+
+	-- Factory V, the master factory: gold column caps, warm light strips under
+	-- every walkway, a gold entrance arch, banners on the rear yard backs and a
+	-- tall gold beacon in the rear yard you can see from the front.
+	for _,p in (banks and banks:GetDescendants() or {}) do
+		if p:IsA("BasePart") and (p.Name=="GroundColumn" or p.Name=="UpperColumn" or p.Name=="TopColumn") then
+			local cap=W.part(s5,"GoldCap",V3(1.6,.5,1.6),p.CFrame*CFrame.new(0,p.Size.Y/2-.25,0),Gold) cap.Material=Enum.Material.Metal
+			local foot=W.part(s5,"GoldFoot",V3(1.5,.4,1.5),p.CFrame*CFrame.new(0,-p.Size.Y/2+.2,0),Gold) foot.Material=Enum.Material.Metal
+		elseif p:IsA("BasePart") and (p.Name=="DeckFascia" or p.Name=="TopFascia") then
+			local strip=W.part(s5,"WalkwayLight",V3(p.Size.X-1.5,.22,.22),p.CFrame*CFrame.new(0,-p.Size.Y/2-.12,p.Size.Z/2),Color3.fromRGB(255,225,150))
+			strip.Material=Enum.Material.Neon strip.CastShadow=false
+		end
+	end
+	-- entrance arch over the bridge
+	local arch=o*CFrame.new(0,0,front+.5)
+	for _,x in {-9.5,9.5} do
+		W.part(s5,"ArchPillar",V3(2.2,15,2.2),arch*CFrame.new(x,7.5,0),Navy,true)
+		for _,y in {3,8,13} do local b=W.part(s5,"ArchBand",V3(2.5,.5,2.5),arch*CFrame.new(x,y,0),Gold) b.Material=Enum.Material.Metal end
+		local top=W.part(s5,"ArchFinial",V3(1.4,1.4,1.4),arch*CFrame.new(x,16.2,0),Gold) top.Shape=Enum.PartType.Ball top.Material=Enum.Material.Metal
+	end
+	W.part(s5,"ArchBeam",V3(22,2,2.2),arch*CFrame.new(0,15.5,0),Gold).Material=Enum.Material.Metal
+	-- W.sign draws on the part's Back face (+Z), which here faces the bridge
+	local plate=W.part(s5,"ArchSign",V3(15,3.2,.4),arch*CFrame.new(0,18.3,0),Navy)
+	W.part(s5,"ArchSignFrame",V3(15.8,4,.3),arch*CFrame.new(0,18.3,-.3),Gold)
+	local gui=W.sign(plate)
+	local t=W.text(gui,"Label","MASTER FACTORY",UDim2.fromScale(.03,.08),UDim2.fromScale(.94,.84)) t.TextColor3=Gold
+	-- banners on the rear yard's upper back walls
+	for _,wall in backWalls do
+		if wall:FindFirstAncestor("RearUpper1") or wall:FindFirstAncestor("RearUpper2") then
+			-- turned round so its Back face (+Z, where W.sign draws) points away from the wall
+			local banner=W.part(s5,"RearBanner",V3(24,5,.3),wall.CFrame*CFrame.new(0,0,-wall.Size.Z/2-.35)*CFrame.Angles(0,math.pi,0),Navy)
+			W.part(s5,"RearBannerTrim",V3(25,6,.2),wall.CFrame*CFrame.new(0,0,-wall.Size.Z/2-.2),Gold)
+			local g=W.sign(banner)
+			local l=W.text(g,"Label","CRUSH IT",UDim2.fromScale(.03,.08),UDim2.fromScale(.94,.84)) l.TextColor3=Gold
+		end
+	end
+	-- gold beacon tower at the end of the rear yard road
+	local yardBack=L.BayZ+L.RearShift-L.UpperBack-L.BayDepth/2-6
+	local tower=o*CFrame.new(0,0,yardBack+4.5)
+	W.part(s5,"BeaconBase",V3(5,1.2,5),tower*CFrame.new(0,.6,0),Navy,true)
+	W.part(s5,"BeaconMast",V3(1.6,52,1.6),tower*CFrame.new(0,27,0),Navy,true)
+	for y=8,48,10 do local b=W.part(s5,"BeaconBand",V3(2,.6,2),tower*CFrame.new(0,y,0),Gold) b.Material=Enum.Material.Metal end
+	local head=W.part(s5,"BeaconLight",V3(3.6,3.6,3.6),tower*CFrame.new(0,55,0),Color3.fromRGB(255,215,90))
+	head.Shape=Enum.PartType.Ball head.Material=Enum.Material.Neon head.CastShadow=false
+	local pl2=Instance.new("PointLight") pl2.Color=Color3.fromRGB(255,215,90) pl2.Range=40 pl2.Brightness=1.5 pl2.Parent=head
+	W.part(s5,"BeaconCap",V3(4.4,.6,4.4),tower*CFrame.new(0,57.2,0),Gold).Material=Enum.Material.Metal
 
 	-- Blender props, each in the stage model of its plot level
 	local byLevel={} for _,r in records do byLevel[r.level]=byLevel[r.level] or r.model end
