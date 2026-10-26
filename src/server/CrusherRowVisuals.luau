@@ -33,8 +33,9 @@ function V.create(plot)
 			end
 			aura("Floor",Vector3.new(L.BayWidth-.6,.12,L.MachineDepth+2.2),bay*CFrame.new(0,.47,L.MachineZ),.15)
 			for _,x in {-1,1} do
-				aura("Pillar",Vector3.new(.35,L.TierHeight-3.2,.35),bay*CFrame.new(x*(L.BayWidth/2-.45),(L.TierHeight-3.2)/2+.5,L.BayDepth/2-.9),.2)
+				aura("Pillar",Vector3.new(.7,L.TierHeight-3.2,.7),bay*CFrame.new(x*(L.BayWidth/2-.55),(L.TierHeight-3.2)/2+.5,L.BayDepth/2-.9),.05)
 			end
+			aura("Top",Vector3.new(L.BayWidth-.4,.6,.7),bay*CFrame.new(0,L.TierHeight-2.4,L.BayDepth/2-.9),.05)
 			local back=aura("Back",Vector3.new(L.BayWidth-1.8,L.TierHeight-5.2,.12),bay*CFrame.new(0,(L.TierHeight-5.2)/2+.6,-L.BayDepth/2+.75),.45)
 			local light=Instance.new("PointLight") light.Name="AuraLight" light.Range=14 light.Brightness=1.8 light.Enabled=false light.Parent=back
 		end

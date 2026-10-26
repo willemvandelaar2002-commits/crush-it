@@ -37,8 +37,8 @@ function E.new(world)
 			e.Parent=host slot.hosts[i]=host slot.emitters[i]=e
 			-- soft coloured light haze (the place has almost no bloom, so neon alone barely glows)
 			local h=Instance.new("ParticleEmitter") h.Name="RowHaze"
-			h.Texture="rbxasset://textures/particles/forcefield_glow_main.dds"
-			h.Enabled=false h.Rate=3 h.Lifetime=NumberRange.new(1.6,2.4)
+			h.Texture="rbxasset://textures/particles/smoke_main.dds"
+			h.Enabled=false h.Rate=4 h.Lifetime=NumberRange.new(1.6,2.4)
 			h.Speed=NumberRange.new(.8,1.6) h.EmissionDirection=Enum.NormalId.Top h.SpreadAngle=Vector2.new(8,8)
 			h.Shape=Enum.ParticleEmitterShape.Box h.ShapeStyle=Enum.ParticleEmitterShapeStyle.Volume
 			h.LightEmission=1 h.LightInfluence=0 h.Rotation=NumberRange.new(0,360)
@@ -103,7 +103,7 @@ function E.new(world)
 				for _,e in slot.emitters do e:Clear() e.Color=ColorSequence.new(color:Lerp(white,.5),color)
 					e.Rate=if rarity=="Legendary" then 16 elseif rarity=="Epic" then 12 else 8
 				end
-				for _,b in slot.beams do b.Color=ColorSequence.new(color) end
+				for _,b in slot.beams do b.Color=ColorSequence.new(color:Lerp(white,.25),color) end
 				for _,h in slot.hazes do h:Clear() h.Color=ColorSequence.new(color) end
 				for _,hl in slot.outlines do hl.FillColor=color hl.OutlineColor=color:Lerp(white,.6) end
 			end
@@ -135,7 +135,7 @@ function E.new(world)
 			slot.glint.CFrame=rail.CFrame*F(((phase%1)-.5)*rail.Size.X,.04,.06) slot.glint.Transparency=.12
 			-- breathing glow on curtains and outlines
 			local wave=.5+.5*math.sin(now*2.4)
-			local fade=NumberSequence.new({NumberSequenceKeypoint.new(0,.3+.2*(1-wave)),NumberSequenceKeypoint.new(.55,.72),NumberSequenceKeypoint.new(1,1)})
+			local fade=NumberSequence.new({NumberSequenceKeypoint.new(0,.4+.2*(1-wave)),NumberSequenceKeypoint.new(.55,.78),NumberSequenceKeypoint.new(1,1)})
 			for _,b in slot.beams do if b.Enabled then b.Transparency=fade end end
 			for _,hl in slot.outlines do if hl.Enabled then hl.OutlineTransparency=.25*(1-wave) end end
 		end
