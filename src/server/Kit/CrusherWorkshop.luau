@@ -123,9 +123,9 @@ function W.goals(parent,cf)
 	W.text(gui,"Heading","GOALS",UDim2.fromScale(.04,.02),UDim2.fromScale(.92,.16))
 	local rows={}
 	local specs={
-		{id="Like",icon="👍",title="LIKE & FAVORITE",sub="Thank you for playing!",button="★ FAVORITE",action="Favorite",color=Color3.fromRGB(64,160,255)},
+		{id="Like",icon="★",title="FAVORITE THE GAME",sub="Confirm the Roblox favorite prompt",button="★ FAVORITE",action="Favorite",color=Color3.fromRGB(64,160,255)},
 		{id="Group",icon="👥",title="JOIN THE GROUP",sub="Unlocks the free time skip",button="JOIN",action="JoinGroup",color=Color3.fromRGB(150,80,230)},
-		{id="Skip",icon="⏱",title="FREE "..C.Goals.SkipMinutes.." MIN TIME SKIP",sub="Instant cash from your crushers",button="CLAIM",action="TimeSkip",color=Color3.fromRGB(53,190,79)},
+		{id="Skip",icon="⏱",title="FREE "..C.Goals.SkipMinutes.." MIN TIME SKIP",sub="Complete BOTH goals above",button="FAVORITE",action="TimeSkip",color=Color3.fromRGB(53,190,79)},
 	}
 	for i,spec in specs do
 		local row=Instance.new("Frame") row.Name="Row_"..spec.id

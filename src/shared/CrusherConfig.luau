@@ -213,7 +213,7 @@ C.TutorialSteps = {
 C.TutorialBonus = 100
 -- Goals board on the plot (reference style): like/favorite, join the group, and
 -- a free time skip (SkipMinutes of your current production as cash) that needs
--- group membership and then waits SkipCooldownHours.
+-- favorite-prompt confirmation + server-checked group membership, then waits SkipCooldownHours.
 C.Goals = { GroupId = 264438399, SkipMinutes = 5, SkipCooldownHours = 24, MinSkipReward = 100 }
 -- "1 in N" odds of rolling a type with base weights (no luck).
 function C.oddsFor(typeId)

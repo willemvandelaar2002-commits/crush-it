@@ -31,6 +31,12 @@ function H.start()
  fitDesktopHeader() workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitDesktopHeader)
  local toast=text(gui,"Notice","",UDim2.new(.5,0,1,-150),UDim2.fromOffset(640,40)) toast.AnchorPoint=Vector2.new(.5,0) toast.TextColor3=Color3.fromRGB(255,225,136)
  local noticeUntil=0
+ local favoriteGoal=require(script.Parent.FavoriteGoal).new({
+  service=game:GetService("AvatarEditorService"),placeId=game.PlaceId,itemType=Enum.AvatarItemType.Asset,
+  success=Enum.AvatarPromptResult.Success,act=act,spawn=task.spawn,later=task.delay,
+  notice=function(message) toast.Text=message noticeUntil=os.clock()+5 end,
+ })
+ gui.Destroying:Connect(function() favoriteGoal:Destroy() end)
  local indexView=require(script.Parent.CrusherIndex).new(gui,act)
  local book=Style.iconButton(gui,{name="BookButton",image=Icons.Book,label="INDEX",a=blue,b=navy})
  Style.placeHudButton(book,0) book.Activated:Connect(indexView.toggle)
@@ -144,15 +150,14 @@ function H.start()
     elseif action=="ApplyCoating" then purchase(action,{token=state.coating and state.coating.token})
     -- goals board: the favorite / join prompts are Roblox's own (client side)
     elseif action=="Favorite" then
-     pcall(function() game:GetService("AvatarEditorService"):PromptSetFavorite(game.PlaceId,Enum.AvatarItemType.Asset,true) end)
+     favoriteGoal:request()
     elseif action=="JoinGroup" then
      task.spawn(function()
       pcall(function() game:GetService("GroupService"):PromptJoinAsync(C.Goals.GroupId) end)
       act("GroupCheck")
      end)
     elseif action=="TimeSkip" then
-     pending={row=WorldFx.rowOf(v),t=os.clock(),success="+"..C.Goals.SkipMinutes.." MIN!"}
-     act("TimeSkip")
+     purchase("TimeSkip",{})
     else act(action,{id=v:GetAttribute("UpgradeId")}) end
    end)
   end end
@@ -170,6 +175,7 @@ function H.start()
  task.spawn(bindWorld)
  Net.event("CrusherState").OnClientEvent:Connect(function(v)
   state=v
+  favoriteGoal:update(v.goals)
   -- world purchase feedback: the next answer after a board/plaque click
   if pending and v.message and os.clock()-pending.t<2 then
    if v.message=="Done!" then WorldFx.success(pending.row,pending.success) v.message=nil

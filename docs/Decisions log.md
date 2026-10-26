@@ -1,6 +1,7 @@
 # Decisions log
 
 - 2026-10-27: Placed Willem's Blender trim kit (CornerBrace / SupportBeam / BoardFrame) from Factory II, in the colour version of the plot level (yellow, orange, silver, gold): frames stretched round the nine station boards and floor signs (non-colliding, not queryable, so board buttons still work), solid posts along both road edges every 12 studs (spots with something there are skipped) and guards at the foot of the ground columns (rear banks from Factory III). Rebuilt on each upgrade. Studio verified at Factory III: 9 frames, 28 posts, 28 guards, no errors. See Systems/Factory progression.md.
+- 2026-10-26: Integrated goals-reward patch cleanly while retaining Factory V/60 bays, fusion/MAX, icon loading and recent pointer/row zoom fixes. Fresh Studio passed 6,803 checks including 69 goal/client checks; actual board eligibility, forged flags, unsolicited acknowledgement and repeated rejected claims left timeSkipAt unchanged. Rojo/whitespace passed, with only the existing Output warning. No successful reward/profile injection or account-favorite change was tested. Real prompt/full-claim/rejoin checks remain manual; favorite confirmation is client-reported. See Systems/Goals reward.md.
 
 - 2026-10-26: Tutorial "Buy your crusher" reward raised from $15 to $100, so a new player can unlock bay 2 ($100) straight after the first purchase instead of grinding about $75 with one Common crusher. Bay costs and the rest of the economy are unchanged.
 
@@ -213,3 +214,4 @@
 - 2026-10-26: Stage 5 felt empty (Willem). Added master-factory dressing: gold column caps, walkway light strips, gold entrance arch, rear banners, gold beacon tower; stripes on all back walls from Factory III. All Blender props/variants now set up as templates.
 - 2026-10-26: Full rarity sets get a strong aura (floor plate, light pillars, glowing back panel and light per bay) plus sparkles for every rarity; visual only.
 - 2026-10-26: Side walls that grow and get more colourful per plot level (3/5/7/9 studs, ending in rainbow panels with flags at Factory V), Willem asked for more upgrade feeling.
+- 2026-10-26: Goals reward requires both client-reported favorite confirmation and server-checked group membership before Claim, retaining existing reward/cooldown values. Added prompt-result handling, an incomplete/ready board state, session challenge and serialized claims with fresh membership checks. Checked offline: 69 gate/client checks and 16 actual-handler checks; Studio Play still required.

@@ -1,5 +1,10 @@
 # Crush It
 
+26 Oct goals reward: Claim requires favorite-prompt confirmation AND server-checked
+group membership, plus the existing saved cooldown. Cancel/error never completes
+the favorite goal; claims are serialized across membership checks. Favorite is
+best-effort client confirmation, not server-verified proof. See [[Systems/Goals reward]].
+
 25 Oct Factory II: filling the original 24 bays reveals UPGRADE PLOT. Purchase
 adds a low six-bay rear extension, trim and Coating Lab. Apply Polished/Frost/
 Fire/Charged finishes to held unequipped crushers with a priced preview and

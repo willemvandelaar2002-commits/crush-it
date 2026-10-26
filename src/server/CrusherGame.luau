@@ -28,6 +28,7 @@ local Catalog=require(script.Parent.CatalogCrushers)
 local Friend=require(script.Parent.FriendBoost)
 local Tools=require(script.Parent.CrusherTools)
 local Feel=require(script.Parent.CrusherFeedbackServer)
+local Goals=require(script.Parent.GoalsReward)
 local G={}
 local sessions={}
 local pedestalLook -- defined with the roll show helpers below
@@ -174,7 +175,8 @@ local function send(p,message,result)
 	Net.event("CrusherState"):FireClient(p,{cash=d.cash,carried=d.scrap,available=s.available,items=items,
 		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,plotLevel=s.plotLevel,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
 		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
-		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered,coating=ctx.coatingQuote})
+		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered,coating=ctx.coatingQuote,
+		goals=Goals.view(ctx,d,workspace:GetServerTimeNow())})
 	local st=ctx.plot.stations
 	st.Collect.label.Text=Format.cash(s.available).." ready"
 	-- The pile grows with ready scrap (about one minute of output fills it).
@@ -195,14 +197,19 @@ local function send(p,message,result)
 			row.label.Text=view.effect Workshop.purchase(row.button,view)
 		end end
 	end
-	-- goals board: group row and the free time skip
+	-- Favorite is best-effort client confirmation; group and cooldown are server gates.
 	local goals=st.Goals and st.Goals.rows
 	if goals then
+		local view=Goals.view(ctx,d,workspace:GetServerTimeNow())
+		goals.Like.button.Text=if view.favorite then "✓ FAVORITED" else "★ FAVORITE"
+		goals.Like.label.Text=if view.favorite then "Favorite goal complete!" else "Confirm the Roblox favorite prompt"
 		goals.Group.button.Text=if ctx.inGroup then "✓ JOINED" else "JOIN"
-		goals.Group.label.Text=if ctx.inGroup then "Thanks for joining!" else "Unlocks the free time skip"
-		local left=(d.timeSkipAt or 0)-workspace:GetServerTimeNow()
-		goals.Skip.button.Text=if not ctx.inGroup then "JOIN FIRST" elseif left>0 then string.format("%02d:%02d:%02d",left//3600,left%3600//60,left%60) else "CLAIM"
-		goals.Skip.label.Text="Get "..Format.cash(skipReward(p,d)).." instantly"
+		goals.Group.label.Text=if ctx.inGroup then "Group goal complete!" else "Complete both goals for the free skip"
+		local left=view.left
+		Workshop.purchase(goals.Skip.button,{state=if view.canClaim then "Ready" else "Short",cost=0,
+			button=if not view.favorite then "FAVORITE" elseif not view.inGroup then "JOIN FIRST" elseif left>0 then string.format("%02d:%02d:%02d",left//3600,left%3600//60,left%60) else "CLAIM",
+			hint=view.reason,success="+"..C.Goals.SkipMinutes.." MIN!"})
+		goals.Skip.label.Text=if not view.favorite or not view.inGroup then "Complete BOTH goals above" else "Get "..Format.cash(skipReward(p,d)).." instantly"
 	end
 	floorLook(ctx.plot,s.bays)
 	for i,bay in ctx.plot.bays do
@@ -654,10 +661,14 @@ function G.start()
 	end)
 	Net.event("CrusherAction").OnServerEvent:Connect(function(p,name,args)
 		local ctx=sessions[p] local d=Data.get(p) if not ctx or not d or type(name)~="string" then return end
-		local now=os.clock() if now-ctx.lastRequest<C.RequestInterval then return end ctx.lastRequest=now
+		args=if type(args)=="table" then args else {}
+		local favoriteAck=name=="FavoriteConfirmed"
+		-- A fast already-favorited read can finish before RequestInterval. The
+		-- one-use challenge gates its acknowledgement instead of dropping it.
+		if favoriteAck and not Goals.validFavorite(ctx,args.token,workspace:GetServerTimeNow()) then return end
+		local now=os.clock() if not favoriteAck and now-ctx.lastRequest<C.RequestInterval then return end ctx.lastRequest=now
 		if name=="Sync" then send(p) return end
 		if name=="GroupCheck" then ctx.inGroup=checkGroup(p,true) send(p) return end
-		args=if type(args)=="table" then args else {}
 		-- World purchases require the owner's own station and a nearby character.
 		local target local reach=C.Layout.InteractionDistance
 		if name=="Upgrade" then local u=C.Upgrades[args.id] if u then target=ctx.plot.stations[u.group].part end
@@ -666,7 +677,7 @@ function G.start()
 			if bay and (name=="Unlock" and args.bay==d.crushers.bays+1 or name~="Unlock" and d.crushers.equipped[tostring(args.bay)]==args.id) then target=bay.part end
 			local f=type(args.bay)=="number" and floorFor(ctx.plot,args.bay)
 			if name=="Unlock" and f and f.face and f.first==args.bay and args.bay==d.crushers.bays+1 then target=f.face reach=45 end
-		elseif name=="TimeSkip" then target=ctx.plot.stations.Goals and ctx.plot.stations.Goals.part
+		elseif name=="TimeSkip" or name=="FavoriteStart" or name=="FavoriteConfirmed" then target=ctx.plot.stations.Goals and ctx.plot.stations.Goals.part
 		elseif name=="Buy" then local ped=type(args.slot)=="number" and ctx.plot.stations.Roll.pedestals[args.slot] if ped then target=ped.part end
 		elseif name=="UpgradePlot" then target=ctx.plot.progression.upgrade.part
 		elseif name=="Fuse" then target=ctx.plot.stages and ctx.plot.stages.fuserPart reach=26
@@ -676,14 +687,26 @@ function G.start()
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end
-		if name=="TimeSkip" then
-			if not ctx.inGroup then ctx.inGroup=checkGroup(p,true) end
-			if not ctx.inGroup then send(p,"Join the group first to unlock the free time skip.") return end
-			local now=workspace:GetServerTimeNow()
-			if now<(d.timeSkipAt or 0) then send(p,"Your next free time skip isn't ready yet.") return end
-			local reward=skipReward(p,d)
-			d.cash=C.money(d.cash+reward) d.timeSkipAt=now+C.Goals.SkipCooldownHours*3600
-			send(p,"Done!") return
+		if name=="FavoriteStart" then
+			Goals.beginFavorite(ctx,guid(),workspace:GetServerTimeNow()) send(p) return
+		elseif name=="FavoriteConfirmed" then
+			if Goals.confirmFavorite(ctx,args.token,workspace:GetServerTimeNow()) then send(p) end return
+		elseif name=="TimeSkip" then
+			if not ctx.favoriteConfirmed then send(p,"Favorite the game first, then join the group.") return end
+			if workspace:GetServerTimeNow()<(d.timeSkipAt or 0) then send(p,"Your next free time skip isn't ready yet.") return end
+			if ctx.goalClaimBusy then return end ctx.goalClaimBusy=true
+			local ok,err=pcall(function()
+				-- Refresh even a previously true membership, then revalidate after
+				-- the yielding API call. No overlapping request can grant twice.
+				local member=checkGroup(p,true)
+				if sessions[p]~=ctx or Data.get(p)~=d then return end
+				ctx.inGroup=member
+				local granted,reason=Goals.claim(ctx,d,workspace:GetServerTimeNow(),skipReward(p,d),C.Goals.SkipCooldownHours*3600,C.money)
+				send(p,if granted then "Done!" else reason)
+			end)
+			ctx.goalClaimBusy=false
+			if not ok then warn("[Goals] Claim failed: "..tostring(err)) send(p,"Couldn't check your goals. Please try again.") end
+			return
 		end
 		action(p,name,args)
 	end)
