@@ -10,6 +10,21 @@ local Style=require(RS.Shared.Kit.Style)
 local World=require(RS.Shared.Config).World
 local W=require(script.Parent.Kit.CrusherWorkshop)
 local Build=require(script.Parent.Kit.Build)
+local Assets=require(script.Parent.PlotAssets)
+-- Blender props (ServerStorage.PlotAssets, see PlotAssets.luau) per plot level,
+-- plot-local x/z and the way the front faces (yaw: 0 = toward the entrance).
+-- Ones that replace a code-built prop list it as `replaces`.
+local PROPS={
+	{level=0,name="ToolCabinet",x=-46,z=79,yaw=math.rad(60),replaces="ToolTrolley"},
+	{level=0,name="ScrapBin",x=-40,z=56,yaw=math.rad(90)},
+	{level=1,name="AirCompressor",x=71.5,z=30,yaw=math.rad(-90),replaces="Compressor"},
+	{level=2,name="MaintenanceBot",x=-86,z=68,yaw=math.rad(-40),replaces="MaintenanceRobot"},
+	{level=2,name="PipeManifold",x=73,z=56,yaw=math.rad(-90)},
+	{level=3,name="ScrapSorter",x=-41,z=71,yaw=math.rad(90)},
+	{level=3,name="FactoryLamp",x=-42,z=86,yaw=0},
+	{level=3,name="FactoryLamp",x=42,z=86,yaw=0},
+	{level=4,name="Workbench",x=-106,z=71,yaw=math.rad(90)},
+}
 local V={}
 local V3=Vector3.new
 local Navy,Blue,Yellow=W.Navy,W.Blue,W.Yellow
@@ -211,8 +226,9 @@ function V.create(plot)
 		local edge=W.part(s2,"CobaltRoadEdge",V3(1.4,.12,front-rear-6),o*CFrame.new(x*(L.RoadHalf+1.1),.06,(front+rear)/2-1),Cobalt)
 		edge.CastShadow=false
 	end
-	compressor(s2,o*CFrame.new(71.5,0,30))
-	trolley(s2,o*CFrame.new(-46,0,77)*CFrame.Angles(0,.5,0))
+	if not Assets.template("AirCompressor") then compressor(s2,o*CFrame.new(71.5,0,30)) end
+	-- the tool trolley moves to Factory II only when there's no Blender cabinet (that one is in the starter plot)
+	if not Assets.template("ToolCabinet") then trolley(s2,o*CFrame.new(-46,0,77)*CFrame.Angles(0,.5,0)) end
 
 	-- Factory III: the fusion wing (outward left of the scrap hopper) with the
 	-- fuser, a maintenance robot, orange crates and low utility pipes.
@@ -240,7 +256,7 @@ function V.create(plot)
 		W.lamp(wing,o*CFrame.new(wx1+1,2.2,z),2.2)
 	end
 	local fuserModel,fuserHit=fuser(wing,o*CFrame.new(-97,0,57))
-	robot(wing,o*CFrame.new(-86,0,68)*CFrame.Angles(0,-.7,0))
+	if not Assets.template("MaintenanceBot") then robot(wing,o*CFrame.new(-86,0,68)*CFrame.Angles(0,-.7,0)) end
 	for _,c in {{-108,1.3,48,Orange},{-108,1.3,51,Color3.fromRGB(65,151,255)},{-108,3.9,49.5,Orange}} do
 		W.part(wing,"FusionCrate",V3(2.6,2.6,2.6),o*CFrame.new(c[1],c[2],c[3]),c[4],true)
 	end
@@ -284,6 +300,14 @@ function V.create(plot)
 		local pl=Instance.new("PointLight") pl.Color=Color3.fromRGB(255,225,170) pl.Range=26 pl.Brightness=1.2 pl.Parent=lamp
 	end
 
+	-- Blender props, each in the stage model of its plot level
+	local byLevel={} for _,r in records do byLevel[r.level]=byLevel[r.level] or r.model end
+	for _,prop in PROPS do
+		local parent=byLevel[prop.level] or stage(prop.level,"Stage"..(prop.level+1).."Props")
+		byLevel[prop.level]=parent
+		-- yaw 0: front toward +Z (entrance); the template's front is its pivot LookVector (-Z)
+		Assets.place(prop.name,parent,o*CFrame.new(prop.x,0,prop.z)*CFrame.Angles(0,math.pi+prop.yaw,0))
+	end
 	for _,r in records do show(r.model,false) end
 	show(trim,false)
 	plot.stages={records=records,trim=trim,trimParts=trimParts,door=door,fuser=fuserModel,fuserPart=fuserHit,level=-1}
