@@ -147,6 +147,13 @@ them and adds one invisible collision box each.
   FACTORY sign over the bridge, gold-trimmed CRUSH IT banners on the rear yard
   upper back walls, and a 57-stud gold beacon at the end of the rear yard
   road (visible above the wings). Note: `W.sign` draws on the Back face (+Z).
+- **Side walls per plot level** (`PlotStages`, `StageWalls2..5`, only the
+  current level's set shows): left and right of the plot (and of the rear
+  yard from Factory III), studded panels with posts and caps. II: 3 studs,
+  cobalt/yellow. III: 5 studs, blue with orange stripe and posts. IV: 7
+  studs, blue/teal, silver posts, cyan glow strip. V: 9 studs, rainbow toy
+  panels, gold caps, gold glow, flags. Front stays open; gap at the fusion
+  wing doorway (z 46..76).
 
 ## Factory III — third floor (25 Oct)
 
