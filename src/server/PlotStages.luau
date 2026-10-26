@@ -20,7 +20,7 @@ local PROPS={
 	{level=1,name="AirCompressor",x=71.5,z=30,yaw=math.rad(-90),replaces="Compressor"},
 	{level=2,name="MaintenanceBot",x=-86,z=68,yaw=math.rad(-40),replaces="MaintenanceRobot"},
 	{level=2,name="PipeManifold",x=73,z=56,yaw=math.rad(-90)},
-	{level=3,name="ScrapSorter",x=-40,z=66,yaw=math.rad(90)},
+	{level=3,name="ScrapSorter",x=-41,z=71,yaw=math.rad(90)},
 	{level=3,name="FactoryLamp",x=-42,z=86,yaw=0},
 	{level=3,name="FactoryLamp",x=42,z=86,yaw=0},
 	{level=4,name="Workbench",x=-106,z=71,yaw=math.rad(90)},
