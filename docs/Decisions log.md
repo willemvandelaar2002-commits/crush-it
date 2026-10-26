@@ -204,3 +204,4 @@
 - 2026-10-26: Coating Lab board removed (Willem): the coating booth opens a coating screen where you pick the crusher from a list (no more holding it). Same server checks and prices.
 - 2026-10-26: Stage 5 felt empty (Willem). Added master-factory dressing: gold column caps, walkway light strips, gold entrance arch, rear banners, gold beacon tower; stripes on all back walls from Factory III. All Blender props/variants now set up as templates.
 - 2026-10-26: Full rarity sets get a strong aura (floor plate, light pillars, glowing back panel and light per bay) plus sparkles for every rarity; visual only.
+- 2026-10-26: Side walls that grow and get more colourful per plot level (3/5/7/9 studs, ending in rainbow panels with flags at Factory V), Willem asked for more upgrade feeling.
