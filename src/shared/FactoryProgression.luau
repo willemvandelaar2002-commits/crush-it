@@ -38,7 +38,7 @@ end
 function P.quote(d,id,name,now,token)
 	if level(d)<1 then return nil,"Upgrade your plot to unlock the Coating Lab." end
 	local item=find(d,id)
-	if not item then return nil,"Hold one of your unequipped crushers first." end
+	if not item then return nil,"Choose one of your unequipped crushers first." end
 	for _,equipped in d.crushers.equipped do if equipped==id then return nil,"Unequip this crusher before coating it." end end
 	local target=P.recipe(name) local current=C.modifier(item.modifier)
 	if not target or not current then return nil,"Unknown coating." end
@@ -48,7 +48,7 @@ end
 function P.apply(d,quote,token,held,now)
 	if not quote or type(token)~="string" or quote.token~=token then return false,"Select a coating and review its preview first." end
 	if now>=quote.expires then return false,"Preview expired. Select the coating again." end
-	if held~=quote.id then return false,"Keep holding the crusher shown in the preview." end
+	if held~=quote.id then return false,"Coat the crusher shown in the preview." end
 	local fresh,problem=P.quote(d,held,quote.target,now,token)
 	if not fresh then return false,problem end
 	if fresh.old~=quote.old or fresh.level~=quote.level or fresh.cost~=quote.cost then return false,"Crusher changed. Request a fresh preview." end

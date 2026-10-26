@@ -120,6 +120,15 @@ them and adds one invisible collision box each.
   `client/CoatingVisuals.luau` (from the pack, unchanged) plays on your screen
   after a confirmed coating (`CoatingFx.client`, server returns
   `result.coating` from ApplyCoating), within 120 studs.
+- **Coating screen (26 Oct)**: the old Coating Lab board is gone when the
+  booth model exists. Press E at the booth (`CoatingPrompt`) to open
+  `client/Coating.client.luau`: your unequipped crushers, the four finishes
+  with price (`P.cost`) and output preview, then COAT. A finish click sends
+  QuoteCoating `{id=finish,item=crusherId}`, COAT sends ApplyCoating
+  `{token,item}`; the server uses `args.item` instead of the held tool and
+  keeps all existing checks (owned, unequipped, stronger finish, price, quote
+  token, 20 s expiry, near the booth). Board stays as fallback without the
+  model.
 - **Props** (`PlotStages` PROPS table; level, x, z, yaw): ToolCabinet and
   ScrapBin (starter), AirCompressor (II), MaintenanceBot and PipeManifold
   (III), ScrapSorter and two FactoryLamps (IV), Workbench on the fusion wing

@@ -523,12 +523,14 @@ local function action(p,name,args)
 	local offer=if name=="Buy" and type(args)=="table" and type(args.slot)=="number" then ctx.offers and ctx.offers[args.slot] else nil
 	local newType=offer and not RollLook.owns(d.crushers.owned,offer.type)
 	local ok,message,result
+	-- coating: the crusher chosen on the coating screen (args.item), or the held one (old board)
+	local chosen=if (name=="QuoteCoating" or name=="ApplyCoating") and type(args)=="table" and type(args.item)=="string" then args.item else Tools.held(p)
 	if name=="QuoteCoating" then
-		local quote,problem=Progression.quote(d,Tools.held(p),args.id,os.clock(),guid())
+		local quote,problem=Progression.quote(d,chosen,args.id,os.clock(),guid())
 		ctx.coatingQuote=quote ok=quote~=nil message=problem or "Review the coating preview, then confirm."
 	elseif name=="ApplyCoating" then
 		local quote=ctx.coatingQuote
-		ok,message=Progression.apply(d,quote,args.token,Tools.held(p),os.clock())
+		ok,message=Progression.apply(d,quote,args.token,chosen,os.clock())
 		if ok and quote then result={coating=quote.target,id=quote.id} end
 		ctx.coatingQuote=nil
 	else ok,message,result=Rules.act(d,ctx,name,args,os.clock(),random,guid,perks(p)) end
