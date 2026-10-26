@@ -19,7 +19,7 @@ local function add(model)
  state.signals={model:GetAttributeChangedSignal("RowSetActive"):Connect(changed),model:GetAttributeChangedSignal("RowRarity"):Connect(changed)}
 end
 local function reset(model,parts)
-	for _,p in parts do if p.Parent then p.Transparency=if model:GetAttribute("RowSetActive") then .18 else 1 end end
+	for _,p in parts do if p.Parent then p.Transparency=if model:GetAttribute("RowSetActive") then (p:GetAttribute("Base") or .18) else 1 end end
 end
 table.insert(connections,Tags:GetInstanceAddedSignal("CrusherRarityRow"):Connect(add))
 table.insert(connections,Tags:GetInstanceRemovedSignal("CrusherRarityRow"):Connect(function(model)
@@ -45,7 +45,7 @@ table.insert(connections,Run.Heartbeat:Connect(function(dt)
 		for i=1,math.min(4,#ranked) do selected[ranked[i].model]=true end
 		for model,parts in active do if not selected[model] then reset(model,parts) active[model]=nil end end
 		for model in selected do
-			local parts={} for _,p in model:GetChildren() do if p:IsA("BasePart") and p.Name=="RarityRail" then table.insert(parts,p) end end
+			local parts={} for _,p in model:GetChildren() do if p:IsA("BasePart") and (p.Name=="RarityRail" or p.Name=="RowAura") then table.insert(parts,p) end end
 			active[model]=parts -- also picks up late-streamed rails
 		end
   table.sort(ranked,function(a,b)
@@ -58,8 +58,12 @@ table.insert(connections,Run.Heartbeat:Connect(function(dt)
 	local now=workspace:GetServerTimeNow()
 	Effects.step(now)
 	for model,parts in active do if model:GetAttribute("RowSetActive") then
-		local alpha=.16+.08*(.5+.5*math.sin(now*2))
-		for _,p in parts do if p.Parent then p.Transparency=alpha end end
+		-- slow pulse; aura parts pulse around their own base transparency
+		local wave=.5+.5*math.sin(now*2)
+		for _,p in parts do if p.Parent then
+			local base=p:GetAttribute("Base")
+			p.Transparency=if base then math.clamp(base-.08+.16*wave,0,.95) else .16+.08*wave
+		end end
 	end end
 end))
 script.Destroying:Connect(function()
