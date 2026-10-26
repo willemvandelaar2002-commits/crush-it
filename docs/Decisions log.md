@@ -198,3 +198,4 @@
 - 2026-10-26: Fusion (Willem approved): main + 3 unequipped copies of the same type -> fused crusher, 2x output, keeps level/coating/bay, one tier. Fuser on a wing left of Collect Scrap, unlocks with Factory III. Stage props and trim per plot level (PlotStages.luau). Willem may replace the fuser with a Blender model later.
 - 2026-10-26: Blender fuser template at ServerStorage.FusionMeshes.FusionMachine, used only with attribute Ready=true (first import renders black: vertex colours lost on import).
 - 2026-10-26: Blender fuser live in Studio (template fixed: scale 0.01, stood upright, Ready=true). Willem must Publish to keep the template.
+- 2026-10-26: Added the authored coating-booth visual (beside the Coating Lab board, colour per plot stage, animation after a confirmed coating) and reusable plot props from ServerStorage.PlotAssets, preserving existing coating behaviour and plot interactions. Stations and boards are now solid; bay plaques stay walk-through.

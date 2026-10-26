@@ -104,6 +104,32 @@ screen layout checked with a made-up inventory (Studio-only preview hook),
 props previewed for stage 5. Not yet done live: a real fuse (Willem's save has
 no type with 4 copies; it would change the real save).
 
+## Coating booth, Blender props, solid stations (26 Oct)
+
+Willem's second asset pack (ChatGPT/Blender: coating booth, 11 props, colour
+variants). Templates live in the place file, `ServerStorage.PlotAssets.<Name>`
+(set up in Studio: scaled to studs, anchored, non-colliding, SmoothPlastic and
+white so vertex colours show, pivot at the bottom centre with the front along
+the pivot LookVector, `Ready=true`). `server/PlotAssets.luau` clones and places
+them and adds one invisible collision box each.
+
+- **Coating booth** beside the Coating Lab board at plot (42,19), front toward
+  the entrance. The board stays the input; the booth replaces the old cartridge
+  dispenser. Colour versions per level (`CoatingMachine`, `_Plot3Orange`,
+  `_Plot4Silver`, `_Plot5Gold`; falls back to the newest one present).
+  `client/CoatingVisuals.luau` (from the pack, unchanged) plays on your screen
+  after a confirmed coating (`CoatingFx.client`, server returns
+  `result.coating` from ApplyCoating), within 120 studs.
+- **Props** (`PlotStages` PROPS table; level, x, z, yaw): ToolCabinet and
+  ScrapBin (starter), AirCompressor (II), MaintenanceBot and PipeManifold
+  (III), ScrapSorter and two FactoryLamps (IV), Workbench on the fusion wing
+  (V). Cabinet/compressor/bot replace the code-built trolley/compressor/robot
+  when their template exists. Spots checked clear in Studio.
+- **Solid stations**: Collect hopper walls, Sell counter, Roll machine body,
+  station feet, board casings and legs now collide (`W.panel(...,solid)`);
+  bay plaques stay walk-through.
+- Not used yet: CornerBrace / SupportBeam / BoardFrame trim (need fitting).
+
 ## Factory III — third floor (25 Oct)
 
 Second plot upgrade (plot level 2). Becomes buyable once all 30 bays (the 24
