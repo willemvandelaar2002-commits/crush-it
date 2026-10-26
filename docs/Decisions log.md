@@ -199,3 +199,4 @@
 - 2026-10-26: Blender fuser template at ServerStorage.FusionMeshes.FusionMachine, used only with attribute Ready=true (first import renders black: vertex colours lost on import).
 - 2026-10-26: Blender fuser live in Studio (template fixed: scale 0.01, stood upright, Ready=true). Willem must Publish to keep the template.
 - 2026-10-26: Added the authored coating-booth visual (beside the Coating Lab board, colour per plot stage, animation after a confirmed coating) and reusable plot props from ServerStorage.PlotAssets, preserving existing coating behaviour and plot interactions. Stations and boards are now solid; bay plaques stay walk-through.
+- 2026-10-26: Coating Lab board removed (Willem): the coating booth opens a coating screen where you pick the crusher from a list (no more holding it). Same server checks and prices.
