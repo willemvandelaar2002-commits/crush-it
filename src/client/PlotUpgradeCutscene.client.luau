@@ -123,8 +123,10 @@ local function ui(s: any, info: any)
 	local lines = { info.name .. " · +" .. info.added .. " CRUSHER BAYS (" .. info.bays .. " TOTAL)" }
 	local what = { info.section }
 	if info.unlock then table.insert(what, info.unlock .. " UNLOCKED") end
-	if info.caps then table.insert(what, "UPGRADE CAP " .. info.caps.global[1] .. " → " .. info.caps.global[2] .. " · CRUSHER LV " .. info.caps.level[1] .. " → " .. info.caps.level[2]) end
-	sub.Text = lines[1] .. "\n" .. table.concat(what, " · ")
+	table.insert(lines, table.concat(what, " · "))
+	if info.caps then table.insert(lines, "UPGRADE CAP " .. info.caps.global[1] .. " → " .. info.caps.global[2] .. " · CRUSHER LV " .. info.caps.level[1] .. " → " .. info.caps.level[2]) end
+	sub.Text = table.concat(lines, "\n")
+	sub.Size = UDim2.fromScale(.46, .04 * #lines)
 	gui.Parent = me:WaitForChild("PlayerGui")
 	s.gui = gui
 	local function tw(obj: Instance, t: number, props: { [string]: any }, style: Enum.EasingStyle?)
