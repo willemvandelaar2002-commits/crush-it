@@ -41,10 +41,32 @@ local GROUP_START = { 0.35, 0.8, 1.15, 1.5 }
 local RISE = 0.45
 
 local playing: any = nil
+local freezeAt: number? = nil -- Studio test only: hold the timeline at this moment for screenshots
 
+-- Never waits: this place has no default PlayerModule, so the character is
+-- also held still through its Humanoid (old values put back afterwards).
 local function controls(): any?
-	local ok, module = pcall(function() return require(me:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule") :: any) end)
-	return if ok and module then module:GetControls() else nil
+	local module = me:FindFirstChild("PlayerScripts") and me.PlayerScripts:FindFirstChild("PlayerModule")
+	if not module then return nil end
+	local ok, ctl = pcall(function() return (require(module :: any) :: any):GetControls() end)
+	return if ok then ctl else nil
+end
+local function hold(s: any)
+	local hum = me.Character and me.Character:FindFirstChildOfClass("Humanoid")
+	if not hum then return end
+	s.held = { hum = hum, walk = hum.WalkSpeed, jump = hum.JumpPower, height = hum.JumpHeight }
+	hum.WalkSpeed = 0 hum.JumpPower = 0 hum.JumpHeight = 0
+	local ctl = controls() if ctl then ctl:Disable() end
+end
+local function release(s: any)
+	local h = s.held
+	if h and h.hum.Parent then
+		-- only put back what nothing else changed meanwhile
+		if h.hum.WalkSpeed == 0 then h.hum.WalkSpeed = h.walk end
+		if h.hum.JumpPower == 0 then h.hum.JumpPower = h.jump end
+		if h.hum.JumpHeight == 0 then h.hum.JumpHeight = h.height end
+	end
+	local ctl = controls() if ctl then ctl:Enable() end
 end
 
 local function finish()
@@ -64,7 +86,7 @@ local function finish()
 		cam.CameraSubject = hum or s.subject
 		cam.FieldOfView = s.fov
 	end
-	local ctl = controls() if ctl then ctl:Enable() end
+	release(s)
 end
 
 local function plotModel(): Model?
@@ -195,7 +217,7 @@ local function play(info: any)
 		return viewOf(rel, 34, false)
 	end)() else nil
 	cam.CameraType = Enum.CameraType.Scriptable
-	local ctl = controls() if ctl then ctl:Disable() end
+	hold(s)
 	-- hide the HUD (restored on finish)
 	for _, g in me.PlayerGui:GetChildren() do
 		if g:IsA("ScreenGui") and g.Enabled and g.Name ~= "UpgradeCutscene" then s.guis[g] = true g.Enabled = false end
@@ -233,6 +255,7 @@ local function play(info: any)
 	table.insert(s.connections, Run.RenderStepped:Connect(function()
 		if playing ~= s then return end
 		local t = os.clock() - t0
+		if freezeAt then t = math.min(t, freezeAt) end
 		-- camera: in, (feature), back to the player
 		if t < .7 then cam.CFrame = startCam:Lerp(mainView, ease(t / .7))
 		elseif featureView and t >= feat0 - .3 and t < feat0 + .2 then cam.CFrame = mainView:Lerp(featureView, ease((t - feat0 + .3) / .5))
@@ -303,8 +326,9 @@ end)
 -- Studio check: is a cutscene running? (used by the Studio test)
 if Run:IsStudio() then
 	local probe = Instance.new("BindableFunction") probe.Name = "CutsceneState"
-	probe.OnInvoke = function(cmd)
+	probe.OnInvoke = function(cmd, value)
 		if cmd == "Skip" then finish() end
+		if cmd == "FreezeAt" then freezeAt = value end
 		return playing ~= nil
 	end
 	probe.Parent = script
