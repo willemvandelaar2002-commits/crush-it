@@ -155,6 +155,14 @@ them and adds one invisible collision box each.
   panels, gold caps, gold glow, flags. Front stays open; gap at the fusion
   wing doorway (z 46..76).
 
+## Upgrade cutscene (26 Oct)
+
+- Server: after a confirmed `UpgradePlot` that raises the plot level, `PlotUpgraded` goes to the buyer only, carrying `upgradeSummary(levelBefore, level)`: level, name, section, unlock, accent, bays added/total, first..last bay, and old→new caps. Text and colour per level live in `CrusherConfig.PlotUpgrade.Sections/Unlocks/Accents`.
+- Client `PlotUpgradeCutscene.client.luau` (~3.6–4.3 s): camera to an elevated view of the new floor (from behind for rear sections). The real parts are hidden locally while local copies rise: floors at 0.35 s, supports at 0.8 s, bays at 1.15 s, rails at 1.5 s. Then the accent sweep, a feature reveal (Coating booth L1, Fuser L2, arch L4; L3 has none), title and details, and the camera returns.
+- Cleanup (`finish`) on Skip, the end of the timeline, death, CharacterRemoving/Added, a Plot attribute change, or a new event. It restores parts, SurfaceGuis, ScreenGuis, the camera (Custom, humanoid subject), walk/jump and PlayerModule controls (when present; this place has none, so the humanoid is held instead).
+- Studio testing: `ServerStorage.DevCrusher:Invoke(player, "PreviewUpgrade", level)` replays the summary for a level the plot already has (no data change). Probe `CutsceneState` on the script: `Invoke()` → playing; `"Skip"`; `"FreezeAt", seconds` holds the timeline for screenshots.
+- On an already-upgraded plot, a preview of a lower level can have later floors in front of the camera; a real upgrade never does.
+
 ## Factory III — third floor (25 Oct)
 
 Second plot upgrade (plot level 2). Becomes buyable once all 30 bays (the 24

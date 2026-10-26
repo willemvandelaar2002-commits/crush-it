@@ -60,6 +60,10 @@ C.PlotUpgrade = {MaxLevel=4,
 	Names={"FACTORY II","FACTORY III","FACTORY IV","FACTORY V"},
 	Titles={"REINFORCED WORKSHOP","FUSION WORKSHOP","ADVANCED FACTORY","MASTER FACTORY"},
 	Adds={12,12,6,6},
+	-- what each upgrade adds besides bays (cutscene text) and its accent colour
+	Sections={"3RD FLOOR","REAR YARD","REAR UPPER LEFT","REAR UPPER RIGHT"},
+	Unlocks={"COATING LAB","FUSION MACHINE",nil,"MASTER FACTORY LOOK"},
+	Accents={Color3.fromRGB(255,222,24),Color3.fromRGB(255,140,40),Color3.fromRGB(205,215,228),Color3.fromRGB(255,210,68)},
 	Caps={{global=30,level=60},{global=40,level=80},{global=50,level=100},{global=60,level=120}}}
 C.PlotUpgrade.Cost=C.PlotUpgrade.Costs[1]
 function C.plotCost(level) return C.PlotUpgrade.Costs[level] end

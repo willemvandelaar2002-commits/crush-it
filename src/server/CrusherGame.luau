@@ -518,11 +518,21 @@ local function rollShow(p,offers)
 		for r,cf in rollers do r.CFrame=cf*CFrame.Angles(t*20,0,0) end
 	end)
 end
+-- What a plot upgrade from levelBefore to level added, for the buyer's cutscene.
+local function upgradeSummary(levelBefore,level)
+	local U=C.PlotUpgrade local baysBefore=C.bayCapacity(levelBefore)
+	local before=U.Caps[levelBefore] local after=U.Caps[level]
+	return {level=level,name=U.Names[level],title=U.Titles[level],section=U.Sections[level],
+		unlock=U.Unlocks[level],accent=U.Accents[level],added=C.bayCapacity(level)-baysBefore,bays=C.bayCapacity(level),
+		first=baysBefore+1,last=C.bayCapacity(level),
+		caps={global={if before then before.global else C.MaxGlobal,after.global},level={if before then before.level else C.MaxLevel,after.level}}}
+end
 local function action(p,name,args)
 	local ctx=sessions[p] local d=Data.get(p) if not ctx or not d then return false,"Profile is loading." end
 	local offer=if name=="Buy" and type(args)=="table" and type(args.slot)=="number" then ctx.offers and ctx.offers[args.slot] else nil
 	local newType=offer and not RollLook.owns(d.crushers.owned,offer.type)
 	local ok,message,result
+	local levelBefore=Progression.level(d) local baysBefore=C.bayCapacity(levelBefore)
 	-- coating: the crusher chosen on the coating screen (args.item), or the held one (old board)
 	local chosen=if (name=="QuoteCoating" or name=="ApplyCoating") and type(args)=="table" and type(args.item)=="string" then args.item else Tools.held(p)
 	if name=="QuoteCoating" then
@@ -543,6 +553,10 @@ local function action(p,name,args)
 		task.delay(1.5,function() if ped.card.name.Text=="BOUGHT!" then card(ped,"","","","","") end end)
 	end
 	if ok then reconcile(p) end
+	-- plot upgrade cutscene: only the buyer, only after the server confirmed it
+	if ok and name=="UpgradePlot" and Progression.level(d)>levelBefore then
+		Net.event("PlotUpgraded"):FireClient(p,upgradeSummary(levelBefore,Progression.level(d)))
+	end
 	ctx.justRolled=ok and name=="Roll" or nil
 	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" or name=="Fuse" or name=="ApplyCoating" then result else nil) ctx.justRolled=nil ctx.justDiscovered=nil
 	return ok,message,result
@@ -654,7 +668,7 @@ function G.start()
 			if name=="Unlock" and f and f.face and f.first==args.bay and args.bay==d.crushers.bays+1 then target=f.face reach=45 end
 		elseif name=="TimeSkip" then target=ctx.plot.stations.Goals and ctx.plot.stations.Goals.part
 		elseif name=="Buy" then local ped=type(args.slot)=="number" and ctx.plot.stations.Roll.pedestals[args.slot] if ped then target=ped.part end
-		elseif name=="UpgradePlot" then target=ctx.plot.progression.upgrade.part ctx.plot.riseTop=true
+		elseif name=="UpgradePlot" then target=ctx.plot.progression.upgrade.part
 		elseif name=="Fuse" then target=ctx.plot.stages and ctx.plot.stages.fuserPart reach=26
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
@@ -734,6 +748,12 @@ function G.start()
 		dev.OnInvoke=function(p,cmd,args)
 			if cmd=="Get" then return Rules.copy(Data.get(p)) end
 			if cmd=="Cash" then api.addCash(p,args) return true end
+			-- Studio only: replay the cutscene for a plot level the player already owns (no data change)
+			if cmd=="PreviewUpgrade" then
+				local d=Data.get(p) local level=math.clamp(tonumber(args) or 1,1,C.PlotUpgrade.MaxLevel)
+				assert(d and Progression.level(d)>=level,"Preview only levels the plot already has")
+				Net.event("PlotUpgraded"):FireClient(p,upgradeSummary(level-1,level)) return true
+			end
 			if cmd=="Action" then return action(p,args.name,args.args) end
 			if cmd=="Reload" then
 				assert(Data.isMock(),"Mock store only") assert(Data.saveNow(p)) Data.reloadForTest(p)
