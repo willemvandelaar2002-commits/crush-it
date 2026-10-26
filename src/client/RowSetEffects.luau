@@ -2,7 +2,9 @@
 -- Four client-only effect slots; no gameplay mutation, lights or hit audio.
 local E={}
 local V,F=Vector3.new,CFrame.new
-local palettes={Epic=Color3.fromRGB(193,105,255),Legendary=Color3.fromRGB(255,204,62)}
+-- sparkles for every full rarity set (Common/Uncommon/Rare softer)
+local palettes={Common=Color3.fromRGB(205,220,235),Uncommon=Color3.fromRGB(90,235,120),Rare=Color3.fromRGB(80,170,255),
+	Epic=Color3.fromRGB(193,105,255),Legendary=Color3.fromRGB(255,204,62)}
 local white=Color3.new(1,1,1)
 local function part(parent,name,size)
 	local p=Instance.new("Part") p.Name=name p.Size=size p.Anchored=true
@@ -61,7 +63,7 @@ function E.new(world)
 			if slot.rarity~=rarity then
 				slot.rarity=rarity slot.glint.Color=color:Lerp(white,.65)
 				for _,e in slot.emitters do e:Clear() e.Color=ColorSequence.new(color:Lerp(white,.5),color)
-					e.Rate=if rarity=="Legendary" then 3 else 1.8
+					e.Rate=if rarity=="Legendary" then 4 elseif rarity=="Epic" then 3 else 1.6
 				end
 			end
 			local at=candidate.activatedAt local previous=history[model]
