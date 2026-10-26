@@ -376,13 +376,60 @@ function V.create(plot)
 	end
 	for _,r in records do show(r.model,false) end
 	show(trim,false)
-	plot.stages={records=records,trim=trim,trimParts=trimParts,door=door,fuser=fuserModel,fuserPart=fuserHit,level=-1}
+	-- Side walls: one version per plot level (only the current one shows), taller
+	-- and more colourful each upgrade. Left and right of the plot, and of the rear
+	-- yard from Factory III. The front stays open; the fusion wing doorway too.
+	local walls={}
+	local toy={Color3.fromRGB(250,60,70),Yellow,Color3.fromRGB(45,200,70),Style.Colors.Blue,Style.Colors.Purple,Orange}
+	local yardBack=L.BayZ+L.RearShift-L.UpperBack-L.BayDepth/2-6
+	local looks={
+		{h=3,panels={Cobalt,Yellow},post=Navy,cap=Yellow},
+		{h=5,panels={Cobalt,Style.Colors.Blue},post=Orange,cap=Orange,stripe=Orange},
+		{h=7,panels={Style.Colors.Blue,Color3.fromRGB(40,190,200)},post=Silver,cap=Silver,glow=Cyan},
+		{h=9,panels=toy,post=Navy,cap=Gold,glow=Gold,flags=true},
+	}
+	for level,look in looks do
+		local m=Instance.new("Model") m.Name="StageWalls"..(level+1) m.Parent=root
+		local seg=8
+		local function run(x,z0,z1)
+			local n=math.max(1,math.floor((z1-z0)/seg+.5)) local len=(z1-z0)/n
+			for i=0,n-1 do
+				local z=z0+len*(i+.5)
+				local panel=W.part(m,"WallPanel",V3(1,look.h,len-.4),o*CFrame.new(x,look.h/2,z),look.panels[(i+math.floor(z0))%#look.panels+1],true)
+				Style.materialStuds(panel,true,{Enum.NormalId.Left,Enum.NormalId.Right},2)
+				if look.stripe then W.part(m,"WallStripe",V3(1.15,.6,len-.4),o*CFrame.new(x,look.h*.55,z),look.stripe) end
+				if look.flags and i%2==0 then
+					W.part(m,"FlagPole",V3(.3,4,.3),o*CFrame.new(x,look.h+2,z),Navy)
+					local flag=W.part(m,"Flag",V3(.15,1.6,2.4),o*CFrame.new(x,look.h+3.1,z+1.2),toy[(i//2)%#toy+1])
+					flag.CastShadow=false
+				end
+			end
+			for i=0,n do
+				local z=z0+len*i
+				W.part(m,"WallPost",V3(1.6,look.h+.6,1.6),o*CFrame.new(x,(look.h+.6)/2,z),look.post,true)
+				local cap=W.part(m,"WallCap",V3(1.9,.5,1.9),o*CFrame.new(x,look.h+.85,z),look.cap) cap.Material=Enum.Material.Metal
+			end
+			if look.glow then
+				local g=W.part(m,"WallGlow",V3(1.1,.25,z1-z0-1),o*CFrame.new(x,look.h-.35,(z0+z1)/2),look.glow)
+				g.Material=Enum.Material.Neon g.CastShadow=false
+			end
+		end
+		local wx=half+.6
+		local backZ=if level>=2 then yardBack+1 else rear+1
+		run(wx,backZ,front-2)
+		if level>=2 then run(-wx,backZ,46) run(-wx,76,front-2) -- doorway to the fusion wing
+		else run(-wx,backZ,front-2) end
+		show(m,false)
+		walls[level]=m
+	end
+	plot.stages={records=records,trim=trim,trimParts=trimParts,door=door,fuser=fuserModel,fuserPart=fuserHit,walls=walls,level=-1}
 end
 
 function V.sync(plot,level)
 	local v=plot.stages if not v or v.level==level then return end
 	v.level=level
 	for _,r in v.records do show(r.model,level>=r.level) end
+	for wl,m in v.walls or {} do show(m,wl==level) end
 	show(v.trim,level>=1)
 	local color=V.TrimColors[math.clamp(level,1,#V.TrimColors)]
 	for _,p in v.trimParts do p.Color=color end
