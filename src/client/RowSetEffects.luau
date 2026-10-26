@@ -35,6 +35,16 @@ function E.new(world)
 			e.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,.2),NumberSequenceKeypoint.new(.3,.65),NumberSequenceKeypoint.new(1,0)})
 			e.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(.12,0),NumberSequenceKeypoint.new(.7,.2),NumberSequenceKeypoint.new(1,1)})
 			e.Parent=host slot.hosts[i]=host slot.emitters[i]=e
+			-- soft coloured light haze (the place has almost no bloom, so neon alone barely glows)
+			local h=Instance.new("ParticleEmitter") h.Name="RowHaze"
+			h.Texture="rbxasset://textures/particles/forcefield_glow_main.dds"
+			h.Enabled=false h.Rate=3 h.Lifetime=NumberRange.new(1.6,2.4)
+			h.Speed=NumberRange.new(.8,1.6) h.EmissionDirection=Enum.NormalId.Top h.SpreadAngle=Vector2.new(8,8)
+			h.Shape=Enum.ParticleEmitterShape.Box h.ShapeStyle=Enum.ParticleEmitterShapeStyle.Volume
+			h.LightEmission=1 h.LightInfluence=0 h.Rotation=NumberRange.new(0,360)
+			h.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,2.5),NumberSequenceKeypoint.new(.5,4.5),NumberSequenceKeypoint.new(1,5.5)})
+			h.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(.25,.45),NumberSequenceKeypoint.new(.7,.6),NumberSequenceKeypoint.new(1,1)})
+			h.Parent=host slot.hazes=slot.hazes or {} slot.hazes[i]=h
 			-- light curtain: a flat glowing sheet rising from the rail, fading upward
 			local a0=Instance.new("Attachment") a0.Parent=host
 			local a1=Instance.new("Attachment") a1.Position=V(0,CURTAIN,0) a1.Parent=host
@@ -42,7 +52,7 @@ function E.new(world)
 			b.Width0=8.6 b.Width1=8.6 b.FaceCamera=true b.LightEmission=1 b.LightInfluence=0 b.Segments=1 b.Enabled=false
 			b.Parent=host slot.beams=slot.beams or {} slot.beams[i]=b
 			local hl=Instance.new("Highlight") hl.Name="RowOutline" hl.Enabled=false hl.DepthMode=Enum.HighlightDepthMode.Occluded
-			hl.FillTransparency=.7 hl.OutlineTransparency=0 hl.Parent=folder
+			hl.FillTransparency=1 hl.OutlineTransparency=0 hl.Parent=folder
 			slot.outlines=slot.outlines or {} slot.outlines[i]=hl
 		end
 		slot.glint=part(folder,"EnergyGlint",V(.75,.30,.24))
@@ -53,6 +63,7 @@ function E.new(world)
 		slot.model=nil slot.rarity=nil slot.rails={} slot.glint.Transparency=1
 		for _,e in slot.emitters do e.Enabled=false e:Clear() end
 		for _,b in slot.beams do b.Enabled=false end
+		for _,h in slot.hazes do h.Enabled=false h:Clear() end
 		for _,hl in slot.outlines do hl.Enabled=false hl.Adornee=nil end
 	end
 	-- the crusher standing at a rail (nearest bay of this row)
@@ -92,15 +103,16 @@ function E.new(world)
 				for _,e in slot.emitters do e:Clear() e.Color=ColorSequence.new(color:Lerp(white,.5),color)
 					e.Rate=if rarity=="Legendary" then 16 elseif rarity=="Epic" then 12 else 8
 				end
-				for _,b in slot.beams do b.Color=ColorSequence.new(color:Lerp(white,.35),color) end
-				for _,hl in slot.outlines do hl.FillColor=color hl.OutlineColor=color:Lerp(white,.45) end
+				for _,b in slot.beams do b.Color=ColorSequence.new(color) end
+				for _,h in slot.hazes do h:Clear() h.Color=ColorSequence.new(color) end
+				for _,hl in slot.outlines do hl.FillColor=color hl.OutlineColor=color:Lerp(white,.6) end
 			end
 			local at=candidate.activatedAt local previous=history[model]
 			local burst=at~=nil and (not previous or previous.activation~=at) and now>=at and now-at<=.8
 				and (not previous or now-previous.lastBurst>=2.5)
 			if #rails>0 and at~=nil then history[model]={activation=at,lastBurst=if burst then now else if previous then previous.lastBurst else -math.huge} end
 			for i,e in slot.emitters do local rail=rails[i] e.Enabled=rail~=nil
-				slot.beams[i].Enabled=rail~=nil
+				slot.beams[i].Enabled=rail~=nil slot.hazes[i].Enabled=rail~=nil
 				local hl=slot.outlines[i] local target=if rail and candidate.outline then crusherAt(model,rail) else nil
 				if hl.Adornee~=target then hl.Adornee=target end hl.Enabled=target~=nil
 				if rail then
@@ -123,9 +135,9 @@ function E.new(world)
 			slot.glint.CFrame=rail.CFrame*F(((phase%1)-.5)*rail.Size.X,.04,.06) slot.glint.Transparency=.12
 			-- breathing glow on curtains and outlines
 			local wave=.5+.5*math.sin(now*2.4)
-			local fade=NumberSequence.new({NumberSequenceKeypoint.new(0,.25+.2*(1-wave)),NumberSequenceKeypoint.new(.6,.7),NumberSequenceKeypoint.new(1,1)})
+			local fade=NumberSequence.new({NumberSequenceKeypoint.new(0,.3+.2*(1-wave)),NumberSequenceKeypoint.new(.55,.72),NumberSequenceKeypoint.new(1,1)})
 			for _,b in slot.beams do if b.Enabled then b.Transparency=fade end end
-			for _,hl in slot.outlines do if hl.Enabled then hl.FillTransparency=.55+.25*(1-wave) end end
+			for _,hl in slot.outlines do if hl.Enabled then hl.OutlineTransparency=.25*(1-wave) end end
 		end
 	end
 	function self.destroy()
