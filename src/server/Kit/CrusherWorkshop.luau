@@ -50,8 +50,9 @@ function W.beacon(parent,cf)
 	local p=W.part(parent,"WarmBeacon",V(1.3,1.2,1.3),cf*CFrame.new(0,.9,0),W.Yellow)
 	p.Material=Enum.Material.Neon p.CastShadow=false
 end
-function W.panel(parent,cf,width,height,color)
-	W.part(parent,"PanelCasing",V(width+1.4,height+1.4,1.4),cf,W.Navy)
+-- solid: the casing blocks players (boards and stations); plaques stay walk-through
+function W.panel(parent,cf,width,height,color,solid)
+	W.part(parent,"PanelCasing",V(width+1.4,height+1.4,1.4),cf,W.Navy,solid==true)
 	local face=W.part(parent,"Panel",V(width,height,.6),cf*CFrame.new(0,0,.8),color)
 	for _,x in {-1,1} do for _,y in {-1,1} do
 		local bolt=W.part(parent,"Bolt",V(.7,.7,.5),cf*CFrame.new(x*(width/2+.1),y*(height/2+.1),1.25),Color3.fromRGB(211,222,235))
@@ -81,11 +82,11 @@ function W.board(parent,cf,kind)
 	local color=if kind=="Production" then W.Blue else W.Purple
 	local m=Instance.new("Model") m.Name=kind.."Station" m.Parent=parent
 	for _,x in {-7.2,7.2} do
-		W.part(m,"Support",V(1.6,8.6,1.6),cf*CFrame.new(x,4.3,0),W.Navy)
+		W.part(m,"Support",V(1.6,8.6,1.6),cf*CFrame.new(x,4.3,0),W.Navy,true)
 		W.part(m,"Foot",V(4,1,6),cf*CFrame.new(x,.5,0),W.Blue)
 		W.beacon(m,cf*CFrame.new(x,10.1,0))
 	end
-	local face,gui=W.panel(m,cf*CFrame.new(0,5.4,0),17,8,color)
+	local face,gui=W.panel(m,cf*CFrame.new(0,5.4,0),17,8,color,true)
 	local copy=UpgradeView.Boards[kind]
 	W.text(gui,"Heading",copy.heading,UDim2.fromScale(.04,.025),UDim2.fromScale(.92,.13))
 	local scope=Instance.new("Frame") scope.Name="Scope" scope.Position=UDim2.fromScale(.12,.17) scope.Size=UDim2.fromScale(.76,.09)
@@ -114,11 +115,11 @@ function W.goals(parent,cf)
 	local color=Color3.fromRGB(255,146,38)
 	local m=Instance.new("Model") m.Name="GoalsStation" m.Parent=parent
 	for _,x in {-6.6,6.6} do
-		W.part(m,"Support",V(1.6,8.6,1.6),cf*CFrame.new(x,4.3,0),W.Navy)
+		W.part(m,"Support",V(1.6,8.6,1.6),cf*CFrame.new(x,4.3,0),W.Navy,true)
 		W.part(m,"Foot",V(4,1,6),cf*CFrame.new(x,.5,0),W.Blue)
 		W.beacon(m,cf*CFrame.new(x,10.1,0))
 	end
-	local face,gui=W.panel(m,cf*CFrame.new(0,5.4,0),15.5,8,color)
+	local face,gui=W.panel(m,cf*CFrame.new(0,5.4,0),15.5,8,color,true)
 	W.text(gui,"Heading","GOALS",UDim2.fromScale(.04,.02),UDim2.fromScale(.92,.16))
 	local rows={}
 	local specs={
@@ -298,7 +299,7 @@ function W.conveyor(parent,a,b,width,floorY)
 end
 -- Front control panel shared by the three stations: heading, live line, button.
 local function stationPanel(m,cf,color,heading,action,width)
-	local face,gui=W.panel(m,cf,width or 20,6.2,color)
+	local face,gui=W.panel(m,cf,width or 20,6.2,color,true)
 	W.text(gui,"Heading",heading,UDim2.fromScale(.04,.03),UDim2.fromScale(.92,.3))
 	local label=W.text(gui,"StationInfo","",UDim2.fromScale(.04,.33),UDim2.fromScale(.92,.2))
 	label.TextColor3=Color3.fromRGB(255,240,170)
@@ -311,11 +312,11 @@ function W.station(parent,cf,kind)
 	local station
 	if kind=="Collect" then
 		-- Blue hopper: low walls so the pile shows, panel on the front wall.
-		W.part(m,"MachineFoot",V(24,1,16),cf*CFrame.new(0,.5,0),W.Navy)
+		W.part(m,"MachineFoot",V(24,1,16),cf*CFrame.new(0,.5,0),W.Navy,true)
 		W.part(m,"HopperFloor",V(22,1,14),cf*CFrame.new(0,1.5,0),Style.darken(W.Blue,.25))
-		W.part(m,"HopperBack",V(22,7,1),cf*CFrame.new(0,4.5,-6.5),W.Blue)
-		for _,x in {-10.5,10.5} do W.part(m,"HopperSide",V(1,7,14),cf*CFrame.new(x,4.5,0),W.Blue) end
-		W.part(m,"HopperFront",V(22,6.4,1),cf*CFrame.new(0,4.2,6.5),W.Blue)
+		W.part(m,"HopperBack",V(22,7,1),cf*CFrame.new(0,4.5,-6.5),W.Blue,true)
+		for _,x in {-10.5,10.5} do W.part(m,"HopperSide",V(1,7,14),cf*CFrame.new(x,4.5,0),W.Blue,true) end
+		W.part(m,"HopperFront",V(22,6.4,1),cf*CFrame.new(0,4.2,6.5),W.Blue,true)
 		W.hazard(m,cf*CFrame.new(0,8.25,6.5),22,.5,1.1)
 		for _,x in {-10.5,10.5} do for _,z in {-6.5,6.5} do W.part(m,"CornerCap",V(1.6,.6,1.6),cf*CFrame.new(x,8.3,z),W.Navy) end end
 		local fill=Instance.new("Model") fill.Name="StoredScrap" fill.Parent=m
@@ -329,8 +330,8 @@ function W.station(parent,cf,kind)
 		station={part=face,label=label,button=button,fill=fill}
 	elseif kind=="Sell" then
 		-- Compact green counter with a register and a SELL SCRAP sign on low posts.
-		W.part(m,"MachineFoot",V(20,1,12),cf*CFrame.new(0,.5,0),W.Navy)
-		W.part(m,"CounterBody",V(18,6.6,10),cf*CFrame.new(0,4.3,0),W.Green)
+		W.part(m,"MachineFoot",V(20,1,12),cf*CFrame.new(0,.5,0),W.Navy,true)
+		W.part(m,"CounterBody",V(18,6.6,10),cf*CFrame.new(0,4.3,0),W.Green,true)
 		W.part(m,"CounterTop",V(19,.9,11),cf*CFrame.new(0,8,0),W.Navy)
 		W.hazard(m,cf*CFrame.new(0,1.4,5.1),18,.8,.4)
 		W.part(m,"Register",V(4.6,3,3.6),cf*CFrame.new(5,10,-1.5),W.Navy)
@@ -350,8 +351,8 @@ function W.station(parent,cf,kind)
 		station={part=face,label=label,button=button}
 	else
 		-- Purple roll machine: crushing rollers, a big die and a reveal stand.
-		W.part(m,"MachineFoot",V(24,1,16),cf*CFrame.new(0,.5,0),W.Navy)
-		W.part(m,"MachineBody",V(22,7,13),cf*CFrame.new(0,4.5,0),W.Purple)
+		W.part(m,"MachineFoot",V(24,1,16),cf*CFrame.new(0,.5,0),W.Navy,true)
+		W.part(m,"MachineBody",V(22,7,13),cf*CFrame.new(0,4.5,0),W.Purple,true)
 		W.hazard(m,cf*CFrame.new(0,8.25,6.3),22,.5,.6)
 		local rollers={}
 		for _,x in {-10,-1} do W.part(m,"RollerCheek",V(1.2,4,7),cf*CFrame.new(x,10,-1.5),Style.darken(W.Purple,.3)) end

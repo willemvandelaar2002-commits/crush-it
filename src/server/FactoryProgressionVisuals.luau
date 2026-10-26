@@ -8,6 +8,19 @@ local W=require(script.Parent.Kit.CrusherWorkshop)
 local Build=require(script.Parent.Kit.Build)
 local World=require(RS.Shared.Config).World
 local Stages=require(script.Parent.PlotStages)
+local Assets=require(script.Parent.PlotAssets)
+-- Coating booth (Willem's Blender model) beside the Coating Lab board, front
+-- toward the entrance. One colour version per plot level; the base one is the
+-- fallback. The board stays the input; the booth is a visual (CoatingFx.client
+-- plays its animation after a confirmed coating).
+local BOOTH_AT=CFrame.new(42,0,19)*CFrame.Angles(0,math.pi,0) -- LookVector = +Z
+local BOOTH_VERSIONS={"CoatingMachine","CoatingMachine_Plot3Orange","CoatingMachine_Plot4Silver","CoatingMachine_Plot5Gold"}
+local function boothName(level)
+	for i=math.clamp(level,1,#BOOTH_VERSIONS),1,-1 do
+		if Assets.template(BOOTH_VERSIONS[i]) then return BOOTH_VERSIONS[i] end
+	end
+	return nil
+end
 local V={}
 local function show(model,visible)
 	for _,p in model:GetDescendants() do if p:IsA("BasePart") then
@@ -63,8 +76,8 @@ function V.create(plot)
 	local function board(name,x,z,width,height,color)
 		local m=Instance.new("Model") m.Name=name m.Parent=root
 		local cf=o*CFrame.new(x,0,z)*CFrame.Angles(0,if x<0 then .2 else -.2,0)
-		for _,side in {-1,1} do W.part(m,"BoardPost",Vector3.new(.8,5,.8),cf*CFrame.new(side*(width/2-.5),2.5,0),W.Navy) end
-		local face,gui=W.panel(m,cf*CFrame.new(0,6,0),width,height,color)
+		for _,side in {-1,1} do W.part(m,"BoardPost",Vector3.new(.8,5,.8),cf*CFrame.new(side*(width/2-.5),2.5,0),W.Navy,true) end
+		local face,gui=W.panel(m,cf*CFrame.new(0,6,0),width,height,color,true)
 		local content=Instance.new("Frame") content.Name="Content" content.Size=UDim2.fromScale(1,1) content.BackgroundTransparency=1 content.Parent=gui
 		Style.panel(content,color,Style.darken(color,.25))
 		return {model=m,part=face,content=content,frame=cf}
@@ -74,8 +87,14 @@ function V.create(plot)
 	upgrade.info=W.text(upgrade.content,"Benefits","+6 BAYS · NEW ROW · COATING LAB",UDim2.fromScale(.03,.28),UDim2.fromScale(.94,.23))
 	upgrade.button=W.button(upgrade.content,"UpgradePlot","",UDim2.fromScale(.12,.58),UDim2.fromScale(.76,.33),"UpgradePlot")
 	local lab=board("CoatingLab",22,15,18,10,Style.Colors.Purple)
-	W.part(lab.model,"DispenserBase",Vector3.new(19,1,5),lab.frame*CFrame.new(0,.5,-.3),W.Navy)
-	for i,recipe in C.Coatings do
+	local boothVersion=boothName(1)
+	if boothVersion then
+		lab.booth=Assets.place(boothVersion,lab.model,plot.origin*BOOTH_AT,{inset=.8})
+		if lab.booth then lab.booth.Name="CoatingBooth" lab.booth:SetAttribute("Version",boothVersion) end
+	end
+	-- the code-built cartridge dispenser only when there's no booth model
+	if not lab.booth then W.part(lab.model,"DispenserBase",Vector3.new(19,1,5),lab.frame*CFrame.new(0,.5,-.3),W.Navy) end
+	for i,recipe in (if lab.booth then {} else C.Coatings) do
 		local x=(i-2.5)*4
 		local tank=W.part(lab.model,"FinishCartridge",Vector3.new(2,1.6,1.6),lab.frame*CFrame.new(x,11.8,-.5)*CFrame.Angles(0,0,math.pi/2),recipe.color)
 		tank.Shape=Enum.PartType.Cylinder
@@ -110,6 +129,13 @@ function V.sync(plot,d,quote,now,preview)
 	if v.signature~=signature then
 		v.signature=signature show(v.yard,yardOpen) show(v.accents,expanded)
 		show(v.upgrade.model,boardVisible) v.upgrade.content.Visible=boardVisible
+		-- booth colour follows the plot level (orange, silver, gold versions)
+		local want=if v.lab.booth then boothName(math.max(level,1)) else nil
+		if want and v.lab.booth:GetAttribute("Version")~=want then
+			v.lab.booth:Destroy()
+			v.lab.booth=Assets.place(want,v.lab.model,plot.origin*BOOTH_AT,{inset=.8})
+			if v.lab.booth then v.lab.booth.Name="CoatingBooth" v.lab.booth:SetAttribute("Version",want) end
+		end
 		show(v.lab.model,expanded) v.lab.content.Visible=expanded
 		for _,part in v.gateParts do
 			local open=yardOpen

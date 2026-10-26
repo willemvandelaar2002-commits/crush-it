@@ -527,7 +527,9 @@ local function action(p,name,args)
 		local quote,problem=Progression.quote(d,Tools.held(p),args.id,os.clock(),guid())
 		ctx.coatingQuote=quote ok=quote~=nil message=problem or "Review the coating preview, then confirm."
 	elseif name=="ApplyCoating" then
-		ok,message=Progression.apply(d,ctx.coatingQuote,args.token,Tools.held(p),os.clock())
+		local quote=ctx.coatingQuote
+		ok,message=Progression.apply(d,quote,args.token,Tools.held(p),os.clock())
+		if ok and quote then result={coating=quote.target,id=quote.id} end
 		ctx.coatingQuote=nil
 	else ok,message,result=Rules.act(d,ctx,name,args,os.clock(),random,guid,perks(p)) end
 	if ok and name=="Roll" then d.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock()) rollShow(p,result) end
@@ -540,7 +542,7 @@ local function action(p,name,args)
 	end
 	if ok then reconcile(p) end
 	ctx.justRolled=ok and name=="Roll" or nil
-	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" or name=="Fuse" then result else nil) ctx.justRolled=nil ctx.justDiscovered=nil
+	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" or name=="Fuse" or name=="ApplyCoating" then result else nil) ctx.justRolled=nil ctx.justDiscovered=nil
 	return ok,message,result
 end
 local function visualEvent(p,event)
