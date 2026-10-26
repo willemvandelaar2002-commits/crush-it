@@ -7,6 +7,9 @@ the set. Legendary uses gold with its existing +40%; lower rarities keep trim/pu
 Client-only RowSetEffects reuses four slots, each six tiny invisible hosts, six
 emitters and one small glint: 28 local parts / 24 emitters at full capacity.
 5 Hz candidate scans and 20 Hz animation, within 135 studs; owner plot prioritised.
+For the player's own rows, distance uses the nearer of camera and character,
+so normal camera zoom-out does not suppress effects beside the player's factory.
+Other plots still use camera distance, and the four-slot cap remains.
 Epic rate 1.8 particles/s/bay, Legendary 3; lifetime .7–1.25s, size at most .30 studs.
 Four/five burst particles per bay; deduplicated, fresh within .8s, one burst per row
 per 2.5s. Initially active rows do not burst. Effects clear on set break, culling,
@@ -27,3 +30,13 @@ another row reused it, and empty selection/destroy cleared all effects. These
 were disposable visual fixtures, not production-profile mutations. Existing
 5,613 suite checks passed. Full activation-burst appearance, actual network
 streaming, script teardown and low/high graphics performance remain manual.
+
+26 October visibility fix: the reported row was correctly Epic 6/6 (+25%) but
+the zoomed-out camera was 151.7 studs away while the character was 86.5 studs
+away. Camera-only range filtering had culled its particles and travelling glint.
+The owner-aware range above fixes this for both trim pulse and extra effects.
+Fresh Play verified six emitters and one glint at that same zoom, exclusion of
+a non-owned row outside camera range and an owned row outside both ranges,
+immediate set-break cleanup/re-enable, and constant 13 effect descendants for
+the one active slot. Local fixtures were removed and attributes restored;
+no profile injection or purchase was used. Rojo build and whitespace passed.

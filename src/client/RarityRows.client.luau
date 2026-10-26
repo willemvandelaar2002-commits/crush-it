@@ -34,10 +34,16 @@ table.insert(connections,Run.Heartbeat:Connect(function(dt)
 		scan=0 local ranked={} local camera=workspace.CurrentCamera
 		local now=workspace:GetServerTimeNow()
 		local ownPlot="Plot"..tostring(Players.LocalPlayer:GetAttribute("Plot"))
+		local character=Players.LocalPlayer.Character
+		local root=character and character:FindFirstChild("HumanoidRootPart")
 		if camera then for model,state in candidates do
 			if model:IsDescendantOf(workspace) and model:GetAttribute("RowSetActive") then
 				local distance=(model:GetPivot().Position-camera.CFrame.Position).Magnitude
-				if distance<=135 then table.insert(ranked,{model=model,distance=distance,sequence=state.sequence,own=model.Parent~=nil and model.Parent.Name==ownPlot,activatedAt=state.activatedAt}) end
+				local own=model.Parent~=nil and model.Parent.Name==ownPlot
+				-- A normal zoomed-out camera can sit beyond the effect radius even
+				-- while the player is beside their factory. Keep their nearby sets visible.
+				if own and root then distance=math.min(distance,(model:GetPivot().Position-root.Position).Magnitude) end
+				if distance<=135 then table.insert(ranked,{model=model,distance=distance,sequence=state.sequence,own=own,activatedAt=state.activatedAt}) end
 			end
 		end end
 		table.sort(ranked,function(a,b) return if a.distance==b.distance then a.sequence<b.sequence else a.distance<b.distance end)
