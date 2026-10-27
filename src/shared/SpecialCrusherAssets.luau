@@ -18,8 +18,8 @@ return {
  Toyzilla={size=Vector3.new(11.8,13.2,8.4),bedTop=2.5,rams={
   {name="Ram",stroke=2.63},
  }},
- -- Mythics: Willem's Blender models, built in studs, fronts face +Z
- -- (template attribute BayFrontYaw=0). grow: scale up to fill the bay.
+ -- Mythics: Willem's Blender models, built in studs, fronts face -Z like the others
+ -- grow: scale up to fill the bay.
  -- lift: the ram rests this much higher (opened) and strokes back down.
  -- side: moves with the ram but is not above the bed (ignored for toy space).
  JackpotPress={size=Vector3.new(7.53,7.52,4.73),bedTop=1.24,grow=true,rams={
