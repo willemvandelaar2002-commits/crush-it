@@ -425,9 +425,59 @@ function V.create(plot)
 	plot.stages={records=records,trim=trim,trimParts=trimParts,door=door,fuser=fuserModel,fuserPart=fuserHit,walls=walls,level=-1}
 end
 
+-- Trim kit (Willem's Blender CornerBrace / SupportBeam / BoardFrame), one
+-- colour version per plot level from Factory II: frames round the station
+-- boards, posts along both road edges and guards at the foot of the ground
+-- columns. Rebuilt on each upgrade; spots with something already there are
+-- skipped.
+local KIT_SUFFIX={"","_Plot3Orange","_Plot4Silver","_Plot5Gold"}
+local BOARDS={PlotUpgradeStation=true,ProductionStation=true,RollingStation=true,CollectStation=true,
+	SellStation=true,RollStation=true,GoalsStation=true,FloorSign1=true,FloorSign2=true}
+local function buildKit(plot,level)
+	if plot.stages.kit then plot.stages.kit:Destroy() plot.stages.kit=nil end
+	local suffix=KIT_SUFFIX[level] if not suffix then return end
+	local o=plot.origin
+	local kit=Instance.new("Model") kit.Name="TrimKit" kit.Parent=plot.model
+	plot.stages.kit=kit
+	-- frames: just in front of each board's face, a little larger than the panel
+	for _,p in plot.model:GetDescendants() do
+		if p:IsA("BasePart") and p.Name=="Panel" and p.Parent and BOARDS[p.Parent.Name] then
+			local casing=p.Parent:FindFirstChild("PanelCasing")
+			local w=math.max(p.Size.X,casing and casing.Size.X or 0)+1 local h=math.max(p.Size.Y,casing and casing.Size.Y or 0)+1
+			Assets.placeSized("BoardFrame"..suffix,kit,p.CFrame*CFrame.new(0,0,p.Size.Z/2+.3)*CFrame.Angles(0,math.pi,0),Vector3.new(w,h,.7))
+		end
+	end
+	-- road posts, only where nothing solid or planned stands
+	local params=OverlapParams.new() params.FilterType=Enum.RaycastFilterType.Include params.FilterDescendantsInstances={plot.model}
+	local function clear(cf,size)
+		for _,h in workspace:GetPartBoundsInBox(cf,size,params) do
+			if not h:IsDescendantOf(kit) and h.Name~="AssetCollision" and (h.Position.Y-o.Position.Y)+h.Size.Y/2>.7 then return false end
+		end
+		return true
+	end
+	local L=C.Layout
+	for _,x in {-1,1} do
+		for z=-90,84,12 do
+			local cf=o*CFrame.new(x*(L.RoadHalf+3.6),0,z)
+			if clear(cf*CFrame.new(0,2.2,0),Vector3.new(1.6,3.6,1.6)) then Assets.place("SupportBeam"..suffix,kit,cf) end
+		end
+	end
+	-- column guards at the plaza side of each visible ground column
+	local banks=plot.model:FindFirstChild("WorkshopBanks")
+	for _,p in (banks and banks:GetDescendants() or {}) do
+		-- front banks always; the rear ground banks from Factory III (level 2)
+		local inRear=p.Parent and p.Parent.Name:match("^RearGround")
+		if p:IsA("BasePart") and p.Name=="GroundColumn" and (p.Parent==banks or (inRear and level>=2)) then
+			local foot=p.CFrame*CFrame.new(0,-p.Size.Y/2,p.Size.Z/2+.35)
+			Assets.place("CornerBrace"..suffix,kit,foot,{solid=false})
+		end
+	end
+end
+
 function V.sync(plot,level)
 	local v=plot.stages if not v or v.level==level then return end
 	v.level=level
+	buildKit(plot,level)
 	for _,r in v.records do show(r.model,level>=r.level) end
 	for wl,m in v.walls or {} do show(m,wl==level) end
 	show(v.trim,level>=1)
