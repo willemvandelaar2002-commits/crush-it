@@ -236,3 +236,5 @@
 - 2026-10-27: Whole map bigger (ring road 134-160 -> 148-174, bridges 18 -> 26, plots at r 200, plaza stations follow the road) and the factory hall became a hexagon with walls between the plots, so all six plots have the same space; props moved to the wall middles and fewer of them (less busy). Willem asked: map felt busy, some plots had less room.
 - 2026-10-27: Hexagonal hall reverted (Willem liked the old hall and props); the bigger map size stays. The square hall grows to half-width 480 so it still clears the plots' rear yards.
 - 2026-10-27: Six crate crushers from the Blender pack added as crate-only types (3 Epic, 3 Legendary, provisional tiers/bands) and put in the Factory Crate with the three Mythics (test odds 18/12/3.33% each); new motion rigs (hinges, stretching pistons, parented ears/claws, sideways vise). Normal rolls and free drops unchanged. Willem asked to fill the crates.
+- 2026-10-27: Crate crusher icons added as image ids (Asset Manager names don't load by rbxgameasset); checked loaded in Play.
+

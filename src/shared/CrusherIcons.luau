@@ -29,14 +29,16 @@ I.Overrides={
 	Magnetron="rbxassetid://97262603783580",RocketPress="rbxassetid://72212153155335",
 	TwinTitan="rbxassetid://98990714536752",Toyzilla="rbxassetid://89985784829786",
 	GoldenKing="rbxassetid://101308752195885",
+	-- Crate crushers (27 Oct Blender pack)
+	WindUpWrecker="rbxassetid://76820861604914",KrakenClamp="rbxassetid://118908620786900",
+	GumballGobbler="rbxassetid://97847833312808",DuckyDynamo="rbxassetid://95075734278359",
+	DiscoDestroyer="rbxassetid://98862753364198",ArcadeClaw="rbxassetid://76980432342314",
 } :: {[string]: string}
 I.Ready={Titan=true,Laser=true,Plasma=true,Gravity=true,Quake=true,Cyclone=true,Mecha=true,
 	Quantum=true,Starforge=true,DragonJaw=true,BlackHole=true,Clockwork=true,FactoryHeart=true,
 	Mega=true,Thunder=true,Frost=true,Furnace=true,ScrapShark=true,SteamHammer=true,JunkyardJaw=true,
 	Cobalt=true,Gearbox=true,Flywheel=true,Pneumatic=true,DoubleStamp=true,Boiler=true,Conveyor=true,
-	Bumper=true,Steel=true,Clamp=true,Spring=true,Screw=true,Rivet=true,Bottle=true,Bench=true,
-	-- crate crushers (27 Oct pack): Asset Manager images named Crusher_<Id>
-	DuckyDynamo=true,WindUpWrecker=true,GumballGobbler=true,ArcadeClaw=true,DiscoDestroyer=true,KrakenClamp=true} :: {[string]: boolean}
+	Bumper=true,Steel=true,Clamp=true,Spring=true,Screw=true,Rivet=true,Bottle=true,Bench=true} :: {[string]: boolean}
 function I.image(typeId: string): string?
 	local uri=I.Overrides[typeId] if uri and uri~="" then return uri end
 	return if I.Ready[typeId] then "rbxgameasset://Images/Crusher_"..typeId else nil
