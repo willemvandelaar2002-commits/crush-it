@@ -14,13 +14,13 @@ local Tags=game:GetService("CollectionService")
 local F={}
 
 type Look={dark: Color3,light: Color3,mix: number,material: Enum.Material,darkMaterial: Enum.Material?,
-	reflect: number?,glow: Color3,fx: string,keepTexture: boolean?}
+	reflect: number?,glow: Color3,fx: string,keepTexture: boolean?,lavaBelow: number?}
 F.Looks={
 	Polished={dark=Color3.fromRGB(104,116,136),light=Color3.fromRGB(250,252,255),mix=.25,material=Enum.Material.Metal,reflect=.45,keepTexture=true,
 		glow=Color3.fromRGB(255,255,255),fx="glint"},
 	Frost={dark=Color3.fromRGB(38,112,178),light=Color3.fromRGB(214,248,255),mix=.88,material=Enum.Material.Ice,
 		glow=Color3.fromRGB(120,235,255),fx="snow"},
-	Fire={dark=Color3.fromRGB(120,22,8),light=Color3.fromRGB(255,118,26),mix=.95,material=Enum.Material.SmoothPlastic,
+	Fire={dark=Color3.fromRGB(70,16,8),light=Color3.fromRGB(255,110,22),mix=.95,material=Enum.Material.SmoothPlastic,lavaBelow=.55,
 		darkMaterial=Enum.Material.CrackedLava,glow=Color3.fromRGB(255,120,30),fx="flame"},
 	Charged={dark=Color3.fromRGB(46,20,98),light=Color3.fromRGB(206,150,255),mix=.85,material=Enum.Material.SmoothPlastic,
 		glow=Color3.fromRGB(190,110,255),fx="spark"},
@@ -106,15 +106,20 @@ function F.dress(root: Instance, modifier: string, frame: CFrame, lo: Vector3, h
 		local l=Instance.new("PointLight") l.Name="CoatingLight" l.Color=color l.Range=range l.Brightness=brightness l.Shadows=false l.Parent=parent
 	end
 	local corners={{lo.X,lo.Z},{hi.X,lo.Z},{lo.X,hi.Z},{hi.X,hi.Z}}
+	local plateColor=({Fire=Color3.fromRGB(255,110,25),Frost=Color3.fromRGB(110,225,255),Charged=Color3.fromRGB(175,90,255),Polished=Color3.fromRGB(230,240,255)})[modifier]
+	if plateColor then
+		part(root,"CoatingPlate",Vector3.new(size.X*1.04,math.max(.05,size.Y*.015),size.Z*1.04),at(c.X,lo.Y+size.Y*.008,c.Z),plateColor,.25)
+	end
 	if modifier=="Fire" then
 		-- flames along the top beam and at the two front feet
 		local spots={{lo.X+size.X*.18,hi.Y,c.Z,1},{c.X,hi.Y,c.Z,1.25},{hi.X-size.X*.18,hi.Y,c.Z,1},
-			{lo.X+size.X*.08,lo.Y+size.Y*.05,hi.Z-size.Z*.12,.7},{hi.X-size.X*.08,lo.Y+size.Y*.05,hi.Z-size.Z*.12,.7}}
+			{lo.X+size.X*.08,lo.Y+size.Y*.05,hi.Z-size.Z*.12,.7},{hi.X-size.X*.08,lo.Y+size.Y*.05,hi.Z-size.Z*.12,.7},
+			{lo.X+size.X*.04,lo.Y+size.Y*.55,hi.Z-size.Z*.2,.55},{hi.X-size.X*.04,lo.Y+size.Y*.55,hi.Z-size.Z*.2,.55}}
 		for i,sp in spots do
 			local a=anchor("FireSpot"..i,at(sp[1],sp[2],sp[3]))
 			if small then emitter(a,"flame",span*sp[4]*1.4,Color3.fromRGB(255,120,30))
 			else
-				local f=Instance.new("Fire") f.Size=math.clamp(span*.16*sp[4],2,7) f.Heat=math.clamp(span*.35,4,12)
+				local f=Instance.new("Fire") f.Size=math.clamp(span*.3*sp[4],3,10) f.Heat=math.clamp(span*.6,6,16)
 				f.Color=Color3.fromRGB(255,140,30) f.SecondaryColor=Color3.fromRGB(255,40,10) f.Parent=a
 			end
 			if i==2 then light(a,Color3.fromRGB(255,130,40),span*1.1,2.2) end
@@ -171,14 +176,24 @@ function F.dress(root: Instance, modifier: string, frame: CFrame, lo: Vector3, h
 		local tl=orb("OrbTL",at(lo.X+size.X*.06,hi.Y,c.Z)) local tr=orb("OrbTR",at(hi.X-size.X*.06,hi.Y,c.Z))
 		local bl=orb("OrbBL",at(lo.X+size.X*.06,lo.Y+size.Y*.08,hi.Z-size.Z*.1)) local br=orb("OrbBR",at(hi.X-size.X*.06,lo.Y+size.Y*.08,hi.Z-size.Z*.1))
 		light(tl,Color3.fromRGB(190,110,255),span*.9,2) light(tr,Color3.fromRGB(190,110,255),span*.9,1.6)
-		for i,pair in {{tl,tr},{tl,bl},{tr,br}} do
+		for i,pair in {{tl,tr},{tl,bl},{tr,br},{bl,br},{tl,br}} do
 			local a0=Instance.new("Attachment") a0.Parent=pair[1] local a1=Instance.new("Attachment") a1.Parent=pair[2]
 			local b=Instance.new("Beam") b.Name="Arc"..i b.Attachment0=a0 b.Attachment1=a1 b.Segments=12 b.FaceCamera=true
-			b.Width0=math.max(.05,size.X*.02) b.Width1=b.Width0 b.LightEmission=1 b.LightInfluence=0
+			b.Width0=math.max(.12,size.X*.05) b.Width1=b.Width0*.6 b.LightEmission=1 b.LightInfluence=0
+			b.Texture="rbxasset://textures/particles/sparkles_main.dds" b.TextureMode=Enum.TextureMode.Wrap b.TextureLength=size.X*.3 b.TextureSpeed=4
 			b.Color=ColorSequence.new(Color3.fromRGB(245,215,255),Color3.fromRGB(180,90,255)) b.Transparency=NumberSequence.new(.05)
 			b.CurveSize0=size.Y*.15 b.CurveSize1=-size.Y*.15 b.Parent=pair[1]
 		end
 	elseif modifier=="Polished" then
+		-- four-point gleam stars (two crossed glowing bars) on the top corners and a foot
+		local function gleam(cf: CFrame, r: number)
+			part(root,"Gleam",Vector3.new(r,r*.14,r*.14),cf,Color3.new(1,1,1))
+			part(root,"Gleam",Vector3.new(r*.14,r,r*.14),cf,Color3.new(1,1,1))
+			part(root,"GleamCore",Vector3.new(r*.3,r*.3,r*.3),cf*CFrame.Angles(0,0,math.pi/4),Color3.fromRGB(210,235,255))
+		end
+		local r=math.max(.4,size.X*.18)
+		gleam(at(lo.X+size.X*.08,hi.Y-size.Y*.06,hi.Z+.05),r) gleam(at(hi.X-size.X*.1,hi.Y-size.Y*.2,hi.Z+.05),r*.7)
+		gleam(at(hi.X-size.X*.08,lo.Y+size.Y*.15,hi.Z+.05),r*.55)
 		local shine=anchor("Shine",at(c.X,c.Y,hi.Z)) shine.Size=Vector3.new(size.X*.9,size.Y*.9,.2)
 		emitter(shine,"glint",span,Color3.new(1,1,1))
 		light(shine,Color3.fromRGB(235,245,255),span*.7,1)
@@ -202,7 +217,7 @@ function F.apply(model: Model, modifier: string, front: CFrame?)
 			else
 				local l=lum(p.Color)
 				p.Color=p.Color:Lerp(look.dark:Lerp(look.light,math.clamp(l*1.15,0,1)),look.mix)
-				p.Material=if look.darkMaterial and l<.38 then look.darkMaterial else look.material
+				p.Material=if look.darkMaterial and l<(look.lavaBelow or .38) then look.darkMaterial else look.material
 				if look.reflect then p.Reflectance=look.reflect end
 			end
 		end
