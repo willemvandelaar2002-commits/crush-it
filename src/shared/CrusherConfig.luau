@@ -206,7 +206,7 @@ C.TutorialSteps = {
 	{ id = "Roll", title = "Roll a crusher", text = "Press ROLL at the purple roll machine. Rolling is free!", target = "Roll", reward = 10 },
 	{ id = "Buy", title = "Buy your crusher", text = "Walk to the pedestal and press E to buy it.", target = "Pedestal", reward = 100 },
 	{ id = "Unlock", title = "Unlock a new bay", text = "Press UNLOCK on the next bay's plaque.", target = "NextBay", reward = 25 },
-	{ id = "Equip", title = "Place your crusher", text = "Pick it from your hotbar (bottom) and press E at the empty bay.", target = "EmptyBay", reward = 25 },
+	{ id = "Equip", title = "Place your crusher", text = "Pick it from your hotbar (bottom) and press E at the empty bay. Holding one at a busy bay swaps them.", target = "EmptyBay", reward = 25 },
 	{ id = "Upgrade", title = "Upgrade production", text = "FACTORY UPGRADES boosts all your crushers. Buy an upgrade on the blue board.", target = "Production", reward = 25 },
 	{ id = "Level", title = "Level up a crusher", text = "THIS CRUSHER: press LEVEL UP on its plaque. Only that crusher levels up; its level stays when swapped.", target = "LevelBay", reward = 50 },
 }
