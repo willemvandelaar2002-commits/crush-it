@@ -28,9 +28,11 @@ local function holdModel(tool: Tool, item: any)
 	local holder: BasePart = handle
 	if source and source:IsA("Model") then
 		for _, child in source:Clone():GetChildren() do child.Parent = held end
-		Finish.apply(held,item.modifier)
 		local _, size = held:GetBoundingBox()
 		held:ScaleTo(HOLD_SIZE / math.max(size.X, size.Y, size.Z, 0.1))
+		-- after scaling, so the coating's sparkles fit the small copy
+		Finish.apply(held,item.modifier)
+		if item.fused then Finish.fused(held) end
 		-- carried in front of the chest, upright, front facing the way you face.
 		-- Welded to the body (not the hand) so the arm pose can't tilt it.
 		local char = tool.Parent

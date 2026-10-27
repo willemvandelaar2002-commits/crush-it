@@ -60,6 +60,7 @@ function I.new(parent: GuiObject,typeId: string,opts: any?): Frame
 		fallback.ImageColor3=if opts.hidden then black else white fallback.Parent=root
 		local model=source:Clone() model.Parent=fallback
 		if opts.modifier then Finish.apply(model,opts.modifier) end
+		if opts.fused then Finish.fused(model) end
 		local cf,size=model:GetBoundingBox()
 		local camera=Instance.new("Camera") camera.FieldOfView=28 camera.Parent=fallback
 		local direction=Vector3.new(.72,.52,1).Unit local view=CFrame.lookAt(cf.Position+direction,cf.Position)
@@ -80,7 +81,10 @@ function I.new(parent: GuiObject,typeId: string,opts: any?): Frame
 		if sourceConnection then sourceConnection:Disconnect() end
 		sourceConnection=folder.DescendantAdded:Connect(showFallback) showFallback()
 	end
-	local unsubscribe=I.ready(typeId,function(success)
+	-- coated or fused crushers always show the 3D model: the saved portraits
+	-- only show the plain machine
+	local live=opts.fused==true or (opts.modifier~=nil and Finish.Looks[opts.modifier]~=nil) or opts.model==true
+	local unsubscribe=if live then function() end else I.ready(typeId,function(success)
 		if not alive then return end loaded=success image.Visible=success
 		if success then cleanup() else showFallback() end
 	end)

@@ -26,4 +26,12 @@ return {
 	Lucky = id("138780104233345"), -- decal 136809184380141
 	Golden = id("85828350065088"), -- decal 77768517736981
 	Trophy = id("101098329602259"), -- decal 139626264780814
+	-- Coating Lab / Fusion Machine art (Willem's PNGs). Empty = the screen
+	-- shows an emoji stand-in until the image id is filled in.
+	CoatingLab = "", -- spray can
+	FusionMachine = "", -- fusion canister
+	FinishPolished = "", -- silver droplet
+	FinishFrost = "", -- ice crystal
+	FinishFire = "", -- flame
+	FinishCharged = "", -- lightning bolt
 }
