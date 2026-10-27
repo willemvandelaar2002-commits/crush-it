@@ -155,6 +155,14 @@ them and adds one invisible collision box each.
   panels, gold caps, gold glow, flags. Front stays open; gap at the fusion
   wing doorway (z 46..76).
 
+## Lab screens and coating looks (27 Oct)
+
+- Screens: `src/client/LabUi.luau` (shared look), `Coating.client.luau`, `Fusion.client.luau`. Window 1000×640, scaled to fit.
+- Icons: `Icons.CoatingLab`, `FusionMachine`, `FinishPolished/Frost/Fire/Charged`. Empty = emoji stand-in. Fill with the PNG's image id.
+- Pictures: `CrusherIcon` shows the uploaded portrait, but coated or fused crushers always show the live 3D model (`opts.model`, `modifier`, `fused`).
+- Looks: `CrusherFinish.Looks` (palette dark→light by brightness, mix, material, glow colour for small/neon parts, one emitter). `CrusherFinish.fused(model, front)`. MeshPart textures and SurfaceAppearances are removed on coated models so the palette shows.
+- Studio hooks: `Coating` script `CoatingPreview:Invoke(fakeState, finish, itemId)`, `Fusion` script `FusionPreview:Invoke(fakeState)`.
+
 ## Trim kit (27 Oct)
 
 - `PlotStages.buildKit(plot, level)` runs from `V.sync` on every level change: `TrimKit` model in the plot, the version `""/_Plot3Orange/_Plot4Silver/_Plot5Gold` for levels 1–4, none at level 0.

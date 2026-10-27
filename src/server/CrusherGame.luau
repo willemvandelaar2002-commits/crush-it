@@ -266,15 +266,8 @@ local function send(p,message,result)
 end
 -- Fused crushers get a glowing gold frame round their pedestal (inside the
 -- machine's own model, so it goes when the machine is rebuilt or swapped).
-local function fusedMark(model,o)
-	local l=C.Layout local gold=Color3.fromRGB(255,205,60)
-	local w,dz=l.BayWidth-1.2,l.MachineDepth+1
-	for _,z in {-dz/2+.2,dz/2-.2} do local b=Workshop.part(model,"FusedFrame",Vector3.new(w,.22,.35),o*CFrame.new(0,.1,z),gold) b.Material=Enum.Material.Neon b.CastShadow=false end
-	for _,x in {-w/2+.2,w/2-.2} do local b=Workshop.part(model,"FusedFrame",Vector3.new(.35,.22,dz),o*CFrame.new(x,.1,0),gold) b.Material=Enum.Material.Neon b.CastShadow=false end
-	for _,x in {-1,1} do for _,z in {-1,1} do
-		local c=Workshop.part(model,"FusedCorner",Vector3.new(.8,.8,.8),o*CFrame.new(x*(w/2-.2),.4,z*(dz/2-.2)),Color3.fromRGB(255,140,40)) c.Shape=Enum.PartType.Ball
-	end end
-end
+-- Fused crushers: green glow plate, corner lights and sparkles (CrusherFinish.fused).
+local function fusedMark(model,o) Finish.fused(model,o) end
 local function buildBay(p,i,item)
 	local ctx=sessions[p] local bay=ctx.plot.bays[i] local old=ctx.visuals[i]
 	if old then old.model:Destroy() ctx.visuals[i]=nil end
