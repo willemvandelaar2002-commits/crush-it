@@ -20,7 +20,7 @@ F.Looks={
 		glow=Color3.fromRGB(255,255,255),fx="glint"},
 	Frost={dark=Color3.fromRGB(38,112,178),light=Color3.fromRGB(214,248,255),mix=.88,material=Enum.Material.Ice,
 		glow=Color3.fromRGB(120,235,255),fx="snow"},
-	Fire={dark=Color3.fromRGB(70,16,8),light=Color3.fromRGB(255,110,22),mix=.95,material=Enum.Material.SmoothPlastic,lavaBelow=.55,
+	Fire={dark=Color3.fromRGB(70,16,8),light=Color3.fromRGB(240,96,18),mix=.95,material=Enum.Material.SmoothPlastic,lavaBelow=2,
 		darkMaterial=Enum.Material.CrackedLava,glow=Color3.fromRGB(255,120,30),fx="flame"},
 	Charged={dark=Color3.fromRGB(46,20,98),light=Color3.fromRGB(206,150,255),mix=.85,material=Enum.Material.SmoothPlastic,
 		glow=Color3.fromRGB(190,110,255),fx="spark"},
@@ -180,7 +180,6 @@ function F.dress(root: Instance, modifier: string, frame: CFrame, lo: Vector3, h
 			local a0=Instance.new("Attachment") a0.Parent=pair[1] local a1=Instance.new("Attachment") a1.Parent=pair[2]
 			local b=Instance.new("Beam") b.Name="Arc"..i b.Attachment0=a0 b.Attachment1=a1 b.Segments=12 b.FaceCamera=true
 			b.Width0=math.max(.12,size.X*.05) b.Width1=b.Width0*.6 b.LightEmission=1 b.LightInfluence=0
-			b.Texture="rbxasset://textures/particles/sparkles_main.dds" b.TextureMode=Enum.TextureMode.Wrap b.TextureLength=size.X*.3 b.TextureSpeed=4
 			b.Color=ColorSequence.new(Color3.fromRGB(245,215,255),Color3.fromRGB(180,90,255)) b.Transparency=NumberSequence.new(.05)
 			b.CurveSize0=size.Y*.15 b.CurveSize1=-size.Y*.15 b.Parent=pair[1]
 		end

@@ -35,7 +35,7 @@ Run.Heartbeat:Connect(function(dt)
 		if not (holder and holder:IsA("BasePart")) or (holder.Position - eye).Magnitude > 150 then continue end
 		if e.finish == "Charged" then
 			for _, b in e.arcs do
-				b.Enabled = rng:NextNumber() < .7
+				b.Enabled = rng:NextNumber() < .85
 				local s = (b.Width0 * 18)
 				b.CurveSize0 = rng:NextNumber(-s, s) b.CurveSize1 = rng:NextNumber(-s, s)
 			end
