@@ -131,7 +131,10 @@ function H.start()
      pending={row=WorldFx.rowOf(v),t=os.clock(),success=v:GetAttribute("SuccessText") or (if name=="Unlock" then "BAY UNLOCKED!" else nil)}
      act(name,args)
     end
-    if action=="Manage" then if bay<=state.unlocked then indexView.open(bay) else toast.Text="Unlock bays in order using their green plaques." noticeUntil=os.clock()+4 end
+    if action=="Manage" then
+     -- REMOVE: the crusher goes to your hotbar at the bottom
+     local id=state.bays[tostring(bay)]
+     if id then act("Unequip",{id=id}) toast.Text="Moved to your hotbar. Pick one there and press E at a bay." noticeUntil=os.clock()+4 end
     elseif action=="Bay" then
      local id=state.bays[tostring(bay)]
      local held=heldId()
@@ -140,7 +143,7 @@ function H.start()
      if id then purchase("Level",{id=id,bay=bay})
      elseif held and bay<=state.unlocked then act("Equip",{id=held,bay=bay})
      elseif bay==state.unlocked+1 then purchase("Unlock",{bay=bay})
-     elseif bay<=state.unlocked then indexView.open(bay)
+     elseif bay<=state.unlocked then toast.Text="Pick a crusher in your hotbar (bottom) and press E here." noticeUntil=os.clock()+4
      else toast.Text="Unlock bay "..(state.unlocked+1).." first." noticeUntil=os.clock()+4 end
     elseif action=="LevelMax" then
      -- MAX: buy as many levels for the crusher on this plaque as the cash covers
@@ -187,7 +190,7 @@ function H.start()
   if v.message then toast.Text=v.message noticeUntil=os.clock()+5 end
   redraw()
  end)
- Net.event("CrusherOpen").OnClientEvent:Connect(function(kind,bay) if kind=="Inventory" then indexView.open(bay or 1) end end)
+ Net.event("CrusherOpen").OnClientEvent:Connect(function(kind,bay) if kind=="Inventory" then toast.Text="Pick a crusher in your hotbar (bottom) and press E at the bay." noticeUntil=os.clock()+4 end end)
  Net.event("Notice").OnClientEvent:Connect(function(v) toast.Text=v.text or "" noticeUntil=os.clock()+5 end)
  local last=0 Run.RenderStepped:Connect(function()
   if os.clock()-last<.1 then return end last=os.clock()
