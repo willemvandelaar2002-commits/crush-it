@@ -75,8 +75,8 @@ end
 -- Window -------------------------------------------------------------------------------
 local gui = make("ScreenGui", { Name = "QuestsHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
 local hudButton, hudBadge = Style.iconButton(gui, { name = "QuestsButton", image = Icons.Trophy, label = "QUESTS", a = C(255, 214, 80), b = C(220, 140, 20) })
-Style.placeHudButton(hudButton, 3)
-Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() Style.placeHudButton(hudButton, 3) end)
+-- Quests open only from the booth in the plaza: no top-left HUD button.
+hudButton.Visible = false
 
 local panel = make("Frame", { Name = "QuestsPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.53), Size = UDim2.fromOffset(W, H),
 	BackgroundColor3 = BODY, Visible = false, ZIndex = 5 }, gui)
@@ -231,7 +231,7 @@ local function redraw()
 		if p then for _, q in p.quests do if not q.claimed and q.progress >= q.goal then has = true end end end
 		(t:FindFirstChild("Ready") :: Frame).Visible = has
 	end
-	hudBadge.Visible = state.ready == true
+	hudBadge.Visible = false
 	local isShop = current == "Shop"
 	shop.Visible = isShop list.Visible = not isShop refresh.Visible = not isShop
 	for key, r in rows do r.frame.Visible = key:sub(1, #current) == current end
