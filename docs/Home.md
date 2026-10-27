@@ -1,5 +1,8 @@
 # Crush It
 
+28 Oct Bear Breakdown event (every 15 min): intro cutscene, own-plot super crushers,
+shared shield, Mega Crusher finale. Timings/rewards provisional. See [[Systems/Factory events]].
+
 27 Oct shop: tabbed shop with Starter Pack, Factory Crate (odds shown, PolicyService
 check, saved server-picked reveal) and a Prism Mech showroom pad on every plot. Test
 defaults only; prices/ids/odds still to set. See [[Systems/Shop]].

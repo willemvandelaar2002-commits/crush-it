@@ -63,12 +63,20 @@ local function listener()
 	local camera=workspace.CurrentCamera
 	return if camera then camera.CFrame.Position else nil
 end
+local function eventHidden(model)
+	local node=model
+	while node and node~=workspace do
+		if node:GetAttribute("LocalEventHidden")==true then return true end
+		node=node.Parent
+	end
+	return false
+end
 local function scan(now)
 	nextScan=now+F.FocusInterval local at=listener()
 	audioFocus={} visualFocus={} nearest={}
 	if not at then return end
 	local candidates={}
-	for model in sources do if model:IsDescendantOf(workspace) then
+	for model in sources do if model:IsDescendantOf(workspace) and not eventHidden(model) then
 		local position=model:GetAttribute("FeedbackPosition")
 		if typeof(position)=="Vector3" then table.insert(candidates,{model=model,position=position,key=model:GetAttribute("InventoryId")}) end
 	end end
@@ -123,7 +131,7 @@ local function squash(job,fraction)
 	end end
 end
 local function live(event,now)
-	return event.model and sources[event.model] and event.model:IsDescendantOf(workspace) and F.fresh(event.impactAt,now)
+	return event.model and sources[event.model] and event.model:IsDescendantOf(workspace) and not eventHidden(event.model) and F.fresh(event.impactAt,now)
 end
 table.insert(connections,Net.event("Hit").OnClientEvent:Connect(function(msg)
 	if type(msg)~="table" or not msg.crusherFeedback or type(msg.events)~="table" then return end
@@ -187,7 +195,7 @@ table.insert(connections,Run.RenderStepped:Connect(function(dt)
 	for _,voice in voices do updateChannel(voice,now) end updateChannel(hiss,now)
 	mix(now)
 	for i=#visuals,1,-1 do local job=visuals[i] local e=job.event
-		if not e.model or not e.model.Parent or not visualFocus[e.model] then
+		if not e.model or not e.model.Parent or not visualFocus[e.model] or eventHidden(e.model) then
 			if job.parts and e.input and e.input.Parent then squash(job,e.fraction) end
 			table.remove(visuals,i)
 		else

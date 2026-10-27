@@ -738,12 +738,20 @@ function G.start()
 		end,
 		addCash=function(p,n) local d=Data.get(p) if d then d.cash=C.money(d.cash+n) send(p) end end,
 		cashPerSecond=function(p) local d=Data.get(p) return if d then cps(p,d) else 0 end,
+		eventPlot=function(p) local ctx=sessions[p] return if ctx then ctx.plot else nil end,
+		eventFleet=function(p)
+			local d=Data.get(p) if not d then return nil end
+			local rows=Rows.snapshot(d) local buffs=perks(p)
+			return require(RS.Shared.FactoryEventRules).snapshot(d,C.bayCapacity(d.crushers.plotLevel),C.rarityOf,
+				function(item) return Rules.stats(d,item,buffs,rows) end)
+		end,
 		finishLegacyProduct=function(p) local d=Data.get(p) if d then d.scrap=C.money(d.scrap+d.crushers.available) d.crushers.available=0 action(p,"Sell") end end}
 	require(script.Parent.Shop).start(api) require(script.Parent.Rewards).start(api)
 	require(script.Parent.DailySpin).start(api)
 	require(script.Parent.Quests).start(api)
 	require(script.Parent.TopBoards).start(api)
 	require(script.Parent.Boosts).start(api)
+	require(script.Parent.FactoryEvents).start(api)
 	-- /credits <amount> (or /cash): test cash, e.g. "/credits 5m". Studio, or the
 	-- place owner in live servers. No amount gives 1M.
 	local SUFFIX={k=1e3,m=1e6,b=1e9,t=1e12,qa=1e15}

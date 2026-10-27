@@ -1,0 +1,350 @@
+--!strict
+-- Local bounded cosmetics. Production and inventory continue on the server.
+local RS=game:GetService("ReplicatedStorage")
+local Tags=game:GetService("CollectionService")
+local Lighting=game:GetService("Lighting")
+local E=require(RS.Shared.FactoryEventConfig)
+local Motion=require(RS.Shared.FactoryEventMotion)
+local C=require(RS.Shared.CrusherConfig)
+local V=Vector3.new
+local INK=Color3.fromRGB(19,23,42)
+local GOLD=Color3.fromRGB(255,211,45)
+local PURPLE=Color3.fromRGB(173,65,255)
+local RED=Color3.fromRGB(255,55,85)
+local CYAN=Color3.fromRGB(62,235,255)
+local function part(parent,name,size,cf,color,shape,neon)
+	local p=Instance.new("Part") p.Name=name p.Size=size p.CFrame=cf p.Color=color
+	p.Anchored=true p.CanCollide=false p.CanTouch=false p.CanQuery=false p.CastShadow=false
+	p.Material=if neon then Enum.Material.Neon else Enum.Material.SmoothPlastic
+	if shape then p.Shape=shape end p.Parent=parent return p
+end
+local function core(parent,origin,scale)
+	local m=Instance.new("Model") m.Name="CorruptedCore" m.Parent=parent
+	local shell=part(m,"CoreShell",V(5.25,5.25,4.75)*scale,origin,Color3.fromRGB(119,40,205),Enum.PartType.Ball,true)
+	local heart=part(m,"PurpleHeart",V(4.75,4.75,5.2)*scale,origin,PURPLE,Enum.PartType.Ball,true)
+	local bands={}
+	for _,a in {0,math.pi/2,math.pi/4} do
+		table.insert(bands,part(m,"CoreBand",V(.42,5.35,5.35)*scale,origin*CFrame.Angles(a,0,.3),GOLD,Enum.PartType.Cylinder))
+	end
+	return {model=m,shell=shell,heart=heart,bands=bands,origin=origin,scale=scale}
+end
+local function superPress(parent,r)
+	local model=Instance.new("Model") model.Name="SuperCrusher_"..r.userId model.Parent=parent
+	local o=r.origin*CFrame.new(E.VisualOrigin)
+	local color=(C.rarity(r.dominant) or C.Rarities[1]).color
+	local moving={} local rotors={} local all={}
+	local function box(name,size,x,y,z,paint,move,shape,neon)
+		local p=part(model,name,size,o*CFrame.new(x,y,z),paint,shape,neon)
+		table.insert(all,{part=p,rest=p.CFrame})
+		if move then table.insert(moving,{part=p,rest=p.CFrame}) end
+		return p
+	end
+	box("NavyPlinth",V(18,2,14),0,1,0,INK)
+	box("ColouredBed",V(17,1,13),0,2.3,0,color)
+	box("Anvil",V(12,1,9),0,3.2,0,GOLD)
+	for _,side in {-1,1} do
+		box("Tower",V(3.2,20,9),side*7.2,12,0,INK)
+		box("TowerFace",V(2.4,17,.35),side*7.2,12,4.7,color)
+		box("NeonGauge",V(.4,11,.4),side*7.2,12,5,CYAN,nil,nil,true)
+		box("FootCap",V(3.7,1,10),side*7.2,3.5,0,GOLD)
+		for _,z in {-3.5,3.5} do
+			box("ChromeGuide",V(.65,18,.65),side*5.15,12,z,Color3.fromRGB(220,235,255))
+		end
+	end
+	box("BeamOutline",V(19,3.8,10),0,22,0,INK)
+	box("GlossyBeam",V(18,2.8,.35),0,22.1,5.05,color)
+	box("BeamHighlight",V(17,.25,9.2),0,24.05,0,Color3.fromRGB(255,239,184))
+	box("RamOutline",V(11,3.2,9),0,15.8,0,INK,true)
+	box("RamFace",V(10.3,2.4,.35),0,15.8,4.6,color,true)
+	box("CrushingPlate",V(12,.8,9.5),0,13.8,0,GOLD,true)
+	-- Diagonal navy hazard stripes on the front of the gold crushing plate.
+	for x=-5,5,2 do
+		local p=box("HazardStripe",V(.8,.8,.16),x,13.8,4.85,INK,true)
+		p.CFrame*=CFrame.Angles(0,0,-.4)
+		moving[#moving].rest=p.CFrame all[#all].rest=p.CFrame
+	end
+	local shafts={}
+	for _,x in (if r.grade>=2 then {-2.6,2.6} else {0}) do
+		box("HydraulicHousing",V(3.3,5,3.3),x,24,0,color,nil,Enum.PartType.Ball)
+		local p=box("ExtendingRod",V(1.25,4,1.25),x,19.3,0,Color3.fromRGB(225,237,252))
+		table.insert(shafts,{part=p,top=21.3,x=x})
+	end
+	if r.grade>=3 then
+		for _,side in {-1,1} do
+			box("ShoulderArmour",V(4,5,10),side*7.3,19,0,color)
+			box("ReactorMount",V(3.6,3.6,.7),side*7.3,19,5.3,INK)
+			local p=box("SpinningReactor",V(2.6,2.6,.8),side*7.3,19,5.4,GOLD,nil,Enum.PartType.Ball,true)
+			table.insert(rotors,{part=p,rest=p.CFrame})
+		end
+	end
+	if r.grade>=4 then
+		for _,x in {-5,5} do
+			box("AuxiliaryCylinder",V(2.3,4,2.3),x,25,0,INK)
+			box("CylinderBeacon",V(2.4,.6,2.4),x,27,0,CYAN,nil,nil,true)
+		end
+		box("CrownedBeam",V(14,1.6,5),0,25,0,GOLD)
+	end
+	if r.grade>=5 then
+		box("ReactorCrown",V(4,4,4),0,27,0,PURPLE,nil,Enum.PartType.Ball,true)
+		for _,x in {-4,0,4} do
+			box("ExtraCrushingHead",V(2.6,1.4,7),x,12.8,0,GOLD,true)
+			box("PoweredTooth",V(1.8,.6,.35),x,12.6,3.6,CYAN,true,nil,true)
+		end
+	end
+	local heart=core(model,o*CFrame.new(0,6.5,0),1)
+	local source=part(model,"EnergySource",V(.1,.1,.1),o*CFrame.new(0,22,0),CYAN)
+	source.Transparency=1
+	local sparks={}
+	local slots=r.slots or {}
+	for i=1,math.min(8,#slots) do
+		local slot=slots[math.ceil(i*#slots/math.min(8,#slots))]
+		local l=C.bayLayout(slot)
+		local from=(r.origin*C.bayFrame(l)*CFrame.new(l.x,l.y+7,l.z)).Position
+		local p=part(model,"AssemblyEnergy",V(.9,.9,.9),CFrame.new(from),color,Enum.PartType.Ball,true)
+		p.Transparency=1 table.insert(sparks,{part=p,from=from})
+	end
+	return {model=model,origin=o,moving=moving,all=all,shafts=shafts,rotors=rotors,core=heart,
+		source=source,sparks=sparks,color=color,record=r}
+end
+local Visuals={}
+Visuals.__index=Visuals
+function Visuals.new()
+	local self=setmetatable({},Visuals)
+	self.folder=Instance.new("Folder") self.folder.Name="LocalFactoryEvent" self.folder.Parent=workspace
+	self.rigs={} self.hidden={} self.disabled={} self.marked={} self.packet=nil self.roundId=nil self.central=nil
+	return self
+end
+function Visuals:restoreMasks()
+	for p,old in self.hidden do if p.Parent then p.LocalTransparencyModifier=old end end
+	for p,old in self.disabled do if p.Parent then p.Enabled=old end end
+	for plot in self.marked do if plot.Parent then plot:SetAttribute("LocalEventHidden",nil) end end
+	self.hidden={} self.disabled={}
+	self.marked={}
+end
+function Visuals:hide(root)
+	for _,p in root:GetDescendants() do
+		if p:IsA("BasePart") then
+			if self.hidden[p]==nil then self.hidden[p]=p.LocalTransparencyModifier end
+			p.LocalTransparencyModifier=1
+		elseif p:IsA("ParticleEmitter") or p:IsA("Trail") or p:IsA("Beam") or p:IsA("Light") then
+			if self.disabled[p]==nil then self.disabled[p]=p.Enabled end p.Enabled=false
+		end
+	end
+end
+function Visuals:clear()
+	self:restoreMasks()
+	self.folder:ClearAllChildren() self.rigs={} self.central=nil self.bear=nil
+	if self.tint then self.tint:Destroy() self.tint=nil end
+end
+local function findMega()
+	for _,m in Tags:GetTagged("MegaCrusher") do
+		if m:IsA("Model") and m:IsDescendantOf(workspace) then
+			local ram=m:FindFirstChild("Ram")
+			if ram and ram:IsA("BasePart") and type(m:GetAttribute("BedTop"))=="number" then return m,ram end
+		end
+	end
+	return nil,nil
+end
+function Visuals:centralRig(mega,ram)
+	local bed=mega:GetAttribute("BedTop")
+	local o=CFrame.new(ram.Position.X,bed,ram.Position.Z)*mega:GetPivot().Rotation
+	local folder=Instance.new("Folder") folder.Name="MegaTransformation" folder.Parent=self.folder
+	local width=math.clamp(ram.Size.X,10,28)
+	local rest=mega:GetAttribute("RestY") or ram.Position.Y
+	local room=math.max(1,(rest-ram.Size.Y/2)-bed)
+	local scale=math.min(width*.55/5,room*.65/5)
+	local heart=core(folder,o*CFrame.new(0,scale*2.6,0),scale)
+	local shield=part(folder,"CoreShield",V(6,6,6)*scale,heart.origin,CYAN,Enum.PartType.Ball,true)
+	shield.Transparency=.72
+	local panels={}
+	for _,side in {-1,1} do
+		local cf=o*CFrame.new(side*(width/2+4),room+4,0)
+		local p=part(folder,"UnfoldingArmour",V(5,8,10),cf,INK)
+		local face=part(folder,"ArmourPaint",V(4.4,7,.3),cf*CFrame.new(0,.2,5.2),GOLD)
+		table.insert(panels,{part=p,rest=cf,side=side})
+		table.insert(panels,{part=face,rest=face.CFrame,side=side})
+		local housing=part(folder,"AuxiliaryHydraulic",V(3.4,10,3.4),o*CFrame.new(side*(width/2+7),room*.65,0),PURPLE)
+		table.insert(panels,{part=housing,rest=housing.CFrame,side=side})
+	end
+	local reactor=part(folder,"Reactor",V(5,5,2),o*CFrame.new(0,room+9,6),CYAN,Enum.PartType.Ball,true)
+	return {model=mega,ram=ram,folder=folder,origin=o,core=heart,shield=shield,panels=panels,reactor=reactor,
+		reactorRest=reactor.CFrame,scale=scale,room=room,burst=nil}
+end
+function Visuals:bearRig()
+	local bear=workspace:FindFirstChild("FactoryTeddy",true)
+	if not bear or not bear:IsA("Model") then return nil end
+	local folder=Instance.new("Folder") folder.Name="EvilBearAura" folder.Parent=self.folder
+	local cf,size=bear:GetBoundingBox()
+	local pivot=bear:GetPivot()
+	local eyes={}
+	-- Named eyes are exact for the procedural fallback and separated imported rigs.
+	for _,p in bear:GetDescendants() do
+		if p:IsA("BasePart") and p.Name:lower():match("eye") and not p.Name:lower():match("glint") then
+			table.insert(eyes,part(folder,"RedEye",p.Size*1.08,p.CFrame,RED,Enum.PartType.Ball,true))
+		end
+	end
+	-- If the import has one combined mesh, put an evil floating mask just in
+	-- front of its measured head. This overlay never edits the place template.
+	if #eyes==0 then
+		-- measured on the place's TeddyBear_Details mesh (27 Oct): eyes sit on the
+		-- face surface, a little above the head's middle
+		local head=cf.Position+V(0,size.Y*.285,0)
+		local forward=pivot.LookVector
+		for _,side in {-1,1} do
+			local at=head+pivot.RightVector*side*size.X*.12+forward*size.Z*.47
+			table.insert(eyes,part(folder,"RedEye",V(size.X*.13,size.X*.13,size.Z*.06),CFrame.new(at)*pivot.Rotation,RED,Enum.PartType.Ball,true))
+		end
+	end
+	local halo=part(folder,"CorruptionHalo",V(.5,size.X*.7,size.X*.7),CFrame.new(cf.Position+V(0,size.Y*.52,0))*CFrame.Angles(0,0,math.pi/2),PURPLE,Enum.PartType.Cylinder,true)
+	halo.Transparency=.3
+	-- a dark purple glow around the whole bear while it's corrupted
+	local glow=Instance.new("Highlight") glow.Name="CorruptionGlow" glow.Adornee=bear
+	glow.FillColor=Color3.fromRGB(70,20,110) glow.FillTransparency=.45 glow.OutlineColor=Color3.fromRGB(255,60,200) glow.OutlineTransparency=0
+	glow.DepthMode=Enum.HighlightDepthMode.Occluded glow.Parent=folder
+	return {model=bear,folder=folder,eyes=eyes,halo=halo,rest=halo.CFrame,glow=glow}
+end
+function Visuals:update(packet)
+	if self.roundId~=packet.roundId then self:clear() self.roundId=packet.roundId end
+	self.packet=packet
+	-- Announce: only the corrupted bear and the shielded core under the Mega
+	-- Crusher (for the intro cutscene); no super crushers, nothing hidden yet.
+	local announce=packet.phase=="Announce"
+	if not Motion.controls(packet.phase) and not announce then self:clear() return end
+	if not self.tint then
+		self.tint=Instance.new("ColorCorrectionEffect") self.tint.Name="BearEventTint"
+		self.tint.TintColor=Color3.fromRGB(235,226,255) self.tint.Saturation=.06 self.tint.Parent=Lighting
+	end
+	local desired={}
+	local camera=workspace.CurrentCamera
+	local list=if announce then {} else table.clone(packet.participants)
+	if camera then table.sort(list,function(a,b) return (a.origin.Position-camera.CFrame.Position).Magnitude<(b.origin.Position-camera.CFrame.Position).Magnitude end) end
+	for i,r in list do
+		if i<=E.MaxVisiblePlots and (not camera or (r.origin.Position-camera.CFrame.Position).Magnitude<E.VisualDistance) then
+			desired[r.userId]=true
+			local rig=self.rigs[r.userId]
+			if not rig then rig=superPress(self.folder,r) self.rigs[r.userId]=rig end
+			rig.record=r
+		end
+	end
+	for id,rig in self.rigs do if not desired[id] then
+		if rig.beamEnd then rig.beamEnd:Destroy() end
+		rig.model:Destroy() self.rigs[id]=nil
+	end end
+	if self.central and not self.central.model:IsDescendantOf(workspace) then
+		self.central.folder:Destroy() self.central=nil
+		for _,rig in self.rigs do
+			if rig.beam then rig.beam:Destroy() end
+			rig.beam=nil rig.beamEnd=nil
+		end
+	end
+	if not self.central then local m,ram=findMega() if m and ram then self.central=self:centralRig(m,ram) end end
+	if self.bear and not self.bear.model:IsDescendantOf(workspace) then self.bear.folder:Destroy() self.bear=nil end
+	if not self.bear then self.bear=self:bearRig() end
+	-- Re-scan only on replicated updates, including freshly spawned production inputs.
+	self:restoreMasks()
+	for _,rig in self.rigs do
+		local plot=workspace:FindFirstChild("Plot"..tostring(rig.record.plotIndex),true)
+		if plot then
+			plot:SetAttribute("LocalEventHidden",true) self.marked[plot]=true
+			for _,child in plot:GetDescendants() do
+				if child:IsA("Model") and child.Name=="EquippedCrusher" then self:hide(child) end
+			end
+		end
+	end
+	if self.central then local toy=self.central.model:FindFirstChild("Toy") if toy then self:hide(toy) end end
+end
+local function animateCore(c,now,shrink)
+	local rotation=CFrame.Angles(now*.35,now*.8,0)
+	local cf=c.origin*rotation
+	c.shell.CFrame=cf c.heart.CFrame=cf
+	local pulse=1+.04*math.sin(now*5)
+	c.heart.Size=V(4.75,4.75,5.2)*c.scale*pulse*shrink
+	c.shell.Size=V(5.25,5.25,4.75)*c.scale*shrink
+	for i,p in c.bands do
+		p.CFrame=cf*CFrame.Angles((i-1)*math.pi/3,0,now*.5)
+		p.Size=V(.42,5.35,5.35)*c.scale*shrink
+	end
+end
+function Visuals:step(now)
+	local packet=self.packet if not packet or not (Motion.controls(packet.phase) or packet.phase=="Announce") then return end
+	local age=now-packet.started
+	local progress=if packet.maxHp>0 then 1-packet.hp/packet.maxHp else 0
+	local recovery=if packet.phase=="Recover" then math.clamp(1-age/E.Recover,0,1) else 1
+	for _,rig in self.rigs do
+		local assembly=if packet.phase=="Assemble" then math.clamp(age/E.Assemble,0,1) else 1
+		local stroke=if packet.phase=="Active" and rig.record.present then Motion.plotStroke(age) else 0
+		local lift=V(0,-18*(1-assembly)-18*(1-recovery),0)
+		for _,v in rig.all do v.part.CFrame=v.rest+lift end
+		for _,v in rig.moving do v.part.CFrame=v.rest+lift-V(0,stroke*7.2,0) end
+		for _,v in rig.shafts do
+			local bottom=17.3-stroke*7.2 local height=v.top-bottom
+			v.part.Size=V(1.25,height,1.25)
+			v.part.CFrame=rig.origin*CFrame.new(v.x,bottom+height/2,0)+lift
+		end
+		for _,v in rig.rotors do v.part.CFrame=v.rest*CFrame.Angles(0,0,now*2)+lift end
+		local shrink=math.max(.12,1-stroke*.7)
+		rig.core.origin=rig.origin*CFrame.new(0,3.7+2.5*shrink,0)+lift
+		animateCore(rig.core,now,shrink)
+		local boosted=(rig.record.pulseUntil or 0)>now
+		rig.core.heart.Color=if boosted then GOLD else PURPLE
+		for i,spark in rig.sparks do
+			local t=math.clamp((age-(i-1)*.35)/2.4,0,1)
+			spark.part.Transparency=if packet.phase=="Assemble" and t>0 and t<1 then .1 else 1
+			local target=(rig.origin*CFrame.new(0,18,0)).Position
+			spark.part.CFrame=CFrame.new(spark.from*(1-t)+target*t+V(0,math.sin(t*math.pi)*12,0))
+		end
+		if self.central then
+			local beam=rig.beam
+			if not beam then
+				local a=Instance.new("Attachment") a.Parent=rig.source
+				local b=Instance.new("Attachment") b.Parent=self.central.reactor
+				beam=Instance.new("Beam") beam.Name="FactoryEnergy" beam.Attachment0=a beam.Attachment1=b
+				beam.FaceCamera=true beam.Segments=12 beam.CurveSize0=18 beam.CurveSize1=-18
+				beam.Width0=1 beam.Width1=.45 beam.Color=ColorSequence.new(rig.color,CYAN)
+				beam.LightEmission=1 beam.Transparency=NumberSequence.new(.2) beam.Parent=rig.model
+				rig.beam=beam rig.beamEnd=b
+			end
+			beam.Enabled=packet.phase=="Active" and rig.record.present
+			beam.Width0=if boosted then 2 else .75+.4*stroke
+		end
+	end
+	local central=self.central
+	if central then
+		local exposed=packet.phase=="Finale" or packet.phase=="Victory"
+		local shattered=packet.phase=="Victory" or (packet.phase=="Finale" and age>=2.85)
+		central.shield.Transparency=if exposed then 1 else .6+.25*progress
+		central.shield.CFrame=central.core.origin*CFrame.Angles(0,now*.5,0)
+		animateCore(central.core,now,if shattered then .01 else 1)
+		if shattered and not central.burst then
+			central.burst=part(central.folder,"FinalShockwave",V(.2,1,1),central.origin*CFrame.Angles(0,0,math.pi/2),GOLD,Enum.PartType.Cylinder,true)
+			central.burstAt=now
+		end
+		if central.burst then
+			local t=math.clamp((now-central.burstAt)/1.8,0,1)
+			central.burst.Size=V(.2,1+90*t,1+90*t) central.burst.Transparency=t
+		end
+		local stage=math.floor(progress*3)/3
+		if exposed then stage=1 end
+		for _,v in central.panels do
+			v.part.CFrame=v.rest*CFrame.new(v.side*3*stage,stage*3,0)*CFrame.Angles(0,0,-v.side*.22*stage)
+		end
+		central.reactor.CFrame=central.reactorRest*CFrame.Angles(0,0,now*2)
+		central.reactor.Color=if exposed then GOLD else CYAN
+	end
+	if self.bear then
+		local evil=packet.phase~="Victory" and packet.phase~="Recover"
+		for _,eye in self.bear.eyes do eye.Transparency=if evil then .05+.15*math.sin(now*4)^2 else 1 end
+		self.bear.halo.Transparency=if evil then .35 else 1
+		self.bear.glow.Enabled=evil
+		self.bear.glow.FillTransparency=.4+.12*math.sin(now*3)
+		self.bear.halo.CFrame=self.bear.rest*CFrame.Angles(0,now*.7,0)
+	end
+	if self.tint then
+		self.tint.TintColor=Color3.new(1,1,1):Lerp(Color3.fromRGB(235,226,255),recovery)
+		if packet.phase=="Victory" then self.tint.TintColor=Color3.new(1,1,1) end
+	end
+end
+function Visuals:destroy()
+	self:clear() self.folder:Destroy()
+end
+return Visuals

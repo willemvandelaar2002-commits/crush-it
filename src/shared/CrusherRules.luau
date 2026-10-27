@@ -163,6 +163,7 @@ function R.migrate(d, guid)
 	d.daily=if type(d.daily)=="table" then d.daily else {day=0,streak=0}
 	d.dailySpin=require(script.Parent.DailySpinRules).migrate(d.dailySpin)
 	require(script.Parent.QuestRules).migrate(d) -- quest tokens, quest lists, stat counters
+	require(script.Parent.FactoryEventRules).migrate(d) -- event win/reward ID ledger, no inventory changes
 	d.timeSkipAt=number(d.timeSkipAt,0,1e12) -- next free time skip (server time)
 	d.goldenRush=integer(d.goldenRush,0,100000) d.crushed=integer(d.crushed,0,C.MaxMoney)
 	d.tier=integer(d.tier,1,13) d.rebirths=integer(d.rebirths,0,10000)

@@ -13,6 +13,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
+local EventMotion = require(ReplicatedStorage.Shared.FactoryEventMotion)
 
 local player = Players.LocalPlayer
 
@@ -138,6 +139,18 @@ RunService.RenderStepped:Connect(function()
 			f = 1
 		end
 		local y = rest + (hit - rest) * f
+		-- The same driver owns the ram during events, including imported RamParts
+		-- and RamStretch. The event renderer only adds armour/core cosmetics.
+		local eventState = ReplicatedStorage:FindFirstChild("FactoryEventState")
+		local phase = eventState and eventState:GetAttribute("Phase")
+		local eventControlled = EventMotion.controls(phase)
+		local eventImpact = false
+		if eventControlled then
+			local age = now - (eventState:GetAttribute("PhaseStarted") or now)
+			f, eventImpact = EventMotion.ram(phase, age)
+			hit = bedTop + r.ram.Size.Y / 2 + .35
+			y = rest + (hit - rest) * f
+		end
 		r.ram.CFrame = CFrame.new(r.ram.Position.X, y, r.ram.Position.Z) * r.ram.CFrame.Rotation
 		-- Parts in "RamParts" (rod, plate, hazard band) ride along with the ram.
 		-- Picked up as they stream in; offsets are taken against the ram's rest pose.
@@ -188,7 +201,8 @@ RunService.RenderStepped:Connect(function()
 			toy.part.CFrame = CFrame.new(centre.X, cy, centre.Z) * toy.cf.Rotation
 		end
 		local n = math.floor(cycle)
-		if t >= 0.9 and r.lastHit ~= n then
+		if eventControlled then n = -(math.floor(eventState:GetAttribute("PhaseStarted") or 0) + 1) end
+		if (if eventControlled then eventImpact else t >= 0.9) and r.lastHit ~= n then
 			r.lastHit = n
 			local cam = Workspace.CurrentCamera.CFrame.Position
 			local base = Vector3.new(r.ram.Position.X, bedTop + 2, r.ram.Position.Z)
