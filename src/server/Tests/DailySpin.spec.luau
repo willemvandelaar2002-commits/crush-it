@@ -10,7 +10,9 @@ return function()
 	local cumulative=0 local total=0 local seen={}
 	for _,def in S.Rewards do total+=def.weight end
 	for index,def in S.Rewards do
-		check(def.sector==index-1 and not seen[def.sector],"explicit unique clockwise sectors") seen[def.sector]=true
+		-- the Mythic jackpot shares the Epic sector on purpose (the wheel art has 8 sectors)
+		if def.jackpot then check(seen[def.sector],"jackpot shares an existing sector")
+		else check(def.sector==index-1 and not seen[def.sector],"explicit unique clockwise sectors") seen[def.sector]=true end
 		local randomValue=(cumulative+def.weight/2)/total cumulative+=def.weight
 		check(R.choose(function() return randomValue end).id==def.id,"weighted server outcome")
 		check(math.abs(S.odds(def.id)-def.weight/total*100)<1e-8,"odds from weights")

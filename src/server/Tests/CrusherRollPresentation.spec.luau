@@ -8,6 +8,7 @@ return function()
 		local weights=R.weights(luck,lucky) local total=0 for _,w in weights do total+=w end
 		local sum=0
 		for rank,rarity in C.Rarities do for _,id in rarity.types do
+			if rarity.weight<=0 then check(P.odds(id,luck,lucky,false)==0,"exclusive types have no roll odds") continue end
 			local odds=P.odds(id,luck,lucky,false)
 			check(math.abs(odds-total/weights[rank]*#rarity.types)<1e-8,"odds match authoritative weights")
 			check(P.oddsText(odds):find("roll odds")~=nil,"odds label identifies the draw")

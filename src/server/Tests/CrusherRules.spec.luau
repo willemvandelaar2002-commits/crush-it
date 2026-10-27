@@ -142,7 +142,8 @@ return function()
 	check(#C.Types==40+#C.Mythics,"forty rollable crusher types plus the Mythics")
 	local seen={} local cumulative=0 local total=0 for _,r in C.Rarities do total+=r.weight end
 	for _,r in C.Rarities do
-		check(#r.types==8,"eight types per rarity")
+		check(#r.types==(if r.exclusive then #C.Mythics else 8),"eight types per rollable rarity")
+		if r.exclusive then for _,t in r.types do check(C.typeById(t)~=nil and not seen[t],"real Mythic type") seen[t]=true end continue end
 		for position,typeId in r.types do
 			check(not seen[typeId] and C.typeById(typeId)~=nil,"unique real type in each roll pool") seen[typeId]=true
 			local profile=fresh() profile.crushers.rolls=1 local context={} local values={(cumulative+r.weight/2)/total,.1,(position-.5)/#r.types} local n=0

@@ -15,7 +15,7 @@ local S = {
 		{id="crusher_rare", sector=6, kind="crusher", rarity="Rare", weight=1.5, color=Color3.fromRGB(65,90,225)},
 		{id="crusher_epic", sector=7, kind="crusher", rarity="Epic", weight=.5, color=Color3.fromRGB(175,75,235)},
 		-- jackpot: lands on the Epic sector (the wheel art has 8 sectors) but gives a Mythic
-		{id="crusher_mythic", sector=7, kind="crusher", rarity="Mythic", weight=.1, color=Color3.fromRGB(255,70,190)},
+		{id="crusher_mythic", sector=7, jackpot=true, kind="crusher", rarity="Mythic", weight=.1, color=Color3.fromRGB(255,70,190)},
 	},
 }
 function S.reward(id)
