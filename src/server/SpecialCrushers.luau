@@ -41,7 +41,7 @@ function B.build(origin,id,source: Model?)
 			table.insert(rest,{part=p,cf=p.CFrame})
 			for _,x in {-1,1} do for _,y in {-1,1} do for _,z in {-1,1} do
 				local point=origin:PointToObjectSpace(p.CFrame:PointToWorldSpace(p.Size*Vector3.new(x,y,z)/2))
-				lowest=math.min(lowest,point.Y)
+				if not entry.spec.side then lowest=math.min(lowest,point.Y) end
 			end end end
 		end
 		table.insert(groups,{name=entry.spec.name,rest=rest,stroke=entry.spec.stroke*fit})
