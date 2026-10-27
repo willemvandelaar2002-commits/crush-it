@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-27: Holding a crusher now shows an E prompt at every unlocked bay of your plot (client PlaceCrusher.client.luau): Place on an empty bay, Swap on a busy one (the old crusher returns to the backpack, via the existing Equip action). Prompts exist only while holding and sit above the plaque, so the LEVEL UP/MAX/SWAP buttons stay clickable. Studio-tested with E: swapped bay 3 and back.
+
 - 2026-10-27: Coatings looked like a recolour only (Willem). Each finish now adds its own objects (CrusherFinish.dress, client CoatingAnimator): Fire turns the frame to cracked lava with real flames on top, sides and feet, embers and a flickering light; Frost adds ice crystal clusters, icicles, mist, snow and an icy light; Charged adds energy orbs with flickering lightning arcs and a purple light; Polished keeps the machine's colours as reflective chrome with gleam stars. Each coating also adds a glow plate in its colour. Minis (held tool) skip flames and lights. Verified in Studio Play on Willem's coated bays.
 
 - 2026-10-27: Connected Willem's six lab icons (Asset Manager images, Brasslight Studio) in Icons.luau: CoatingLab, FusionMachine, FinishPolished/Frost/Fire/Charged. All six preload in Studio. Source PNGs in docs/art/icons.
