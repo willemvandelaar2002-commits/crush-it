@@ -86,7 +86,8 @@ end
 
 function L.fit(panel: Frame, w: number, h: number)
 	local view = workspace.CurrentCamera.ViewportSize
-	(panel:FindFirstChild("Fit") :: UIScale).Scale = math.min(1, (view.X - 30) / w, (view.Y - 40) / h)
+	local scale = panel:FindFirstChild("Fit") :: UIScale
+	scale.Scale = math.min(1, (view.X - 30) / w, (view.Y - 40) / h)
 end
 
 -- Dark rounded label ("Lv. 1", "COPY", "4/4").
