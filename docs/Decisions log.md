@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-27: Collect, Sell and Roll stations get the Lego Studs material (hopper walls/base/caps and toy scrap; counter, top, sign posts and frame; roll machine body, roller cheeks, die stand and pedestals). Board faces with buttons stay plain. Visual only; previewed in Studio Play on all plots.
+
 - 2026-10-27: Placed Willem's Blender trim kit (CornerBrace / SupportBeam / BoardFrame) from Factory II, in the colour version of the plot level (yellow, orange, silver, gold): frames stretched round the nine station boards and floor signs (non-colliding, not queryable, so board buttons still work), solid posts along both road edges every 12 studs (spots with something there are skipped) and guards at the foot of the ground columns (rear banks from Factory III). Rebuilt on each upgrade. Studio verified at Factory III: 9 frames, 28 posts, 28 guards, no errors. See Systems/Factory progression.md.
 - 2026-10-26: Integrated goals-reward patch cleanly while retaining Factory V/60 bays, fusion/MAX, icon loading and recent pointer/row zoom fixes. Fresh Studio passed 6,803 checks including 69 goal/client checks; actual board eligibility, forged flags, unsolicited acknowledgement and repeated rejected claims left timeSkipAt unchanged. Rojo/whitespace passed, with only the existing Output warning. No successful reward/profile injection or account-favorite change was tested. Real prompt/full-claim/rejoin checks remain manual; favorite confirmation is client-reported. See Systems/Goals reward.md.
 
