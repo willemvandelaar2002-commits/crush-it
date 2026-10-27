@@ -10,7 +10,7 @@ local F={}
 type Look={dark: Color3,light: Color3,mix: number,material: Enum.Material,darkMaterial: Enum.Material?,
 	reflect: number?,glow: Color3,fx: string}
 F.Looks={
-	Polished={dark=Color3.fromRGB(70,80,96),light=Color3.fromRGB(238,243,250),mix=.75,material=Enum.Material.Metal,reflect=.2,
+	Polished={dark=Color3.fromRGB(104,116,136),light=Color3.fromRGB(250,252,255),mix=.8,material=Enum.Material.Metal,reflect=.35,
 		glow=Color3.fromRGB(255,255,255),fx="glint"},
 	Frost={dark=Color3.fromRGB(38,112,178),light=Color3.fromRGB(214,248,255),mix=.88,material=Enum.Material.Ice,
 		glow=Color3.fromRGB(120,235,255),fx="snow"},
