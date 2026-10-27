@@ -176,7 +176,7 @@ return function()
 		local ok,_,offers=R.act(roller,{},"Roll",{},0,function() return r end,id,{})
 		if ok then for _,o in offers do check(o.rarity~="Mythic","rolls never give a Mythic") end end
 	end
-	local full={cash=0,crushers={owned={}}}
+	local full={cash=0,crusherSchema=C.Schema,crushers={owned={}}}
 	for i=1,C.MaxInventory do table.insert(full.crushers.owned,{id="f"..i,type="Steel",rarity="Common",modifier="Standard",level=1}) end
 	table.insert(full.crushers.owned,{id="m1",type=myth.types[1],rarity="Mythic",modifier="Standard",level=1})
 	local loaded=R.migrate(full,id)
