@@ -1,5 +1,8 @@
 # Hub plaza (factory centre)
 
+27 Oct: map +14: ring road 148-174 (rails r 161), stations at Loop.Inner - 30
+(118), spoke lamps also at r 135, plot bridges 26 long, plots start at r 200.
+
 24 Oct: Daily Spin is now active through its existing station's E prompt; the
 remaining station descriptions below retain their historical placeholder status.
 See [[Daily Spin]] for images, rewards, cooldown and persistence checks.

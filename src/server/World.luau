@@ -14,12 +14,28 @@ local P = FactoryProps.Colors
 local TOY_BAY_COLORS = { P.Blue, P.Teal, P.Red, P.Yellow }
 local part = FactoryProps.part
 local FLOOR_Y = Config.World.SeaY
--- All current plot corners are inside radius ~387. Keep the hall and its large
--- display furniture outside that envelope; never derive train positions here.
-local PLOT_ENVELOPE = math.sqrt((Config.Plots.Ring + Config.Plots.Front + Config.Plots.Back) ^ 2
-	+ (Config.Plots.FloorSize / 2) ^ 2)
-local HALF = math.max(440, math.ceil((PLOT_ENVELOPE + 52) / 20) * 20)
+-- 27 Oct: a HEXAGONAL hall, so all six plots get the same room around them.
+-- The six walls stand between the plots (wall i faces angle (i-1)*60; plots sit
+-- at 30 + k*60), so every plot's back points into a corner with the same gap.
+-- REAR = the deepest plot part (rear yard, plot-local -Z); plot back corners must
+-- stay CLEARANCE studs from the walls. Never derive train positions here.
+local REAR = 116
+local CLEARANCE = 70
+local BACK_RADIUS = Config.Plots.Ring + Config.Plots.Front + REAR
+local PLOT_ENVELOPE = math.sqrt(BACK_RADIUS ^ 2 + (Config.Plots.FloorSize / 2) ^ 2)
+-- distance from a plot back corner to the nearest wall line = APOTHEM - (r*cos30 + w/2*sin30)
+local APOTHEM = math.ceil((BACK_RADIUS * math.cos(math.rad(30)) + Config.Plots.FloorSize / 4 + CLEARANCE) / 10) * 10
+local WALL_LENGTH = 2 * APOTHEM * math.tan(math.rad(30))
+local HALF = math.ceil(APOTHEM / math.cos(math.rad(30))) -- corner radius: the roof covers this square
 local HEIGHT = 150
+local WALLS = 6
+
+-- Frame on wall `index` (1..6): origin on the wall's inner line at FLOOR_Y, local
+-- -Z points to the centre, X runs along the wall.
+local function wallFrame(index: number): CFrame
+	local a = (index - 1) * math.rad(360 / WALLS)
+	return CFrame.new(math.sin(a) * APOTHEM, FLOOR_Y, math.cos(a) * APOTHEM) * CFrame.Angles(0, a, 0)
+end
 
 local function group(parent: Instance, name: string): Model
 	local m = Instance.new("Model")
@@ -38,21 +54,24 @@ local function floor(parent: Instance)
 	base.CanQuery = false
 	base.CastShadow = false
 	Style.studs(base, { Enum.NormalId.Top }, 4)
-	-- Large, subtle floor panels give the factory scale without tiny litter.
-	for _, x in { -HALF + 65, HALF - 65 } do
-		local lane = part(parent, "PerimeterServiceLane", V(46, 0.05, HALF * 2 - 50), CFrame.new(x, FLOOR_Y + 0.03, 0), P.Navy)
+	-- Large, subtle floor panels give the factory scale without tiny litter:
+	-- a service lane along every wall (short of the corners behind the plots).
+	for i = 1, WALLS do
+		local f = wallFrame(i) * CFrame.new(0, 0, -40)
+		local length = WALL_LENGTH - 180
+		local lane = part(parent, "PerimeterServiceLane", V(length, 0.05, 46), f * CFrame.new(0, 0.03, 0), P.Navy)
 		lane.CastShadow = false
 		for _, side in { -1, 1 } do
-			part(parent, "LanePaint", V(0.8, 0.06, HALF * 2 - 50), CFrame.new(x + side * 22, FLOOR_Y + 0.06, 0), P.Yellow).CastShadow = false
+			part(parent, "LanePaint", V(length, 0.06, 0.8), f * CFrame.new(0, 0.06, side * 22), P.Yellow).CastShadow = false
 		end
 	end
 end
 
 local function wall(parent: Instance, cf: CFrame, index: number)
 	local m = group(parent, "FactoryWall" .. index)
-	local width = HALF * 2 / 8
+	local width = WALL_LENGTH / 8
 	for i = 0, 7 do
-		local x = -HALF + width * (i + 0.5)
+		local x = -WALL_LENGTH / 2 + width * (i + 0.5)
 		local bay = cf * CFrame.new(x, 0, 0)
 		local panel = part(m, "BoundaryWall", V(width + 0.2, 52, 4), bay * CFrame.new(0, 26, 0), P.Cream)
 		panel.CanCollide = true
@@ -71,7 +90,7 @@ local function wall(parent: Instance, cf: CFrame, index: number)
 		part(m, "HighYellowBand", V(width + 0.2, 10, 9), bay * CFrame.new(0, 124, -4), P.Yellow)
 	end
 	for i = 0, 8 do
-		local x = -HALF + i * width
+		local x = -WALL_LENGTH / 2 + i * width
 		-- the middle column of wall 1 stood right behind the CRUSH IT sign: leave it out
 		if index == 1 and i == 4 then continue end
 		part(m, "RedColumn", V(14, HEIGHT, 16), cf * CFrame.new(x, HEIGHT / 2, -5), P.Red)
@@ -153,39 +172,40 @@ local function loadingBay(parent: Instance, cf: CFrame, text: string)
 end
 
 local function displays(parent: Instance)
+	-- One centrepiece per wall, all near the wall's middle: that is the open
+	-- space between two plots (the corners are behind the plots).
 	local m = group(parent, "ToyDisplays")
-	local inset = HALF - 25
-	for i, p in {
-		{ pos = V(-230, FLOOR_Y, inset), yaw = 0, theme = "Cars" }, { pos = V(230, FLOOR_Y, inset), yaw = 0, theme = "Blocks" },
-		{ pos = V(-230, FLOOR_Y, -inset), yaw = math.pi, theme = "Ducks" }, { pos = V(230, FLOOR_Y, -inset), yaw = math.pi, theme = "Blocks" },
-		{ pos = V(inset, FLOOR_Y, -210), yaw = math.pi / 2, theme = "Cars" }, { pos = V(inset, FLOOR_Y, 210), yaw = math.pi / 2, theme = "Packing" },
-		{ pos = V(-inset, FLOOR_Y, -210), yaw = -math.pi / 2, theme = "Ducks" }, { pos = V(-inset, FLOOR_Y, 210), yaw = -math.pi / 2, theme = "Packing" },
-	} do
-		FactoryProps.shelf(m, CFrame.new(p.pos) * CFrame.Angles(0, p.yaw, 0), i, p.theme)
-		task.wait()
+	local function on(wall: number, t: number, inset: number): CFrame
+		return wallFrame(wall) * CFrame.new(t, 0, -inset)
 	end
-	-- Large mascots sit in outer corners, wholly beyond the plot envelope.
-	local bearPos = V(HALF - 91, FLOOR_Y, HALF - 91)
-	local bearCf = CFrame.lookAt(bearPos, V(0, FLOOR_Y, 0))
+	-- 1 (+Z, the CRUSH IT side): gantry crane, two loading bays, brand sign
+	FactoryProps.crane(m, on(1, 0, 27))
+	loadingBay(m, on(1, -63, 4), "TOY STORAGE")
+	loadingBay(m, on(1, 63, 4), "DISPATCH")
+	FactoryProps.brandSign(m, on(1, 0, 9) * CFrame.new(0, 124, 0))
+	-- 2: block shelf
+	FactoryProps.shelf(m, on(2, 0, 41), 1, "Blocks")
+	task.wait()
+	-- 3: the bear mascot on its crate
+	local bearCf = on(3, 0, 62)
 	FactoryProps.crate(m, bearCf, 52, P.Red, false)
 	part(m, "MascotPlinth", V(55, 3, 55), bearCf * CFrame.new(0, 38, 0), P.Yellow)
 	FactoryProps.bear(m, bearCf * CFrame.new(0, 39.5, 0), 4)
 	FactoryProps.sign(m, bearCf * CFrame.new(0, 18, -27.5), 43, 18, "TOY TIME", P.Red)
-	local duckPos = V(-HALF + 89, FLOOR_Y, -HALF + 89)
-	local duckCf = CFrame.lookAt(duckPos, V(0, FLOOR_Y, 0))
+	task.wait()
+	-- 4 (-Z): supply belt and the packing booth
+	FactoryProps.conveyor(m, on(4, 0, 24), 300)
+	FactoryProps.packingBooth(m, on(4, 0, 58))
+	task.wait()
+	-- 5: the duck mascot on its crate
+	local duckCf = on(5, 0, 60)
 	FactoryProps.crate(m, duckCf, 48, P.Blue, false)
 	part(m, "MascotPlinth", V(51, 3, 51), duckCf * CFrame.new(0, 35, 0), P.Yellow)
 	FactoryProps.duck(m, duckCf * CFrame.new(0, 36.5, 0), 8)
-	FactoryProps.packingBooth(m, CFrame.new(-HALF + 78, FLOOR_Y, HALF - 85) * CFrame.Angles(0, -math.pi / 4, 0))
-	FactoryProps.crane(m, CFrame.new(0, FLOOR_Y, HALF - 27))
-	-- Supply belts hug the other walls; they never cross the train or bridges.
-	FactoryProps.conveyor(m, CFrame.new(0, FLOOR_Y, -HALF + 24) * CFrame.Angles(0, math.pi, 0), 300)
-	FactoryProps.conveyor(m, CFrame.new(HALF - 24, FLOOR_Y, 0) * CFrame.Angles(0, math.pi / 2, 0), 250)
-	loadingBay(m, CFrame.new(-63, FLOOR_Y, HALF - 4), "TOY STORAGE")
-	loadingBay(m, CFrame.new(63, FLOOR_Y, HALF - 4), "DISPATCH")
-	FactoryProps.brandSign(m, CFrame.new(0, FLOOR_Y + 124, HALF - 9))
-	FactoryProps.sign(m, CFrame.new(-HALF + 7, FLOOR_Y + 125, 0) * CFrame.Angles(0, -math.pi / 2, 0),
-		150, 17, "TOY FACTORY", P.Teal)
+	task.wait()
+	-- 6: car shelf under the big TOY FACTORY sign
+	FactoryProps.shelf(m, on(6, 0, 41), 2, "Cars")
+	FactoryProps.sign(m, on(6, 0, 7) * CFrame.new(0, 125, 0), 150, 17, "TOY FACTORY", P.Teal)
 end
 
 local function toyBays(parent: Instance)
@@ -217,12 +237,12 @@ function World.create()
 	root.ModelStreamingMode = Enum.ModelStreamingMode.Persistent
 	root:SetAttribute("Theme", "ToyFactory")
 	root:SetAttribute("HallHalfSize", HALF)
+	root:SetAttribute("HallApothem", APOTHEM)
 	root:SetAttribute("PlotEnvelope", PLOT_ENVELOPE)
 	root.Parent = Workspace
 	floor(root)
-	for i = 0, 3 do
-		local a = i * math.pi / 2
-		wall(root, CFrame.new(math.sin(a) * HALF, FLOOR_Y, math.cos(a) * HALF) * CFrame.Angles(0, a, 0), i + 1)
+	for i = 1, WALLS do
+		wall(root, wallFrame(i), i)
 		task.wait()
 	end
 	roof(root)
