@@ -777,6 +777,20 @@ function G.start()
 	command.Parent=TCS
 	local function hook(p) p.Chatted:Connect(function(m) local c=string.lower(string.split(m," ")[1] or "") if c=="/credits" or c=="/cash" then credits(p,m) end end) end
 	if TCS.ChatVersion~=Enum.ChatVersion.TextChatService then Players.PlayerAdded:Connect(hook) for _,p in Players:GetPlayers() do hook(p) end end
+	-- /event [start|win|cancel]: test the Bear Breakdown event (Studio only)
+	if RunService:IsStudio() then
+		local eventCommand=Instance.new("TextChatCommand") eventCommand.Name="EventCommand" eventCommand.PrimaryAlias="/event"
+		eventCommand.Triggered:Connect(function(source,text)
+			local p=Players:GetPlayerByUserId(source.UserId)
+			local dev=game.ServerStorage:FindFirstChild("DevFactoryEvent")
+			if not p or not dev then return end
+			local arg=string.lower(string.split(text," ")[2] or "start")
+			local name=if arg=="win" then "Win" elseif arg=="cancel" then "Cancel" else "Start"
+			local ok=dev:Invoke(name)
+			Net.event("Notice"):FireClient(p,{text="Event "..string.lower(name)..(if ok then "" else ": not possible right now")})
+		end)
+		eventCommand.Parent=TCS
+	end
 	if RunService:IsStudio() then
 		local dev=Instance.new("BindableFunction") dev.Name="DevCrusher"
 		dev.OnInvoke=function(p,cmd,args)
