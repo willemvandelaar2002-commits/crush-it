@@ -167,13 +167,8 @@ The environment follows the approved bright toy-factory concept. The current
 circular map remains the game: eight player plots, two rideable trains, their
 stops and timetable, four hub walkways and the central Mega Crusher.
 
-27 Oct: the hall is now a **hexagon** (six walls between the six plots, wall
-i faces angle (i-1)*60). Apothem = rear-yard plot corner reach + 70 studs
-clearance (470 with the 27 Oct map), so every plot's back points into a corner
-with the same room. One centrepiece per wall, all in the gaps between plots:
-1 (+Z) crane, loading bays, brand sign; 2 block shelf; 3 teddy; 4 conveyor +
-packing booth; 5 duck; 6 car shelf + TOY FACTORY sign. A service lane runs
-along each wall. The old square-hall text below is history.
+27 Oct: the hall's half-width now counts the rear yard (plots reach r ~415 with
+the bigger map), so it is 480. A hexagonal hall was tried and reverted.
 
 `World.luau` replaces the outdoor cliff/scrapyard backdrop with a high factory
 hall. Its half-width is at least 440 studs and expands with the configured plot
