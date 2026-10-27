@@ -15,7 +15,7 @@ local Net = require(RS.Shared.Net)
 local me = Players.LocalPlayer
 local actionRemote = Net.event("CrusherAction")
 local state: any = nil
-local prompts: { ProximityPrompt } = {}
+local prompts: { Instance } = {}
 local heldTool: Tool? = nil
 
 local function clear()
@@ -39,7 +39,8 @@ local function build()
 	for i = 1, state.unlocked or 0 do
 		local bay = plot:FindFirstChild("WorkingBay" .. i, true)
 		local floor = bay and bay:FindFirstChild("BayPlatform")
-		if floor and floor:IsA("BasePart") and floor.Transparency < 1 then
+		local panel = bay and bay:FindFirstChild("Panel")
+		if floor and floor:IsA("BasePart") and floor.Transparency < 1 and panel and panel:IsA("BasePart") then
 			local current = state.bays[tostring(i)]
 			if current ~= id then
 				local p = Instance.new("ProximityPrompt")
@@ -48,14 +49,19 @@ local function build()
 				p.ObjectText = name
 				p.KeyboardKeyCode = Enum.KeyCode.E
 				p.HoldDuration = 0
-				p.MaxActivationDistance = 9
+				p.MaxActivationDistance = 10
 				p.RequiresLineOfSight = false
-				p.UIOffset = Vector2.new(0, 40)
 				p.Triggered:Connect(function()
 					actionRemote:FireServer("Equip", { id = id, bay = i })
 				end)
-				p.Parent = floor
-				table.insert(prompts, p)
+				-- anchored above the plaque, between it and the machine (where you
+				-- stand), high enough that it doesn't cover the plaque buttons
+				local at = Instance.new("Attachment")
+				at.Name = "PlacePromptAnchor"
+				at.Parent = floor
+				at.WorldPosition = floor.Position:Lerp(panel.Position, .55) + Vector3.new(0, 5, 0)
+				p.Parent = at
+				table.insert(prompts, at :: any)
 			end
 		end
 	end
