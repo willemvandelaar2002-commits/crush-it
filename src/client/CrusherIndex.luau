@@ -62,6 +62,7 @@ function I.new(gui, act)
 	end
 	indexButton=button(nav,"IndexTab","INDEX",UDim2.new(),UDim2.fromOffset(142,58),blue,function() chooseTab("Index") end)
 	ownedButton=button(nav,"OwnedTab","OWNED",UDim2.fromOffset(0,72),UDim2.fromOffset(142,58),Style.Colors.Purple,function() chooseTab("Owned") end)
+	ownedButton.Visible=false -- your crushers live in the bottom hotbar now
 	local controls = make("Frame", {Name="Controls", Position=UDim2.fromOffset(12,88),
 		Size=UDim2.new(1,-24,0,44), BackgroundTransparency=1, ZIndex=2}, panel)
 	local filters = make("Frame", {Name="RarityFilters", Size=UDim2.fromScale(1,1), BackgroundTransparency=1}, controls)
@@ -253,7 +254,7 @@ function I.new(gui, act)
 	end)
 	function self.update(value) state=value redraw() end
 	function self.open(bay)
-		if bay then selectedBay=bay tab="Owned" else tab="Index" end
+		tab="Index"
 		signature="" panel.Visible=true redraw()
 	end
 	function self.toggle() if panel.Visible then Style.setOpen(panel,false) else self.open() end end

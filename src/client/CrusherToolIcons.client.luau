@@ -1,5 +1,5 @@
 --!strict
--- Keep Roblox's native backpack, number keys, tooltips and equip behavior.
+-- Tool pictures (TextureId) for the crusher tools; the bar itself is CrusherHotbar.
 local Players=game:GetService("Players")
 local RS=game:GetService("ReplicatedStorage")
 local Images=require(RS.Shared.CrusherIcons)
