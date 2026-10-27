@@ -113,6 +113,7 @@ function R.migrate(d, guid)
 		d.crusherSchema=C.Schema
 	end
 	local s=d.crushers
+	local oldLayout=(tonumber(s.layout) or 1)<C.LayoutVersion
 	-- Bay layout v2 (25 Oct): the middle rear row is gone. v1 numbering: 25-30
 	-- rear row, 31-42 third floor, 43-66 rear yard; v2: 25-36 third floor, 37-60
 	-- rear yard. Equipped crushers move with their bay; rear-row crushers go to
@@ -138,7 +139,9 @@ function R.migrate(d, guid)
 	for _,id in C.UpgradeOrder do s.upgrades[id]=integer(s.upgrades[id],0,C.topUpgradeMax(id)) end
 	s.plotLevel=integer(s.plotLevel,0,C.PlotUpgrade.MaxLevel)
 	s.bays=math.clamp(integer(s.bays,1,C.MaxBays),1,C.bayCapacity(s.plotLevel))
-	if s.plotLevel>=1 then s.bays=C.bayCapacity(s.plotLevel) end -- the paid expansion includes its whole row
+	-- Saves from before the 27 Oct change got the whole new row with the plot
+	-- upgrade; layout-v1 saves keep that. New rows are now bought bay by bay.
+	if oldLayout and s.plotLevel>=1 then s.bays=C.bayCapacity(s.plotLevel) end
 	s.available=C.money(number(s.available,0)) s.tutorial=math.clamp(integer(s.tutorial,1,#C.TutorialSteps+1),1,#C.TutorialSteps+1) -- #steps+1 = finished
 	s.rollReadyAt=number(s.rollReadyAt,0,1e12)
 	s.rolls=integer(s.rolls,0,1e9) -- rolls made (the first one is always cheap)
@@ -293,7 +296,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if not pay(C.globalCost(args.id,lv)) then return false,"Not enough cash. Collect and sell scrap." end
 		s.upgrades[args.id]+=1
 	elseif action=="Unlock" then
-		if s.bays>=C.bayCapacity(s.plotLevel) then return false,"Fill the original rows and use UPGRADE PLOT for more bays." end
+		if s.bays>=C.bayCapacity(s.plotLevel) then return false,"All bays bought. Fill them and use UPGRADE PLOT for a new row." end
 		if not pay(C.BayCosts[s.bays+1]) then return false,"Not enough cash for another bay. Collect and sell." end s.bays+=1
 	elseif action=="UpgradePlot" then return Progression.expand(d)
 	elseif action=="Collect" then

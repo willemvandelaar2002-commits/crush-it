@@ -45,6 +45,11 @@ dropped it (too hard to see) in favour of the rear yard.
 | 5 Factory V (4) | 60 | rear yard upper floor, right (55-60) | 60 / 120 |
 
 - Every upgrade needs every current bay filled; costs 10x the price of its first new bay.
+- (27 Oct) An upgrade only builds the new floor/row: its bays start locked and are
+  bought one by one with the normal Unlock (`C.BayCosts`), like the original 24.
+  `bays` = bought bays, `C.bayCapacity(plotLevel)` = how many can be bought.
+  The next upgrade needs every bay of the current level bought and filled.
+  Saves from before this change keep their full rows.
 - Rear yard = the same bank builder as the wings (`CrusherPlots.bankWing`),
   shifted back by `RearShift` (-78) and not tilted; max two floors, normal
   stairs. Rows 7-10 (REAR LEFT/RIGHT, REAR UPPER LEFT/RIGHT).

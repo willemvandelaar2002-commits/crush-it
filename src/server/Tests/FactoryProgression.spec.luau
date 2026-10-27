@@ -30,13 +30,16 @@ return function()
 	check(not P.expand(d) and d.cash==before and d.crushers.plotLevel==0,"unaffordable plot upgrade leaves profile unchanged")
 	d.cash=C.PlotUpgrade.Cost
 	local original=R.copy(d.crushers.owned)
-	check(P.expand(d) and d.cash==0 and d.crushers.plotLevel==1 and d.crushers.bays==36,"Factory II charges once and grants the twelve third-floor bays")
+	check(P.expand(d) and d.cash==0 and d.crushers.plotLevel==1 and d.crushers.bays==24,"Factory II charges once; its twelve bays are bought separately")
 	check(not P.expand(d) and d.cash==0,"repeated expansion cannot grant or charge again")
 	for i,item in original do check(d.crushers.owned[i].id==item.id and d.crushers.owned[i].level==item.level,"expansion retains crushers") end
 	local saved=R.migrate(R.copy(d),id)
-	check(saved.crushers.plotLevel==1 and saved.crushers.bays==36,"expansion survives migration")
-	saved.crushers.bays=24 saved=R.migrate(saved,id)
-	check(saved.crushers.bays==36,"paid floor entitlement repairs partial capacity")
+	check(saved.crushers.plotLevel==1 and saved.crushers.bays==24,"expansion survives migration")
+	d.cash=1e15
+	for bay=25,36 do check(R.act(d,{},"Unlock",{},0,math.random,id,{}) and d.crushers.bays==bay,"new row bays unlock one by one") end
+	check(not R.act(d,{},"Unlock",{},0,math.random,id,{}),"no bays past the plot level")
+	saved=R.migrate(R.copy(d),id)
+	check(saved.crushers.bays==36,"bought row bays survive migration")
 	local old=full();old.crushers.bays=36;old.crushers.plotLevel=nil
 	old=R.migrate(old,id)
 	check(old.crushers.plotLevel==0 and old.crushers.bays==24,"old saves do not get free expansion from capacity alone")
@@ -52,14 +55,15 @@ return function()
 	local f=full() f.cash=C.plotCost(1) check(P.expand(f),"Factory II")
 	local ok,message=P.expand(f)
 	check(not ok and message=="Fill all 36 bays before upgrading your plot.","Factory III needs all 36 bays filled")
-	fill(f,25,36) f.cash=C.plotCost(2)-1 before=f.cash
+	f.crushers.bays=36 fill(f,25,36) f.cash=C.plotCost(2)-1 before=f.cash
 	check(P.full(f) and not P.expand(f) and f.cash==before,"Factory III unaffordable leaves profile unchanged")
 	f.cash=C.plotCost(2)
-	check(P.expand(f) and f.cash==0 and f.crushers.plotLevel==2 and f.crushers.bays==48,"Factory III grants the twelve rear yard ground bays")
-	fill(f,37,48) f.cash=C.plotCost(3)
-	check(P.expand(f) and f.crushers.plotLevel==3 and f.crushers.bays==54,"Factory IV grants rear upper left")
-	fill(f,49,54) f.cash=C.plotCost(4)
-	check(P.expand(f) and f.crushers.plotLevel==4 and f.crushers.bays==60,"Factory V grants rear upper right")
+	check(P.expand(f) and f.cash==0 and f.crushers.plotLevel==2 and f.crushers.bays==36,"Factory III opens the rear yard ground row")
+	f.crushers.bays=48 fill(f,37,48) f.cash=C.plotCost(3)
+	check(P.expand(f) and f.crushers.plotLevel==3 and f.crushers.bays==48,"Factory IV opens rear upper left")
+	f.crushers.bays=54 fill(f,49,54) f.cash=C.plotCost(4)
+	check(P.expand(f) and f.crushers.plotLevel==4 and f.crushers.bays==54,"Factory V opens rear upper right")
+	f.crushers.bays=60
 	ok,message=P.expand(f)
 	check(not ok and message=="Your plot is fully expanded.","no plot upgrade after Factory V")
 	check(R.migrate(R.copy(f),id).crushers.bays==60,"Factory V survives migration")

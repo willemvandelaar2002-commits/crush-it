@@ -26,7 +26,7 @@ function P.expand(d)
 	local cost=C.plotCost(now+1)
 	if d.cash<cost then return false,"Not enough cash for the plot upgrade." end
 	d.cash=C.money(d.cash-cost)
-	d.crushers.plotLevel=now+1 d.crushers.bays=C.bayCapacity(now+1)
+	d.crushers.plotLevel=now+1 -- the new row appears; its bays are bought one by one (Unlock)
 	return true,"Done!"
 end
 function P.recipe(name) for _,r in C.Coatings do if r.name==name then return r end end end

@@ -98,12 +98,14 @@ local function floorFor(plot,i)
 	if l.tier==3 then return plot.topFloors and plot.topFloors[l.wing] end
 	return nil
 end
-local function floorLook(plot,unlocked)
+local function floorLook(plot,unlocked,cap)
+	cap=cap or 0
 	local all={}
 	for _,list in {plot.floors,plot.topFloors,plot.rearFloors} do for _,f in list or {} do table.insert(all,f) end end
 	for _,f in all do
-		-- top floors come with the plot upgrade: no ghost or BUILD sign, they rise when bought
-		local mode=if unlocked>=f.first then "built" elseif unlocked+1==f.first and not f.top then "ghost" else "hidden"
+		-- floors past the base plot come with the plot upgrade (built at once, their
+		-- bays bought one by one): no ghost or BUILD sign, top floors rise in
+		local mode=if unlocked>=f.first or (f.first>C.BaseMaxBays and f.first<=cap) then "built" elseif unlocked+1==f.first and not f.top then "ghost" else "hidden"
 		if f.mode~=mode then
 			local rise=(f.mode=="ghost" or (f.top==true and plot.riseTop==true)) and mode=="built"
 			f.mode=mode
@@ -211,7 +213,8 @@ local function send(p,message,result)
 			hint=view.reason,success="+"..C.Goals.SkipMinutes.." MIN!"})
 		goals.Skip.label.Text=if not view.favorite or not view.inGroup then "Complete BOTH goals above" else "Get "..Format.cash(skipReward(p,d)).." instantly"
 	end
-	floorLook(ctx.plot,s.bays)
+	local cap=C.bayCapacity(s.plotLevel)
+	floorLook(ctx.plot,s.bays,cap)
 	for i,bay in ctx.plot.bays do
 		-- bays on an upper floor that isn't built yet are invisible
 		local f=floorFor(ctx.plot,i)
@@ -222,7 +225,7 @@ local function send(p,message,result)
 			continue
 		end
 		local item=Rules.find(d,s.equipped[tostring(i)])
-		local state=if item then "busy" elseif i<=s.bays then "open" elseif i==s.bays+1 then "next" else "locked"
+		local state=if item then "busy" elseif i<=s.bays then "open" elseif i==s.bays+1 and i<=cap then "next" else "locked"
 		local card=bay.label
 		if item then
 			card.scope.Text="THIS CRUSHER"

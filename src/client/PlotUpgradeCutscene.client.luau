@@ -120,7 +120,7 @@ local function ui(s: any, info: any)
 	sub.Position = UDim2.fromScale(.5, .27) sub.Size = UDim2.fromScale(.6, .09) sub.ZIndex = 4 sub.TextTransparency = 1 sub.Parent = gui
 	local s2 = Instance.new("UIStroke") s2.Thickness = 3 s2.Color = INK s2.Transparency = 1 s2.Parent = sub
 	-- the real upgrade data from the server
-	local lines = { info.name .. " · +" .. info.added .. " CRUSHER BAYS (" .. info.bays .. " TOTAL)" }
+	local lines = { info.name .. " · " .. info.added .. " NEW BAYS TO UNLOCK" }
 	local what = { info.section }
 	if info.unlock then table.insert(what, info.unlock .. " UNLOCKED") end
 	table.insert(lines, table.concat(what, " · "))
