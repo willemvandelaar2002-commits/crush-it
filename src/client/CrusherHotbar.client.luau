@@ -157,12 +157,17 @@ end
 local KEYS = { [Enum.KeyCode.One] = 1, [Enum.KeyCode.Two] = 2, [Enum.KeyCode.Three] = 3, [Enum.KeyCode.Four] = 4,
 	[Enum.KeyCode.Five] = 5, [Enum.KeyCode.Six] = 6, [Enum.KeyCode.Seven] = 7, [Enum.KeyCode.Eight] = 8,
 	[Enum.KeyCode.Nine] = 9, [Enum.KeyCode.Zero] = 10 }
-UIS.InputBegan:Connect(function(input, processed)
-	if processed or UIS:GetFocusedTextBox() then return end
-	local n = KEYS[input.KeyCode]
-	local id = n and order_[n]
+-- Bound above Roblox's own backpack keys and sunk, so a press only toggles once.
+local CAS = game:GetService("ContextActionService")
+local list_: { Enum.KeyCode } = {}
+for key in KEYS do table.insert(list_, key) end
+CAS:BindActionAtPriority("CrusherHotbarKeys", function(_, inputState, input)
+	if inputState ~= Enum.UserInputState.Begin then return Enum.ContextActionResult.Sink end
+	if UIS:GetFocusedTextBox() then return Enum.ContextActionResult.Pass end
+	local id = order_[KEYS[input.KeyCode]]
 	if id then select(id) end
-end)
+	return Enum.ContextActionResult.Sink
+end, false, Enum.ContextActionPriority.High.Value + 100, table.unpack(list_))
 
 Net.event("CrusherState").OnClientEvent:Connect(function(v)
 	if type(v) ~= "table" or type(v.items) ~= "table" then return end
