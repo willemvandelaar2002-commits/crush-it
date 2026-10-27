@@ -35,8 +35,8 @@ Offers (`shared/OfferConfig.luau`, rules `shared/OfferRules.luau`, server
 - Save: `d.offers = { owned = {StarterPack, PrismMech}, reveals = {...} }`;
   attributes `Offer_StarterPack`, `Offer_PrismMech`.
 - Showroom (`server/PrismShowroom.luau`, `client/PrismShowroom.client.luau`):
-  plot-local pad (-22, 56), 11 studs, front yard left of the walkway between the
-  Production board's back and the Sell station; machine faces the walkway. Real
+  plot-local pad (-59, 99), 11 studs, front-left corner by the entrance (in the
+  longer front yard, Plots.Front 112); machine faces entrance + walkway (yaw 45°). Real
   imported model via SpecialCrushers.build, demo stroke every 4 s, slow soft
   rainbow ring/light, name tag with GUARANTEED CRUSHER / OWNED ✓ per viewer, E =
   View offer. Cosmetic only, no scrap.

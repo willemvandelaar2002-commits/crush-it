@@ -7,6 +7,12 @@ local W=require(script.Parent.Kit.CrusherWorkshop)
 local Style=require(S.Kit.Style)
 local Moat=require(script.Parent.Moat)
 local P={} local V=Vector3.new
+-- Blue bank walls and risers share the factory floor's imported stud finish.
+local function bankPanel(parent,name,size,cf,color,solid)
+ local panel=W.part(parent,name,size,cf,color,solid)
+ Style.studs(panel)
+ return panel
+end
 function P.prompt(part,action,title)
  local p=Instance.new("ProximityPrompt") p.Name="FactoryPrompt" p.ActionText=action p.ObjectText=title
  p.KeyboardKeyCode=Enum.KeyCode.E p.HoldDuration=0 p.MaxActivationDistance=12 p.RequiresLineOfSight=false p.Parent=part return p
@@ -26,12 +32,12 @@ local function topFloor(parent,o,wing,side)
  -- under the top bays: a solid step from the upper floor up (its front is the
  -- upper floor's back wall), carried at the back by columns down to the ground
  local stepFront=back2-1.2
- W.part(top,"TopStep",V(width,T-.8,stepFront-back3),o*CFrame.new(x,T+(T-.8)/2,(stepFront+back3)/2),W.Blue,true)
+ bankPanel(top,"TopStep",V(width,T-.8,stepFront-back3),o*CFrame.new(x,T+(T-.8)/2,(stepFront+back3)/2),W.Blue,true)
  local deck=W.part(top,"TopDeck",V(width,.8,deckDepth),o*CFrame.new(x,2*T-.4,back3+deckDepth/2),Color3.fromRGB(125,159,199),true)
  Style.materialStuds(deck,true,{Enum.NormalId.Top},2)
  W.part(top,"TopFascia",V(width,1.4,.8),o*CFrame.new(x,2*T-.9,walk3+.2),W.Navy)
  W.part(top,"TopFasciaStripe",V(width,.3,.9),o*CFrame.new(x,2*T-.05,walk3+.2),W.Yellow)
- W.part(top,"TopBackWall",V(width,T+2,1.2),o*CFrame.new(x,2*T+(T+2)/2,back3-.6),W.Blue,true)
+ bankPanel(top,"TopBackWall",V(width,T+2,1.2),o*CFrame.new(x,2*T+(T+2)/2,back3-.6),W.Blue,true)
  W.part(top,"TopBackWallCap",V(width+.4,.6,1.6),o*CFrame.new(x,3*T+2.3,back3-.6),W.Yellow)
  for row=0,L.PerWing do
   local px=side*(L.WingX+(row-L.PerWing/2)*L.Pitch)
@@ -87,12 +93,12 @@ local function bankWing(ground,up,parapet,o,side)
   local x=side*L.WingX local inner=x-side*width/2 local stairX=side*L.StairX
   -- Back wall: the ground part stays, the upper part belongs to the upper floor.
   -- Its top 2 studs and cap (the parapet) give way to the third floor's deck.
-  W.part(ground,"BankBackWall",V(width,T,1.2),o*CFrame.new(x,T/2,back-.6),W.Blue,true)
-  W.part(up,"BankBackWallUpper",V(width,T,1.2),o*CFrame.new(x,T+T/2,back-.6),W.Blue,true)
-  W.part(parapet,"BackWallParapet",V(width,2,1.2),o*CFrame.new(x,2*T+1,back-.6),W.Blue,true)
+  bankPanel(ground,"BankBackWall",V(width,T,1.2),o*CFrame.new(x,T/2,back-.6),W.Blue,true)
+  bankPanel(up,"BankBackWallUpper",V(width,T,1.2),o*CFrame.new(x,T+T/2,back-.6),W.Blue,true)
+  bankPanel(parapet,"BackWallParapet",V(width,2,1.2),o*CFrame.new(x,2*T+1,back-.6),W.Blue,true)
   W.part(parapet,"BackWallCap",V(width+.4,.6,1.6),o*CFrame.new(x,2*T+2.3,back-.6),W.Yellow)
   -- The step: a solid block under the upper row; its front is the ground bays' back.
-  W.part(ground,"BankStep",V(width,T-.8,riserFront-back),o*CFrame.new(x,(T-.8)/2,(riserFront+back)/2),W.Blue,true)
+  bankPanel(ground,"BankStep",V(width,T-.8,riserFront-back),o*CFrame.new(x,(T-.8)/2,(riserFront+back)/2),W.Blue,true)
   -- The deck: roof of the ground bays (and floor of the upper floor once built).
   local deck=W.part(ground,"UpperDeck",V(width,.8,deckDepth),o*CFrame.new(x,T-.4,back+deckDepth/2),Color3.fromRGB(125,159,199),true)
   Style.materialStuds(deck,true,{Enum.NormalId.Top},2)
@@ -226,14 +232,15 @@ function P.create(root,Plots)
   W.conveyor(decor,(o*CFrame.new(-72.5,1.4,6)).Position,bend,4,o.Position.Y)
   W.conveyor(decor,bend,(o*CFrame.new(-63,10,51)).Position,4,o.Position.Y)
   -- Toy bricks round the plaza, clear of paths, stations and stairs.
-  local red=Color3.fromRGB(230,69,77) local orange=Color3.fromRGB(255,140,40)
-  for _,b in {{12,87,2,2,red,0},{15,89.5,2,1,W.Yellow,.4},{-12,87,2,2,W.Green,0},{-14,89.5,1,1,W.Blue,-.3},
+  -- (the ones by the entrance follow the front edge: e = front-92)
+  local red=Color3.fromRGB(230,69,77) local orange=Color3.fromRGB(255,140,40) local e=front-92
+  for _,b in {{12,87+e,2,2,red,0},{15,89.5+e,2,1,W.Yellow,.4},{-12,87+e,2,2,W.Green,0},{-14,89.5+e,1,1,W.Blue,-.3},
    {-36,62,2,2,W.Yellow,.3},{36,60,2,2,W.Blue,-.4},{30,66,1,1,W.Green,.6},{-14,70,2,2,W.Blue,.2},
-   {22,72,2,1,orange,0},{-64,88,2,2,red,-.1},{71,86,2,2,W.Green,.1},{-58,89,1,1,W.Yellow,0},{68,89,1,1,W.Yellow,0}} do
+   {22,72,2,1,orange,0},{-70,88+e,2,2,red,-.1},{71,86+e,2,2,W.Green,.1},{68,89+e,1,1,W.Yellow,0}} do
    W.brick(decor,o*CFrame.new(b[1],0,b[2])*CFrame.Angles(0,b[6],0),b[3],b[4],b[5])
   end
-  W.brick(decor,o*CFrame.new(12,1.6,87)*CFrame.Angles(0,.5,0),1,1,W.Blue)
-  W.brick(decor,o*CFrame.new(-12,1.6,87)*CFrame.Angles(0,-.4,0),2,1,W.Yellow)
+  W.brick(decor,o*CFrame.new(12,1.6,87+e)*CFrame.Angles(0,.5,0),1,1,W.Blue)
+  W.brick(decor,o*CFrame.new(-12,1.6,87+e)*CFrame.Angles(0,-.4,0),2,1,W.Yellow)
   m.Parent=root Moat.build(m,o,true,rear) table.insert(Plots.all(),plot)
   task.wait()
  end

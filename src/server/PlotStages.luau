@@ -8,6 +8,7 @@ local ServerStorage=game:GetService("ServerStorage")
 local C=require(RS.Shared.CrusherConfig)
 local Style=require(RS.Shared.Kit.Style)
 local World=require(RS.Shared.Config).World
+local FRONT=require(RS.Shared.Config).Plots.Front -- plot entrance edge (plot-local z)
 local W=require(script.Parent.Kit.CrusherWorkshop)
 local Build=require(script.Parent.Kit.Build)
 local Assets=require(script.Parent.PlotAssets)
@@ -21,8 +22,8 @@ local PROPS={
 	{level=2,name="MaintenanceBot",x=-86,z=68,yaw=math.rad(-40),replaces="MaintenanceRobot"},
 	{level=2,name="PipeManifold",x=73,z=56,yaw=math.rad(-90)},
 	{level=3,name="ScrapSorter",x=-41,z=71,yaw=math.rad(90)},
-	{level=3,name="FactoryLamp",x=-42,z=86,yaw=0},
-	{level=3,name="FactoryLamp",x=42,z=86,yaw=0},
+	{level=3,name="FactoryLamp",x=-42,z=FRONT-6,yaw=0},
+	{level=3,name="FactoryLamp",x=42,z=FRONT-6,yaw=0},
 	{level=4,name="Workbench",x=-106,z=71,yaw=math.rad(90)},
 }
 local V={}
@@ -189,7 +190,7 @@ function V.create(plot)
 	local root=Instance.new("Model") root.Name="PlotStages" root.Parent=plot.model
 	local L=C.Layout
 	local F=156 local half=F/2
-	local front=92 local rear=L.BayZ-L.UpperBack-L.BayDepth/2-4
+	local front=FRONT local rear=L.BayZ-L.UpperBack-L.BayDepth/2-4
 	local platform=Style.theme("Island").platform
 	local records={}
 	local function stage(level,name)
@@ -265,7 +266,7 @@ function V.create(plot)
 		cylinder(s3,"UtilityPipe",z1-z0,.9,o*CFrame.new(x,.75,(z0+z1)/2)*ALONG_Z,Cyan,false)
 		for z=z0+2,z1-2,8 do W.part(s3,"PipeBracket",V3(1.3,1.3,.5),o*CFrame.new(x,.65,z),Orange) end
 	end
-	pipe(half-2.4,-26,86) pipe(-half+2.4,76,86)
+	pipe(half-2.4,-26,FRONT-6) pipe(-half+2.4,76,FRONT-6)
 	-- the left rim opens into the fusion wing
 	local door={}
 	for _,p in plot.model:GetDescendants() do
@@ -457,7 +458,7 @@ local function buildKit(plot,level)
 	end
 	local L=C.Layout
 	for _,x in {-1,1} do
-		for z=-90,84,12 do
+		for z=-90,FRONT-8,12 do
 			local cf=o*CFrame.new(x*(L.RoadHalf+3.6),0,z)
 			if clear(cf*CFrame.new(0,2.2,0),Vector3.new(1.6,3.6,1.6)) then Assets.place("SupportBeam"..suffix,kit,cf) end
 		end

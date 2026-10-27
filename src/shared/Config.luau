@@ -452,7 +452,7 @@ Config.Plots = {
 	-- Plot depth, measured from the press centre (plot-local +Z points to the hub):
 	--   Front: entrance from the hub bridge, scrap shop (left), upgrade pads (right), scrap pile
 	--   Back:  the conveyor from the toy factory hall, Mini Press yards
-	Front = 92,
+	Front = 112, -- 27 Oct: 92 -> 112, a longer front yard (more room by the entrance)
 	Back = 48,
 	ShopX = -12, -- scrap shop entrance line (it opens toward the centre path) ...
 	ShopZ = 66, -- ... and its centre along Z

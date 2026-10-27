@@ -238,3 +238,5 @@
 - 2026-10-27: Six crate crushers from the Blender pack added as crate-only types (3 Epic, 3 Legendary, provisional tiers/bands) and put in the Factory Crate with the three Mythics (test odds 18/12/3.33% each); new motion rigs (hinges, stretching pistons, parented ears/claws, sideways vise). Normal rolls and free drops unchanged. Willem asked to fill the crates.
 - 2026-10-27: Crate crusher icons added as image ids (Asset Manager names don't load by rbxgameasset); checked loaded in Play.
 
+- 2026-10-27: Blue crusher-bank back walls, parapets and solid steps now use the imported Studs material, including third-floor and rear-yard banks. Applied to 120 parts in the running Studio preview; verified material and preserved size, position, colour and collision.
+- 2026-10-27: Plots' front yard 20 studs longer (Plots.Front 92 -> 112; stations keep their places, entrance decor/gate plate/lamps/pipes follow the front edge) and the Prism Mech showroom moved to the front-left corner by the entrance (Willem). Hall grows to half-width 500 to keep clear of the plots.

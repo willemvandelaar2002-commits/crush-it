@@ -7,6 +7,7 @@ local Format=require(RS.Shared.Format)
 local W=require(script.Parent.Kit.CrusherWorkshop)
 local Build=require(script.Parent.Kit.Build)
 local World=require(RS.Shared.Config).World
+local FRONT=require(RS.Shared.Config).Plots.Front
 local Stages=require(script.Parent.PlotStages)
 local Assets=require(script.Parent.PlotAssets)
 -- Coating booth (Willem's Blender model) beside the Coating Lab board, front
@@ -63,10 +64,10 @@ function V.create(plot)
 	-- Cosmetic finish appears with the upgrade, without enclosing the factory.
 	local accents=Instance.new("Model") accents.Name="UpgradedPlotTrim" accents.Parent=root
 	for _,x in {-7.75,7.75} do
-		W.part(accents,"GoldGateTrim",Vector3.new(.25,7,.18),o*CFrame.new(x,3.5,89.08),Style.Colors.Gold)
+		W.part(accents,"GoldGateTrim",Vector3.new(.25,7,.18),o*CFrame.new(x,3.5,FRONT-2.92),Style.Colors.Gold)
 	end
-	local gate=W.part(accents,"FactoryLevelPlate",Vector3.new(8,1.4,.25),o*CFrame.new(0,10,89),W.Navy)
-	for _,x in {-3,3} do W.part(accents,"LevelPlateStem",Vector3.new(.25,1.2,.25),o*CFrame.new(x,9.1,88.9),Style.Colors.Gold) end
+	local gate=W.part(accents,"FactoryLevelPlate",Vector3.new(8,1.4,.25),o*CFrame.new(0,10,FRONT-3),W.Navy)
+	for _,x in {-3,3} do W.part(accents,"LevelPlateStem",Vector3.new(.25,1.2,.25),o*CFrame.new(x,9.1,FRONT-3.1),Style.Colors.Gold) end
 	local levelText=W.text(W.sign(gate),"FactoryLevel","FACTORY II",UDim2.fromScale(.02,.02),UDim2.fromScale(.96,.96))
 	for first=1,C.BaseMaxBays,C.Layout.PerWing do for _,bay in {first,first+C.Layout.PerWing-1} do
 		local at=C.bayLayout(bay)

@@ -51,11 +51,11 @@ O.Showroom = {
 	id = "PrismMech", product = "Mythic_PrismMech", once = true,
 	title = "Prism Mech", tag = "GUARANTEED CRUSHER",
 	crusher = "PrismMech", rarity = "Mythic",
-	-- plot-local pad (measured 27 Oct): front yard left of the walkway, behind
-	-- the Production board's back (z 46) and in front of the Sell station (z 72),
-	-- 10 studs off the walkway; the collector -> Sell route passes west of it.
-	-- yaw: the machine faces the walkway, so you see it walking in.
-	pad = { x = -22, z = 56, size = 11, yaw = math.pi / 2 },
+	-- plot-local pad: the front-left corner by the entrance (Willem, 27 Oct),
+	-- in the yard added by Plots.Front 112: left of the Sell counter's
+	-- customer side (x -36..-16), 6 studs inside the left and front rims.
+	-- yaw pi/4: the machine faces the entrance and the walkway at once.
+	pad = { x = -59, z = 99, size = 11, yaw = math.pi / 4 },
 	demoEvery = 4, -- seconds between showroom press strokes (visual only)
 }
 
