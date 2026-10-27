@@ -38,4 +38,30 @@ function A.place(name: string, parent: Instance, cf: CFrame, opts: {solid: boole
 	end
 	return holder
 end
+
+-- Like place, but stretches the template per axis to an exact size (x, y, z
+-- in studs along the pivot's axes); its centre lands on cf. Used to fit a
+-- frame around boards of any width.
+function A.placeSized(name: string, parent: Instance, cf: CFrame, size: Vector3): Model?
+	local t=A.template(name) if not t then return nil end
+	local m=t:Clone() m:SetAttribute("Ready",nil)
+	local pivot=m:GetPivot() local box,have=m:GetBoundingBox()
+	local k=Vector3.new(size.X/have.X,size.Y/have.Y,size.Z/have.Z)
+	local centre=pivot:PointToObjectSpace(box.Position)
+	for _,p in m:GetDescendants() do
+		if p:IsA("BasePart") then
+			p.Anchored=true p.CanCollide=false p.CanTouch=false p.CanQuery=false
+			local rel=pivot:ToObjectSpace(p.CFrame)
+			local axes=rel.Rotation
+			-- size along the part's own axes, scaled by the model axis each one lies on
+			local function f(v: Vector3) local a=axes:VectorToWorldSpace(v) return math.abs(a.X)*k.X+math.abs(a.Y)*k.Y+math.abs(a.Z)*k.Z end
+			p.Size=Vector3.new(p.Size.X*f(Vector3.xAxis),p.Size.Y*f(Vector3.yAxis),p.Size.Z*f(Vector3.zAxis))
+			local at=(rel.Position-centre)*k
+			p.CFrame=cf*CFrame.new(at)*axes
+		end
+	end
+	m:PivotTo(m:GetPivot()) -- keep pivot data valid
+	m.Parent=parent
+	return m
+end
 return A

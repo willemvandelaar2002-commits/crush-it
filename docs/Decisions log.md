@@ -1,5 +1,7 @@
 # Decisions log
 
+- 2026-10-27: Placed Willem's Blender trim kit (CornerBrace / SupportBeam / BoardFrame) from Factory II, in the colour version of the plot level (yellow, orange, silver, gold): frames stretched round the nine station boards and floor signs (non-colliding, not queryable, so board buttons still work), solid posts along both road edges every 12 studs (spots with something there are skipped) and guards at the foot of the ground columns (rear banks from Factory III). Rebuilt on each upgrade. Studio verified at Factory III: 9 frames, 28 posts, 28 guards, no errors. See Systems/Factory progression.md.
+
 - 2026-10-26: Tutorial "Buy your crusher" reward raised from $15 to $100, so a new player can unlock bay 2 ($100) straight after the first purchase instead of grinding about $75 with one Common crusher. Bay costs and the rest of the economy are unchanged.
 
 - 2026-10-26: Made full-row set glow far more visible. The place's bloom is nearly off (KitBloom 0.04), so neon aura parts read as plain wall colour. Each active row (max 4, own plot first) now adds client-only rising light curtains per bay, a soft rarity-coloured smoke haze, wider/denser sparkles (8/12/16 per bay by rarity) and a bigger completion burst; the two nearest rows also outline every crusher (12 Highlights, Occluded). Server aura pillars are thicker and a glowing top bar was added. No gameplay or save changes. Studio screenshots reviewed on Willem's Epic and Rare rows. See Systems/Row set effects.md.

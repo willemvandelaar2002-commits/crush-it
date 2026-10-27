@@ -155,6 +155,14 @@ them and adds one invisible collision box each.
   panels, gold caps, gold glow, flags. Front stays open; gap at the fusion
   wing doorway (z 46..76).
 
+## Trim kit (27 Oct)
+
+- `PlotStages.buildKit(plot, level)` runs from `V.sync` on every level change: `TrimKit` model in the plot, the version `""/_Plot3Orange/_Plot4Silver/_Plot5Gold` for levels 1–4, none at level 0.
+- BoardFrame: `PlotAssets.placeSized` stretches it to each board's panel (or casing) + 1 stud, 0.3 in front of the text face. Boards: PlotUpgrade, Production, Rolling, Collect, Sell, Roll, Goals stations and FloorSign1/2.
+- SupportBeam: x = ±(RoadHalf + 3.6), z −90..84 every 12; skipped when anything taller than 0.7 overlaps.
+- CornerBrace: plaza side of each ground column foot; RearGround columns from level 2.
+- Studio test hook: `PlotStages.buildKit({model=..., origin=..., stages={}}, level)`.
+
 ## Upgrade cutscene (26 Oct)
 
 - Server: after a confirmed `UpgradePlot` that raises the plot level, `PlotUpgraded` goes to the buyer only, carrying `upgradeSummary(levelBefore, level)`: level, name, section, unlock, accent, bays added/total, first..last bay, and old→new caps. Text and colour per level live in `CrusherConfig.PlotUpgrade.Sections/Unlocks/Accents`.
