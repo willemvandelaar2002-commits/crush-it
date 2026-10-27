@@ -438,7 +438,7 @@ function Style.modal(panel: Frame)
 	local shade = child("TextButton", { Name = panel.Name .. "Backdrop", Size = UDim2.fromScale(1, 1),
 		BackgroundColor3 = INK, BackgroundTransparency = 0.35, BorderSizePixel = 0, Text = "",
 		AutoButtonColor = false, Visible = false, ZIndex = panel.ZIndex - 1, Modal = true }, gui)
-	shade.Activated:Connect(function() Style.setOpen(panel, false) end)
+	-- (the backdrop only blocks clicks behind the panel; menus close with their X)
 	panel:GetPropertyChangedSignal("Visible"):Connect(function()
 		shade.Visible = panel.Visible
 		if panel.Visible then
