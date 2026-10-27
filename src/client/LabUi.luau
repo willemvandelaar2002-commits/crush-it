@@ -84,10 +84,20 @@ function L.window(gui: ScreenGui, opts: any): (Frame, TextButton)
 	return panel, close
 end
 
+local fitted: { [Frame]: boolean } = {}
 function L.fit(panel: Frame, w: number, h: number)
-	local view = workspace.CurrentCamera.ViewportSize
+	local camera = workspace.CurrentCamera
 	local scale = panel:FindFirstChild("Fit") :: UIScale
-	scale.Scale = math.min(1, (view.X - 30) / w, (view.Y - 40) / h)
+	local function apply()
+		local view = workspace.CurrentCamera.ViewportSize
+		scale.Scale = math.min(1, (view.X - 30) / w, (view.Y - 40) / h)
+	end
+	apply()
+	-- refit when the game window changes size
+	if not fitted[panel] then
+		fitted[panel] = true
+		camera:GetPropertyChangedSignal("ViewportSize"):Connect(apply)
+	end
 end
 
 -- Dark rounded label ("Lv. 1", "COPY", "4/4").
