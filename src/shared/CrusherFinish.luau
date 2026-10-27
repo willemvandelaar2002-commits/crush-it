@@ -14,7 +14,7 @@ F.Looks={
 		glow=Color3.fromRGB(255,255,255),fx="glint"},
 	Frost={dark=Color3.fromRGB(38,112,178),light=Color3.fromRGB(214,248,255),mix=.88,material=Enum.Material.Ice,
 		glow=Color3.fromRGB(120,235,255),fx="snow"},
-	Fire={dark=Color3.fromRGB(78,22,12),light=Color3.fromRGB(255,152,44),mix=.85,material=Enum.Material.SmoothPlastic,
+	Fire={dark=Color3.fromRGB(120,22,8),light=Color3.fromRGB(255,118,26),mix=.95,material=Enum.Material.SmoothPlastic,
 		darkMaterial=Enum.Material.CrackedLava,glow=Color3.fromRGB(255,120,30),fx="flame"},
 	Charged={dark=Color3.fromRGB(46,20,98),light=Color3.fromRGB(206,150,255),mix=.85,material=Enum.Material.SmoothPlastic,
 		glow=Color3.fromRGB(190,110,255),fx="spark"},
