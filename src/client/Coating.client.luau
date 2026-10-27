@@ -59,21 +59,21 @@ local afterHint = L.text(mid, "AfterHint", "?", UDim2.new(.5, -118, 0, 318), UDi
 local status = L.text(mid, "Status", "", UDim2.new(0, 6, 1, -44), UDim2.new(1, -12, 0, 38), 20, 2)
 
 -- right: coatings
-local right = L.section(panel, "Coatings", "CHOOSE A COATING", UDim2.fromOffset(640, 140), UDim2.fromOffset(346, 330), INDIGO)
+local right = L.section(panel, "Coatings", "CHOOSE A COATING", UDim2.fromOffset(640, 140), UDim2.fromOffset(346, 334), INDIGO)
 local cards: { [string]: any } = {}
 for i, recipe in C.Coatings do
 	local look = LOOK[recipe.name]
 	local b = make("TextButton", { Name = "Card_" .. recipe.name, Text = "", AutoButtonColor = false, ZIndex = 8,
-		Position = UDim2.fromOffset(10 + ((i - 1) % 2) * 166, 64 + math.floor((i - 1) / 2) * 130), Size = UDim2.fromOffset(160, 124) }, right)
+		Position = UDim2.fromOffset(10 + ((i - 1) % 2) * 166, 62 + math.floor((i - 1) / 2) * 132), Size = UDim2.fromOffset(160, 128) }, right)
 	Style.panel(b :: any, look.a, look.b)
 	;(b:FindFirstChild("Corner") :: UICorner).CornerRadius = UDim.new(0, 14)
-	L.art(b, look.icon, look.glyph, UDim2.new(.5, -30, 0, 4), UDim2.fromOffset(60, 52), 9)
-	L.text(b, "Name", recipe.name, UDim2.fromOffset(0, 52), UDim2.new(1, 0, 0, 26), 24, 3)
-	local mult = L.text(b, "Mult", "x" .. C.modifier(recipe.name).mult, UDim2.fromOffset(0, 74), UDim2.new(1, 0, 0, 24), 24, 3)
-	local price = L.pill(b, "Price", "", UDim2.new(.08, 0, 1, -34), UDim2.new(.84, 0, 0, 28), L.GREEN, nil, 22)
+	L.art(b, look.icon, look.glyph, UDim2.new(.5, -26, 0, 4), UDim2.fromOffset(52, 44), 9)
+	L.text(b, "Name", recipe.name, UDim2.fromOffset(0, 46), UDim2.new(1, 0, 0, 24), 24, 3)
+	local mult = L.text(b, "Mult", "x" .. C.modifier(recipe.name).mult, UDim2.fromOffset(0, 69), UDim2.new(1, 0, 0, 24), 24, 3)
+	local price = L.pill(b, "Price", "", UDim2.new(.08, 0, 1, -33), UDim2.new(.84, 0, 0, 28), L.GREEN, nil, 22)
 	cards[recipe.name] = { button = b, price = price, mult = mult }
 end
-local info = L.panel(panel, "Multiplier", UDim2.fromOffset(640, 478), UDim2.fromOffset(346, 74), Color3.fromRGB(30, 34, 62), Color3.fromRGB(20, 22, 44), 12)
+local info = L.panel(panel, "Multiplier", UDim2.fromOffset(640, 482), UDim2.fromOffset(346, 72), Color3.fromRGB(30, 34, 62), Color3.fromRGB(20, 22, 44), 12)
 local infoTitle = L.text(info, "Title", "Output multiplier:", UDim2.fromOffset(12, 4), UDim2.fromOffset(190, 24), 18, 2)
 infoTitle.TextXAlignment = Enum.TextXAlignment.Left
 local infoMult = make("TextLabel", { Name = "Mult", RichText = true, Text = "", Position = UDim2.fromOffset(12, 28), Size = UDim2.fromOffset(190, 40),
@@ -229,8 +229,8 @@ panel:GetPropertyChangedSignal("Visible"):Connect(function() if panel.Visible th
 -- (visual only; the server refuses ids you don't own).
 if game:GetService("RunService"):IsStudio() then
 	local probe = make("BindableFunction", { Name = "CoatingPreview" }, script)
-	probe.OnInvoke = function(fake: any, pick: string?)
-		previewing = true state = fake picked = pick L.fit(panel, W, H) Style.setOpen(panel, true) redraw()
+	probe.OnInvoke = function(fake: any, pick: string?, id: string?)
+		previewing = true state = fake picked = pick selectedId = id L.fit(panel, W, H) Style.setOpen(panel, true) redraw()
 		return true
 	end
 end

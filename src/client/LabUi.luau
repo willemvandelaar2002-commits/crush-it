@@ -75,7 +75,7 @@ function L.window(gui: ScreenGui, opts: any): (Frame, TextButton)
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	local sub = L.text(header, "Subtitle", opts.subtitle, UDim2.fromOffset(130, 76), UDim2.new(1, -240, 0, 34), 27, 3)
 	sub.TextXAlignment = Enum.TextXAlignment.Left
-	local close = make("TextButton", { Name = "Close", Text = "✕", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -12, 0, 12),
+	local close = make("TextButton", { Name = "Close", Text = "X", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -12, 0, 12),
 		Size = UDim2.fromOffset(92, 92), TextSize = 58, ZIndex = 12 }, header)
 	Style.button(close, Style.Colors.Red)
 	;(close:FindFirstChild("Corner") :: UICorner).CornerRadius = UDim.new(0, 16)
