@@ -18,14 +18,16 @@ return function()
 	-- odds: all three outcomes, percentages that add to 100
 	local crate = O.Crates[1]
 	local odds, rounded = O.odds(crate)
-	check(#odds == 3, "three outcomes")
+	check(#odds == 9, "nine outcomes")
 	local total = 0
 	for _, o in odds do total += o.percent end
 	check(math.abs(total - 100) < 1e-9, "odds add to 100%")
-	check(rounded and odds[1].text == "33.333%", "equal test odds print as 33.333% with the rounding note: " .. odds[1].text)
+	check(rounded and odds[1].text == "18%" and odds[9].text == "3.3333%", "exact odds print exactly, others with 4 digits + the rounding note: " .. odds[9].text)
 	local exact = O.odds({ items = { { type = "A", weight = 1 }, { type = "B", weight = 3 } } })
 	check(exact[1].text == "25%" and exact[2].text == "75%", "exact odds print exactly")
-	check(O.pick(crate, 0) == "JackpotPress" and O.pick(crate, 0.34) == "SeraphPress" and O.pick(crate, 0.999) == "PhantomPirate", "pick follows the weights")
+	check(O.pick(crate, 0) == "DuckyDynamo" and O.pick(crate, 0.55) == "ArcadeClaw" and O.pick(crate, 0.999) == "PhantomPirate", "pick follows the weights")
+	local C = require(S.CrusherConfig)
+	for _, o in odds do check(C.rarityOf(o.type) ~= nil and C.typeById(o.type) ~= nil, o.type .. " is a known type with a rarity") end
 
 	local function profile() return { cash = 0 } end
 	local log
@@ -55,9 +57,12 @@ return function()
 
 	-- Crate: picked, granted and saved as a reveal; seen removes only the reveal
 	d = profile()
-	ok, res = R.fulfil(d, "FactoryCrate1", "p4", hooks(0.9))
+	ok, res = R.fulfil(d, "FactoryCrate1", "p4", hooks(0.999))
 	check(ok and res.reveal and log.crushers[1] == "Mythic:PhantomPirate", "crate grants the picked crusher")
 	check(#d.offers.reveals == 1 and d.offers.reveals[1].type == "PhantomPirate" and d.offers.reveals[1].id == "p4#1", "crate result saved for the reveal")
+	ok = R.fulfil(d, "FactoryCrate1", "p4b", hooks(0.1))
+	check(ok and log.crushers[1] == "Epic:DuckyDynamo", "crate crushers arrive with their own rarity")
+	R.seen(d, "p4b#1")
 	local saved = game.HttpService:JSONDecode(game.HttpService:JSONEncode(d))
 	R.migrate(saved)
 	check(saved.offers.reveals[1].type == "PhantomPirate", "reveal survives a save round trip (same result after rejoin)")

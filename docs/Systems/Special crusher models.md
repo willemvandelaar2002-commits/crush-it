@@ -1,5 +1,31 @@
 # Imported special crushers — 2026-10-22
 
+## 27 Oct: six crate crushers (assets/crate-crushers)
+Ducky Dynamo, Wind-Up Wrecker, Gumball Gobbler (Epic, Titan band) and Arcade
+Claw, Disco Destroyer, Kraken Clamp (Legendary, Quantum band). **Crate-only**:
+`C.CrateTypes`, not in their rarity's roll list, so normal rolls, roll odds and
+free random drops (spin, rewards, quests) are unchanged; `C.rarityOf` finds
+their tier through `def.rarity`. Index shows CRATE ONLY. Tiers/bands are
+provisional (Willem: fill the crates).
+
+- Templates: `ServerStorage.SpecialCrusherMeshes.<Id>` (place-only: save/publish
+  the place). Studio's importer keeps studs 1:1 and turns the meshes 180° about Y
+  (part rotations stay identity); fronts end up like the Mythics (default yaw π).
+  Gumball Globe set to Transparency 0.83 (template and at build).
+- `SpecialCrusherAssets`: `kit="motion"` entries generated from the pack's JSON +
+  FBX (per part: mesh box centre/size and authored pivot, FBX space; motion kinds
+  move / rotate / extend; parents for ears and claws; contact parts).
+- `SpecialCrushers.rig` works out the FBX->world mapping from the Frame (scale)
+  and the part furthest from it (the turn), pre-computes every moving part's pose
+  at the Blender curve keys, and a strike tweens key to key (no per-frame loop).
+  Contact (key 33/71) lands at the shared feedback hit time; the return takes
+  ~55% of the cycle. Pistons stretch from their fixed end, children follow the
+  parent then hinge.
+- Checked in Play (4 s sampling, 6 bays): shaft tops fixed and shafts meet the
+  heads, frames still, ears/claws stay attached, Kraken jaws close 4.6 -> 3.5 and
+  pistons stretch 1.0 -> 1.5.
+
+
 Five imported templates now participate in the existing collection, equipment,
 levels and automatic production. They use the existing rarity weights, prices,
 individual upgrades and production formulas. No new abilities, bonus payouts

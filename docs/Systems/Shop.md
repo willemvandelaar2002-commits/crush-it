@@ -13,7 +13,7 @@ Offers (`shared/OfferConfig.luau`, rules `shared/OfferRules.luau`, server
 | Offer | Store product | Contents | Rule |
 |---|---|---|---|
 | Starter Pack | `StarterPack` | Candy Colossus + CashPacks.CashMedium cash + 2x Cash boost (BoostConfig minutes) | once per player |
-| Factory Crate | `FactoryCrate1` | one of Jackpot Press / Seraph Press / Phantom Pirate, equal weights (Studio test odds) | paid random item |
+| Factory Crate | `FactoryCrate1` | one of 9: Ducky / Wind-Up / Gumball (Epic, 18% each), Arcade / Disco / Kraken (Legendary, 12% each), Jackpot / Seraph / Phantom (Mythic, 3.3333% each); test odds | paid random item |
 | Prism Mech | `Mythic_PrismMech` (existing id kept) | Prism Mech | once per player, showroom pad on every plot |
 
 - Buying: client sends `OfferAction("Prompt", product)`; the server checks id ≠ 0,

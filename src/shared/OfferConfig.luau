@@ -5,7 +5,8 @@
 -- bought); the price the shop shows always comes from Roblox, never from here.
 --
 --   Starter Pack   once per player: guaranteed Candy Colossus + cash + a boost
---   Factory Crate  one random Mythic: Jackpot Press, Seraph Press or Phantom Pirate
+--   Factory Crate  one random crusher: 3 Epic + 3 Legendary crate crushers or a
+--                  Mythic (Jackpot Press, Seraph Press, Phantom Pirate)
 --                  (paid random item: odds shown before purchase, PolicyService
 --                  eligibility checked per player, server picks and saves the result)
 --   Prism Mech     once per player: guaranteed, shown on every plot's showroom pad
@@ -26,11 +27,19 @@ O.StarterPack = {
 -- Weights are relative; equal weights are PROVISIONAL Studio test data.
 O.Crates = {
 	{
-		id = "FactoryCrate", title = "Factory Crate", rarity = "Mythic", provisional = true,
+		id = "FactoryCrate", title = "Factory Crate", provisional = true,
+		-- 27 Oct: + the six crate crushers. Each item's rarity comes from its type
+		-- (C.rarityOf). Test weights: Epic 18 each, Legendary 12 each, Mythic 10/3 each.
 		items = {
-			{ type = "JackpotPress", weight = 1 },
-			{ type = "SeraphPress", weight = 1 },
-			{ type = "PhantomPirate", weight = 1 },
+			{ type = "DuckyDynamo", weight = 18 },
+			{ type = "WindUpWrecker", weight = 18 },
+			{ type = "GumballGobbler", weight = 18 },
+			{ type = "ArcadeClaw", weight = 12 },
+			{ type = "DiscoDestroyer", weight = 12 },
+			{ type = "KrakenClamp", weight = 12 },
+			{ type = "JackpotPress", weight = 10 / 3 },
+			{ type = "SeraphPress", weight = 10 / 3 },
+			{ type = "PhantomPirate", weight = 10 / 3 },
 		},
 		bundles = {
 			{ product = "FactoryCrate1", count = 1 },

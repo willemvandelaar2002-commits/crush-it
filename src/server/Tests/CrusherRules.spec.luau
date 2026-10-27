@@ -139,7 +139,7 @@ return function()
 	end
 	-- Forty real, reachable definitions; model additions must not silently
 	-- change legacy IDs, saved instance stats or the existing rarity weights.
-	check(#C.Types==40+#C.Mythics,"forty rollable crusher types plus the Mythics")
+	check(#C.Types==40+#C.Mythics+#C.CrateTypes,"forty rollable crusher types plus the Mythics")
 	local seen={} local cumulative=0 local total=0 for _,r in C.Rarities do total+=r.weight end
 	for _,r in C.Rarities do
 		check(#r.types==(if r.exclusive then #C.Mythics else 8),"eight types per rollable rarity")

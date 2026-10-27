@@ -34,7 +34,9 @@ I.Ready={Titan=true,Laser=true,Plasma=true,Gravity=true,Quake=true,Cyclone=true,
 	Quantum=true,Starforge=true,DragonJaw=true,BlackHole=true,Clockwork=true,FactoryHeart=true,
 	Mega=true,Thunder=true,Frost=true,Furnace=true,ScrapShark=true,SteamHammer=true,JunkyardJaw=true,
 	Cobalt=true,Gearbox=true,Flywheel=true,Pneumatic=true,DoubleStamp=true,Boiler=true,Conveyor=true,
-	Bumper=true,Steel=true,Clamp=true,Spring=true,Screw=true,Rivet=true,Bottle=true,Bench=true} :: {[string]: boolean}
+	Bumper=true,Steel=true,Clamp=true,Spring=true,Screw=true,Rivet=true,Bottle=true,Bench=true,
+	-- crate crushers (27 Oct pack): Asset Manager images named Crusher_<Id>
+	DuckyDynamo=true,WindUpWrecker=true,GumballGobbler=true,ArcadeClaw=true,DiscoDestroyer=true,KrakenClamp=true} :: {[string]: boolean}
 function I.image(typeId: string): string?
 	local uri=I.Overrides[typeId] if uri and uri~="" then return uri end
 	return if I.Ready[typeId] then "rbxgameasset://Images/Crusher_"..typeId else nil

@@ -380,7 +380,7 @@ local function card(ped,name,rarity,odds,value,price,color)
 	c.odds.Text=odds c.value.Text=value c.price.Text=price
 end
 local function oddsText(typeId)
-	local r=C.rarityOf(typeId) if r and r.exclusive then return "[EXCLUSIVE]" end
+	local r=C.rarityOf(typeId) if (r and r.exclusive) or C.isCrateOnly(typeId) then return "[EXCLUSIVE]" end
 	return "[1 in "..Format.cash(C.oddsFor(typeId)):gsub("%$","").."]"
 end
 -- Unlocked pedestals are yellow and empty until a roll; locked ones are grey
@@ -730,7 +730,8 @@ function G.start()
 		giveCrusher=function(p,rarityName,typeId,force)
 			local d=Data.get(p) local r=C.rarity(rarityName)
 			if not d or not r or #r.types==0 or (#d.crushers.owned>=C.MaxInventory and not force) then return nil end
-			if typeId and not table.find(r.types,typeId) then return nil end
+			-- a specific type must belong to that rarity (crate-only types via C.rarityOf)
+			if typeId and C.rarityOf(typeId)~=r then return nil end
 			local item={id=guid(),type=typeId or r.types[rng:NextInteger(1,#r.types)],rarity=r.name,modifier="Standard",level=1}
 			table.insert(d.crushers.owned,item) send(p)
 			return C.typeById(item.type).name

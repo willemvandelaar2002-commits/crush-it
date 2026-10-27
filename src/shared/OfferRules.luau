@@ -29,7 +29,7 @@ end
 
 local function validType(rarity: string, typeId: string): boolean
 	local r = C.rarity(rarity)
-	return r ~= nil and table.find(r.types, typeId) ~= nil
+	return r ~= nil and C.rarityOf(typeId) == r
 end
 
 -- hooks = { giveCrusher(rarity, type) -> name?, addCash(n), addBoost(id, minutes), random() -> [0,1) }
@@ -59,12 +59,14 @@ function R.fulfil(d: any, product: string, purchaseId: string, hooks: any): (boo
 	local picks = {}
 	for i = 1, entry.count do
 		local t = O.pick(offer, hooks.random())
-		if not validType(offer.rarity, t) then return false, "bad crate item" end
-		picks[i] = t
+		local r = C.rarityOf(t)
+		if not r or not validType(r.name, t) then return false, "bad crate item" end
+		picks[i] = { type = t, rarity = r.name }
 	end
 	local names = {}
-	for i, t in picks do
-		local name = hooks.giveCrusher(offer.rarity, t)
+	for i, pick in picks do
+		local t = pick.type
+		local name = hooks.giveCrusher(pick.rarity, t)
 		if not name then error("crate crusher grant failed") end
 		names[i] = name
 		table.insert(offers.reveals, { id = purchaseId .. "#" .. i, crate = offer.id, type = t })

@@ -187,6 +187,27 @@ for _, m in C.Mythics do
 	table.insert(C.Types, { id = m.id, name = m.name, template = m.id, tier = 11, input = 3, damage = 40, hp = 120, value = 660, cycle = 1.8 })
 	table.insert(C.Rarities[#C.Rarities].types, m.id)
 end
+-- Crate crushers (27 Oct Blender pack, assets/crate-crushers): crate-only, so
+-- they are NOT in their rarity's roll list (normal rolls, odds and free random
+-- drops stay exactly as before). def.rarity names their tier; each copies an
+-- existing production band like the roster types do. Tiers are provisional.
+C.CrateTypes = {
+	{ id = "DuckyDynamo", name = "Ducky Dynamo", rarity = "Epic", band = "Titan" },
+	{ id = "WindUpWrecker", name = "Wind-Up Wrecker", rarity = "Epic", band = "Titan" },
+	{ id = "GumballGobbler", name = "Gumball Gobbler", rarity = "Epic", band = "Titan" },
+	{ id = "ArcadeClaw", name = "Arcade Claw", rarity = "Legendary", band = "Quantum" },
+	{ id = "DiscoDestroyer", name = "Disco Destroyer", rarity = "Legendary", band = "Quantum" },
+	{ id = "KrakenClamp", name = "Kraken Clamp", rarity = "Legendary", band = "Quantum" },
+}
+for _, entry in C.CrateTypes do
+	local band
+	for _, existing in C.Types do if existing.id == entry.band then band = existing break end end
+	assert(band, "Missing production band for " .. entry.id)
+	local def = table.clone(band)
+	def.id = entry.id def.name = entry.name def.template = entry.id def.design = nil
+	def.rarity = entry.rarity def.crate = true
+	table.insert(C.Types, def)
+end
 C.Modifiers = {
 	{ name = "Standard", weight = 80, mult = 1 }, { name = "Rusty", weight = 14, mult = 1.15 },
 	{ name = "Polished", weight = 5, mult = 1.5 }, { name = "Charged", weight = 1, mult = 2 },
@@ -241,7 +262,12 @@ function C.oddsFor(typeId)
 	end end end
 	return 1
 end
-function C.rarityOf(typeId) for _,r in C.Rarities do for _,t in r.types do if t==typeId then return r end end end end
+function C.rarityOf(typeId)
+	for _,r in C.Rarities do for _,t in r.types do if t==typeId then return r end end end
+	for _,v in C.Types do if v.id==typeId and v.rarity then for _,r in C.Rarities do if r.name==v.rarity then return r end end end end
+end
+-- Crate-only types (C.CrateTypes) can't be rolled.
+function C.isCrateOnly(typeId) for _,v in C.Types do if v.id==typeId then return v.crate==true end end return false end
 function C.typeById(id) for _,v in C.Types do if v.id == id then return v end end end
 function C.rarity(name) for _,v in C.Rarities do if v.name == name then return v end end end
 function C.modifier(name)

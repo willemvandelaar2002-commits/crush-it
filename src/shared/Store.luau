@@ -36,7 +36,7 @@ Store.Products = {
 	-- Shop offers (Shared/OfferConfig, server/Offers). price = 0: not approved
 	-- yet; once a productId is set the shop shows Roblox's own price.
 	{ id = "StarterPack", productId = 0, price = 0, title = "Starter Pack", desc = "Candy Colossus + cash + 2x Cash boost (once)", color = Color3.fromRGB(255, 80, 170), hidden = true },
-	{ id = "FactoryCrate1", productId = 0, price = 0, title = "Factory Crate", desc = "One random Mythic crusher", color = Color3.fromRGB(150, 70, 230), hidden = true },
+	{ id = "FactoryCrate1", productId = 0, price = 0, title = "Factory Crate", desc = "One random crate crusher (Epic, Legendary or Mythic)", color = Color3.fromRGB(150, 70, 230), hidden = true },
 	-- Mythic crushers (exclusive: never rolled). productId 0 shows SOON.
 	-- Hidden: the Factory Crate and the Prism Mech showroom sell these now; the
 	-- entries stay so receipts for their product ids keep being honoured.

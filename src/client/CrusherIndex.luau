@@ -177,8 +177,9 @@ function I.new(gui, act)
 				if item.fused then mod.TextColor3=Color3.fromRGB(255,205,60) end
 			end
 		else
-			local exclusive=C.rarityOf(def.id) and C.rarityOf(def.id).exclusive
-			local odds=label(frame,"Odds",if exclusive then "SHOP & SPIN ONLY" else "1 in "..tostring(C.oddsFor(def.id)),UDim2.fromOffset(4,185),UDim2.new(1,-8,0,28),if exclusive then 17 else 22)
+			local crate=def.crate==true
+			local exclusive=crate or (C.rarityOf(def.id) and C.rarityOf(def.id).exclusive)
+			local odds=label(frame,"Odds",if crate then "CRATE ONLY" elseif exclusive then "SHOP & SPIN ONLY" else "1 in "..tostring(C.oddsFor(def.id)),UDim2.fromOffset(4,185),UDim2.new(1,-8,0,28),if exclusive then 17 else 22)
 			if exclusive then odds.TextColor3=Color3.fromRGB(255,150,225) end
 		end
 		table.insert(records,{card=frame,type=def.id,hidden=not known,fallback=fallback,modifier=if item then item.modifier else nil})

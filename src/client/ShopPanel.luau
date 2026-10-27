@@ -340,14 +340,23 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	end
 	local function crateDetail(body: Frame)
 		detailTitle(string.upper(crate.title), C(255, 220, 90))
-		local sub = label(body, "You get exactly ONE of these Mythic crushers. Chances:", UDim2.fromOffset(20, 64), UDim2.new(1, -40, 0, 28), 2.5, 22)
+		local sub = label(body, "You get exactly ONE of these crushers. Chances:", UDim2.fromOffset(20, 64), UDim2.new(1, -40, 0, 28), 2.5, 22)
 		sub.TextXAlignment = Enum.TextXAlignment.Left
+		local list = make("ScrollingFrame", { Position = UDim2.fromOffset(0, 94), Size = UDim2.new(1, 0, 0, 250), BackgroundTransparency = 1, BorderSizePixel = 0,
+			ScrollBarThickness = 8, ScrollBarImageColor3 = C(255, 214, 60), AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(), ZIndex = 22 }, body)
+		make("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, list)
+		make("UIPadding", { PaddingLeft = UDim.new(0, 20), PaddingRight = UDim.new(0, 20), PaddingTop = UDim.new(0, 2) }, list)
 		for i, o in odds do
-			detailRow(96 + (i - 1) * 84, crusherImage(o.type), typeName(o.type), mythicDesc, o.text, C(150, 70, 230), 76)
+			local r = CrusherConfig.rarityOf(o.type)
+			local row = detailRow(0, crusherImage(o.type), typeName(o.type), string.upper(r.name) .. " crusher", o.text, r.color, 70)
+			row.Parent = list
+			row.Position = UDim2.new()
+			row.Size = UDim2.new(1, -10, 0, 70)
+			row.LayoutOrder = i
 		end
 		local notes = {}
 		if rounded then table.insert(notes, O.RoundingNote) end
-		if crate.provisional and RunService:IsStudio() then table.insert(notes, "(Studio: equal test odds, not final.)") end
+		if crate.provisional and RunService:IsStudio() then table.insert(notes, "(Studio: test odds, not final.)") end
 		local n = label(body, table.concat(notes, " "), UDim2.fromOffset(20, 380), UDim2.new(1, -300, 0, 40), 1.5, 22)
 		n.TextWrapped = true
 		n.TextXAlignment = Enum.TextXAlignment.Left
@@ -444,15 +453,30 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		glow(f, UDim2.fromOffset(96, 88), 150)
 		crateArt(f, UDim2.fromOffset(16, 24), 156, 9)
 		twoTone(f, "FACTORY", "#FFD84A", "CRATE", "#62E9FF", UDim2.fromOffset(196, 6), UDim2.fromOffset(400, 54), 9)
-		for i, o in odds do
+		-- one tile per rarity: its crushers' icons and their combined chance
+		-- (every crusher's own chance is on See all rewards & chances)
+		local groups, order = {}, {}
+		for _, o in odds do
+			local r = CrusherConfig.rarityOf(o.type)
+			if not groups[r.name] then groups[r.name] = { rarity = r, types = {}, percent = 0 } table.insert(order, r.name) end
+			table.insert(groups[r.name].types, o.type)
+			groups[r.name].percent += o.percent
+		end
+		for i, name in order do
+			local g = groups[name]
 			local tile = make("Frame", { Position = UDim2.fromOffset(196 + (i - 1) * 112, 60), Size = UDim2.fromOffset(104, 86), BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 9 }, f)
 			corner(tile, 10)
-			outline(tile, 3)
-			gradient(tile, { C(80, 60, 160), C(40, 30, 90) })
-			icon(tile, crusherImage(o.type), UDim2.fromOffset(14, 2), UDim2.fromOffset(76, 58), 10)
-			local n = label(tile, typeName(o.type), UDim2.fromOffset(4, 58), UDim2.new(1, -8, 0, 24), 2, 10)
+			outline(tile, 3, g.rarity.color)
+			gradient(tile, { Style.darken(g.rarity.color, 0.35), C(40, 30, 90) })
+			for k, typeId in g.types do
+				if k > 3 then break end
+				icon(tile, crusherImage(typeId), UDim2.fromOffset(2 + (k - 1) * 30, 8 + (k % 2) * 4), UDim2.fromOffset(46, 46), 10 + k)
+			end
+			local n = label(tile, string.upper(name) .. " x" .. #g.types, UDim2.fromOffset(4, 58), UDim2.new(1, -8, 0, 24), 2, 14)
 			n.Name = "Name"
-			local pct = label(tile, o.text, UDim2.new(1, -62, 0, 2), UDim2.fromOffset(58, 22), 2.5, 11)
+			n.TextColor3 = Style.lighten(g.rarity.color, 0.2)
+			local text = string.format("%.4g%%", g.percent)
+			local pct = label(tile, text, UDim2.new(1, -62, 0, 2), UDim2.fromOffset(58, 22), 2.5, 15)
 			pct.TextColor3 = C(255, 236, 110)
 			pct.TextXAlignment = Enum.TextXAlignment.Right
 		end
@@ -623,6 +647,9 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		prize.Visible = true
 		prize.Image = crusherImage(revealing.type)
 		prizeName.Text = typeName(revealing.type)
+		local rarity = CrusherConfig.rarityOf(revealing.type)
+		prizeRarity.Text = (if rarity then string.upper(rarity.name) else "NEW") .. "!"
+		prizeRarity.TextColor3 = if rarity then Style.lighten(rarity.color, 0.15) else C(255, 90, 200)
 		prizeName.Visible = true
 		prizeRarity.Visible = true
 		prizeNote.Visible = true

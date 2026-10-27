@@ -60,7 +60,7 @@ return function()
 		end end
 		v.model:Destroy()
 	end
-	check(#R.Types==35 and #C.Types==40+#C.Mythics,"thirty-five authored rigs plus five imported types plus the Mythics")
+	check(#R.Types==35 and #C.Types==40+#C.Mythics+#C.CrateTypes,"thirty-five authored rigs plus five imported types plus the Mythics")
 	check(not R.supports("GoldenKing") and not R.supports("Toyzilla") and not R.supports("TwinTitan"),"imported specials preserved")
 	check(not R.supports("Magnetron") and not R.supports("RocketPress"),"all five imports preserved")
 	for _,def in C.Types do check(R.supports(def.id)==(def.template==nil),"every code-built type covered; imported templates retained") end
