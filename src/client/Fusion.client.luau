@@ -52,13 +52,13 @@ local right = L.section(panel, "Matching", NEED .. " MATCHING CRUSHERS", UDim2.f
 local slots = {}
 for i = 1, NEED do
 	local f = make("TextButton", { Name = "Slot" .. i, Text = "", AutoButtonColor = false, Position = UDim2.fromOffset(14 + (i - 1) * 152, 64),
-		Size = UDim2.fromOffset(144, 158), ZIndex = 8 }, right)
+		Size = UDim2.fromOffset(144, 160), ZIndex = 8 }, right)
 	Style.panel(f :: any, L.TILE, Color3.fromRGB(168, 180, 202))
 	;(f:FindFirstChild("Corner") :: UICorner).CornerRadius = UDim.new(0, 14)
-	local name = L.text(f, "Name", "", UDim2.new(0, 2, 0, 96), UDim2.new(1, -4, 0, 24), 20, 3)
+	local name = L.text(f, "Name", "", UDim2.new(0, 2, 0, 90), UDim2.new(1, -4, 0, 24), 20, 3)
 	name.TextScaled = true make("UITextSizeConstraint", { MaxTextSize = 22 }, name)
-	local tag = L.pill(f, "Tag", "COPY", UDim2.new(.06, 0, 1, -38), UDim2.new(.88, 0, 0, 32))
-	local note = L.text(f, "Note", "", UDim2.new(0, 0, 1, -18), UDim2.new(1, 0, 0, 16), 13, 2)
+	local tag = L.pill(f, "Tag", "COPY", UDim2.new(.05, 0, 1, -46), UDim2.new(.9, 0, 0, 40))
+	local note = L.text(tag, "Note", "", UDim2.new(0, 2, .56, 0), UDim2.new(1, -4, .4, 0), 12, 2)
 	note.ZIndex = 13
 	slots[i] = { frame = f, name = name, tag = tag, note = note, icon = nil :: Frame?, key = "" }
 end
@@ -74,22 +74,22 @@ for _, line in right:GetChildren() do if line:IsA("Frame") and (line.Name:match(
 	make("UIStroke", { Color = Color3.fromRGB(30, 110, 40), Thickness = 2 }, line)
 end end
 
-local resultBox = make("Frame", { Name = "Result", Position = UDim2.fromOffset(40, 292), Size = UDim2.fromOffset(240, 150), BackgroundTransparency = 1, ZIndex = 8 }, right)
+local resultBox = make("Frame", { Name = "Result", Position = UDim2.fromOffset(50, 282), Size = UDim2.fromOffset(220, 124), BackgroundTransparency = 1, ZIndex = 8 }, right)
 local glow = make("Frame", { Name = "Glow", AnchorPoint = Vector2.new(.5, .5), Position = UDim2.fromScale(.5, .55), Size = UDim2.fromScale(.9, .7),
 	BackgroundColor3 = NEON, BackgroundTransparency = .75, ZIndex = 8 }, resultBox)
 make("UICorner", { CornerRadius = UDim.new(1, 0) }, glow)
-L.sparkles(resultBox, 8, Color3.fromRGB(220, 255, 220), { "✦", "✧" })
+L.sparkles(resultBox, 8, Color3.fromRGB(170, 255, 170))
 local resultIcon: Frame? = nil
 local resultKey = ""
-local resultLabel = L.panel(right, "ResultLabel", UDim2.fromOffset(20, 440), UDim2.fromOffset(300, 84), Color3.fromRGB(26, 30, 56), Color3.fromRGB(16, 18, 40), 14)
-local resultName = L.text(resultLabel, "Name", "", UDim2.fromOffset(6, 2), UDim2.new(1, -12, 0, 34), 26, 3)
+local resultLabel = L.panel(right, "ResultLabel", UDim2.fromOffset(20, 404), UDim2.fromOffset(300, 74), Color3.fromRGB(26, 30, 56), Color3.fromRGB(16, 18, 40), 14)
+local resultName = L.text(resultLabel, "Name", "", UDim2.fromOffset(6, 2), UDim2.new(1, -12, 0, 30), 26, 3)
 resultName.TextScaled = true make("UITextSizeConstraint", { MaxTextSize = 26 }, resultName)
-local badge = L.pill(resultLabel, "Output", C.Fusion.Mult .. "x OUTPUT", UDim2.new(.5, -96, 0, 40), UDim2.fromOffset(192, 38), L.GREEN, nil, 28)
-local noteBox = L.panel(right, "Note", UDim2.fromOffset(360, 300), UDim2.fromOffset(256, 112), Color3.fromRGB(26, 30, 56), Color3.fromRGB(16, 18, 40), 12)
+local badge = L.pill(resultLabel, "Output", C.Fusion.Mult .. "x OUTPUT", UDim2.new(.5, -92, 0, 34), UDim2.fromOffset(184, 34), L.GREEN, nil, 26)
+local noteBox = L.panel(right, "Note", UDim2.fromOffset(350, 282), UDim2.fromOffset(266, 96), Color3.fromRGB(26, 30, 56), Color3.fromRGB(16, 18, 40), 12)
 local noteText = L.text(noteBox, "Text", "Main keeps its level and coating.\n" .. C.Fusion.Copies .. " copies are consumed.", UDim2.fromOffset(8, 6), UDim2.new(1, -16, 1, -12), 20, 2)
 noteText.TextColor3 = Color3.fromRGB(200, 215, 245)
-local fuse = L.button(right, "Fuse", "FUSE " .. NEED .. " → 1", UDim2.fromOffset(340, 424), UDim2.fromOffset(278, 92), L.GREEN, 52)
-local status = L.text(right, "Status", "", UDim2.fromOffset(340, 400), UDim2.fromOffset(278, 22), 18, 2)
+local fuse = L.button(right, "Fuse", "FUSE " .. NEED .. " → 1", UDim2.fromOffset(340, 392), UDim2.fromOffset(278, 86), L.GREEN, 52)
+local status = L.text(right, "Status", "", UDim2.fromOffset(340, 456), UDim2.fromOffset(278, 26), 18, 2)
 
 local state: any = nil
 local selectedType: string? = nil
@@ -139,14 +139,17 @@ local function setSlot(s: any, item: any?, typeId: string, role: string)
 	s.key = key
 	if s.icon then s.icon:Destroy() s.icon = nil end
 	local old = s.frame:FindFirstChild("Check") if old then old:Destroy() end
-	s.icon = CrusherIcon.new(s.frame, typeId, { position = UDim2.new(.12, 0, 0, 6), size = UDim2.new(.76, 0, 0, 88), zIndex = 9,
+	s.icon = CrusherIcon.new(s.frame, typeId, { position = UDim2.new(.12, 0, 0, 6), size = UDim2.new(.76, 0, 0, 82), zIndex = 9,
 		modifier = if item and item.modifier ~= "Standard" then item.modifier else nil, hidden = item == nil })
 	s.name.Text = C.typeById(typeId).name
 	if item then L.check(s.frame, L.GREEN) end
+	local text = s.tag:FindFirstChild("Text") :: TextLabel
 	if role == "main" then
 		L.setPill(s.tag, "MAIN", Color3.fromRGB(26, 30, 52), LIME) s.note.Text = "Keeps level + coating"
+		text.Size = UDim2.fromScale(1, .6) text.TextSize = 22
 	else
 		L.setPill(s.tag, if item then "COPY" else "NEED 1", Color3.fromRGB(26, 30, 52)) s.note.Text = ""
+		text.Size = UDim2.fromScale(1, 1) text.TextSize = 24
 	end
 	;(s.frame:FindFirstChild("PanelFill") :: UIGradient).Transparency = NumberSequence.new(if item then 0 else .4)
 end

@@ -30,10 +30,10 @@ local PURPLE = Color3.fromRGB(150, 80, 235)
 local INDIGO = Color3.fromRGB(56, 54, 150)
 local CYAN = Color3.fromRGB(90, 230, 255)
 local LOOK = {
-	Polished = { a = Color3.fromRGB(178, 186, 200), b = Color3.fromRGB(116, 126, 146), glyph = "💧", icon = Icons.FinishPolished, spark = { "✦", "✧" }, sparkColor = Color3.new(1, 1, 1) },
-	Frost = { a = Color3.fromRGB(70, 204, 245), b = Color3.fromRGB(28, 120, 205), glyph = "❄️", icon = Icons.FinishFrost, spark = { "❄", "✦" }, sparkColor = Color3.fromRGB(200, 250, 255) },
-	Fire = { a = Color3.fromRGB(252, 124, 42), b = Color3.fromRGB(205, 62, 22), glyph = "🔥", icon = Icons.FinishFire, spark = { "✦", "✧" }, sparkColor = Color3.fromRGB(255, 210, 90) },
-	Charged = { a = Color3.fromRGB(162, 92, 242), b = Color3.fromRGB(98, 40, 182), glyph = "⚡", icon = Icons.FinishCharged, spark = { "✦", "✧" }, sparkColor = Color3.fromRGB(235, 170, 255) },
+	Polished = { a = Color3.fromRGB(178, 186, 200), b = Color3.fromRGB(116, 126, 146), glyph = "💧", icon = Icons.FinishPolished, spark = nil, sparkColor = Color3.new(1, 1, 1) },
+	Frost = { a = Color3.fromRGB(70, 204, 245), b = Color3.fromRGB(28, 120, 205), glyph = "❄️", icon = Icons.FinishFrost, spark = { "❄️", "❄️" }, sparkColor = Color3.fromRGB(200, 250, 255) },
+	Fire = { a = Color3.fromRGB(252, 124, 42), b = Color3.fromRGB(205, 62, 22), glyph = "🔥", icon = Icons.FinishFire, spark = nil, sparkColor = Color3.fromRGB(255, 210, 90) },
+	Charged = { a = Color3.fromRGB(162, 92, 242), b = Color3.fromRGB(98, 40, 182), glyph = "⚡", icon = Icons.FinishCharged, spark = nil, sparkColor = Color3.fromRGB(235, 170, 255) },
 }
 
 local gui = make("ScreenGui", { Name = "CoatingHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))

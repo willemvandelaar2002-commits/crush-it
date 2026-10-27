@@ -151,21 +151,30 @@ function L.button(parent: Instance, name: string, text: string, pos: UDim2, size
 	return b
 end
 
--- Twinkling sparkles scattered round a frame (stars, or snowflakes for Frost).
-function L.sparkles(parent: Instance, count: number, color: Color3, glyphs: { string }): Frame
+-- Twinkling sparkles scattered round a frame: drawn diamonds (font-safe),
+-- plus optional emoji (e.g. snowflakes for Frost).
+function L.sparkles(parent: Instance, count: number, color: Color3, emoji: { string }?): Frame
 	local holder = make("Frame", { Name = "Sparkles", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = 12 }, parent)
-	local rng = Random.new(#glyphs * 7 + count)
-	for i = 1, count do
+	local rng = Random.new(count * 13 + (if emoji then #emoji else 0))
+	local extra = if emoji then #emoji else 0
+	for i = 1, count + extra do
 		local edge = rng:NextNumber() < .5
 		local x = if edge then (if rng:NextNumber() < .5 then rng:NextNumber(0, .18) else rng:NextNumber(.82, 1)) else rng:NextNumber(.05, .95)
 		local y = if edge then rng:NextNumber(.05, .95) else (if rng:NextNumber() < .5 then rng:NextNumber(0, .15) else rng:NextNumber(.8, .95))
-		local s = rng:NextInteger(18, 34)
-		local t = make("TextLabel", { Name = "Spark", Text = glyphs[(i - 1) % #glyphs + 1], AnchorPoint = Vector2.new(.5, .5),
-			Position = UDim2.fromScale(x, y), Size = UDim2.fromOffset(s, s), BackgroundTransparency = 1, TextScaled = true,
-			Font = Enum.Font.GothamBold, TextColor3 = color, ZIndex = 12 }, holder)
-		local tw = Tween:Create(t, TweenInfo.new(rng:NextNumber(.7, 1.3), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true, rng:NextNumber(0, .8)),
-			{ TextTransparency = .85, Rotation = rng:NextInteger(-25, 25) })
-		tw:Play()
+		local s = rng:NextInteger(10, 20)
+		local t: GuiObject
+		if i > count and emoji then
+			t = make("TextLabel", { Name = "Emoji", Text = emoji[i - count], AnchorPoint = Vector2.new(.5, .5), Position = UDim2.fromScale(x, y),
+				Size = UDim2.fromOffset(s * 2, s * 2), BackgroundTransparency = 1, TextScaled = true, Font = Enum.Font.GothamBold, ZIndex = 12 }, holder)
+		else
+			t = make("Frame", { Name = "Spark", AnchorPoint = Vector2.new(.5, .5), Position = UDim2.fromScale(x, y), Size = UDim2.fromOffset(s, s),
+				Rotation = 45, BackgroundColor3 = color, BorderSizePixel = 0, ZIndex = 12 }, holder)
+			make("UICorner", { CornerRadius = UDim.new(.2, 0) }, t)
+			make("Frame", { Name = "Core", AnchorPoint = Vector2.new(.5, .5), Position = UDim2.fromScale(.5, .5), Size = UDim2.fromScale(.45, .45),
+				BackgroundColor3 = L.WHITE, BorderSizePixel = 0, ZIndex = 13 }, t)
+		end
+		local prop = if t:IsA("TextLabel") then { TextTransparency = .8 } else { BackgroundTransparency = .85, Size = UDim2.fromOffset(s * .5, s * .5) }
+		Tween:Create(t, TweenInfo.new(rng:NextNumber(.7, 1.3), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true, rng:NextNumber(0, .8)), prop):Play()
 	end
 	return holder
 end
