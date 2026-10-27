@@ -33,12 +33,18 @@ Store.Products = {
 	{ id = "BoostLuck", productId = 0, price = 49, title = "2x Luck Boost", desc = "15 minutes of double luck", color = Color3.fromRGB(60, 190, 90), hidden = true },
 	{ id = "BoostSuper", productId = 0, price = 79, title = "Super Boost", desc = "15 minutes of 2x cash and 2x luck", color = Color3.fromRGB(160, 80, 235), hidden = true },
 	{ id = "SkipRewards", productId = 0, price = 99, title = "Skip All", desc = "Unlock every playtime gift now", color = Color3.fromRGB(255, 200, 40), hidden = true },
+	-- Shop offers (Shared/OfferConfig, server/Offers). price = 0: not approved
+	-- yet; once a productId is set the shop shows Roblox's own price.
+	{ id = "StarterPack", productId = 0, price = 0, title = "Starter Pack", desc = "Candy Colossus + cash + 2x Cash boost (once)", color = Color3.fromRGB(255, 80, 170), hidden = true },
+	{ id = "FactoryCrate1", productId = 0, price = 0, title = "Factory Crate", desc = "One random Mythic crusher", color = Color3.fromRGB(150, 70, 230), hidden = true },
 	-- Mythic crushers (exclusive: never rolled). productId 0 shows SOON.
-	{ id = "Mythic_JackpotPress", productId = 0, price = 499, title = "Jackpot Press", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "JackpotPress" },
-	{ id = "Mythic_SeraphPress", productId = 0, price = 499, title = "Seraph Press", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "SeraphPress" },
-	{ id = "Mythic_PrismMech", productId = 0, price = 499, title = "Prism Mech", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "PrismMech" },
-	{ id = "Mythic_PhantomPirate", productId = 0, price = 499, title = "Phantom Pirate", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "PhantomPirate" },
-	{ id = "Mythic_CandyColossus", productId = 0, price = 499, title = "Candy Colossus", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "CandyColossus" },
+	-- Hidden: the Factory Crate and the Prism Mech showroom sell these now; the
+	-- entries stay so receipts for their product ids keep being honoured.
+	{ id = "Mythic_JackpotPress", productId = 0, price = 499, title = "Jackpot Press", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "JackpotPress", hidden = true },
+	{ id = "Mythic_SeraphPress", productId = 0, price = 499, title = "Seraph Press", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "SeraphPress", hidden = true },
+	{ id = "Mythic_PrismMech", productId = 0, price = 499, title = "Prism Mech", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "PrismMech", hidden = true },
+	{ id = "Mythic_PhantomPirate", productId = 0, price = 499, title = "Phantom Pirate", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "PhantomPirate", hidden = true },
+	{ id = "Mythic_CandyColossus", productId = 0, price = 499, title = "Candy Colossus", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "CandyColossus", hidden = true },
 } :: { Product }
 
 -- What a cash pack pays: a share of the next press (or of the current one at max size).

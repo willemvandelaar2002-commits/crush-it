@@ -11,6 +11,7 @@
 --   * Autosave every AUTOSAVE seconds (also refreshes the lock), save on
 --     leave, and save everyone on shutdown (BindToClose).
 --   * Studio without API access: an in-memory mock store, so Play just works.
+--   * Studio with ServerStorage attribute MockData = true: the same mock store (tests).
 --
 -- API:
 --   DataService.start(storeName, defaults, sanitize?)
@@ -81,6 +82,13 @@ local function mockStore(): Store
 end
 
 local function resolveStore(name: string): Store
+	-- Studio test switch: ServerStorage attribute MockData = true keeps Play off
+	-- the real DataStore even with API access on (purchase/rejoin tests).
+	if RunService:IsStudio() and game:GetService("ServerStorage"):GetAttribute("MockData") == true then
+		mockActive = true
+		warn("[DataService] ServerStorage.MockData is on: in-memory store, nothing is saved.")
+		return mockStore()
+	end
 	local real
 	local ok = pcall(function()
 		real = DataStoreService:GetDataStore(name)

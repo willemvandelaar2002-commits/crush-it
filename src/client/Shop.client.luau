@@ -1,5 +1,5 @@
 --!strict
--- Robux shop: SHOP button + panel (passes and boosts), the AUTO switch on the
+-- Robux shop: SHOP button + panel (client/ShopPanel), the AUTO switch on the
 -- CRUSH button (Auto Crush pass), the offline-earnings card and a little
 -- celebration when a purchase goes through. Ids/prices live in Shared/Store.
 
@@ -145,127 +145,12 @@ Style.placeHudButton(shopButton, 1)
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() Style.placeHudButton(shopButton, 1) end)
 shopBadge.Visible = true -- until the shop has been opened once this session
 
-local panel = make("Frame", {
-	Name = "ShopPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0.82, 0),
-	BackgroundColor3 = DARK, BackgroundTransparency = 0.03, Visible = false, ZIndex = 5, Parent = gui,
-}, { make("UISizeConstraint", { MaxSize = Vector2.new(820, 560) }) })
-Style.workshopPanel(panel, Style.Colors.Pink)
-Style.modal(panel)
-local shopTitle = make("TextLabel", {
-	Position = UDim2.fromOffset(16, 8), Size = UDim2.new(1, -80, 0, 34), BackgroundTransparency = 1, Font = FONT,
-	TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.new(1, 1, 1), Text = "Shop", Parent = panel,
-})
-Style.text(shopTitle, 2.5)
-local closeButton = make("TextButton", {
-	AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 10), Size = UDim2.fromOffset(40, 40), BackgroundColor3 = RED,
-	Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "X", Parent = panel,
-}, { pad(5) })
-Style.button(closeButton, RED)
-local scroll = make("ScrollingFrame", {
-	Position = UDim2.fromOffset(12, 52), Size = UDim2.new(1, -24, 1, -64), BackgroundTransparency = 1, BorderSizePixel = 0,
-	ScrollBarThickness = 6, AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(), Parent = panel,
-}, { make("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }) })
-Style.scroll(scroll)
-
-local function section(title: string, order: number): Frame
-	local heading = make("TextLabel", {
-		Size = UDim2.new(1, 0, 0, 26), BackgroundTransparency = 1, Font = FONT, TextScaled = true, LayoutOrder = order,
-		TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = GOLD, Text = title, Parent = scroll,
-	})
-	Style.text(heading, 2)
-	heading.TextColor3 = GOLD
-	local group = make("Frame", {
-		Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = order + 1, Parent = scroll,
-	}, { make("UIGridLayout", { CellSize = UDim2.fromOffset(185, 150), CellPadding = UDim2.fromOffset(10, 10), SortOrder = Enum.SortOrder.LayoutOrder }) })
-	Style.grid(group, 130, 174)
-	return group
-end
-
-local PASS_ICONS: { [string]: string } = {
-	AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, Lucky = Icons.Lucky, OfflineEarnings = Icons.Offline,
-	AutoCollect = Icons.Cash,
-}
-
-type ShopCard = { desc: TextLabel, button: TextButton, update: () -> () }
-local shopCards: { ShopCard } = {}
-
-local function card(parent: Frame, order: number, title: string, color: Color3, onBuy: () -> (), image: string?): (TextLabel, TextButton)
-	local f = make("Frame", { LayoutOrder = order, Parent = parent })
-	Style.panel(f, Style.darken(color, 0.12), Style.darken(color, 0.48))
-	make("TextLabel", {
-		Position = UDim2.fromOffset(10, 14), Size = UDim2.new(1, -66, 0, 28), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
-		TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.new(1, 1, 1), Text = title, Parent = f,
-	}, { stroke(1.5) })
-	local desc = make("TextLabel", {
-		Position = UDim2.fromOffset(10, 48), Size = UDim2.new(1, -20, 0, 68), BackgroundTransparency = 1, Font = FONT,
-		TextWrapped = true, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top,
-		TextColor3 = Color3.fromRGB(210, 210, 220), Text = "", Parent = f,
-	})
-	if image then
-		Style.image(f, image, { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -6, 0, 6), Size = UDim2.fromOffset(46, 46), ZIndex = 2 })
-	end
-	local button = make("TextButton", {
-		AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -8), Size = UDim2.new(1, -20, 0, 40), BackgroundColor3 = GREEN,
-		Font = FONT, TextScaled = true, TextColor3 = Color3.new(1, 1, 1), Text = "", Parent = f,
-	}, { pad(6) })
-	Style.button(button)
-	button.Activated:Connect(onBuy)
-	return desc, button
-end
-
-local passGrid = section("Passes (forever)", 1)
-for i, pass in Store.Passes do
-	local desc, button = card(passGrid, i, pass.title, pass.color, function()
-		buyPass(pass.perk)
-	end, PASS_ICONS[pass.perk])
-	desc.Text = pass.desc
-	local function update()
-		if Store.hasPass(player, pass.perk) then
-			button.Text = "OWNED"
-			Style.setButtonColor(button, GREY)
-		elseif pass.gamePassId == 0 then
-			button.Text = "SOON"
-			Style.setButtonColor(button, GREY)
-		else
-			button.Text = "R$ " .. pass.price
-			Style.setButtonColor(button, Style.GREEN)
-		end
-	end
-	player:GetAttributeChangedSignal(Store.passAttr(pass.perk)):Connect(update)
-	table.insert(shopCards, { desc = desc, button = button, update = update })
-end
-
-local boostGrid = section("Boosts", 3)
-for i, product in Store.Products do
-	if product.hidden then continue end
-	local desc, button = card(boostGrid, i, product.title, product.color, function()
-		buyProduct(product.id)
-	end, if product.mythic then (require(ReplicatedStorage.Shared.CrusherIcons).image(product.mythic) or Icons.Press) elseif product.id == "GoldenRush" then Icons.Golden else Icons.Cash)
-	local function update()
-		local tier = (player:GetAttribute("Tier") :: number?) or 1
-		if Store.CashPackShare[product.id] then
-			desc.Text = "+" .. Format.cash(Store.cashPackAmount(product.id, tier)) .. " cash\n(" .. product.desc .. ")"
-		else
-			local left = if product.id == "GoldenRush" then (player:GetAttribute("GoldenRush") :: number?) or 0 else 0
-			desc.Text = product.desc .. (if left > 0 then "\n(" .. left .. " left)" else "")
-		end
-		button.Text = if product.productId == 0 then "SOON" else "R$ " .. product.price
-		Style.setButtonColor(button, if product.productId == 0 then GREY else Style.GREEN)
-	end
-	table.insert(shopCards, { desc = desc, button = button, update = update })
-end
-
-local function refreshShop()
-	for _, c in shopCards do
-		c.update()
-	end
-end
-player:GetAttributeChangedSignal("Tier"):Connect(refreshShop)
-player:GetAttributeChangedSignal("GoldenRush"):Connect(refreshShop)
-refreshShop()
+-- The window itself (tabs, offer banners, details, crate reveal): ShopPanel.
+local shopPanel = require(script.Parent.ShopPanel).build(gui, { notice = notice, buyPass = buyPass, buyProduct = buyProduct })
+local panel = shopPanel.panel
 
 local function openShop(from: string)
-	refreshShop()
+	shopPanel.refresh()
 	shopBadge.Visible = false
 	Style.setOpen(panel, true)
 	Net.event("ShopOpened"):FireServer(from)
@@ -277,7 +162,7 @@ shopButton.Activated:Connect(function()
 		openShop("ShopButton")
 	end
 end)
-closeButton.Activated:Connect(function()
+shopPanel.close.Activated:Connect(function()
 	Style.setOpen(panel, false)
 end)
 
@@ -481,8 +366,8 @@ end)
 -- Purchase celebration ----------------------------------------------------------
 Net.event("Purchased").OnClientEvent:Connect(function(msg)
 	panel.Visible = false
-	if msg.id == "OfflineEarnings" then
-		return -- the offline card shows the payout
+	if msg.id == "OfflineEarnings" or string.sub(tostring(msg.id), 1, 12) == "FactoryCrate" then
+		return -- the offline card shows the payout; crates get their own reveal
 	end
 	local label = make("TextLabel", {
 		AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.35), Size = UDim2.fromOffset(480, 70),
@@ -506,4 +391,12 @@ end)
 -- Other scripts can open the shop: set the "OpenShop" attribute on the player's ShopHud.
 gui:GetAttributeChangedSignal("OpenShop"):Connect(function()
 	openShop(tostring(gui:GetAttribute("OpenShop")))
+end)
+-- ...or one offer's details: "OpenOffer" = offer id (PrismMech, StarterPack, FactoryCrate).
+gui:GetAttributeChangedSignal("OpenOffer"):Connect(function()
+	local id = gui:GetAttribute("OpenOffer")
+	if type(id) ~= "string" then return end
+	gui:SetAttribute("OpenOffer", nil)
+	openShop("Offer" .. id)
+	shopPanel.openOffer(id)
 end)

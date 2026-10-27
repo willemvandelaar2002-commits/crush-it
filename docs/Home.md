@@ -1,5 +1,9 @@
 # Crush It
 
+27 Oct shop: tabbed shop with Starter Pack, Factory Crate (odds shown, PolicyService
+check, saved server-picked reveal) and a Prism Mech showroom pad on every plot. Test
+defaults only; prices/ids/odds still to set. See [[Systems/Shop]].
+
 26 Oct goals reward: Claim requires favorite-prompt confirmation AND server-checked
 group membership, plus the existing saved cooldown. Cancel/error never completes
 the favorite goal; claims are serialized across membership checks. Favorite is

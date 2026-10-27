@@ -25,6 +25,7 @@ export type Api = {
 	sync: (Player) -> (),
 	cashPerSecond: (Player) -> number, -- normal earning rate (for offline earnings)
 	finishLegacyProduct: ((Player) -> ())?,
+	giveCrusher: (Player, string, string?, boolean?) -> string?,
 }
 
 local Shop = {}
@@ -104,9 +105,16 @@ end
 
 -- Products -------------------------------------------------------------------
 
-local function grant(player: Player, productId: string)
+local function grant(player: Player, productId: string, purchaseId: string)
 	local data = api.getData(player)
 	local product = Store.productById(productId)
+	-- Shop offers (Starter Pack, crates, Prism Mech): server/Offers
+	local Offers = require(script.Parent.Offers)
+	if Offers.handles(productId) then
+		local text = Offers.grant(player, data, productId, purchaseId)
+		Purchased:FireClient(player, { id = productId, text = text })
+		return
+	end
 	if product and product.mythic then
 		-- a bought Mythic always arrives, even with a full inventory (it's paid for)
 		local name = api.giveCrusher(player, "Mythic", product.mythic, true)
@@ -143,23 +151,24 @@ for _, p in Store.Products do
 	end
 end
 
-local function processReceipt(receipt: any)
-	local player = Players:GetPlayerByUserId(receipt.PlayerId)
-	local id = productHandlers[receipt.ProductId]
+-- One receipt (also used by Studio's DevReceipt with a made-up PurchaseId).
+-- The check-grant-remember part never yields, so two simultaneous callbacks
+-- for the same PurchaseId can't both grant.
+local function processFor(player: Player?, id: string?, purchaseId: string): Enum.ProductPurchaseDecision
 	local data = player and api.getData(player)
 	if not player or not id or not data then
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
 	data.purchases = data.purchases or {}
-	if table.find(data.purchases, receipt.PurchaseId) then
+	if table.find(data.purchases, purchaseId) then
 		return Enum.ProductPurchaseDecision.PurchaseGranted -- already granted earlier
 	end
-	local ok, err = pcall(grant, player, id)
+	local ok, err = pcall(grant, player, id, purchaseId)
 	if not ok then
 		warn(`[Shop] grant {id} failed: {err}`)
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
-	table.insert(data.purchases, receipt.PurchaseId)
+	table.insert(data.purchases, purchaseId)
 	while #data.purchases > 50 do
 		table.remove(data.purchases, 1)
 	end
@@ -173,9 +182,14 @@ local function processReceipt(receipt: any)
 	return Enum.ProductPurchaseDecision.PurchaseGranted
 end
 
+local function processReceipt(receipt: any)
+	return processFor(Players:GetPlayerByUserId(receipt.PlayerId), productHandlers[receipt.ProductId], receipt.PurchaseId)
+end
+
 function Shop.start(gameApi: Api)
 	api = gameApi
 	MarketplaceService.ProcessReceipt = processReceipt
+	require(script.Parent.Offers).start(gameApi)
 	MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player: Player, passId: number, purchased: boolean)
 		if not purchased then
 			return
@@ -235,10 +249,18 @@ function Shop.start(gameApi: Api)
 		local devProduct = Instance.new("BindableFunction")
 		devProduct.Name = "DevProduct"
 		devProduct.OnInvoke = function(player: Player, productId: string)
-			grant(player, productId)
+			grant(player, productId, "dev-" .. game:GetService("HttpService"):GenerateGUID(false))
 			return true
 		end
 		devProduct.Parent = game:GetService("ServerStorage")
+		-- DevReceipt:Invoke(player, productKey, purchaseId) -> decision name: the real
+		-- receipt path (dedupe + save) with a made-up PurchaseId, for retry tests.
+		local devReceipt = Instance.new("BindableFunction")
+		devReceipt.Name = "DevReceipt"
+		devReceipt.OnInvoke = function(player: Player, productId: string, purchaseId: string)
+			return processFor(player, productId, purchaseId).Name
+		end
+		devReceipt.Parent = game:GetService("ServerStorage")
 		local devOffline = Instance.new("BindableFunction")
 		devOffline.Name = "DevOffline" -- pretend the player was away `hours`
 		devOffline.OnInvoke = function(player: Player, hours: number)

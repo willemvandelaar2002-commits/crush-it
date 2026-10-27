@@ -1,5 +1,53 @@
 # Shop, onboarding, analytics
 
+## 27 Oct shop window and offers (current)
+Shop window = `client/ShopPanel.luau` (built by `Shop.client`, same `ShopHud`,
+`ShopButton` and `OpenShop` contract; new `OpenOffer` = offer id opens its
+details). Gold studded header, tilted basket, tabs FEATURED / CRATES / PACKS /
+PASSES / CASH, wide banners, detail pages, crate reveal. Prices shown come from
+Roblox (`GetProductInfo`), never from config; id 0 shows SOON.
+
+Offers (`shared/OfferConfig.luau`, rules `shared/OfferRules.luau`, server
+`server/Offers.luau`). **All amounts and odds are test defaults, not approved.**
+
+| Offer | Store product | Contents | Rule |
+|---|---|---|---|
+| Starter Pack | `StarterPack` | Candy Colossus + CashPacks.CashMedium cash + 2x Cash boost (BoostConfig minutes) | once per player |
+| Factory Crate | `FactoryCrate1` | one of Jackpot Press / Seraph Press / Phantom Pirate, equal weights (Studio test odds) | paid random item |
+| Prism Mech | `Mythic_PrismMech` (existing id kept) | Prism Mech | once per player, showroom pad on every plot |
+
+- Buying: client sends `OfferAction("Prompt", product)`; the server checks id ≠ 0,
+  not already owned, crate eligibility and one open prompt at a time, then
+  prompts. Granting only happens in Shop's single ProcessReceipt.
+- Receipts: `processFor` checks PurchaseId → grants (no yields) → remembers id →
+  saves. Offers check everything first, then apply crusher/cash/boost together,
+  so a receipt is all or nothing. Paid crushers ignore the inventory limit. A
+  second paid receipt for a one-time offer (two servers racing) still delivers and
+  logs a warning.
+- Crates: PolicyService `ArePaidRandomItemsRestricted` per player (attribute
+  `PaidRandomItems`; unknown = restricted). Restricted players see UNAVAILABLE and
+  the server refuses the prompt; guaranteed offers stay buyable. Odds are shown on
+  every crate banner and on See all rewards & chances before purchase (4 digits
+  past the first non-zero digit + Roblox's rounding note). The server picks the
+  crusher at the receipt, grants it and saves a reveal (`d.offers.reveals`). The
+  reveal animation only shows it; COLLECT sends Seen. Skip/close/leave = the same
+  result shows again; nothing rerolls. Willem's own account (NL) is restricted.
+- Save: `d.offers = { owned = {StarterPack, PrismMech}, reveals = {...} }`;
+  attributes `Offer_StarterPack`, `Offer_PrismMech`.
+- Showroom (`server/PrismShowroom.luau`, `client/PrismShowroom.client.luau`):
+  plot-local pad (-22, 56), 11 studs, front yard left of the walkway between the
+  Production board's back and the Sell station; machine faces the walkway. Real
+  imported model via SpecialCrushers.build, demo stroke every 4 s, slow soft
+  rainbow ring/light, name tag with GUARANTEED CRUSHER / OWNED ✓ per viewer, E =
+  View offer. Cosmetic only, no scrap.
+- The other four Mythic_* products are hidden but still honoured by receipts.
+- Studio tests: `ServerStorage.DevReceipt:Invoke(player, product, purchaseId)`
+  (real receipt path), `DevCrateAccess:Invoke(player, "allowed"|"restricted")`,
+  `DevProduct` (grant only). Set ServerStorage attribute `MockData = true` to keep
+  Play off the real DataStore; remove it afterwards.
+- Still to configure: product ids + Roblox prices for StarterPack, FactoryCrate1,
+  Mythic_PrismMech; final pack amounts and crate odds.
+
 22 Oct redesign: [[Collectible crushers]] documents the current tutorial and
 perk mapping. Basic automatic crushing is free; AutoCrush owners gain +25%
 damage, Lucky improves crusher rarity weights, AutoCollect collects/sells,
