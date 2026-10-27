@@ -2,23 +2,22 @@
 -- Crusher toolbar at the bottom of the screen (replaces Roblox's backpack bar
 -- and the old OWNED tab). One tile per crusher that isn't in a bay: picture
 -- (coated/fused shown in 3D), rarity colour, level and coating. Click a tile
--- to hold that crusher, click again to put it away; holding one, press E at a
--- bay to place or swap it. REMOVE on a bay plaque sends a crusher here. The
--- bin at the end recycles duplicates (click twice). Tools stay server-owned.
+-- (or press its number key 1-9, 0 for the 10th) to hold that crusher, again to
+-- put it away; holding one, press E at a bay to place or swap it. REMOVE on a
+-- bay plaque sends a crusher here. Tools stay server-owned.
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
+local UIS = game:GetService("UserInputService")
 
 local Config = require(RS.Shared.Config)
 if not Config.Crushers.Enabled then return end
 local C = require(RS.Shared.CrusherConfig)
-local Rules = require(RS.Shared.CrusherRules)
 local Net = require(RS.Shared.Net)
 local Style = require(RS.Shared.Kit.Style)
 local CrusherIcon = require(script.Parent.CrusherIcon)
 
 local me = Players.LocalPlayer
-local actionRemote = Net.event("CrusherAction")
 local INK = Style.Colors.Ink
 local GOLD = Color3.fromRGB(255, 214, 60)
 local TILE = 74
@@ -49,24 +48,19 @@ local bar = make("Frame", { Name = "Bar", AnchorPoint = Vector2.new(.5, 1), Posi
 	BackgroundColor3 = Color3.fromRGB(24, 28, 56), BackgroundTransparency = .25, Visible = false }, gui)
 make("UICorner", { CornerRadius = UDim.new(0, 14) }, bar)
 make("UIStroke", { Color = INK, Thickness = 3 }, bar)
-local list = make("ScrollingFrame", { Name = "Tiles", Position = UDim2.fromOffset(8, 6), Size = UDim2.new(1, -78, 1, -8), BackgroundTransparency = 1,
+local list = make("ScrollingFrame", { Name = "Tiles", Position = UDim2.fromOffset(8, 6), Size = UDim2.new(1, -16, 1, -8), BackgroundTransparency = 1,
 	BorderSizePixel = 0, CanvasSize = UDim2.new(), AutomaticCanvasSize = Enum.AutomaticSize.X, ScrollingDirection = Enum.ScrollingDirection.X,
 	ScrollBarThickness = 4, ZIndex = 2 }, bar)
 make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder,
 	VerticalAlignment = Enum.VerticalAlignment.Center }, list)
 make("UIPadding", { PaddingLeft = UDim.new(0, 2), PaddingRight = UDim.new(0, 2) }, list)
-local bin = make("TextButton", { Name = "RecycleDupes", Text = "🗑", AnchorPoint = Vector2.new(1, .5), Position = UDim2.new(1, -8, .5, -6),
-	Size = UDim2.fromOffset(58, 52), TextSize = 30, ZIndex = 3 }, bar)
-Style.button(bin, Style.Colors.Red)
-local binLabel = text(bar, "DUPES", UDim2.new(1, -66, 1, -20), UDim2.fromOffset(58, 16), 13, 4)
-local count = text(bar, "", UDim2.fromOffset(10, -22), UDim2.fromOffset(140, 20), 16, 4)
-count.TextXAlignment = Enum.TextXAlignment.Left
 local hint = text(gui, "", UDim2.new(.5, -200, 1, -TILE - 82), UDim2.fromOffset(400, 26), 22, 4)
 hint.AnchorPoint = Vector2.new(0, 0)
 
 local state: any = nil
 local tiles: { [string]: any } = {}
 local signature = ""
+local order_: { [number]: string } = {}
 
 local function character(): Model? return me.Character end
 local function heldTool(): Tool?
@@ -83,10 +77,6 @@ local function toolFor(id: string): Tool?
 		if t:IsA("Tool") and t:GetAttribute("InventoryId") == id then return t end
 	end
 	return nil
-end
-local function extras(): { any }
-	if not state then return {} end
-	return Rules.duplicateExtras(state.items, state.bays, function(item) return item.stats and item.stats.cps or 0 end)
 end
 
 local function select(id: string)
@@ -129,7 +119,7 @@ local function rebuild()
 	if sig ~= signature then
 		signature = sig
 		for _, t in tiles do t.holder:Destroy() end
-		table.clear(tiles)
+		table.clear(tiles) table.clear(order_)
 		for order, item in items do
 			local r = C.rarity(item.rarity)
 			local holder = make("Frame", { Name = "Slot", Size = UDim2.fromOffset(TILE, TILE), BackgroundTransparency = 1, LayoutOrder = order, ZIndex = 2 }, list)
@@ -147,32 +137,31 @@ local function rebuild()
 				tag.TextColor3 = GOLD tag.TextXAlignment = Enum.TextXAlignment.Left
 			end
 			local _ = lv
+			if order <= 10 then
+				local key = text(frame, tostring(order % 10), UDim2.new(1, -20, 0, 1), UDim2.fromOffset(18, 16), 15, 5)
+				key.TextXAlignment = Enum.TextXAlignment.Right
+			end
 			frame.Activated:Connect(function() select(item.id) end)
 			tiles[item.id] = { holder = holder, frame = frame, stroke = stroke }
+			order_[order] = item.id
 		end
 		local view = workspace.CurrentCamera.ViewportSize
 		local want = #items * (TILE + 6) + 4
-		bar.Size = UDim2.fromOffset(math.clamp(want, 120, math.max(300, view.X * .6)) + 86, TILE + 16)
-		bar.Visible = true
+		bar.Size = UDim2.fromOffset(math.clamp(want, 80, math.max(300, view.X * .6)) + 16, TILE + 16)
+		bar.Visible = #items > 0
 	end
-	count.Text = #items .. " IN HOTBAR · " .. #state.items .. "/" .. C.MaxInventory
-	local n = #extras()
-	binLabel.Text = if n > 0 then n .. " DUPES" else "DUPES"
-	Style.setButtonColor(bin, if n > 0 then Style.Colors.Red else Color3.fromRGB(104, 116, 138))
 	paintSelection()
 end
 
-local binPending = false
-bin.Activated:Connect(function()
-	local n = #extras()
-	if n == 0 then hint.Text = "No duplicates to recycle." return end
-	if not binPending then
-		binPending = true binLabel.Text = "SURE?" hint.Text = "Click the bin again to recycle " .. n .. " duplicate" .. (if n == 1 then "" else "s") .. "."
-		task.delay(3, function() if binPending then binPending = false rebuild() end end)
-		return
-	end
-	binPending = false
-	actionRemote:FireServer("RecycleDuplicates", {})
+-- number keys: 1-9, 0 = 10th tile (not while typing in chat or a text box)
+local KEYS = { [Enum.KeyCode.One] = 1, [Enum.KeyCode.Two] = 2, [Enum.KeyCode.Three] = 3, [Enum.KeyCode.Four] = 4,
+	[Enum.KeyCode.Five] = 5, [Enum.KeyCode.Six] = 6, [Enum.KeyCode.Seven] = 7, [Enum.KeyCode.Eight] = 8,
+	[Enum.KeyCode.Nine] = 9, [Enum.KeyCode.Zero] = 10 }
+UIS.InputBegan:Connect(function(input, processed)
+	if processed or UIS:GetFocusedTextBox() then return end
+	local n = KEYS[input.KeyCode]
+	local id = n and order_[n]
+	if id then select(id) end
 end)
 
 Net.event("CrusherState").OnClientEvent:Connect(function(v)
