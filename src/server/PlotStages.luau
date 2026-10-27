@@ -474,6 +474,8 @@ local function buildKit(plot,level)
 	end
 end
 
+V.buildKit=buildKit -- Studio tests call it with {model, origin, stages={}}
+
 function V.sync(plot,level)
 	local v=plot.stages if not v or v.level==level then return end
 	v.level=level
