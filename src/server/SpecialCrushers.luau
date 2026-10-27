@@ -27,7 +27,7 @@ function B.build(origin,id,source: Model?)
 	local _,imported=model:GetBoundingBox() local size=metadata.size local l=C.Layout
 	-- Recover the importer's uniform unit factor without editing the stored asset.
 	local unitScale=math.max(imported.X/size.X,imported.Y/size.Y,imported.Z/size.Z)
-	local fit=math.min(1,l.MachineWidth/size.X,l.MachineHeight/size.Y,l.MachineDepth/size.Z)
+	local fit=math.min(if metadata.grow then math.huge else 1,l.MachineWidth/size.X,l.MachineHeight/size.Y,l.MachineDepth/size.Z)
 	-- These FBX imports face -Z in Studio (verified against Toyzilla's eyes).
 	-- Turn the whole clone, preserving every component's imported local transform.
 	local yaw=template:GetAttribute("BayFrontYaw")
@@ -35,7 +35,9 @@ function B.build(origin,id,source: Model?)
 	model:ScaleTo(model:GetScale()*fit/unitScale) model:PivotTo(placed)
 	local groups={} local lowest=math.huge
 	for _,entry in named do local rest={}
+		local lift=(entry.spec.lift or 0)*fit
 		for _,p in parts(entry.node) do
+			if lift~=0 then p.CFrame=CFrame.new(placed.UpVector*lift)*p.CFrame end
 			table.insert(rest,{part=p,cf=p.CFrame})
 			for _,x in {-1,1} do for _,y in {-1,1} do for _,z in {-1,1} do
 				local point=origin:PointToObjectSpace(p.CFrame:PointToWorldSpace(p.Size*Vector3.new(x,y,z)/2))

@@ -240,7 +240,7 @@ for i, product in Store.Products do
 	if product.hidden then continue end
 	local desc, button = card(boostGrid, i, product.title, product.color, function()
 		buyProduct(product.id)
-	end, if product.id == "GoldenRush" then Icons.Golden else Icons.Cash)
+	end, if product.mythic then (require(ReplicatedStorage.Shared.CrusherIcons).image(product.mythic) or Icons.Press) elseif product.id == "GoldenRush" then Icons.Golden else Icons.Cash)
 	local function update()
 		local tier = (player:GetAttribute("Tier") :: number?) or 1
 		if Store.CashPackShare[product.id] then

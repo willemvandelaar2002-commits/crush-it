@@ -18,4 +18,22 @@ return {
  Toyzilla={size=Vector3.new(11.8,13.2,8.4),bedTop=2.5,rams={
   {name="Ram",stroke=2.63},
  }},
+ -- Mythics: Willem's Blender models, built in studs, fronts face +Z
+ -- (template attribute BayFrontYaw=0). grow: scale up to fill the bay.
+ -- lift: the ram rests this much higher (opened) and strokes back down.
+ JackpotPress={size=Vector3.new(7.53,7.52,4.73),bedTop=1.24,grow=true,rams={
+  {name="Ram",stroke=1.35},{name="PistonShaft",stroke=1.35},
+ }},
+ SeraphPress={size=Vector3.new(8.35,8.65,5.44),bedTop=1.41,grow=true,rams={
+  {name="Ram",stroke=1.35},{name="PistonShaft",stroke=1.35},
+ }},
+ PrismMech={size=Vector3.new(7.36,7.92,6.06),bedTop=1.45,grow=true,rams={
+  {name="Ram",stroke=1.1},{name="PistonShaft",stroke=1.1},
+ }},
+ PhantomPirate={size=Vector3.new(7.9,7.75,5.76),bedTop=2.26,grow=true,rams={
+  {name="Jaw",stroke=1.6,lift=1.6},{name="HydraulicRod_L",stroke=1.6,lift=1.6},{name="HydraulicRod_R",stroke=1.6,lift=1.6},
+ }},
+ CandyColossus={size=Vector3.new(7.7,8.49,5.96),bedTop=1.45,grow=true,rams={
+  {name="Ram",stroke=1.5},{name="PistonShaft",stroke=1.5},
+ }},
 }

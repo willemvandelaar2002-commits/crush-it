@@ -92,7 +92,8 @@ function I.new(gui, act)
 		local equipped={} for bay,id in state.bays do equipped[bay]=id end
 		return Rules.duplicateExtras(state.items,equipped,function(item) return item.stats.cps end)
 	end
-	local dupes dupes=button(bayControls,"RecycleDuplicates","🗑 RECYCLE DUPES",UDim2.new(1,-240,0,0),UDim2.fromOffset(240,40),Style.Colors.Red,function()
+	-- in the header (the OWNED tab is hidden; your crushers live in the hotbar)
+	local dupes dupes=button(header,"RecycleDuplicates","🗑 RECYCLE DUPES",UDim2.new(1,-480,0,14),UDim2.fromOffset(220,48),Style.Colors.Red,function()
 		local n=#extras()
 		if n==0 then dupesPending=false dupes.Text="🗑 NO DUPES" return end
 		if dupesPending then dupesPending=false act("RecycleDuplicates",{}) return end
@@ -176,7 +177,9 @@ function I.new(gui, act)
 				if item.fused then mod.TextColor3=Color3.fromRGB(255,205,60) end
 			end
 		else
-			label(frame,"Odds","1 in "..tostring(C.oddsFor(def.id)),UDim2.fromOffset(4,185),UDim2.new(1,-8,0,28),22)
+			local exclusive=C.rarityOf(def.id) and C.rarityOf(def.id).exclusive
+			local odds=label(frame,"Odds",if exclusive then "EXCLUSIVE · SHOP & SPIN" else "1 in "..tostring(C.oddsFor(def.id)),UDim2.fromOffset(4,185),UDim2.new(1,-8,0,28),if exclusive then 17 else 22)
+			if exclusive then odds.TextColor3=Color3.fromRGB(255,150,225) end
 		end
 		table.insert(records,{card=frame,type=def.id,hidden=not known,fallback=fallback,modifier=if item then item.modifier else nil})
 	end

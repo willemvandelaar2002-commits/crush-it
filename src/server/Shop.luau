@@ -106,6 +106,14 @@ end
 
 local function grant(player: Player, productId: string)
 	local data = api.getData(player)
+	local product = Store.productById(productId)
+	if product and product.mythic then
+		-- a bought Mythic always arrives, even with a full inventory (it's paid for)
+		local name = api.giveCrusher(player, "Mythic", product.mythic, true)
+		if not name then error("Mythic grant failed") end
+		Purchased:FireClient(player, { id = productId, text = "MYTHIC " .. name .. " is yours!" })
+		return
+	end
 	if productId == "FinishSmelt" then
 		if api.finishLegacyProduct then api.finishLegacyProduct(player) Purchased:FireClient(player,{id=productId,text="All scrap sold!"}) return end
 		require(script.Parent.Scrap).finishSmelt(player, data)

@@ -96,7 +96,7 @@ function R.migrate(d, guid)
 		local levels = if type(d.levels)=="table" then d.levels else {}
 		local oldTier=integer(d.tier,1,13)
 		local t=C.typeById(C.LegacyTypes[math.clamp(math.ceil(oldTier/2),1,#C.LegacyTypes)])
-		local item={id=guid(),type=t.id,rarity=C.Rarities[math.clamp(math.ceil(oldTier/2)-1,1,#C.Rarities)].name,modifier="Standard",
+		local item={id=guid(),type=t.id,rarity=C.Rarities[math.clamp(math.ceil(oldTier/2)-1,1,#C.Rarities-1)].name,modifier="Standard",
 			level=math.clamp(1+math.floor((number(levels.Power,0,50)+number(levels.Value,0,50))/2),1,C.topLevelCap())}
 		local owned={item}
 		for _,lv in (if type(d.helpers)=="table" then d.helpers else {}) do
@@ -144,7 +144,7 @@ function R.migrate(d, guid)
 	s.rolls=integer(s.rolls,0,1e9) -- rolls made (the first one is always cheap)
 	local owned,ids={},{}
 	for _,v in (if type(s.owned)=="table" then s.owned else {}) do
-		if type(v)=="table" and C.typeById(v.type) and C.rarity(v.rarity) and C.modifier(v.modifier) and #owned<C.MaxInventory then
+		if type(v)=="table" and C.typeById(v.type) and C.rarity(v.rarity) and C.modifier(v.modifier) and (#owned<C.MaxInventory or C.rarity(v.rarity).exclusive) then
 			local id=if type(v.id)=="string" and #v.id<=64 and #v.id>0 and not ids[v.id] then v.id else guid()
 			ids[id]=true table.insert(owned,{id=id,type=v.type,rarity=v.rarity,modifier=v.modifier,level=math.clamp(integer(v.level,1,C.topLevelCap()),1,C.topLevelCap()),
 				fused=if v.fused==true then true else nil})
@@ -180,7 +180,10 @@ function R.weights(luck,lucky)
 end
 local function choose(weights, random)
 	local total=0 for _,w in weights do total+=w end
-	local target=random()*total local n=0 for i,w in weights do n+=w if target<n then return i end end return #weights
+	local target=random()*total local n=0 for i,w in weights do n+=w if target<n then return i end end
+	-- rounding fallback: the last entry that can actually be chosen (never a weight-0 Mythic)
+	for i=#weights,1,-1 do if weights[i]>0 then return i end end
+	return 1
 end
 local function act(d,session,action,args,now,random,guid,perks)
 	local s=d.crushers args=if type(args)=="table" then args else {}
@@ -204,7 +207,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		local offer=type(slot)=="number" and session.offers and session.offers[slot]
 		if not offer then return false,"That pedestal is empty. Roll first." end
 		if now<(session.nextRoll or 0) then return false,"Wait for the reveal." end
-		if #s.owned>=C.MaxInventory then return false,"Inventory full. Open OWNED and recycle an unequipped duplicate. No cash was charged." end
+		if #s.owned>=C.MaxInventory then return false,"Inventory full. Recycle duplicates in the Index (RECYCLE DUPES). No cash was charged." end
 		local price=C.offerPrice(offer)
 		if not pay(price) then return false,"Need $"..price..". Collect and sell scrap first." end
 		local item={id=guid(),type=offer.type,rarity=offer.rarity,modifier=offer.modifier,level=1}

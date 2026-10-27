@@ -376,7 +376,10 @@ local function card(ped,name,rarity,odds,value,price,color)
 	c.rarity.Text=rarity c.rarity.TextColor3=color or Color3.new(1,1,1)
 	c.odds.Text=odds c.value.Text=value c.price.Text=price
 end
-local function oddsText(typeId) return "[1 in "..Format.cash(C.oddsFor(typeId)):gsub("%$","").."]" end
+local function oddsText(typeId)
+	local r=C.rarityOf(typeId) if r and r.exclusive then return "[EXCLUSIVE]" end
+	return "[1 in "..Format.cash(C.oddsFor(typeId)):gsub("%$","").."]"
+end
 -- Unlocked pedestals are yellow and empty until a roll; locked ones are grey
 -- with a hint, so the ROLLING board upgrade is visible on the plot.
 function pedestalLook(plot,count)
@@ -719,10 +722,13 @@ function G.start()
 	end)
 	local api={getData=Data.get,whenLoaded=Data.whenLoaded,save=Data.saveNow,sync=function(p) send(p) end,
 		-- reward crusher: random type of that rarity, Standard, level 1; nil when full
-		giveCrusher=function(p,rarityName)
+		-- typeId: a specific type of that rarity (shop Mythics); force: ignore the
+		-- inventory limit (paid items must always arrive)
+		giveCrusher=function(p,rarityName,typeId,force)
 			local d=Data.get(p) local r=C.rarity(rarityName)
-			if not d or not r or #d.crushers.owned>=C.MaxInventory then return nil end
-			local item={id=guid(),type=r.types[rng:NextInteger(1,#r.types)],rarity=r.name,modifier="Standard",level=1}
+			if not d or not r or #r.types==0 or (#d.crushers.owned>=C.MaxInventory and not force) then return nil end
+			if typeId and not table.find(r.types,typeId) then return nil end
+			local item={id=guid(),type=typeId or r.types[rng:NextInteger(1,#r.types)],rarity=r.name,modifier="Standard",level=1}
 			table.insert(d.crushers.owned,item) send(p)
 			return C.typeById(item.type).name
 		end,

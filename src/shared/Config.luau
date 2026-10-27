@@ -391,7 +391,7 @@ Config.Rewards = {
 		{ minutes = 40, kind = "cash", seconds = 1200 },
 		{ minutes = 50, kind = "cash", seconds = 1800 },
 		{ minutes = 60, kind = "cash", seconds = 2400 },
-		{ minutes = 75, kind = "crusher", rarity = "Epic" },
+		{ minutes = 75, kind = "crusher", rarity = "Epic", mythicChance = 0.03 },
 	},
 	-- Daily check-in: one claim per UTC day; missing a day restarts at day 1;
 	-- after day 7 it starts over.
@@ -401,9 +401,10 @@ Config.Rewards = {
 		{ kind = "crusher", rarity = "Uncommon" },
 		{ kind = "cash", seconds = 900 },
 		{ kind = "cash", seconds = 1200 },
-		{ kind = "crusher", rarity = "Rare" },
+		{ kind = "crusher", rarity = "Rare", mythicChance = 0.01 },
 		{ kind = "cash", seconds = 3600 },
 	},
+	-- mythicChance: rare chance a crusher reward becomes a random Mythic instead
 	-- crusher rewards when the inventory is full: this many seconds of earnings
 	FullInventorySeconds = 600,
 }

@@ -11,7 +11,7 @@ local Config = require(script.Parent.Config)
 local Store = {}
 
 export type Pass = { perk: string, gamePassId: number, price: number, title: string, desc: string, color: Color3 }
-export type Product = { id: string, productId: number, price: number, title: string, desc: string, color: Color3, hidden: boolean? }
+export type Product = { id: string, productId: number, price: number, title: string, desc: string, color: Color3, hidden: boolean?, mythic: string? }
 
 Store.Passes = {
 	{ perk = "AutoCrush", gamePassId = 0, price = 199, title = "Auto Crush", desc = "Crushes for you, even while you're AFK", color = Color3.fromRGB(230, 80, 70) },
@@ -33,6 +33,12 @@ Store.Products = {
 	{ id = "BoostLuck", productId = 0, price = 49, title = "2x Luck Boost", desc = "15 minutes of double luck", color = Color3.fromRGB(60, 190, 90), hidden = true },
 	{ id = "BoostSuper", productId = 0, price = 79, title = "Super Boost", desc = "15 minutes of 2x cash and 2x luck", color = Color3.fromRGB(160, 80, 235), hidden = true },
 	{ id = "SkipRewards", productId = 0, price = 99, title = "Skip All", desc = "Unlock every playtime gift now", color = Color3.fromRGB(255, 200, 40), hidden = true },
+	-- Mythic crushers (exclusive: never rolled). productId 0 shows SOON.
+	{ id = "Mythic_JackpotPress", productId = 0, price = 499, title = "Jackpot Press", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "JackpotPress" },
+	{ id = "Mythic_SeraphPress", productId = 0, price = 499, title = "Seraph Press", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "SeraphPress" },
+	{ id = "Mythic_PrismMech", productId = 0, price = 499, title = "Prism Mech", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "PrismMech" },
+	{ id = "Mythic_PhantomPirate", productId = 0, price = 499, title = "Phantom Pirate", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "PhantomPirate" },
+	{ id = "Mythic_CandyColossus", productId = 0, price = 499, title = "Candy Colossus", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "CandyColossus" },
 } :: { Product }
 
 -- What a cash pack pays: a share of the next press (or of the current one at max size).

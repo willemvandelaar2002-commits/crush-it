@@ -21,6 +21,10 @@ I.Overrides={
 	Starforge="rbxassetid://100677266625280",SteamHammer="rbxassetid://76591643349075",
 	Steel="rbxassetid://120668077807036",Thunder="rbxassetid://126706827501232",
 	Titan="rbxassetid://85273013130634",
+	-- Mythics (Brasslight Studio images, 27 Oct)
+	JackpotPress="rbxassetid://103371238513648",SeraphPress="rbxassetid://74047509223727",
+	PrismMech="rbxassetid://132990678490693",PhantomPirate="rbxassetid://73886794705532",
+	CandyColossus="rbxassetid://90430936805606",
 } :: {[string]: string}
 I.Ready={Titan=true,Laser=true,Plasma=true,Gravity=true,Quake=true,Cyclone=true,Mecha=true,
 	Quantum=true,Starforge=true,DragonJaw=true,BlackHole=true,Clockwork=true,FactoryHeart=true,
