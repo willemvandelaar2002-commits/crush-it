@@ -306,33 +306,35 @@ local function stationPanel(m,cf,color,heading,action,width)
 	local button=W.button(gui,"Action",action,UDim2.fromScale(.1,.56),UDim2.fromScale(.8,.38),action:sub(1,1)..action:sub(2):lower())
 	return face,label,button
 end
+-- Lego studs on the station bodies (the imported Studs material variant)
+local function studs(p) Style.studs(p) return p end
 local TOY={W.Yellow,W.Green,W.Blue,Color3.fromRGB(230,69,77),Color3.fromRGB(255,140,40)}
 function W.station(parent,cf,kind)
 	local m=Instance.new("Model") m.Name=kind.."Station" m.Parent=parent
 	local station
 	if kind=="Collect" then
 		-- Blue hopper: low walls so the pile shows, panel on the front wall.
-		W.part(m,"MachineFoot",V(24,1,16),cf*CFrame.new(0,.5,0),W.Navy,true)
-		W.part(m,"HopperFloor",V(22,1,14),cf*CFrame.new(0,1.5,0),Style.darken(W.Blue,.25))
-		W.part(m,"HopperBack",V(22,7,1),cf*CFrame.new(0,4.5,-6.5),W.Blue,true)
-		for _,x in {-10.5,10.5} do W.part(m,"HopperSide",V(1,7,14),cf*CFrame.new(x,4.5,0),W.Blue,true) end
-		W.part(m,"HopperFront",V(22,6.4,1),cf*CFrame.new(0,4.2,6.5),W.Blue,true)
+		studs(W.part(m,"MachineFoot",V(24,1,16),cf*CFrame.new(0,.5,0),W.Navy,true))
+		studs(W.part(m,"HopperFloor",V(22,1,14),cf*CFrame.new(0,1.5,0),Style.darken(W.Blue,.25)))
+		studs(W.part(m,"HopperBack",V(22,7,1),cf*CFrame.new(0,4.5,-6.5),W.Blue,true))
+		for _,x in {-10.5,10.5} do studs(W.part(m,"HopperSide",V(1,7,14),cf*CFrame.new(x,4.5,0),W.Blue,true)) end
+		studs(W.part(m,"HopperFront",V(22,6.4,1),cf*CFrame.new(0,4.2,6.5),W.Blue,true))
 		W.hazard(m,cf*CFrame.new(0,8.25,6.5),22,.5,1.1)
-		for _,x in {-10.5,10.5} do for _,z in {-6.5,6.5} do W.part(m,"CornerCap",V(1.6,.6,1.6),cf*CFrame.new(x,8.3,z),W.Navy) end end
+		for _,x in {-10.5,10.5} do for _,z in {-6.5,6.5} do studs(W.part(m,"CornerCap",V(1.6,.6,1.6),cf*CFrame.new(x,8.3,z),W.Navy)) end end
 		local fill=Instance.new("Model") fill.Name="StoredScrap" fill.Parent=m
 		local rng=Random.new(7)
 		for i=1,24 do
 			local x,z=rng:NextNumber(-8.5,8.5),rng:NextNumber(-5,4.5) local layer=math.floor((i-1)/8)
-			W.part(fill,"ToyScrap",V(rng:NextNumber(2,3.4),rng:NextNumber(1.4,2.4),rng:NextNumber(2,3)),
-				cf*CFrame.new(x,2.6+layer*1.6,z)*CFrame.Angles(rng:NextNumber(-.4,.4),rng:NextNumber(0,6),rng:NextNumber(-.4,.4)),TOY[(i-1)%#TOY+1])
+			studs(W.part(fill,"ToyScrap",V(rng:NextNumber(2,3.4),rng:NextNumber(1.4,2.4),rng:NextNumber(2,3)),
+				cf*CFrame.new(x,2.6+layer*1.6,z)*CFrame.Angles(rng:NextNumber(-.4,.4),rng:NextNumber(0,6),rng:NextNumber(-.4,.4)),TOY[(i-1)%#TOY+1]))
 		end
 		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.1,7.6),W.Blue,"COLLECT SCRAP","COLLECT")
 		station={part=face,label=label,button=button,fill=fill}
 	elseif kind=="Sell" then
 		-- Compact green counter with a register and a SELL SCRAP sign on low posts.
-		W.part(m,"MachineFoot",V(20,1,12),cf*CFrame.new(0,.5,0),W.Navy,true)
-		W.part(m,"CounterBody",V(18,6.6,10),cf*CFrame.new(0,4.3,0),W.Green,true)
-		W.part(m,"CounterTop",V(19,.9,11),cf*CFrame.new(0,8,0),W.Navy)
+		studs(W.part(m,"MachineFoot",V(20,1,12),cf*CFrame.new(0,.5,0),W.Navy,true))
+		studs(W.part(m,"CounterBody",V(18,6.6,10),cf*CFrame.new(0,4.3,0),W.Green,true))
+		studs(W.part(m,"CounterTop",V(19,.9,11),cf*CFrame.new(0,8,0),W.Navy))
 		W.hazard(m,cf*CFrame.new(0,1.4,5.1),18,.8,.4)
 		W.part(m,"Register",V(4.6,3,3.6),cf*CFrame.new(5,10,-1.5),W.Navy)
 		W.part(m,"RegisterKeys",V(4,.5,1.8),cf*CFrame.new(5,8.7,1.6)*CFrame.Angles(math.rad(-15),0,0),Color3.fromRGB(70,80,100))
@@ -341,9 +343,9 @@ function W.station(parent,cf,kind)
 		for i,x in {-6,-3.5,-1} do
 			W.part(m,"CashStack",V(2.2,.5+i*.35,1.4),cf*CFrame.new(x,8.7+i*.17,-2.5),Color3.fromRGB(80,200,90))
 		end
-		for _,x in {-7.5,7.5} do W.part(m,"SignPost",V(1.1,6,1.1),cf*CFrame.new(x,11.5,-4.2),W.Navy) end
+		for _,x in {-7.5,7.5} do studs(W.part(m,"SignPost",V(1.1,6,1.1),cf*CFrame.new(x,11.5,-4.2),W.Navy)) end
 		local board=W.part(m,"SellSign",V(15,3.2,.8),cf*CFrame.new(0,14.2,-4.2),W.Green)
-		W.part(m,"SignFrame",V(16.2,4.4,.6),cf*CFrame.new(0,14.2,-4.8),W.Navy)
+		studs(W.part(m,"SignFrame",V(16.2,4.4,.6),cf*CFrame.new(0,14.2,-4.8),W.Navy))
 		local gui=W.sign(board)
 		W.icon(gui,"CashIcon",Icons.Cash,UDim2.fromScale(.02,.05),UDim2.fromScale(.18,.9))
 		W.text(gui,"SignText","SELL SCRAP",UDim2.fromScale(.2,.08),UDim2.fromScale(.76,.84))
@@ -351,16 +353,16 @@ function W.station(parent,cf,kind)
 		station={part=face,label=label,button=button}
 	else
 		-- Purple roll machine: crushing rollers, a big die and a reveal stand.
-		W.part(m,"MachineFoot",V(24,1,16),cf*CFrame.new(0,.5,0),W.Navy,true)
-		W.part(m,"MachineBody",V(22,7,13),cf*CFrame.new(0,4.5,0),W.Purple,true)
+		studs(W.part(m,"MachineFoot",V(24,1,16),cf*CFrame.new(0,.5,0),W.Navy,true))
+		studs(W.part(m,"MachineBody",V(22,7,13),cf*CFrame.new(0,4.5,0),W.Purple,true))
 		W.hazard(m,cf*CFrame.new(0,8.25,6.3),22,.5,.6)
 		local rollers={}
-		for _,x in {-10,-1} do W.part(m,"RollerCheek",V(1.2,4,7),cf*CFrame.new(x,10,-1.5),Style.darken(W.Purple,.3)) end
+		for _,x in {-10,-1} do studs(W.part(m,"RollerCheek",V(1.2,4,7),cf*CFrame.new(x,10,-1.5),Style.darken(W.Purple,.3))) end
 		for i,z in {-3.4,.4} do
 			local r=W.part(m,"Roller",V(8,2.6,2.6),cf*CFrame.new(-5.5,9.6,z),Color3.fromRGB(150,160,175))
 			r.Shape=Enum.PartType.Cylinder r.Material=Enum.Material.DiamondPlate table.insert(rollers,r)
 		end
-		W.part(m,"DiePedestal",V(5,2,5),cf*CFrame.new(6.5,9,-3),W.Yellow)
+		studs(W.part(m,"DiePedestal",V(5,2,5),cf*CFrame.new(6.5,9,-3),W.Yellow))
 		local die=W.die(m,cf*CFrame.new(6.5,13,-3)*CFrame.Angles(.35,.6,.2),5.2)
 		W.beacon(m,cf*CFrame.new(-10,8,6)) W.beacon(m,cf*CFrame.new(10,8,6))
 		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.3,7.4),W.Purple,"ROLL A CRUSHER","ROLL")
@@ -370,10 +372,10 @@ function W.station(parent,cf,kind)
 		local pedestals={}
 		for i,at in C.PedestalSpots do
 			local pcf=cf*CFrame.new(at.X,0,at.Y)*CFrame.Angles(0,math.atan2(at.X,at.Y),0)
-			local base=W.part(m,"PedestalBase",V(5.4,1,5.4),pcf*CFrame.new(0,.5,0),W.Navy,true)
-			local plinth=W.part(m,"Pedestal",V(4.4,2.2,4.4),pcf*CFrame.new(0,2.1,0),W.Yellow,true)
+			local base=studs(W.part(m,"PedestalBase",V(5.4,1,5.4),pcf*CFrame.new(0,.5,0),W.Navy,true))
+			local plinth=studs(W.part(m,"Pedestal",V(4.4,2.2,4.4),pcf*CFrame.new(0,2.1,0),W.Yellow,true))
 			plinth:SetAttribute("Slot",i)
-			W.part(m,"PedestalTrim",V(4.8,.3,4.8),pcf*CFrame.new(0,3.3,0),W.Navy)
+			studs(W.part(m,"PedestalTrim",V(4.8,.3,4.8),pcf*CFrame.new(0,3.3,0),W.Navy))
 			local anchor=W.part(m,"PedestalCardAnchor",V(.2,.2,.2),pcf*CFrame.new(0,3.4,0),W.Navy)
 			anchor.Transparency=1
 			local card=Instance.new("BillboardGui") card.Name="OfferCard" card.Size=UDim2.fromScale(9,5.4)
