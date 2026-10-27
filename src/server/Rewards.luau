@@ -69,8 +69,10 @@ end
 -- Pays out one reward entry; returns the celebration text.
 local function grant(player: Player, data: any, reward: any): string
 	if reward.kind == "crusher" then
-		local name = api.giveCrusher and api.giveCrusher(player, reward.rarity)
-		if name then return "New " .. reward.rarity .. " crusher: " .. name .. "!" end
+		local rarity = reward.rarity
+		if type(reward.mythicChance) == "number" and math.random() < reward.mythicChance then rarity = "Mythic" end
+		local name = api.giveCrusher and api.giveCrusher(player, rarity)
+		if name then return (if rarity == "Mythic" then "MYTHIC DROP! " else "New " .. rarity .. " crusher: ") .. name .. "!" end
 		-- inventory full: pay cash instead
 		reward = { seconds = Config.Rewards.FullInventorySeconds }
 	elseif reward.kind == "golden" then -- older config entries

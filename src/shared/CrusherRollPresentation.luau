@@ -8,13 +8,14 @@ local profiles={
 	Rare={rank=2,duration=.7,lift=.7,pitch=1.05},
 	Epic={rank=3,duration=1.0,lift=1.0,pitch=.98},
 	Legendary={rank=4,duration=1.35,lift=1.3,pitch=.9},
+	Mythic={rank=5,duration=1.6,lift=1.5,pitch=.85},
 }
 function P.profile(rarity) return profiles[rarity] or profiles.Common end
 function P.owns(items,id)
 	for _,item in items do if item.type==id then return true end end return false
 end
 function P.odds(id,luck,lucky,first)
-	local wanted=C.rarityOf(id) if not wanted then return 0 end
+	local wanted=C.rarityOf(id) if not wanted or wanted.weight<=0 then return 0 end
 	if first then return if wanted.name=="Common" then #wanted.types else 0 end
 	local total=0 local weight=0
 	for _,r in C.Rarities do

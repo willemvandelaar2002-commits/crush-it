@@ -16,7 +16,7 @@ local C = {
 	CashPacks = { CashSmall = 60, CashMedium = 300, CashLarge = 1200 },
 	-- Complete one physical six-bay row with a single rarity. Scrap only;
 	-- applies to that row, never stacks across rows or changes roll odds.
-	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40 },
+	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40, Mythic=.60 },
 }
 -- Stadium banks: ground bays open to the plaza, the upper row steps back on
 -- top of them (its walkway is the ground bays' roof). Local plot coordinates,
@@ -157,6 +157,9 @@ C.Rarities = {
 	{ name = "Rare", price = 900, weight = 6, rank = 2, types = { "Mega", "Magnetron" }, mult = 1.35, color = Color3.fromRGB(75, 148, 255) },
 	{ name = "Epic", price = 6000, weight = 1.8, rank = 3, types = { "Titan", "TwinTitan" }, mult = 1.65, color = Color3.fromRGB(187, 105, 246) },
 	{ name = "Legendary", price = 60000, weight = 0.2, rank = 4, types = { "Quantum", "GoldenKing", "Toyzilla" }, mult = 2, color = Color3.fromRGB(255, 200, 55) },
+	-- Mythic: never rolled (weight 0). Only from the Robux shop, a rare Daily
+	-- Spin prize and rare playtime/daily reward drops. 3x Legendary output.
+	{ name = "Mythic", price = 600000, weight = 0, rank = 5, types = {}, mult = 2, color = Color3.fromRGB(255, 70, 190), exclusive = true },
 }
 -- Extend the real roll catalogue, not just the Index. Each rarity now contains
 -- eight types. Existing definitions and legacy migration order are unchanged.
@@ -169,6 +172,20 @@ for _, entry in require(script.Parent.CrusherRoster) do
 	def.template=nil
 	table.insert(C.Types,def)
 	for _, rarity in C.Rarities do if rarity.name==entry.rarity then table.insert(rarity.types,entry.id) break end end
+end
+-- Mythic specials: Willem's Blender models (ServerStorage.SpecialCrusherMeshes),
+-- the Legendary band with 3x the value per input. Appended last so the
+-- legacy type order stays the same.
+C.Mythics = {
+	{ id = "JackpotPress", name = "Jackpot Press" },
+	{ id = "SeraphPress", name = "Seraph Press" },
+	{ id = "PrismMech", name = "Prism Mech" },
+	{ id = "PhantomPirate", name = "Phantom Pirate" },
+	{ id = "CandyColossus", name = "Candy Colossus" },
+}
+for _, m in C.Mythics do
+	table.insert(C.Types, { id = m.id, name = m.name, template = m.id, tier = 11, input = 3, damage = 40, hp = 120, value = 660, cycle = 1.8 })
+	table.insert(C.Rarities[#C.Rarities].types, m.id)
 end
 C.Modifiers = {
 	{ name = "Standard", weight = 80, mult = 1 }, { name = "Rusty", weight = 14, mult = 1.15 },
@@ -219,6 +236,7 @@ C.Goals = { GroupId = 264438399, SkipMinutes = 5, SkipCooldownHours = 24, MinSki
 function C.oddsFor(typeId)
 	local total=0 for _,r in C.Rarities do total+=r.weight end
 	for _,r in C.Rarities do for _,t in r.types do if t==typeId then
+		if r.weight<=0 then return math.huge end -- Mythic: can't be rolled
 		return math.max(1,math.floor(total/r.weight*#r.types+.5))
 	end end end
 	return 1

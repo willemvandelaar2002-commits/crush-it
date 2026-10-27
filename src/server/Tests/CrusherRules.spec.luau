@@ -139,10 +139,11 @@ return function()
 	end
 	-- Forty real, reachable definitions; model additions must not silently
 	-- change legacy IDs, saved instance stats or the existing rarity weights.
-	check(#C.Types==40,"forty live crusher types")
+	check(#C.Types==40+#C.Mythics,"forty rollable crusher types plus the Mythics")
 	local seen={} local cumulative=0 local total=0 for _,r in C.Rarities do total+=r.weight end
 	for _,r in C.Rarities do
-		check(#r.types==8,"eight types per rarity")
+		check(#r.types==(if r.exclusive then #C.Mythics else 8),"eight types per rollable rarity")
+		if r.exclusive then for _,t in r.types do check(C.typeById(t)~=nil and not seen[t],"real Mythic type") seen[t]=true end continue end
 		for position,typeId in r.types do
 			check(not seen[typeId] and C.typeById(typeId)~=nil,"unique real type in each roll pool") seen[typeId]=true
 			local profile=fresh() profile.crushers.rolls=1 local context={} local values={(cumulative+r.weight/2)/total,.1,(position-.5)/#r.types} local n=0
@@ -167,5 +168,18 @@ return function()
 	check(recycle.cash==cash and first.level==1,"recycling cannot mint cash or change other levels")
 	act(recycle,{},"Unequip",{id=first.id})
 	check(not act(recycle,{},"Recycle",{id=first.id}),"last copy of a type protects discovery")
+	-- Mythics: never rolled, always kept
+	local myth=C.rarity("Mythic")
+	check(myth and myth.weight==0 and #myth.types==#C.Mythics and C.oddsFor(myth.types[1])==math.huge,"Mythic tier is exclusive")
+	for _,r in {.0,.5,.9999999} do
+		local roller=fresh() roller.crushers.rolls=5
+		local ok,_,offers=R.act(roller,{},"Roll",{},0,function() return r end,id,{})
+		if ok then for _,o in offers do check(o.rarity~="Mythic","rolls never give a Mythic") end end
+	end
+	local full={cash=0,crusherSchema=C.Schema,crushers={owned={}}}
+	for i=1,C.MaxInventory do table.insert(full.crushers.owned,{id="f"..i,type="Steel",rarity="Common",modifier="Standard",level=1}) end
+	table.insert(full.crushers.owned,{id="m1",type=myth.types[1],rarity="Mythic",modifier="Standard",level=1})
+	local loaded=R.migrate(full,id)
+	check(R.find(loaded,"m1")~=nil,"a bought Mythic survives a full inventory on load")
 	return {passed=checks}
 end
