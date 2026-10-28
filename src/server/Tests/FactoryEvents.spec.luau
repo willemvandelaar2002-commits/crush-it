@@ -61,15 +61,40 @@ return function()
 	check(R.eligible(record),"both participation thresholds qualify")
 	check(not R.eligible({active=29,hits=100}),"hits alone cannot qualify")
 	check(not R.eligible({active=100,hits=9}),"time alone cannot qualify")
+	-- reward reels: fixed rolls, fake grant hooks
+	local given,boosted={}, {}
+	local function hooks(rolls,full)
+		local i=0
+		return {random=function() i+=1 return rolls[i] or 0 end,
+			giveCrusher=function(rarity) if full then return nil end table.insert(given,rarity) return rarity.." Thing" end,
+			addBoost=function(b,m) table.insert(boosted,b) return true end}
+	end
+	local cashOnly={0,0,0}
 	local profile=fresh() local original=Crushers.copy(profile.crushers)
-	local ok,amount=R.grant(profile,"round-1",record,C.money)
-	check(ok and amount==1200 and profile.cash==1200 and profile.factoryEvents.wins==1,"eligible victory pays once")
-	check(not R.grant(profile,"round-1",record,C.money) and profile.cash==1200,"repeated finale cannot pay twice")
+	record.rank=1
+	local ok,result=R.grant(profile,"round-1",record,C.money,hooks(cashOnly))
+	check(ok and #result.prizes==E.Reels.ByRank[1] and profile.factoryEvents.wins==1,"rank 1 spins its configured reels")
+	check(result.cash==R.cashPrize(R.prize("Cash"),10)*#result.prizes and profile.cash==result.cash,"cash tiles pay cps x seconds")
+	local paid=profile.cash
+	check(not R.grant(profile,"round-1",record,C.money,hooks(cashOnly)) and profile.cash==paid,"repeated finale cannot pay twice")
 	local rejoined=Crushers.migrate(Crushers.copy(profile),id)
-	check(not R.grant(rejoined,"round-1",record,C.money),"reward ledger survives profile migration/rejoin")
+	check(not R.grant(rejoined,"round-1",record,C.money,hooks(cashOnly)),"reward ledger survives profile migration/rejoin")
 	check(profile.crushers.owned[1].id==original.owned[1].id and profile.crushers.equipped["1"]==original.equipped["1"],"reward never consumes or moves crushers")
-	check(not R.grant(profile,"unqualified",{active=0,hits=0,cps=100},C.money),"unqualified victory cannot pay")
-	for i=2,30 do R.grant(profile,"round-"..i,record,C.money) end
+	check(not R.grant(profile,"unqualified",{active=0,hits=0,cps=100},C.money,hooks(cashOnly)),"unqualified victory cannot pay")
+	check(R.reelCount(nil)==E.Reels.Others and R.reelCount(99)==E.Reels.Others,"unranked/low ranks get the base reels")
+	check(R.pick(.999999)==E.Reels.Prizes[#E.Reels.Prizes].id and R.pick(0)==E.Reels.Prizes[1].id,"pick covers both ends")
+	local total=0 for _,v in R.odds() do total+=v end
+	check(math.abs(total-100)<.5,"displayed odds add up to 100%")
+	local mythicAt=0 local w=0 local sum=0 for _,p in E.Reels.Prizes do sum+=p.weight end
+	for _,p in E.Reels.Prizes do if p.id=="Mythic" then mythicAt=(w+p.weight/2)/sum end w+=p.weight end
+	record.rank=50
+	local ok2,r2=R.grant(profile,"round-crusher",record,C.money,hooks({mythicAt}))
+	check(ok2 and #r2.prizes==1 and r2.prizes[1].kind=="crusher" and given[#given]=="Mythic","crusher tile grants that rarity")
+	local before=profile.cash
+	local ok3,r3=R.grant(profile,"round-full",record,C.money,hooks({mythicAt},true))
+	check(ok3 and r3.prizes[1].fallback and r3.prizes[1].id=="Mythic" and profile.cash>before,"full inventory turns a crusher tile into cash")
+	record.rank=1
+	for i=2,30 do R.grant(profile,"round-"..i,record,C.money,hooks(cashOnly)) end
 	check(#profile.factoryEvents.claimed==E.LedgerSize,"reward ledger bounded")
 	profile.factoryEvents={wins=0/0,claimed={"a","a",false,"b"}}
 	R.migrate(profile)

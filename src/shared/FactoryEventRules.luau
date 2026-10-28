@@ -60,16 +60,62 @@ function R.migrate(d)
 	d.factoryEvents={wins=if finite(old.wins) then math.clamp(math.floor(old.wins),0,1e9) else 0,claimed=ledger}
 	return d.factoryEvents
 end
-function R.grant(d,roundId,record,money)
-	-- No yields between checking the ledger, recording the ID and crediting cash.
-	-- Reward and ledger are in the same player profile / DataService save.
+-- Reward reels -------------------------------------------------------------
+function R.prize(id)
+	for _,p in E.Reels.Prizes do if p.id==id then return p end end
+	return nil
+end
+function R.reelCount(rank)
+	return if type(rank)=="number" and E.Reels.ByRank[rank] then E.Reels.ByRank[rank] else E.Reels.Others
+end
+-- `r` in [0,1) -> prize id (weights are relative)
+function R.pick(r)
+	local total=0 for _,p in E.Reels.Prizes do total+=p.weight end
+	local x=r*total
+	for _,p in E.Reels.Prizes do x-=p.weight if x<0 then return p.id end end
+	return E.Reels.Prizes[#E.Reels.Prizes].id
+end
+-- percentages for the tiles (rounded to one decimal)
+function R.odds()
+	local total=0 for _,p in E.Reels.Prizes do total+=p.weight end
+	local out={} for _,p in E.Reels.Prizes do out[p.id]=math.round(p.weight/total*1000)/10 end
+	return out
+end
+function R.cashPrize(prize,cps)
+	return math.floor(math.clamp((if finite(cps) then cps else 0)*prize.seconds,E.MinReward,E.MaxReward))
+end
+-- hooks = { random() -> [0,1), giveCrusher(rarity) -> name?, addBoost(id, minutes) }
+-- Returns ok, { prizes = { {id, kind, cash?, name?, boost?, minutes?} }, cash = total }.
+-- No yields between checking the ledger, recording the ID and granting; the
+-- reward and the ledger are in the same player profile / DataService save.
+function R.grant(d,roundId,record,money,hooks)
 	local s=R.migrate(d)
-	if not R.eligible(record) or table.find(s.claimed,roundId) then return false,0 end
-	local amount=R.reward(record.cps)
+	if not R.eligible(record) or table.find(s.claimed,roundId) then return false,nil end
+	local ids={}
+	for i=1,R.reelCount(record.rank) do ids[i]=R.pick(hooks.random()) end
 	table.insert(s.claimed,1,roundId)
 	while #s.claimed>E.LedgerSize do table.remove(s.claimed) end
-	s.wins+=1 d.cash=money(d.cash+amount)
-	return true,amount
+	s.wins+=1
+	local out={prizes={},cash=0,values={}}
+	for _,p in E.Reels.Prizes do if p.kind=="cash" then out.values[p.id]=R.cashPrize(p,record.cps) end end
+	for i,id in ids do
+		local prize=R.prize(id) :: any
+		local won={id=id,kind=prize.kind}
+		if prize.kind=="crusher" then
+			local name=hooks.giveCrusher(prize.rarity)
+			if name then won.name=name won.rarity=prize.rarity
+			else prize=R.prize(E.Reels.FullFallback) won.fallback=true won.kind="cash" end
+		elseif prize.kind=="boost" then
+			if hooks.addBoost(prize.boost,prize.minutes) then won.boost=prize.boost won.minutes=prize.minutes
+			else prize=R.prize(E.Reels.FullFallback) won.fallback=true won.kind="cash" end
+		end
+		if won.kind=="cash" then
+			won.cash=R.cashPrize(prize,record.cps) out.cash+=won.cash
+		end
+		out.prizes[i]=won
+	end
+	if out.cash>0 then d.cash=money(d.cash+out.cash) end
+	return true,out
 end
 -- Preserve completion ratio when players leave. No healing or free damage.
 function R.resize(hp,maxHp,newMax)

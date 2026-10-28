@@ -76,11 +76,13 @@ function E.new(world)
 		end
 		return best and bestD<12 and best:FindFirstChild("EquippedCrusher") or nil
 	end
+	-- 28 Oct: no row glow on a plot whose platform the factory event hides
+	local function eventHidden(model) local plot=model.Parent return plot~=nil and plot:GetAttribute("LocalEventHidden")==true end
 	function self.forget(model) local slot=self.byModel[model] if slot then release(slot) end end
 	function self.sync(ranked,now)
 		local selected={} local count=0
 		for _,candidate in ranked do local model=candidate.model
-			if model:IsDescendantOf(world) and model:GetAttribute("RowSetActive") and palettes[model:GetAttribute("RowRarity")] then
+			if model:IsDescendantOf(world) and not eventHidden(model) and model:GetAttribute("RowSetActive") and palettes[model:GetAttribute("RowRarity")] then
 				count+=1 selected[model]=candidate candidate.outline=count<=HIGHLIGHT_ROWS if count==4 then break end
 			end
 		end
@@ -126,7 +128,7 @@ function E.new(world)
 	end
 	function self.step(now)
 		for model,slot in self.byModel do
-			if not model:IsDescendantOf(world) or not model:GetAttribute("RowSetActive") or not palettes[model:GetAttribute("RowRarity")] then release(slot) continue end
+			if not model:IsDescendantOf(world) or eventHidden(model) or not model:GetAttribute("RowSetActive") or not palettes[model:GetAttribute("RowRarity")] then release(slot) continue end
 			local rails=slot.rails local n=math.min(6,#rails)
 			for i,e in slot.emitters do if not rails[i] or not rails[i].Parent then e.Enabled=false e:Clear() end end
 			if n==0 then slot.glint.Transparency=1 continue end

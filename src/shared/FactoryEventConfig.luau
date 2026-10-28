@@ -7,7 +7,7 @@ return {
 	PlatformZone={HalfWidth=78,Back=-105,Front=12,Above=1.5},
 	Enabled = true,
 	Interval = 15 * 60, -- first announcement and time between completed rounds
-	Announce = 13, Assemble = 8, Active = 180, Finale = 7, Victory = 6, Recover = 3, -- 28 Oct: Announce+Assemble = the intro cutscene
+	Announce = 13, Assemble = 8, Active = 180, Finale = 7, Victory = 11, Recover = 3, -- Victory 11: room for the reward reels -- 28 Oct: Announce+Assemble = the intro cutscene
 	Tick = .2, Broadcast = .5, Strike = 2,
 	TargetSeconds = 90, MinimumActive = 30, MinimumHits = 10,
 	Points = {Common=1, Uncommon=2, Rare=3, Epic=4, Legendary=5, Mythic=6},
@@ -19,6 +19,23 @@ return {
 	MaxPower = 25, -- 1 + log10(1 + real fleet output): avoids one huge factory deleting the event
 	PulseCooldown = 6, PulseWindow = .75, PulseMultiplier = 3,
 	RewardSeconds = 120, MinReward = 250, MaxReward = 1e12, LedgerSize = 20,
+	-- 28 Oct: the win reward is a set of spinning reels (like the reference).
+	-- Every qualifying player spins; the damage ranking decides how many reels.
+	-- The server picks every result when the bear falls and saves it at once;
+	-- the reels only show it. TEST DEFAULTS: weights and amounts not approved.
+	Reels = {
+		ByRank = {3, 2, 2}, Others = 1, -- #1 gets 3 reels, #2-#3 get 2, everyone else 1
+		Spin = 4.2, Stagger = .55, Tiles = 34, -- seconds per reel, delay between reels, tiles per strip
+		Prizes = {
+			{id="Cash", kind="cash", seconds=120, weight=37},                -- your cash/sec x seconds
+			{id="BigCash", kind="cash", seconds=360, weight=18},
+			{id="CashBoost", kind="boost", boost="Cash", minutes=10, weight=20},
+			{id="LuckBoost", kind="boost", boost="Luck", minutes=10, weight=15},
+			{id="Legendary", kind="crusher", rarity="Legendary", weight=8},
+			{id="Mythic", kind="crusher", rarity="Mythic", weight=2},
+		},
+		FullFallback = "BigCash", -- a crusher prize with a full inventory pays this instead
+	},
 	PlotHalfWidth = 80, PlotRear = -125, PlotFront = 118, PlotHeight = 65, -- PlotFront: Plots.Front 112 + 6
 	VisualOrigin = Vector3.new(0, 1, -13), -- clear middle gap between the existing wing banks
 	SuperScale = 2.6, -- 28 Oct: the super crusher is built 2.6x (the whole bank platform hides during the event)

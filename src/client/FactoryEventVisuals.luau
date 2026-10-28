@@ -382,7 +382,8 @@ function Visuals:update(packet)
 				local o=rig.record.origin
 				if trim then for _,m in trim:GetChildren() do
 					if m:IsA("Model") then
-						local l=o:PointToObjectSpace(m:GetPivot().Position)
+						-- bounding box, not the pivot: the gold kit's frames all pivot at the plot origin
+						local l=o:PointToObjectSpace((m:GetBoundingBox()).Position)
 						if m.Name:match("^CornerBrace") or (m.Name:match("^BoardFrame") and l.Y>15) then self:hide(m) roots[m]=true end
 					end
 				end end

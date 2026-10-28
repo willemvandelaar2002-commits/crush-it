@@ -1,5 +1,20 @@
 # Factory events — Bear Breakdown
 
+28 Oct, reward reels: winning no longer pays one cash amount. Each qualifying
+player spins reward reels (client/FactoryEventReels, after the reference): #1
+in damage 3 reels, #2-#3 2, everyone else 1 (FactoryEventConfig.Reels). Prizes
+by weight: cash (cash/sec x 120 s), big cash (x 360 s), 2x Cash 10 min, 2x Luck
+10 min, a random Legendary, a random Mythic (test weights 37/18/20/15/8/2; the
+tiles show the %). The server picks and grants every result when the bear
+falls (FactoryEventRules.grant, same ledger, saved at once); the reels only
+show it, then a "YOU GOT" line. A crusher with a full inventory (or a boost
+that can't be added) pays big cash instead. Victory phase is 11 s for this.
+The Mythic pool is the normal one (same as Daily Spin), so it can include the
+Prism Mech / Candy Colossus offer crushers. Also: the full-row glow
+(RowSetEffects) skips event-hidden plots, and the gold kit's bank-sign frames
+(TrimKit BoardFrame, pivots at the plot origin) are now judged by their
+bounding box, so the two floating "brackets" hide too.
+
 28 Oct, evening: on upgraded plots the stage decorations over the platform
 (PlotStages/FactoryProgression/TrimKit parts inside FactoryEventConfig.PlatformZone:
 stripes, gold caps/feet, walkway lights, corner caps, support beams) hide too;

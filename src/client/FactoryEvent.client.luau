@@ -15,6 +15,7 @@ local Net=require(RS.Shared.Net)
 local Style=require(RS.Shared.Kit.Style)
 local Rules=require(RS.Shared.FactoryEventRules)
 local Visuals=require(script.Parent.FactoryEventVisuals)
+local Reels=require(script.Parent.FactoryEventReels)
 local Format=require(RS.Shared.Format)
 local me=Players.LocalPlayer
 local gui=Instance.new("ScreenGui") gui.Name="FactoryEventHud" gui.ResetOnSpawn=false
@@ -112,6 +113,7 @@ local function paintBoard(packet)
 		mine.rank.Text="#"..myRank mine.pct.Text=string.format("%.1f%%",myDealt/maxHp*100)
 	end
 end
+local reels=Reels.new(gui)
 local primary=Instance.new("TextButton") primary.Name="GoToFactory" primary.Text="MY FACTORY"
 primary.AnchorPoint=Vector2.new(.5,0) primary.Position=UDim2.new(.5,0,1,4) primary.Size=UDim2.fromOffset(200,40)
 primary.TextScaled=true primary.ZIndex=3 primary.Visible=false primary.Parent=panel Style.button(primary,Color3.fromRGB(65,230,80))
@@ -323,6 +325,15 @@ local function renderHud(now)
 	if me:GetAttribute("FactoryEventRunning")~=running then me:SetAttribute("FactoryEventRunning",running) end
 	-- no panel while the intro/assembly plays (Announce, Assemble)
 	panel.Visible=phase~="Idle" and phase~="Announce" and phase~="Assemble" and not (cameraState~=nil and cameraState.mode=="intro")
+	-- win reward reels (server already granted the results); they replace the
+	-- boss bar until the round is over
+	if phase=="Victory" and you and type(you.prizes)=="table" and #you.prizes>0 and reels.round~=packet.roundId then
+		reels:play(packet.roundId,you.prizes,you.values,{
+			onTick=function() play("Clunk",.12,1.8) end,
+			onLand=function(_,won) play("Sparkle",if won.kind=="crusher" then .9 else .5) if won.kind=="crusher" then play("Fanfare",.6) end end,
+		})
+	elseif reels.round and phase~="Victory" and phase~="Recover" then reels:clear() end
+	if reels.round then panel.Visible=false end
 	if not panel.Visible then return end
 	local remaining=math.max(0,math.ceil(packet.ends-now))
 	timer.Text=string.format("%d:%02d",math.floor(remaining/60),remaining%60)

@@ -56,7 +56,7 @@ function Events.start(api)
 			you=if r and not r.pending then {points=r.points,grade=r.grade,
 				count=r.count,active=r.active,hits=r.hits,present=r.present==true,carrying=r.carrying,
 				critUntil=r.critUntil or 0,loaded=r.boost or 0,fallback=r.fallback==true,
-				eligible=Rules.eligible(r),reward=r.reward or 0} else nil}
+				eligible=Rules.eligible(r),reward=r.reward or 0,prizes=r.prizes,values=r.values,rank=r.rank} else nil}
 	end
 	local function broadcast()
 		publishAttributes()
@@ -231,12 +231,22 @@ function Events.start(api)
 	end
 	local function victory()
 		outcome="Victory"
+		-- damage ranking decides the number of reward reels
+		local ranked={}
+		for p,r in roster do if not r.pending then table.insert(ranked,{p=p,dealt=r.dealt or 0}) end end
+		table.sort(ranked,function(a,b) if a.dealt~=b.dealt then return a.dealt>b.dealt end return a.p.UserId<b.p.UserId end)
+		for i,e in ranked do roster[e.p].rank=i end
+		local Boosts=require(script.Parent.Boosts)
 		for p,r in roster do
 			local d=api.getData(p)
 			if d and not r.pending then
-				local granted,amount=Rules.grant(d,roundId,r,C.money)
+				local granted,result=Rules.grant(d,roundId,r,C.money,{
+					random=function() return rng:NextNumber() end,
+					giveCrusher=function(rarity) return api.giveCrusher(p,rarity) end,
+					addBoost=function(id,minutes) return Boosts.add(p,id,minutes) end,
+				})
 				if granted then
-					r.reward=amount api.sync(p)
+					r.reward=result.cash r.prizes=result.prizes r.values=result.values api.sync(p)
 					-- The ID ledger and cash are saved together; retry via autosave if storage is down.
 					task.spawn(function()
 						if not api.save(p) then warn("[FactoryEvent] Reward save deferred to autosave for "..p.UserId) end
