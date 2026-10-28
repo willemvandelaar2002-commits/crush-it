@@ -224,7 +224,8 @@ C.CoatingQuoteSeconds=20
 -- Fusion (unlocks with Factory III, plot level 2): a main crusher plus three
 -- unequipped copies of the same type become one fused crusher. The main keeps
 -- its id, level and coating; the three copies are used up. One tier for now.
-C.Fusion = { PlotLevel=2, Copies=3, Mult=2 }
+C.Fusion = { PlotLevel=2, Copies=3, Mult=2, MachineScale=1.4 } -- MachineScale: size of the fuser on the plot (28 Oct: bigger)
+C.CoatingBoothScale = 1.35 -- size of the Coating Lab booth on the plot (28 Oct: bigger)
 C.Upgrades = {
 	Damage = { name = "Damage", group = "Production", base = 20, growth = 1.65 },
 	Speed = { name = "Strike speed", group = "Production", base = 30, growth = 1.7 },

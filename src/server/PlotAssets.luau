@@ -18,7 +18,7 @@ end
 -- Clone a template so it stands on cf's floor point, its front facing cf's
 -- LookVector. Adds one invisible solid box (its footprint, a little smaller)
 -- so players can't walk through it; the meshes themselves never collide.
-function A.place(name: string, parent: Instance, cf: CFrame, opts: {solid: boolean?, inset: number?}?): Model?
+function A.place(name: string, parent: Instance, cf: CFrame, opts: {solid: boolean?, inset: number?, scale: number?}?): Model?
 	local t=A.template(name) if not t then return nil end
 	opts=opts or {}
 	local holder=Instance.new("Model") holder.Name=name holder.Parent=parent
@@ -27,6 +27,8 @@ function A.place(name: string, parent: Instance, cf: CFrame, opts: {solid: boole
 		if p:IsA("BasePart") then p.Anchored=true p.CanCollide=false p.CanTouch=false p.CanQuery=false end
 	end
 	m:PivotTo(cf)
+	-- opts.scale: grow/shrink round the pivot (the bottom centre)
+	if opts.scale and opts.scale~=1 then m:ScaleTo(m:GetScale()*opts.scale) end
 	m.Parent=holder
 	if opts.solid~=false then
 		local box,size=m:GetBoundingBox()

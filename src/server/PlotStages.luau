@@ -64,8 +64,8 @@ local ALONG_Z=CFrame.Angles(0,math.pi/2,0) -- turns a cylinder to run along Z
 -- The fuser: navy base, glowing tank, four input rings, two orange arms.
 -- The prompt the owner's client listens for (Fusion.client opens the screen):
 -- small, at the front where you stand (prompt range counts from this part).
-local function fusionPrompt(m,cf)
-	local hit=W.part(m,"FusionPromptPart",V3(2,2,1),cf*CFrame.new(0,2.6,5.6),Navy)
+local function fusionPrompt(m,cf,scale)
+	local hit=W.part(m,"FusionPromptPart",V3(2,2,1),cf*CFrame.new(0,2.6,5.6*(scale or 1)),Navy)
 	hit.Transparency=1 hit.CanQuery=false
 	local prompt=Instance.new("ProximityPrompt") prompt.Name="FusionPrompt" prompt.ActionText="Fuse crushers"
 	prompt.ObjectText="Fusion Machine" prompt.KeyboardKeyCode=Enum.KeyCode.E prompt.HoldDuration=0
@@ -83,6 +83,8 @@ local function fuserModel(parent,cf)
 	if not template or not template:IsA("Model") or template:GetAttribute("Ready")~=true then return nil end
 	local m=Instance.new("Model") m.Name="Fuser" m.Parent=parent
 	local mesh=template:Clone()
+	local S=C.Fusion.MachineScale or 1 -- 28 Oct: bigger fuser
+	if S~=1 then mesh:ScaleTo(mesh:GetScale()*S) end
 	-- turn its front (the input rings) toward the plot entrance (+Z of cf),
 	-- then stand it on the floor centred on cf, by its bounding box, so the
 	-- imported pivot's position and turn don't matter
@@ -100,9 +102,9 @@ local function fuserModel(parent,cf)
 	end
 	for _,p in mesh:GetDescendants() do if p:IsA("BasePart") then p.Anchored=true p.CanCollide=false p.CanTouch=false p.CanQuery=false end end
 	mesh.Parent=m
-	local box=W.part(m,"FuserCollision",V3(14.4,7,10),cf*CFrame.new(0,3.5,0),Navy,true)
+	local box=W.part(m,"FuserCollision",V3(14.4,7,10)*S,cf*CFrame.new(0,3.5*S,0),Navy,true)
 	box.Transparency=1 box.CanQuery=false
-	return m,fusionPrompt(m,cf)
+	return m,fusionPrompt(m,cf,S)
 end
 -- Code-built fuser, used when the Blender template is missing.
 local function fuser(parent,cf)

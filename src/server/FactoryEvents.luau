@@ -370,7 +370,11 @@ function Events.start(api)
 		dev.OnInvoke=function(command)
 			if command=="Start" then return announce()
 			elseif command=="Cancel" then recover("Cancelled") return true
-			elseif command=="Win" and phase=="Active" then hp=0 clearWorld() setPhase("Finale",E.Finale) return true
+			elseif command=="Win" and phase=="Active" then
+				-- Studio test win: count everyone taking part as qualified, so the
+				-- reward reels show even when /event win comes right after the start
+				for _,r in roster do if not r.pending then r.active=math.max(r.active,E.MinimumActive) r.hits=math.max(r.hits,E.MinimumHits) end end
+				hp=0 clearWorld() setPhase("Finale",E.Finale) return true
 			elseif command=="Slam" and phase=="Active" then nextSlam=0 return true
 			elseif command=="Critical" and phase=="Active" then for _,r in roster do if not r.pending then r.nextCrit=0 end end return true
 			elseif command=="State" then return packet(nil) end

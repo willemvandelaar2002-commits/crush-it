@@ -214,3 +214,9 @@ Willem picked option C from the layout canvas. Numbers in `Config.Loop` / `Confi
 - **Riding** (`client/Train.client.luau`): E on a wagon ("Ride") seats you in it; you
   move with the wagon; the hint shows the stop ("Stop: <owner> / Your plot!"). Jump
   to hop off: at a stop you land on that plot's bridge, between stops beside the track.
+
+## Plot layout changes, 28 Oct (Willem)
+- Goals board moved beside the roller in the front-right corner: plot (58,94), yaw -0.6 (was the left side at -44,24).
+- Sell station moved toward the left wall: x -33 (was -26), z 80.
+- Coating Lab booth: plot (34,27) (was 42,19), nearer the walkway/front, and 1.35x bigger (CrusherConfig.CoatingBoothScale; PlotAssets.place has a `scale` option, the prompt moves with it).
+- Fuser 1.4x bigger (CrusherConfig.Fusion.MachineScale; collision box and prompt scale with it), same spot (-97,57) in the fusion wing.

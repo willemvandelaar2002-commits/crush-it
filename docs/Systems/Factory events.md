@@ -1,5 +1,9 @@
 # Factory events — Bear Breakdown
 
+28 Oct: Studio `/event win` (DevFactoryEvent Win) now counts everyone taking part
+as qualified (active/hits topped up to the minimums), so the reward reels show
+in a quick test. In real rounds the 30 s on your plot + 10 strikes rule stays.
+
 28 Oct, reward reels: winning no longer pays one cash amount. Each qualifying
 player spins reward reels (client/FactoryEventReels, after the reference): #1
 in damage 3 reels, #2-#3 2, everyone else 1 (FactoryEventConfig.Reels). Prizes

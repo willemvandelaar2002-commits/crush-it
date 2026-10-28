@@ -14,7 +14,7 @@ local Assets=require(script.Parent.PlotAssets)
 -- toward the entrance. One colour version per plot level; the base one is the
 -- fallback. The board stays the input; the booth is a visual (CoatingFx.client
 -- plays its animation after a confirmed coating).
-local BOOTH_AT=CFrame.new(42,0,19)*CFrame.Angles(0,math.pi,0) -- LookVector = +Z
+local BOOTH_AT=CFrame.new(34,0,27)*CFrame.Angles(0,math.pi,0) -- LookVector = +Z (28 Oct: from 42,19 nearer the walkway/front)
 local BOOTH_VERSIONS={"CoatingMachine","CoatingMachine_Plot3Orange","CoatingMachine_Plot4Silver","CoatingMachine_Plot5Gold"}
 local function boothName(level)
 	for i=math.clamp(level,1,#BOOTH_VERSIONS),1,-1 do
@@ -94,12 +94,12 @@ function V.create(plot)
 	if boothVersion then
 		local m=Instance.new("Model") m.Name="CoatingLab" m.Parent=root
 		lab={model=m}
-		lab.booth=Assets.place(boothVersion,m,plot.origin*BOOTH_AT,{inset=.8})
+		lab.booth=Assets.place(boothVersion,m,plot.origin*BOOTH_AT,{inset=.8,scale=C.CoatingBoothScale})
 	end
 	if lab and lab.booth then
 		lab.booth.Name="CoatingBooth" lab.booth:SetAttribute("Version",boothVersion)
 		-- small part at the booth's front: prompt range and the server's reach check
-		local front=W.part(lab.model,"CoatingPromptPart",Vector3.new(2,2,1),plot.origin*BOOTH_AT*CFrame.new(0,2.6,-5.6),W.Navy)
+		local front=W.part(lab.model,"CoatingPromptPart",Vector3.new(2,2,1),plot.origin*BOOTH_AT*CFrame.new(0,2.6,-5.6*C.CoatingBoothScale),W.Navy)
 		front.Transparency=1 front.CanQuery=false
 		local prompt=Instance.new("ProximityPrompt") prompt.Name="CoatingPrompt" prompt.ActionText="Coat a crusher"
 		prompt.ObjectText="Coating Lab" prompt.KeyboardKeyCode=Enum.KeyCode.E prompt.HoldDuration=0
@@ -149,7 +149,7 @@ function V.sync(plot,d,quote,now,preview)
 		local want=if v.lab.booth then boothName(math.max(level,1)) else nil
 		if want and v.lab.booth:GetAttribute("Version")~=want then
 			v.lab.booth:Destroy()
-			v.lab.booth=Assets.place(want,v.lab.model,plot.origin*BOOTH_AT,{inset=.8})
+			v.lab.booth=Assets.place(want,v.lab.model,plot.origin*BOOTH_AT,{inset=.8,scale=C.CoatingBoothScale})
 			if v.lab.booth then v.lab.booth.Name="CoatingBooth" v.lab.booth:SetAttribute("Version",want) end
 		end
 		show(v.lab.model,expanded)
