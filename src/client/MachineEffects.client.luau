@@ -19,7 +19,7 @@ local FX = require(script.Parent.Effects.MachineFX)
 
 local me = Players.LocalPlayer
 local COATING_SCALE = 1.15 -- spray starts line up with the booth's two nozzles
-local FUSION_SCALE = 0.85 -- stays inside the fuser's glass chamber
+local FUSION_SCALE = 1.2 -- fills the fuser's glass chamber, on the output lift
 
 local previous: { [string]: any } = {}
 local handles: { any } = {}
@@ -90,7 +90,7 @@ local function playFusion(result: any, items: { any })
 	local plot = myPlot()
 	local fuser = plot and plot:FindFirstChild("Fuser", true)
 	if not fuser then return end
-	local origin = originOf(fuser, "ChamberGlow")
+	local origin = originOf(fuser, "OutputLift")
 	if not origin or not near(origin.Position) then return end
 	-- the four inputs: the kept main as it was, plus the three copies that are gone now
 	local still: { [string]: boolean } = {}
