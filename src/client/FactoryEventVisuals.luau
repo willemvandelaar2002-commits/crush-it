@@ -151,8 +151,16 @@ function Visuals:hide(root)
 end
 function Visuals:clear()
 	self:restoreMasks()
-	if self.bear and self.bear.ready and self.bear.model.Parent then BearRig.reset(self.bear.rig) end
-	self.hazards={}
+	if self.bear and self.bear.ready then
+		-- the event bear goes, the normal teddy comes back (with a puff)
+		for _,p in self.bear.teddyParts do if p.Parent then p.LocalTransparencyModifier=0 end end
+		if self.teddyModel and self.teddyModel.Parent and self.teddyRest then self.teddyModel:PivotTo(self.teddyRest) end
+		local puff=part(workspace,"TeddyReturnPuff",V(1,1,1),CFrame.new(self.bear.bottom+V(0,10,0)),PURPLE) puff.Transparency=1
+		local e=self.bear.smoke:Clone() e.Parent=puff e:Emit(40)
+		game:GetService("Debris"):AddItem(puff,3)
+	end
+	self.teddyModel=nil self.teddyRest=nil self.teddyBox=nil
+	self.hazards={} self.flyers=nil
 	self.folder:ClearAllChildren() self.rigs={} self.central=nil self.bear=nil
 	if self.tint then self.tint:Destroy() self.tint=nil end
 end
@@ -190,13 +198,50 @@ function Visuals:centralRig(mega,ram)
 	return {model=mega,ram=ram,folder=folder,origin=o,core=heart,shield=shield,panels=panels,reactor=reactor,
 		reactorRest=reactor.CFrame,scale=scale,room=room,burst=nil}
 end
-function Visuals:bearRig()
+-- The normal teddy (server, World) and where it stands.
+local function teddy()
 	local bear=workspace:FindFirstChild("FactoryTeddy",true)
-	if not bear or not bear:IsA("Model") then return nil end
-	-- the rigged Factory Bear: its own eyes/brows/chest doors do the corruption
-	if bear:GetAttribute("FactoryBearReady")==true then
-		local ok,rig=pcall(BearRig.capture,bear)
-		if ok then return {model=bear,folder=Instance.new("Folder"),ready=true,rig=rig} end
+	return if bear and bear:IsA("Model") then bear else nil
+end
+function Visuals:bearSpot()
+	local bear=self.teddyModel or teddy()
+	if not bear then return nil end
+	local cf,size
+	if self.teddyBox then cf,size=self.teddyBox,self.teddySize else cf,size=bear:GetBoundingBox() end
+	return {bottom=cf.Position-V(0,size.Y/2,0),head=cf.Position+V(0,size.Y*.25,0),height=size.Y,width=size.X}
+end
+function Visuals:bearRig()
+	local bear=teddy()
+	if not bear then return nil end
+	-- 28 Oct: the rigged Factory Bear is only the EVENT bear. A local copy stands
+	-- in the teddy's place for the round; the teddy itself is hidden (or rises
+	-- away during the intro) and comes back afterwards.
+	local template=bearTemplate()
+	if template then
+		local cf,size=bear:GetBoundingBox()
+		self.teddyModel=bear self.teddyRest=bear:GetPivot() self.teddyBox=cf self.teddySize=size
+		local copy=template:Clone() copy.Name="EventFactoryBear"
+		local _,own=copy:GetBoundingBox()
+		copy:ScaleTo(copy:GetScale()*size.Y/own.Y)
+		local bottom=cf.Position-V(0,size.Y/2,0)
+		local facing=V(-bottom.X,0,-bottom.Z).Unit -- the teddy faces the middle of the hall
+		copy:PivotTo(CFrame.lookAt(bottom,bottom+facing))
+		copy.Parent=self.folder
+		local ok,rig=pcall(BearRig.capture,copy)
+		if ok then
+			local parts={} for _,p in copy:GetDescendants() do if p:IsA("BasePart") then table.insert(parts,p) end end
+			local teddyParts={} for _,p in bear:GetDescendants() do if p:IsA("BasePart") then table.insert(teddyParts,p) end end
+			-- purple smoke for the change, and a landing ring
+			local smoke=part(self.folder,"TransformSmoke",V(size.X,2,size.X),CFrame.new(bottom+V(0,4,0)),PURPLE) smoke.Transparency=1
+			local emitter=Instance.new("ParticleEmitter") emitter.Color=ColorSequence.new(Color3.fromRGB(150,60,255),Color3.fromRGB(60,20,120))
+			emitter.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,10),NumberSequenceKeypoint.new(1,26)})
+			emitter.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,.3),NumberSequenceKeypoint.new(1,1)})
+			emitter.Lifetime=NumberRange.new(1.6,2.6) emitter.Speed=NumberRange.new(10,22) emitter.SpreadAngle=Vector2.new(70,70)
+			emitter.Rate=0 emitter.LightEmission=.4 emitter.Parent=smoke
+			return {model=copy,folder=Instance.new("Folder"),ready=true,rig=rig,parts=parts,teddyParts=teddyParts,
+				smoke=emitter,bottom=bottom,height=size.Y,ring=nil}
+		end
+		copy:Destroy()
 		warn("[FactoryEvent] Factory Bear rig: "..tostring(rig))
 	end
 	local folder=Instance.new("Folder") folder.Name="EvilBearAura" folder.Parent=self.folder
@@ -304,7 +349,8 @@ function Visuals:step(now)
 	local progress=if packet.maxHp>0 then 1-packet.hp/packet.maxHp else 0
 	local recovery=if packet.phase=="Recover" then math.clamp(1-age/E.Recover,0,1) else 1
 	for _,rig in self.rigs do
-		local assembly=if packet.phase=="Assemble" then math.clamp(age/E.Assemble,0,1) else 1
+		local assembly=if packet.phase=="Assemble" then math.clamp((age-E.Assemble*.5)/(E.Assemble*.35),0,1) else 1
+		assembly=assembly*assembly*(3-2*assembly)
 		local stroke=if packet.phase=="Active" and rig.record.present then Motion.plotStroke(age) else 0
 		local lift=V(0,-18*(1-assembly)-18*(1-recovery),0)
 		for _,v in rig.all do v.part.CFrame=v.rest+lift end
@@ -366,18 +412,69 @@ function Visuals:step(now)
 	end
 	self:stepHazards(now,packet)
 	self:stepWork(now,packet)
+	self:stepFlyers(now,packet)
+	if self.bear and self.bear.ready and self.central then
+		local b=self.bear
+		if not b.beam then
+			local a0=Instance.new("Attachment") a0.Parent=b.rig.nodes.Core.part
+			local a1=Instance.new("Attachment") a1.Parent=self.central.shield
+			local beam=Instance.new("Beam") beam.Name="CorruptionBeam" beam.Attachment0=a0 beam.Attachment1=a1
+			beam.FaceCamera=true beam.Segments=24 beam.CurveSize0=60 beam.CurveSize1=-30 beam.Width0=5 beam.Width1=2.5
+			beam.Color=ColorSequence.new(Color3.fromRGB(200,90,255),Color3.fromRGB(120,40,230)) beam.LightEmission=1
+			beam.Transparency=NumberSequence.new(.25) beam.TextureSpeed=2 beam.Parent=b.model
+			b.beam=beam
+		end
+		local ph=packet.phase
+		b.beam.Enabled=(ph=="Announce" and age>=7.2) or ph=="Assemble" or ph=="Active"
+	end
 	if self.bear and self.bear.ready then
+		local b=self.bear
 		local mode,t="Corrupted",9
 		local ph=packet.phase
-		if ph=="Announce" then if age<1.8 then mode,t="Roar",age else mode,t="Corrupted",age-1.8 end
+		-- intro timeline (seconds after the announcement): purple smoke 0-3.4,
+		-- the teddy shakes then rises away 1.2-2.6, flash, the event bear drops
+		-- in 2.6-3.2, turns 3.6-5.2, roars 5.2-7.
+		local intro=ph=="Announce"
+		local teddyShown=intro and age<2.6
+		for _,p in b.teddyParts do if p.Parent then p.LocalTransparencyModifier=if teddyShown then 0 else 1 end end
+		if teddyShown and self.teddyModel and self.teddyRest then
+			local rise=math.clamp((age-1.2)/1.4,0,1)
+			local shake=if age<1.2 then math.sin(age*40)*.04*age else 0
+			self.teddyModel:PivotTo(self.teddyRest*CFrame.new(0,rise*rise*45,0)*CFrame.Angles(0,rise*4+shake,shake))
+		elseif self.teddyModel and self.teddyRest then self.teddyModel:PivotTo(self.teddyRest) end
+		b.smoke.Rate=if intro and age<3.4 then 45 else 0
+		local drop=if intro then math.clamp((age-2.6)/.6,0,1) else 1
+		local bearShown=not intro or age>=2.6
+		for _,p in b.parts do p.LocalTransparencyModifier=if bearShown then 0 else 1 end
+		b.model:PivotTo(CFrame.lookAt(b.bottom+V(0,(1-drop*drop)*40,0),b.bottom+V(-b.bottom.X,0,-b.bottom.Z).Unit))
+		if intro and age>=3.2 and not b.ring then
+			b.ring=part(self.folder,"LandingRing",V(.4,8,8),CFrame.new(b.bottom+V(0,.5,0))*CFrame.Angles(0,0,math.pi/2),Color3.fromRGB(230,180,255),Enum.PartType.Cylinder,true)
+			b.ringAt=now
+		end
+		if b.ring then
+			local s=math.clamp((now-b.ringAt)/.9,0,1)
+			b.ring.Size=V(.4,8+b.height*2.2*s,8+b.height*2.2*s) b.ring.Transparency=s
+		end
+		if intro then
+			if age<3.6 then mode="Friendly" t=age
+			elseif age<5.2 then mode="Corrupted" t=age-3.6
+			elseif age<7 then mode="Roar" t=age-5.2
+			else mode="Corrupted" t=9 end
 		elseif ph=="Active" then
 			for _,h in packet.hazards or {} do
-				if not h.result and now<h.at then mode,t="Windup",now-h.warnAt
-				elseif now>=h.at and now-h.at<.9 then mode,t="Slam",now-h.at end
+				if not h.result and now<h.at then
+					mode="Windup" t=now-h.warnAt
+				elseif now>=h.at and now-h.at<.9 then
+					mode="Slam" t=now-h.at
+				end
 			end
-		elseif ph=="Finale" then if age<2.85 then mode,t="Roar",age else mode,t="Defeated",age-2.85 end
-		elseif ph=="Victory" then mode,t="Recover",age
-		elseif ph=="Recover" then mode,t="Friendly",age end
+		elseif ph=="Finale" then
+			if age<2.85 then mode="Roar" t=age else mode="Defeated" t=age-2.85 end
+		elseif ph=="Victory" then
+			mode="Recover" t=age
+		elseif ph=="Recover" then
+			mode="Friendly" t=age
+		end
 		local cam=workspace.CurrentCamera
 		if not cam or (cam.CFrame.Position-self.bear.model:GetPivot().Position).Magnitude<900 then BearRig.pose(self.bear.rig,mode,t) end
 	elseif self.bear then
@@ -395,6 +492,55 @@ function Visuals:step(now)
 end
 -- Bear paw slams: red danger circle with a filling countdown, then a giant
 -- paw (the bear's own paw mesh when present) lands; shockwave on impact.
+-- Assembly on your own plot: copies of your placed crushers lift out of their
+-- bays and fly in arcs into the middle, shrinking, then the super crusher forms.
+function Visuals:stepFlyers(now,packet)
+	if packet.phase~="Assemble" then
+		if self.flyers then for _,f in self.flyers do if f.model.Parent then f.model:Destroy() end end self.flyers=nil end
+		return
+	end
+	local age=now-packet.started
+	local rig=self.rigs[me.UserId]
+	if not rig then return end
+	if not self.flyers then
+		self.flyers={}
+		local plot=workspace:FindFirstChild("Plot"..tostring(rig.record.plotIndex),true)
+		local target=(rig.origin*CFrame.new(0,14,0)).Position
+		local models={}
+		if plot then for _,m in plot:GetDescendants() do if m:IsA("Model") and m.Name=="EquippedCrusher" then table.insert(models,m) end end end
+		table.sort(models,function(a,b) return a:GetPivot().X<b:GetPivot().X end)
+		for i,m in models do
+			if i>24 then break end
+			local was=m.Archivable m.Archivable=true
+			local ok,copy=pcall(function() return m:Clone() end)
+			m.Archivable=was
+			if ok and copy then
+				for _,p in copy:GetDescendants() do
+					if p:IsA("BasePart") then p.LocalTransparencyModifier=0 p.Anchored=true p.CanCollide=false p.CanQuery=false p.CanTouch=false
+					elseif p:IsA("Script") or p:IsA("LocalScript") then p:Destroy() end
+				end
+				copy.Parent=self.folder
+				table.insert(self.flyers,{model=copy,from=m:GetPivot(),to=target,scale=copy:GetScale(),delay=(i-1)/math.max(1,#models)*E.Assemble*.3})
+			end
+		end
+	end
+	for _,f in self.flyers do
+		if not f.model.Parent then continue end
+		local k=math.clamp((age-.6-f.delay)/(E.Assemble*.32),0,1)
+		if k>=1 then
+			local pop=part(self.folder,"MergeFlash",V(3,3,3),CFrame.new(f.to),Color3.fromRGB(235,200,255),Enum.PartType.Ball,true)
+			game:GetService("TweenService"):Create(pop,TweenInfo.new(.4),{Size=V(9,9,9),Transparency=1}):Play()
+			game:GetService("Debris"):AddItem(pop,.5)
+			f.model:Destroy()
+		else
+			local e=k*k
+			local p=f.from.Position:Lerp(f.to,e)+V(0,math.sin(k*math.pi)*22+math.min(1,k*6)*3,0)
+			f.model:PivotTo(CFrame.new(p)*f.from.Rotation*CFrame.Angles(0,k*7,k*2))
+			local s=f.scale*(1-.7*e)
+			if math.abs(f.model:GetScale()-s)>1e-3 then f.model:ScaleTo(s) end
+		end
+	end
+end
 function Visuals:stepHazards(now,packet)
 	self.hazards=self.hazards or {}
 	local live={}

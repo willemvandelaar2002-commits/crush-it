@@ -3,7 +3,7 @@
 return {
 	Enabled = true,
 	Interval = 15 * 60, -- first announcement and time between completed rounds
-	Announce = 20, Assemble = 6, Active = 180, Finale = 7, Victory = 6, Recover = 3,
+	Announce = 13, Assemble = 8, Active = 180, Finale = 7, Victory = 6, Recover = 3, -- 28 Oct: Announce+Assemble = the intro cutscene
 	Tick = .2, Broadcast = .5, Strike = 2,
 	TargetSeconds = 90, MinimumActive = 30, MinimumHits = 10,
 	Points = {Common=1, Uncommon=2, Rare=3, Epic=4, Legendary=5, Mythic=6},

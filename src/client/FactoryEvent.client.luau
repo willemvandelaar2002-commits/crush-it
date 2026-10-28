@@ -48,30 +48,19 @@ local skip=Instance.new("TextButton") skip.Name="SkipFinale" skip.Text="SKIP VIE
 skip.AnchorPoint=Vector2.new(1,1) skip.Position=UDim2.new(1,-28,1,-28) skip.Size=UDim2.fromOffset(170,48)
 skip.Visible=false skip.ZIndex=30 skip.TextScaled=true skip.Parent=gui Style.button(skip,Color3.fromRGB(255,150,35))
 do local pad=Instance.new("UIPadding") pad.PaddingTop=UDim.new(0,8) pad.PaddingBottom=UDim.new(0,8) pad.Parent=skip end
--- Intro cutscene: letterbox bars and one caption per shot.
+-- Intro cutscene (reference-style: no captions, just Skip): bear transforms,
+-- close on the corrupted bear, the core under the Mega Crusher, then your own
+-- plot where your crushers fly together into one super crusher. Runs on the
+-- server clock across Announce + Assemble; the HUD hides throughout.
 local TweenService=game:GetService("TweenService")
 local intro=Instance.new("Frame") intro.Name="EventIntro" intro.Size=UDim2.fromScale(1,1) intro.BackgroundTransparency=1
 intro.Visible=false intro.ZIndex=20 intro.Parent=gui
-local bars={}
-for i,anchor in {0,1} do
-	local b=Instance.new("Frame") b.Name="Letterbox" b.AnchorPoint=Vector2.new(0,anchor) b.Position=UDim2.fromScale(0,anchor)
-	b.Size=UDim2.new(1,0,0,0) b.BackgroundColor3=Color3.new(0,0,0) b.BorderSizePixel=0 b.ZIndex=20 b.Parent=intro bars[i]=b
-end
 local fade=Instance.new("Frame") fade.Name="Fade" fade.Size=UDim2.fromScale(1,1) fade.BackgroundColor3=Color3.new(0,0,0)
 fade.BackgroundTransparency=1 fade.BorderSizePixel=0 fade.ZIndex=21 fade.Parent=intro
-local caption=Instance.new("TextLabel") caption.Name="Caption" caption.AnchorPoint=Vector2.new(.5,1)
-caption.Position=UDim2.new(.5,0,.86,0) caption.Size=UDim2.new(.72,0,.085,0) caption.BackgroundTransparency=1
-caption.TextScaled=true caption.ZIndex=22 caption.Text="" caption.Parent=intro Style.text(caption,3.5)
-local kicker=Instance.new("TextLabel") kicker.Name="Kicker" kicker.AnchorPoint=Vector2.new(.5,0)
-kicker.AnchorPoint=Vector2.new(.5,.5) kicker.Position=UDim2.fromScale(.5,.055) kicker.Size=UDim2.new(.5,0,.075,0) kicker.BackgroundTransparency=1
-kicker.TextScaled=true kicker.ZIndex=22 kicker.Text="BEAR BREAKDOWN" kicker.Parent=intro Style.text(kicker,4)
-kicker.TextColor3=Color3.fromRGB(255,218,65)
-local INTRO={ -- seconds; each shot's caption
-	{t=0,text="Uh oh... the giant toy bear has gone BAD!"},
-	{t=3.4,text="Its corrupted core hides under the MEGA CRUSHER, behind a shield."},
-	{t=7,text="Every factory fights: your crushers combine into one SUPER CRUSHER!"},
-}
-local INTRO_LENGTH=10.4
+local flash=Instance.new("Frame") flash.Name="Flash" flash.Size=UDim2.fromScale(1,1) flash.BackgroundColor3=Color3.fromRGB(235,190,255)
+flash.BackgroundTransparency=1 flash.BorderSizePixel=0 flash.ZIndex=21 flash.Parent=intro
+local SHOTS={0,3.4,7.6,E.Announce} -- shot starts (s after the announcement); the last runs through Assemble
+local INTRO_LENGTH=E.Announce+E.Assemble
 local packet=nil local visuals=Visuals.new() local cameraState=nil local seenFinale=nil local seenIntro=nil
 local stopped=false local connections={} local lastSoundBeat=-1 local finaleSound=nil local buttonColor=nil
 local impact=Instance.new("Sound") impact.Name="FactoryEventImpact" impact.SoundId="rbxassetid://"..Config.Sounds.Thud
@@ -99,64 +88,81 @@ local function stopCamera()
 end
 local function startCamera(mode)
 	local camera=workspace.CurrentCamera
-	if not camera or camera.CameraType==Enum.CameraType.Scriptable then return false end
+	if not camera then return false end
+	-- another cutscene (the plot upgrade marks itself) owns the camera: leave it
+	local busy=camera.CameraType==Enum.CameraType.Scriptable
+	if busy and (mode~="intro" or me:GetAttribute("CutscenePlaying")==true) then return false end
 	local hum=me.Character and me.Character:FindFirstChildOfClass("Humanoid")
 	if not hum or hum.Health<=0 then return false end
-	cameraState={camera=camera,kind=camera.CameraType,subject=camera.CameraSubject,fov=camera.FieldOfView,cf=camera.CFrame,mode=mode or "finale"}
+	cameraState={camera=camera,kind=if busy then Enum.CameraType.Custom else camera.CameraType,subject=camera.CameraSubject,fov=camera.FieldOfView,cf=camera.CFrame,mode=mode or "finale"}
 	camera.CameraType=Enum.CameraType.Scriptable skip.Visible=true
 	return true
 end
--- The three intro shots, worked out once from the real bear, Mega Crusher and
--- your plot (each falls back to the plaza centre if it hasn't streamed in).
+-- Shots from the real bear spot, Mega Crusher and your plot (fallback: plaza).
 local function introShots()
 	local shots={}
-	local bear=visuals.bear and visuals.bear.model
-	if bear then
-		local cf,size=bear:GetBoundingBox()
-		-- the bear faces the middle of the hall; stay under the roof
-		local head=cf.Position+Vector3.new(0,size.Y*.25,0)
-		local face=(Vector3.new(0,head.Y,0)-head).Unit
-		local r=math.max(size.X,size.Y)
-		local function under(v) return Vector3.new(v.X,math.min(v.Y,130),v.Z) end
-		shots[1]={from=under(head+face*r*1.5-Vector3.new(0,r*.12,0)),to=under(head+face*r*.85),look=head,fov=55}
-	end
+	local spot=visuals:bearSpot()
+	local char=me.Character local root=char and char:FindFirstChild("HumanoidRootPart")
 	local central=visuals.central
 	local core=if central then central.origin.Position+Vector3.new(0,central.room*.45,0) else Vector3.new(0,12,0)
+	if spot then
+		local head=spot.head local r=spot.height
+		local face=(Vector3.new(0,head.Y,0)-head) face=Vector3.new(face.X,0,face.Z).Unit
+		local function under(v) return Vector3.new(v.X,math.min(v.Y,132),v.Z) end
+		-- A: over your shoulder, looking at the bear far away
+		if root then
+			local dir=(head-root.Position).Unit
+			local flat=Vector3.new(dir.X,0,dir.Z).Unit
+			local from=root.Position-flat*9+Vector3.new(0,4.5,0)+flat:Cross(Vector3.yAxis)*3
+			shots[1]={from=from,to=from+flat*6,look=head,fov=50}
+		else shots[1]={from=under(head+face*r*3+Vector3.new(0,10,0)),to=under(head+face*r*2.4),look=head,fov=55} end
+		-- B: low and close on the bear as it turns, then roars
+		shots[2]={from=under(head+face*r*1.45-Vector3.new(0,r*.22,0)),to=under(head+face*r*.8-Vector3.new(0,r*.08,0)),look=head,fov=60,shake=true}
+	end
+	-- C: the shielded core under the Mega Crusher, circling down
 	local toward=if central then central.origin.LookVector else Vector3.new(0,0,1)
-	shots[2]={from=core+toward*95+Vector3.new(0,70,0),to=core+toward*34+Vector3.new(0,9,0),look=core,fov=60}
+	local side=toward:Cross(Vector3.yAxis)
+	shots[3]={from=core+toward*80+side*40+Vector3.new(0,60,0),to=core+toward*32-side*8+Vector3.new(0,8,0),look=core,fov=60}
+	-- D: your plot, while the crushers fly into the super crusher
 	local plot=workspace:FindFirstChild("Plots") and workspace.Plots:FindFirstChild("Plot"..tostring(me:GetAttribute("Plot")))
 	local o=plot and plot:GetAttribute("Origin")
 	if typeof(o)=="CFrame" then
-		local middle=(o*CFrame.new(0,8,-13)).Position
-		shots[3]={from=(o*CFrame.new(-60,55,150)).Position,to=(o*CFrame.new(20,38,95)).Position,look=middle,fov=60}
-	else shots[3]={from=core+Vector3.new(120,90,120),to=core+Vector3.new(80,60,80),look=core,fov=65} end
-	if not shots[1] then shots[1]=shots[2] end
+		local middle=(o*CFrame.new(0,10,-13)).Position
+		shots[4]={from=(o*CFrame.new(-14,30,46)).Position,to=(o*CFrame.new(0,19,30)).Position,look=middle,fov=66} -- straight down the walkway into the gap between the banks
+	else shots[4]=shots[3] end
+	shots[1]=shots[1] or shots[3] shots[2]=shots[2] or shots[3]
 	return shots
 end
-local function playIntro()
+local function playIntro(announced)
 	if not startCamera("intro") then return end
-	cameraState.shots=introShots() cameraState.begin=os.clock() cameraState.shot=0
+	cameraState.begin=announced
+	local ok,shots=pcall(introShots)
+	if not ok then warn("[FactoryEvent] intro shots: "..tostring(shots)) stopCamera() return end
+	cameraState.shots=shots cameraState.shot=0
 	skip.Text="SKIP" intro.Visible=true showOtherHuds(false) panel.Visible=false
-	for _,b in bars do b.Size=UDim2.new(1,0,0,0) TweenService:Create(b,TweenInfo.new(.5),{Size=UDim2.new(1,0,.11,0)}):Play() end
-	kicker.TextTransparency=1 TweenService:Create(kicker,TweenInfo.new(.6),{TextTransparency=0}):Play()
+	fade.BackgroundTransparency=0 TweenService:Create(fade,TweenInfo.new(.5),{BackgroundTransparency=1}):Play()
 end
-local function introStep()
-	local s=cameraState local age=os.clock()-s.begin
+local function introStep(now)
+	local s=cameraState local age=now-s.begin
 	if age>=INTRO_LENGTH then stopCamera() return end
-	local index=1 for i,shot in INTRO do if age>=shot.t then index=i end end
+	local index=1 for i,start in SHOTS do if age>=start then index=i end end
 	if index~=s.shot then
-		s.shot=index caption.Text=INTRO[index].text
-		caption.TextTransparency=1 TweenService:Create(caption,TweenInfo.new(.35),{TextTransparency=0}):Play()
-		if index>1 then fade.BackgroundTransparency=0 TweenService:Create(fade,TweenInfo.new(.45),{BackgroundTransparency=1}):Play() end
+		s.shot=index
+		if index==4 then s.shots=introShots() end -- your plot may have streamed in by now
+		if index>1 then fade.BackgroundTransparency=0 TweenService:Create(fade,TweenInfo.new(.35),{BackgroundTransparency=1}):Play() end
 	end
-	local start=INTRO[index].t local stop=if INTRO[index+1] then INTRO[index+1].t else INTRO_LENGTH
-	local k=math.clamp((age-start)/(stop-start),0,1) k=1-(1-k)^2 -- ease out
+	-- the white-purple flash when the bear changes (visuals: 2.6 s)
+	flash.BackgroundTransparency=if age>=2.6 and age<3.2 then .2+.8*(age-2.6)/.6 else 1
+	local start=SHOTS[index] local stop=SHOTS[index+1] or INTRO_LENGTH
+	local k=math.clamp((age-start)/(stop-start),0,1) k=k*k*(3-2*k)
 	local shot=s.shots[index]
 	local at=shot.from:Lerp(shot.to,k)
-	s.camera.CFrame=CFrame.lookAt(at,shot.look) s.camera.FieldOfView=shot.fov
-	if age>INTRO_LENGTH-.6 then
-		for _,b in bars do b.Size=UDim2.new(1,0,.11*math.clamp((INTRO_LENGTH-age)/.6,0,1),0) end
-	end
+	local cf=CFrame.lookAt(at,shot.look)
+	-- shake: the landing (2.6-3.4) and the roar (5.2-7)
+	local shake=(if age>=2.6 and age<3.4 then 1-(age-2.6)/.8 else 0)+(if age>=5.2 and age<7 then .7 else 0)
+	if shake>0 then cf*=CFrame.Angles(math.sin(now*47)*.012*shake,math.sin(now*39)*.012*shake,0) end
+	s.camera.CFrame=cf s.camera.FieldOfView=shot.fov
+	if age>INTRO_LENGTH-.4 then fade.BackgroundTransparency=math.clamp((INTRO_LENGTH-age)/.4,0,1) end
 end
 skip.Activated:Connect(stopCamera)
 table.insert(connections,me.CharacterRemoving:Connect(stopCamera))
@@ -166,7 +172,8 @@ table.insert(connections,Net.event("PlotUpgraded").OnClientEvent:Connect(stopCam
 local function renderHud(now)
 	if not packet then return end
 	local phase=packet.phase local you=packet.you
-	panel.Visible=phase~="Idle" and not (cameraState~=nil and cameraState.mode=="intro")
+	-- no panel while the intro/assembly plays (Announce, Assemble)
+	panel.Visible=phase~="Idle" and phase~="Announce" and phase~="Assemble" and not (cameraState~=nil and cameraState.mode=="intro")
 	if not panel.Visible then return end
 	local remaining=math.max(0,math.ceil(packet.ends-now))
 	timer.Text=string.format("%d:%02d",math.floor(remaining/60),remaining%60)
@@ -217,13 +224,14 @@ table.insert(connections,Net.event("FactoryEventState").OnClientEvent:Connect(fu
 	local ok,err=xpcall(function() visuals:update(packet) end,debug.traceback)
 	if not ok then warn("[FactoryEvent] Visuals stopped safely: "..tostring(err)) cleanup() return end
 	local introRunning=cameraState~=nil and cameraState.mode=="intro"
+	local introPhase=packet.phase=="Announce" or packet.phase=="Assemble"
 	if packet.phase=="Announce" then
 		-- once per round, only at its start (not for someone arriving mid-announcement)
 		if seenIntro~=packet.roundId and workspace:GetServerTimeNow()-packet.started<4 then
-			seenIntro=packet.roundId playIntro()
+			seenIntro=packet.roundId playIntro(packet.started)
 		end
-	elseif introRunning then stopCamera() end
-	if packet.phase=="Announce" then -- the intro keeps going; the finale view never runs now
+	elseif introRunning and not introPhase then stopCamera() end
+	if introPhase then -- the intro keeps going; the finale view never runs now
 	elseif packet.phase~="Finale" or not packet.you then if not introRunning then stopCamera() end
 	elseif seenFinale~=packet.roundId then
 		seenFinale=packet.roundId
@@ -238,7 +246,7 @@ table.insert(connections,Run.RenderStepped:Connect(function()
 		visuals:step(now) renderHud(now)
 		if cameraState and cameraState.mode=="intro" then
 			local hum=me.Character and me.Character:FindFirstChildOfClass("Humanoid")
-			if not hum or hum.Health<=0 or workspace.CurrentCamera~=cameraState.camera then stopCamera() else introStep() end
+			if not hum or hum.Health<=0 or workspace.CurrentCamera~=cameraState.camera then stopCamera() else introStep(now) end
 		elseif cameraState then
 			local s=cameraState local camera=s.camera
 			local hum=me.Character and me.Character:FindFirstChildOfClass("Humanoid")

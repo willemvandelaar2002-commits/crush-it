@@ -82,6 +82,7 @@ local function finish()
 	local cam = workspace.CurrentCamera
 	if cam then
 		cam.CameraType = Enum.CameraType.Custom
+		me:SetAttribute("CutscenePlaying", nil)
 		local hum = me.Character and me.Character:FindFirstChildOfClass("Humanoid")
 		cam.CameraSubject = hum or s.subject
 		cam.FieldOfView = s.fov
@@ -221,6 +222,7 @@ local function play(info: any)
 		return viewOf(rel, 34, false)
 	end)() else nil
 	cam.CameraType = Enum.CameraType.Scriptable
+	me:SetAttribute("CutscenePlaying", true) -- other cutscenes leave the camera alone
 	hold(s)
 	-- hide the HUD (restored on finish)
 	for _, g in me.PlayerGui:GetChildren() do

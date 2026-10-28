@@ -1,5 +1,21 @@
 # Factory events — Bear Breakdown
 
+28 Oct evening (Willem: cutscenes like the reference; normal bear stays the old
+teddy; no event panel during the intro; back to the plot where the crushers
+combine): the rigged Factory Bear is now a LOCAL event-only copy standing in the
+teddy's spot (FactoryProps.bear is back to the teddy). The intro has no captions,
+only SKIP, and runs on the server clock over Announce (13 s) + Assemble (8 s):
+over-your-shoulder view of the teddy, purple smoke, it shakes and lifts away,
+flash, the event bear drops in with a shockwave ring, turns evil and roars
+(camera shake); a purple beam from its reactor to the core under the Mega
+Crusher; swoop down on the shielded core; then your plot, straight down the
+walkway: copies of your placed crushers lift out of their bays, fly in arcs into
+the middle and pop, and the super crusher rises. The boss bar appears only when
+the fight starts. Afterwards the event bear vanishes and the teddy returns.
+The plot-upgrade cutscene marks itself (player attribute CutscenePlaying) so the
+intro can take over the camera from anything else, but never from that.
+
+
 28 Oct revision (Studio Play checked):
 - **Everyone takes part automatically**: no Join/Leave. Everyone with a loaded plot
   is listed at Announce, frozen at Assemble; players arriving later are added at
