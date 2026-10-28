@@ -17,6 +17,7 @@ return {
 	RewardSeconds = 120, MinReward = 250, MaxReward = 1e12, LedgerSize = 20,
 	PlotHalfWidth = 80, PlotRear = -125, PlotFront = 118, PlotHeight = 65, -- PlotFront: Plots.Front 112 + 6
 	VisualOrigin = Vector3.new(0, 1, -13), -- clear middle gap between the existing wing banks
+	SuperScale = 1.8, -- 28 Oct: the super crusher is built 1.8x (the bays hide during the event)
 	MaxVisiblePlots = 6, VisualDistance = 420,
 	-- 28 Oct: everyone takes part automatically. Players with no placed crusher
 	-- get an event-only stand-in machine with this power (no inventory change).
@@ -27,7 +28,7 @@ return {
 	Cores = {
 		Max = 3, Respawn = 5, PromptDistance = 9,
 		Spots = { Vector3.new(-30,1.6,98), Vector3.new(30,1.6,98), Vector3.new(-24,1.6,60), Vector3.new(18,1.6,54), Vector3.new(0,1.6,92) },
-		Port = Vector3.new(0,1.6,-3.5), -- in front of the super crusher (VisualOrigin + 9.5 z)
+		Port = Vector3.new(0,1.6,3.5), -- in front of the (1.8x) super crusher
 		Multiplier = 4, CriticalMultiplier = 10,
 		CriticalEvery = { 18, 28 }, CriticalSeconds = 8,
 	},

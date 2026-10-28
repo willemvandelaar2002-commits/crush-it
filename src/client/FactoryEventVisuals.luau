@@ -51,8 +51,9 @@ local function superPress(parent,r)
 	local o=r.origin*CFrame.new(E.VisualOrigin)
 	local color=(C.rarity(r.dominant) or C.Rarities[1]).color
 	local moving={} local rotors={} local all={}
+	local S=E.SuperScale
 	local function box(name,size,x,y,z,paint,move,shape,neon)
-		local p=part(model,name,size,o*CFrame.new(x,y,z),paint,shape,neon)
+		local p=part(model,name,size*S,o*CFrame.new(x*S,y*S,z*S),paint,shape,neon)
 		table.insert(all,{part=p,rest=p.CFrame})
 		if move then table.insert(moving,{part=p,rest=p.CFrame}) end
 		return p
@@ -85,7 +86,7 @@ local function superPress(parent,r)
 	for _,x in (if r.grade>=2 then {-2.6,2.6} else {0}) do
 		box("HydraulicHousing",V(3.3,5,3.3),x,24,0,color,nil,Enum.PartType.Ball)
 		local p=box("ExtendingRod",V(1.25,4,1.25),x,19.3,0,Color3.fromRGB(225,237,252))
-		table.insert(shafts,{part=p,top=21.3,x=x})
+		table.insert(shafts,{part=p,top=21.3*S,x=x*S})
 	end
 	if r.grade>=3 then
 		for _,side in {-1,1} do
@@ -109,8 +110,8 @@ local function superPress(parent,r)
 			box("PoweredTooth",V(1.8,.6,.35),x,12.6,3.6,CYAN,true,nil,true)
 		end
 	end
-	local heart=core(model,o*CFrame.new(0,6.5,0),1)
-	local source=part(model,"EnergySource",V(.1,.1,.1),o*CFrame.new(0,22,0),CYAN)
+	local heart=core(model,o*CFrame.new(0,6.5*S,0),S)
+	local source=part(model,"EnergySource",V(.1,.1,.1),o*CFrame.new(0,22*S,0),CYAN)
 	source.Transparency=1
 	local sparks={}
 	local slots=r.slots or {}
@@ -144,7 +145,7 @@ function Visuals:hide(root)
 		if p:IsA("BasePart") then
 			if self.hidden[p]==nil then self.hidden[p]=p.LocalTransparencyModifier end
 			p.LocalTransparencyModifier=1
-		elseif p:IsA("ParticleEmitter") or p:IsA("Trail") or p:IsA("Beam") or p:IsA("Light") then
+		elseif p:IsA("ParticleEmitter") or p:IsA("Trail") or p:IsA("Beam") or p:IsA("Light") or p:IsA("SurfaceGui") or p:IsA("BillboardGui") or p:IsA("ProximityPrompt") then
 			if self.disabled[p]==nil then self.disabled[p]=p.Enabled end p.Enabled=false
 		end
 	end
@@ -320,6 +321,26 @@ function Visuals:update(packet)
 			for _,child in plot:GetDescendants() do
 				if child:IsA("Model") and child.Name=="EquippedCrusher" then self:hide(child) end
 			end
+			-- 28 Oct: the bays and row plaques go too once the crushers have flown
+			-- off (their screens live in PlayerGui, adorned to the plaques)
+			local bayAge=workspace:GetServerTimeNow()-packet.started
+			if packet.phase~="Assemble" or bayAge>=E.Assemble*.4 then
+				local roots={}
+				for _,child in plot:GetChildren() do
+					if child:IsA("Model") and (child.Name:match("^WorkingBay%d+$") or child.Name:match("^RarityRow%d+$")) then
+						self:hide(child) roots[child]=true
+					end
+				end
+				for _,g in me.PlayerGui:GetDescendants() do
+					if (g:IsA("SurfaceGui") or g:IsA("BillboardGui")) and g.Adornee then
+						for root in roots do
+							if g.Adornee:IsDescendantOf(root) then
+								if self.disabled[g]==nil then self.disabled[g]=g.Enabled end g.Enabled=false break
+							end
+						end
+					end
+				end
+			end
 		end
 	end
 	if self.central then local toy=self.central.model:FindFirstChild("Toy") if toy then self:hide(toy) end end
@@ -352,24 +373,25 @@ function Visuals:step(now)
 		local assembly=if packet.phase=="Assemble" then math.clamp((age-E.Assemble*.5)/(E.Assemble*.35),0,1) else 1
 		assembly=assembly*assembly*(3-2*assembly)
 		local stroke=if packet.phase=="Active" and rig.record.present then Motion.plotStroke(age) else 0
-		local lift=V(0,-18*(1-assembly)-18*(1-recovery),0)
+		local S=E.SuperScale
+		local lift=V(0,(-18*(1-assembly)-18*(1-recovery))*S,0)
 		for _,v in rig.all do v.part.CFrame=v.rest+lift end
-		for _,v in rig.moving do v.part.CFrame=v.rest+lift-V(0,stroke*7.2,0) end
+		for _,v in rig.moving do v.part.CFrame=v.rest+lift-V(0,stroke*7.2*S,0) end
 		for _,v in rig.shafts do
-			local bottom=17.3-stroke*7.2 local height=v.top-bottom
-			v.part.Size=V(1.25,height,1.25)
+			local bottom=(17.3-stroke*7.2)*S local height=v.top-bottom
+			v.part.Size=V(1.25*S,height,1.25*S)
 			v.part.CFrame=rig.origin*CFrame.new(v.x,bottom+height/2,0)+lift
 		end
 		for _,v in rig.rotors do v.part.CFrame=v.rest*CFrame.Angles(0,0,now*2)+lift end
 		local shrink=math.max(.12,1-stroke*.7)
-		rig.core.origin=rig.origin*CFrame.new(0,3.7+2.5*shrink,0)+lift
+		rig.core.origin=rig.origin*CFrame.new(0,(3.7+2.5*shrink)*S,0)+lift
 		animateCore(rig.core,now,shrink)
 		local boosted=(rig.record.pulseUntil or 0)>now
 		rig.core.heart.Color=if boosted then GOLD else PURPLE
 		for i,spark in rig.sparks do
 			local t=math.clamp((age-(i-1)*.35)/2.4,0,1)
 			spark.part.Transparency=if packet.phase=="Assemble" and t>0 and t<1 then .1 else 1
-			local target=(rig.origin*CFrame.new(0,18,0)).Position
+			local target=(rig.origin*CFrame.new(0,18*S,0)).Position
 			spark.part.CFrame=CFrame.new(spark.from*(1-t)+target*t+V(0,math.sin(t*math.pi)*12,0))
 		end
 		if self.central then
@@ -505,7 +527,7 @@ function Visuals:stepFlyers(now,packet)
 	if not self.flyers then
 		self.flyers={}
 		local plot=workspace:FindFirstChild("Plot"..tostring(rig.record.plotIndex),true)
-		local target=(rig.origin*CFrame.new(0,14,0)).Position
+		local target=(rig.origin*CFrame.new(0,14*E.SuperScale,0)).Position
 		local models={}
 		if plot then for _,m in plot:GetDescendants() do if m:IsA("Model") and m.Name=="EquippedCrusher" then table.insert(models,m) end end end
 		table.sort(models,function(a,b) return a:GetPivot().X<b:GetPivot().X end)

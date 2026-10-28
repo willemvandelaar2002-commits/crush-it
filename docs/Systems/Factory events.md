@@ -1,5 +1,14 @@
 # Factory events — Bear Breakdown
 
+28 Oct, later: during the event your plot's bays and row plaques (WorkingBay*,
+RarityRow*, their PlayerGui screens) hide locally once the crushers have flown
+off; the super crusher is built 1.8x (FactoryEventConfig.SuperScale), core port
+moved to z 3.5. Boss bar redone after the reference: tilted badge with the
+spinning bear reactor, long striped bar with 25/50/75% markers (turn gold when
+passed), big percentage + timer, top 3 damage dealers with headshots + YOU #rank
+(server adds `dealt` per participant), instruction pill underneath.
+
+
 28 Oct evening (Willem: cutscenes like the reference; normal bear stays the old
 teddy; no event panel during the intro; back to the plot where the crushers
 combine): the rigged Factory Bear is now a LOCAL event-only copy standing in the

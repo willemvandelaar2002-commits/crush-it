@@ -19,29 +19,107 @@ local Format=require(RS.Shared.Format)
 local me=Players.LocalPlayer
 local gui=Instance.new("ScreenGui") gui.Name="FactoryEventHud" gui.ResetOnSpawn=false
 gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling gui.DisplayOrder=4 gui.Parent=me:WaitForChild("PlayerGui")
--- compact boss bar, top centre under the travel buttons (28 Oct: no Join/Leave;
--- everyone takes part). One instruction line; MY FACTORY only while away.
+-- Boss bar (reference style, 28 Oct): the bear's reactor in a tilted badge on
+-- the left, a long chunky striped bar with 25/50/75% markers and the shield
+-- percentage, under it the top damage dealers + YOU, and one instruction line.
+local PURPLE=Color3.fromRGB(150,60,240) local INK=Style.Colors.Ink
 local panel=Instance.new("Frame") panel.Name="EventPanel" panel.AnchorPoint=Vector2.new(.5,0)
-panel.Position=UDim2.new(.5,0,0,124) panel.Size=UDim2.fromOffset(560,104) panel.Visible=false panel.Parent=gui
-Style.panel(panel,Color3.fromRGB(147,54,227),Color3.fromRGB(68,33,121))
+panel.Position=UDim2.new(.5,0,0,122) panel.Size=UDim2.fromOffset(780,150) panel.BackgroundTransparency=1 panel.Visible=false panel.Parent=gui
 local function label(parent,name,text,pos,size)
 	local t=Instance.new("TextLabel") t.Name=name t.Text=text t.BackgroundTransparency=1
-	t.Position=pos t.Size=size t.TextScaled=true t.ZIndex=2 t.Parent=parent Style.text(t,2) return t
+	t.Position=pos t.Size=size t.TextScaled=true t.ZIndex=4 t.Parent=parent Style.text(t,2.5) return t
 end
-local title=label(panel,"Title","BEAR BREAKDOWN",UDim2.fromOffset(14,7),UDim2.fromOffset(300,28))
-title.TextColor3=Color3.fromRGB(255,218,65) title.TextXAlignment=Enum.TextXAlignment.Left
-local timer=label(panel,"Timer","",UDim2.fromOffset(436,7),UDim2.fromOffset(110,28))
-timer.TextXAlignment=Enum.TextXAlignment.Right
-local bar=Instance.new("Frame") bar.Name="ShieldBar" bar.Position=UDim2.fromOffset(14,40)
-bar.Size=UDim2.fromOffset(532,26) bar.ClipsDescendants=true bar.BorderSizePixel=0 bar.BackgroundColor3=Color3.fromRGB(19,23,42)
-bar.ZIndex=2 bar.Parent=panel
-local corner=Instance.new("UICorner") corner.CornerRadius=UDim.new(0,8) corner.Parent=bar
-local fill=Instance.new("Frame") fill.Name="Fill" fill.Size=UDim2.fromScale(1,1) fill.BackgroundColor3=Color3.fromRGB(90,235,255)
-fill.BorderSizePixel=0 fill.Parent=bar
-local barText=label(bar,"BarText","",UDim2.fromScale(.02,.05),UDim2.fromScale(.96,.9)) barText.ZIndex=3
-local subtitle=label(panel,"Instruction","",UDim2.fromOffset(14,72),UDim2.fromOffset(532,24))
+local function round(p,r) local c=Instance.new("UICorner") c.CornerRadius=UDim.new(0,r) c.Parent=p end
+local function edge(p,th,col) local s=Instance.new("UIStroke") s.Thickness=th s.Color=col or INK s.ApplyStrokeMode=Enum.ApplyStrokeMode.Border s.Parent=p return s end
+-- bar
+local bar=Instance.new("Frame") bar.Name="ShieldBar" bar.Position=UDim2.fromOffset(70,14) bar.Size=UDim2.fromOffset(600,52)
+bar.BackgroundColor3=Color3.fromRGB(38,26,66) bar.ZIndex=2 bar.Parent=panel round(bar,10) edge(bar,4)
+local fill=Instance.new("Frame") fill.Name="Fill" fill.Size=UDim2.fromScale(1,1) fill.BackgroundColor3=Color3.new(1,1,1) fill.ZIndex=3 fill.Parent=bar round(fill,8)
+local fillGradient=Instance.new("UIGradient") fillGradient.Rotation=90 fillGradient.Parent=fill
+local stripes=Style.studsImage(fill,26,.5) stripes.ZIndex=3 stripes.ImageColor3=Color3.fromRGB(110,30,200)
+local shine=Instance.new("Frame") shine.Name="Shine" shine.Position=UDim2.new(0,6,0,5) shine.Size=UDim2.new(1,-12,0,5) shine.BackgroundColor3=Color3.new(1,1,1)
+shine.BackgroundTransparency=.55 shine.BorderSizePixel=0 shine.ZIndex=4 shine.Parent=fill round(shine,3)
+local markers={}
+for i,pct in {25,50,75} do
+	local m=Instance.new("Frame") m.Name="Marker"..pct m.AnchorPoint=Vector2.new(.5,.5) m.Position=UDim2.fromScale(pct/100,.5)
+	m.Size=UDim2.fromOffset(44,44) m.BackgroundColor3=Color3.fromRGB(58,62,80) m.ZIndex=5 m.Parent=bar round(m,22) local st=edge(m,3)
+	local g=Instance.new("UIGradient") g.Rotation=90 g.Color=ColorSequence.new(Color3.fromRGB(150,155,175),Color3.fromRGB(45,48,62)) g.Parent=m
+	local txt=label(m,"Pct",pct.."%",UDim2.new(.1,0,.62,0),UDim2.new(.8,0,.32,0)) txt.ZIndex=6
+	markers[i]={frame=m,stroke=st,pct=pct,gradient=g}
+end
+local percent=label(panel,"Percent","100%",UDim2.fromOffset(676,14),UDim2.fromOffset(100,52)) Style.text(percent,4)
+local timer=label(panel,"Timer","",UDim2.fromOffset(686,72),UDim2.fromOffset(80,30)) timer.TextColor3=Color3.fromRGB(255,218,65)
+timer.BackgroundColor3=INK timer.BackgroundTransparency=.3 round(timer,10)
+do local pad=Instance.new("UIPadding") pad.PaddingTop=UDim.new(0,3) pad.PaddingBottom=UDim.new(0,3) pad.Parent=timer end
+-- reactor badge (a live copy of the event bear's core when available)
+local badge=Instance.new("Frame") badge.Name="Badge" badge.Position=UDim2.fromOffset(0,0) badge.Size=UDim2.fromOffset(84,84) badge.Rotation=-8
+badge.BackgroundColor3=Color3.fromRGB(40,30,64) badge.ZIndex=6 badge.Parent=panel round(badge,14) edge(badge,4)
+do local g=Instance.new("UIGradient") g.Rotation=90 g.Color=ColorSequence.new(Color3.fromRGB(110,70,170),Color3.fromRGB(30,20,50)) g.Parent=badge end
+local view=Instance.new("ViewportFrame") view.Name="Core" view.Size=UDim2.fromScale(1,1) view.BackgroundTransparency=1 view.ZIndex=7 view.Parent=badge
+view.Ambient=Color3.fromRGB(200,170,255) view.LightColor=Color3.fromRGB(255,230,255)
+local viewCam=Instance.new("Camera") viewCam.FieldOfView=40 viewCam.Parent=view view.CurrentCamera=viewCam
+local viewModel=nil
+task.spawn(function()
+	local library=RS:WaitForChild("FactoryEventMeshes",20)
+	local template=library and library:FindFirstChild("FactoryBear")
+	local Rig=RS.Shared:FindFirstChild("FactoryBearRig")
+	if template and Rig then
+		local ok,core=pcall(function() return require(Rig).core(template,CFrame.new(),4) end)
+		if ok and core then core.Parent=view viewModel=core viewCam.CFrame=CFrame.lookAt(Vector3.new(0,1.2,8.5),Vector3.zero) return end
+	end
+	local ball=Instance.new("Part") ball.Shape=Enum.PartType.Ball ball.Size=Vector3.one*4 ball.Color=PURPLE ball.Material=Enum.Material.Neon ball.Parent=view
+	viewModel=ball viewCam.CFrame=CFrame.lookAt(Vector3.new(0,1,8),Vector3.zero)
+end)
+-- top damage + YOU
+local board=Instance.new("Frame") board.Name="TopDamage" board.AnchorPoint=Vector2.new(.5,0) board.Position=UDim2.new(.5,0,0,74)
+board.Size=UDim2.fromOffset(470,40) board.BackgroundColor3=Color3.fromRGB(22,20,38) board.BackgroundTransparency=.15 board.ZIndex=2 board.Parent=panel round(board,20) edge(board,3)
+local layout=Instance.new("UIListLayout") layout.FillDirection=Enum.FillDirection.Horizontal layout.HorizontalAlignment=Enum.HorizontalAlignment.Center
+layout.VerticalAlignment=Enum.VerticalAlignment.Center layout.Padding=UDim.new(0,8) layout.SortOrder=Enum.SortOrder.LayoutOrder layout.Parent=board
+local crown=label(board,"Crown","👑",UDim2.new(),UDim2.fromOffset(26,26)) crown.LayoutOrder=0
+local RANK={Color3.fromRGB(255,206,40),Color3.fromRGB(200,210,225),Color3.fromRGB(205,130,70)}
+local function entry(order,rankText,rankColor)
+	local f=Instance.new("Frame") f.Name="Entry"..order f.LayoutOrder=order f.Size=UDim2.fromOffset(96,32) f.BackgroundTransparency=1 f.Parent=board
+	local head=Instance.new("ImageLabel") head.Name="Head" head.Size=UDim2.fromOffset(30,30) head.Position=UDim2.fromOffset(14,1)
+	head.BackgroundColor3=Color3.fromRGB(60,60,80) head.ZIndex=4 head.Parent=f round(head,15) local hs=edge(head,2.5,rankColor or Color3.fromRGB(120,220,90))
+	local r=Instance.new("TextLabel") r.Name="Rank" r.Size=UDim2.fromOffset(20,20) r.Position=UDim2.fromOffset(0,6) r.BackgroundColor3=rankColor or Color3.fromRGB(90,200,90)
+	r.Text=rankText r.TextScaled=true r.ZIndex=5 r.Parent=f round(r,10) Style.text(r,1.5) edge(r,2)
+	local pct=label(f,"Pct","0%",UDim2.fromOffset(48,5),UDim2.fromOffset(48,22)) pct.TextXAlignment=Enum.TextXAlignment.Left pct.ZIndex=4
+	return {frame=f,head=head,rank=r,pct=pct,stroke=hs,userId=nil}
+end
+local entries={} for i=1,3 do entries[i]=entry(i,tostring(i),RANK[i]) entries[i].pct.TextColor3=RANK[i] end
+local divider=Instance.new("Frame") divider.LayoutOrder=4 divider.Size=UDim2.fromOffset(3,26) divider.BackgroundColor3=Color3.fromRGB(80,80,110) divider.BorderSizePixel=0 divider.Parent=board
+local mine=entry(5,"",Color3.fromRGB(110,230,90)) mine.frame.Size=UDim2.fromOffset(110,32)
+mine.rank.Text="#1" mine.pct.TextColor3=Color3.fromRGB(130,255,110)
+local youTag=Instance.new("TextLabel") youTag.Text="YOU" youTag.Size=UDim2.fromOffset(34,14) youTag.Position=UDim2.fromOffset(12,-9) youTag.BackgroundColor3=Color3.fromRGB(70,200,80)
+youTag.TextScaled=true youTag.ZIndex=6 youTag.Parent=mine.frame round(youTag,6) Style.text(youTag,1.2)
+mine.rank.Size=UDim2.fromOffset(26,20) mine.rank.Position=UDim2.fromOffset(46,6) mine.rank.BackgroundTransparency=1 mine.pct.Position=UDim2.fromOffset(74,5)
+local subtitle=label(panel,"Instruction","",UDim2.fromOffset(100,120),UDim2.fromOffset(580,30))
+subtitle.BackgroundColor3=INK subtitle.BackgroundTransparency=.3 round(subtitle,12)
+do local pad=Instance.new("UIPadding") pad.PaddingTop=UDim.new(0,4) pad.PaddingBottom=UDim.new(0,4) pad.PaddingLeft=UDim.new(0,14) pad.PaddingRight=UDim.new(0,14) pad.Parent=subtitle end
+local function headshot(userId) return "rbxthumb://type=AvatarHeadShot&id="..userId.."&w=48&h=48" end
+local function paintBoard(packet)
+	if not packet then return end
+	local list=table.clone(packet.participants or {})
+	table.sort(list,function(a,b) return (a.dealt or 0)>(b.dealt or 0) end)
+	local maxHp=math.max(1e-9,packet.maxHp or 0)
+	for i=1,3 do
+		local e=entries[i] local r=list[i]
+		e.frame.Visible=r~=nil
+		if r then
+			if e.userId~=r.userId then e.userId=r.userId e.head.Image=headshot(r.userId) end
+			e.pct.Text=string.format("%.1f%%",(r.dealt or 0)/maxHp*100)
+		end
+	end
+	local myRank,myDealt=0,0
+	for i,r in list do if r.userId==me.UserId then myRank=i myDealt=r.dealt or 0 end end
+	mine.frame.Visible=myRank>0 divider.Visible=myRank>0
+	if myRank>0 then
+		if mine.userId~=me.UserId then mine.userId=me.UserId mine.head.Image=headshot(me.UserId) end
+		mine.rank.Text="#"..myRank mine.pct.Text=string.format("%.1f%%",myDealt/maxHp*100)
+	end
+end
 local primary=Instance.new("TextButton") primary.Name="GoToFactory" primary.Text="MY FACTORY"
-primary.AnchorPoint=Vector2.new(.5,0) primary.Position=UDim2.new(.5,0,1,8) primary.Size=UDim2.fromOffset(200,40)
+primary.AnchorPoint=Vector2.new(.5,0) primary.Position=UDim2.new(.5,0,1,4) primary.Size=UDim2.fromOffset(200,40)
 primary.TextScaled=true primary.ZIndex=3 primary.Visible=false primary.Parent=panel Style.button(primary,Color3.fromRGB(65,230,80))
 do local pad=Instance.new("UIPadding") pad.PaddingTop=UDim.new(0,6) pad.PaddingBottom=UDim.new(0,6) pad.Parent=primary end
 local skip=Instance.new("TextButton") skip.Name="SkipFinale" skip.Text="SKIP VIEW"
@@ -61,6 +139,7 @@ local flash=Instance.new("Frame") flash.Name="Flash" flash.Size=UDim2.fromScale(
 flash.BackgroundTransparency=1 flash.BorderSizePixel=0 flash.ZIndex=21 flash.Parent=intro
 local SHOTS={0,3.4,7.6,E.Announce} -- shot starts (s after the announcement); the last runs through Assemble
 local INTRO_LENGTH=E.Announce+E.Assemble
+local shown=1
 local packet=nil local visuals=Visuals.new() local cameraState=nil local seenFinale=nil local seenIntro=nil
 local stopped=false local connections={} local lastSoundBeat=-1 local finaleSound=nil local buttonColor=nil
 local impact=Instance.new("Sound") impact.Name="FactoryEventImpact" impact.SoundId="rbxassetid://"..Config.Sounds.Thud
@@ -127,8 +206,8 @@ local function introShots()
 	local plot=workspace:FindFirstChild("Plots") and workspace.Plots:FindFirstChild("Plot"..tostring(me:GetAttribute("Plot")))
 	local o=plot and plot:GetAttribute("Origin")
 	if typeof(o)=="CFrame" then
-		local middle=(o*CFrame.new(0,10,-13)).Position
-		shots[4]={from=(o*CFrame.new(-14,30,46)).Position,to=(o*CFrame.new(0,19,30)).Position,look=middle,fov=66} -- straight down the walkway into the gap between the banks
+		local middle=(o*CFrame.new(0,20,-13)).Position
+		shots[4]={from=(o*CFrame.new(-18,40,66)).Position,to=(o*CFrame.new(0,26,48)).Position,look=middle,fov=66} -- straight down the walkway into the gap between the banks
 	else shots[4]=shots[3] end
 	shots[1]=shots[1] or shots[3] shots[2]=shots[2] or shots[3]
 	return shots
@@ -178,13 +257,24 @@ local function renderHud(now)
 	local remaining=math.max(0,math.ceil(packet.ends-now))
 	timer.Text=string.format("%d:%02d",math.floor(remaining/60),remaining%60)
 	local fraction=if packet.maxHp>0 then math.clamp(packet.hp/packet.maxHp,0,1) else 1
-	fill.Size=UDim2.fromScale(fraction,1)
-	-- cyan at full shield, warmer as it breaks
-	fill.BackgroundColor3=Color3.fromRGB(255,140,40):Lerp(Color3.fromRGB(90,235,255),fraction)
-	barText.Text=if phase=="Active" then string.format("BEAR'S SHIELD · %d%%",math.ceil(fraction*100))
-		elseif phase=="Finale" then "SHIELD BROKEN · MEGA CRUSHER CHARGING"
-		elseif phase=="Victory" then "CORE DESTROYED!" elseif phase=="Announce" then "STARTS IN "..remaining.."s"
-		else "YOUR FACTORY POWERS THE FINAL BLOW"
+	if phase~="Active" then fraction=if phase=="Finale" or phase=="Victory" or phase=="Recover" then 0 else 1 end
+	shown=shown+(fraction-shown)*.15 -- smooth drain
+	fill.Size=UDim2.fromScale(math.max(shown,.001),1) fill.Visible=shown>.002
+	-- purple at full shield, magenta then orange as it breaks
+	local warm=1-fraction
+	fillGradient.Color=ColorSequence.new(Color3.fromRGB(215,95,255):Lerp(Color3.fromRGB(255,150,60),warm*warm),Color3.fromRGB(125,25,225):Lerp(Color3.fromRGB(220,50,70),warm*warm))
+	percent.Text=math.ceil(fraction*100).."%"
+	for _,m in markers do
+		local broken=fraction*100<=m.pct
+		m.gradient.Color=if broken then ColorSequence.new(Color3.fromRGB(255,235,120),Color3.fromRGB(230,140,20)) else ColorSequence.new(Color3.fromRGB(150,155,175),Color3.fromRGB(45,48,62))
+		m.stroke.Color=if broken then Color3.fromRGB(120,60,0) else INK
+	end
+	if viewModel then
+		local spin=CFrame.Angles(.25,now*1.2,0)
+		if viewModel:IsA("Model") then viewModel:PivotTo(spin) else viewModel.CFrame=spin end
+	end
+	badge.Rotation=-8+math.sin(now*2)*3
+	paintBoard(packet)
 	primary.Visible=false
 	subtitle.TextColor3=Color3.new(1,1,1)
 	if phase=="Announce" then

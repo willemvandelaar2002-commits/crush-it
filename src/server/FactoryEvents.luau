@@ -46,7 +46,7 @@ function Events.start(api)
 			table.insert(participants,{userId=player.UserId,name=player.DisplayName,origin=r.origin,plotIndex=r.plotIndex,
 				points=r.points,grade=r.grade,dominant=r.dominant,count=r.count,power=r.power,slots=r.slots,
 				present=r.present==true,pulseUntil=r.pulseUntil or 0,critUntil=r.critUntil or 0,
-				loaded=r.boost or 0,fallback=r.fallback==true})
+				loaded=r.boost or 0,fallback=r.fallback==true,dealt=r.dealt or 0})
 		end
 		table.sort(participants,function(a,b) return a.userId<b.userId end)
 		local list={} for _,h in hazards do table.insert(list,{id=h.id,userId=h.userId,position=h.position,warnAt=h.warnAt,at=h.at,result=h.result}) end
@@ -304,7 +304,8 @@ function Events.start(api)
 						r.nextStrike=since+(math.floor((t-since)/E.Strike)+1)*E.Strike r.hits+=1
 						local mult=math.max(1,r.boost or 0) r.boost=0
 						if mult>1 then r.pulseUntil=t+E.Strike+.25 end
-						hp=math.max(0,hp-Rules.damage(r.power,false)*mult)
+						local dealt=math.min(hp,Rules.damage(r.power,false)*mult)
+						hp-=dealt r.dealt=(r.dealt or 0)+dealt -- for the boss bar's top damage list
 					end
 				end
 			end
