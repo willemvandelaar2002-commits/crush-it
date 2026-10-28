@@ -1,5 +1,11 @@
 # Factory events — Bear Breakdown
 
+28 Oct, latest: intro shot 1 now films the teddy from the open hall in front
+of it (the old over-the-shoulder view was blocked by your own crushers); the
+teddy shakes, then spins, lifts a little and shrinks away (ScaleTo, restored
+to 1 after) because a tall rise went through the booth roof. Boss bar: no
+25/50/75 marker circles and no side badge.
+
 28 Oct, night pass: the whole crusher platform (WorkshopBanks with floors,
 stairs and signs, bays, row plaques, trim braces) hides locally during the event
 and stops colliding; super crusher 2.6x (port z 9). Night during the event (from

@@ -39,13 +39,7 @@ local fillGradient=Instance.new("UIGradient") fillGradient.Rotation=90 fillGradi
 local stripes=Style.studsImage(fill,26,.5) stripes.ZIndex=3 stripes.ImageColor3=Color3.fromRGB(110,30,200)
 local shine=Instance.new("Frame") shine.Name="Shine" shine.Position=UDim2.new(0,6,0,5) shine.Size=UDim2.new(1,-12,0,5) shine.BackgroundColor3=Color3.new(1,1,1)
 shine.BackgroundTransparency=.55 shine.BorderSizePixel=0 shine.ZIndex=4 shine.Parent=fill round(shine,3)
-local markers={}
-for i,pct in {25,50,75} do
-	local m=Instance.new("Frame") m.Name="Marker"..pct m.AnchorPoint=Vector2.new(.5,.5) m.Position=UDim2.fromScale(pct/100,.5)
-	m.Size=UDim2.fromOffset(44,44) m.BackgroundColor3=Color3.fromRGB(58,62,80) m.ZIndex=5 m.Parent=bar round(m,22) local st=edge(m,3)
-	local g=Instance.new("UIGradient") g.Rotation=90 g.Color=ColorSequence.new(Color3.fromRGB(150,155,175),Color3.fromRGB(45,48,62)) g.Parent=m
-	markers[i]={frame=m,stroke=st,pct=pct,gradient=g}
-end
+local markers={} -- (28 Oct: no 25/50/75 circles)
 local percent=label(panel,"Percent","100%",UDim2.fromOffset(676,14),UDim2.fromOffset(100,52)) Style.text(percent,4)
 local timer=label(panel,"Timer","",UDim2.fromOffset(686,72),UDim2.fromOffset(80,30)) timer.TextColor3=Color3.fromRGB(255,218,65)
 timer.BackgroundColor3=INK timer.BackgroundTransparency=.3 round(timer,10)
@@ -53,6 +47,7 @@ do local pad=Instance.new("UIPadding") pad.PaddingTop=UDim.new(0,3) pad.PaddingB
 -- reactor badge (a live copy of the event bear's core when available)
 local badge=Instance.new("Frame") badge.Name="Badge" badge.Position=UDim2.fromOffset(0,0) badge.Size=UDim2.fromOffset(84,84) badge.Rotation=-8
 badge.BackgroundColor3=Color3.fromRGB(40,30,64) badge.ZIndex=6 badge.Parent=panel round(badge,14) edge(badge,4)
+badge.Visible=false -- (28 Oct: Willem: no side badge)
 do local g=Instance.new("UIGradient") g.Rotation=90 g.Color=ColorSequence.new(Color3.fromRGB(110,70,170),Color3.fromRGB(30,20,50)) g.Parent=badge end
 local view=Instance.new("ViewportFrame") view.Name="Core" view.Size=UDim2.fromScale(1,1) view.BackgroundTransparency=1 view.ZIndex=7 view.Parent=badge
 view.Ambient=Color3.fromRGB(200,170,255) view.LightColor=Color3.fromRGB(255,230,255)
@@ -264,12 +259,9 @@ local function introShots()
 		local face=(Vector3.new(0,head.Y,0)-head) face=Vector3.new(face.X,0,face.Z).Unit
 		local function under(v) return Vector3.new(v.X,math.min(v.Y,132),v.Z) end
 		-- A: over your shoulder, looking at the bear far away
-		if root then
-			local dir=(head-root.Position).Unit
-			local flat=Vector3.new(dir.X,0,dir.Z).Unit
-			local from=root.Position-flat*9+Vector3.new(0,4.5,0)+flat:Cross(Vector3.yAxis)*3
-			shots[1]={from=from,to=from+flat*6,look=head,fov=50}
-		else shots[1]={from=under(head+face*r*3+Vector3.new(0,10,0)),to=under(head+face*r*2.4),look=head,fov=55} end
+		-- A: from the open hall in front of the bear (nothing of the plots in the way)
+		local side=face:Cross(Vector3.yAxis)
+		shots[1]={from=under(head+face*r*2+side*r*.4+Vector3.new(0,r*.1,0)),to=under(head+face*r*1.8-side*r*.15),look=head-Vector3.new(0,r*.3,0),fov=62}
 		-- B: low and close on the bear as it turns, then roars
 		shots[2]={from=under(head+face*r*1.45-Vector3.new(0,r*.22,0)),to=under(head+face*r*.8-Vector3.new(0,r*.08,0)),look=head,fov=60,shake=true}
 	end

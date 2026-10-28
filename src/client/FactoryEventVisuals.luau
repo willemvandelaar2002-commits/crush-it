@@ -191,7 +191,7 @@ function Visuals:clear()
 	if self.bear and self.bear.ready then
 		-- the event bear goes, the normal teddy comes back (with a puff)
 		for _,p in self.bear.teddyParts do if p.Parent then p.LocalTransparencyModifier=0 end end
-		if self.teddyModel and self.teddyModel.Parent and self.teddyRest then self.teddyModel:PivotTo(self.teddyRest) end
+		if self.teddyModel and self.teddyModel.Parent and self.teddyRest then if self.teddyModel:GetScale()~=1 then self.teddyModel:ScaleTo(1) end self.teddyModel:PivotTo(self.teddyRest) end
 		local puff=part(workspace,"TeddyReturnPuff",V(1,1,1),CFrame.new(self.bear.bottom+V(0,10,0)),PURPLE) puff.Transparency=1
 		local e=self.bear.smoke:Clone() e.Parent=puff e:Emit(40)
 		game:GetService("Debris"):AddItem(puff,3)
@@ -501,7 +501,7 @@ function Visuals:step(now)
 		local mode,t="Corrupted",9
 		local ph=packet.phase
 		-- intro timeline (seconds after the announcement): purple smoke 0-3.4,
-		-- the teddy shakes then rises away 1.2-2.6, flash, the event bear drops
+		-- the teddy shakes then spins and shrinks away 1.2-2.6, flash, the event bear drops
 		-- in 2.6-3.2, turns 3.6-5.2, roars 5.2-7.
 		local intro=ph=="Announce"
 		local teddyShown=intro and age<2.6
@@ -509,8 +509,15 @@ function Visuals:step(now)
 		if teddyShown and self.teddyModel and self.teddyRest then
 			local rise=math.clamp((age-1.2)/1.4,0,1)
 			local shake=if age<1.2 then math.sin(age*40)*.04*age else 0
-			self.teddyModel:PivotTo(self.teddyRest*CFrame.new(0,rise*rise*45,0)*CFrame.Angles(0,rise*4+shake,shake))
-		elseif self.teddyModel and self.teddyRest then self.teddyModel:PivotTo(self.teddyRest) end
+			-- lifts a little, spins and shrinks away under the booth roof (a 45-stud
+			-- rise went through the ceiling, 28 Oct)
+			local sc=math.max(.05,1-rise*rise*.95)
+			if math.abs(self.teddyModel:GetScale()-sc)>1e-3 then self.teddyModel:ScaleTo(sc) end
+			self.teddyModel:PivotTo(self.teddyRest*CFrame.new(0,rise*b.height*.35,0)*CFrame.Angles(0,rise*7+shake,shake))
+		elseif self.teddyModel and self.teddyRest then
+			if self.teddyModel:GetScale()~=1 then self.teddyModel:ScaleTo(1) end
+			self.teddyModel:PivotTo(self.teddyRest)
+		end
 		b.smoke.Rate=if intro and age<3.4 then 45 else 0
 		local drop=if intro then math.clamp((age-2.6)/.6,0,1) else 1
 		local bearShown=not intro or age>=2.6
