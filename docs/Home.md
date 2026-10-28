@@ -157,3 +157,7 @@ Next ideas: helper units (like the capybaras/tanks), Halloween event; create the
 25 Oct row effects: full Epic rows get purple sparkles, a travelling energy glint and a short activation burst; Legendary gets gold. See [[Systems/Row set effects]].
 
 25 Oct crusher icons: 35 actual-model PNG portraits and shared collection/reward/shop/native-backpack loading; five Studio-only special portraits await export. See [[Systems/Crusher icons]].
+
+28 Oct persistent crusher finishes: coating/fusion dressing now has shared
+static silhouettes, optional Blender crystal/flame/star meshes, additive gold
+and green fusion details, and bounded nearby animation. See [[Systems/Persistent crusher finishes]].

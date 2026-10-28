@@ -1,49 +1,111 @@
---!strict
--- Brings coating dressing to life on your screen (CrusherFinish, tag
--- CoatingFx): Charged lightning arcs flicker and jump, Fire light flickers,
--- Frost and Polished lights shimmer. Only coated crushers near the camera
--- are animated (12 times a second). Visual only.
-local Tags = game:GetService("CollectionService")
-local Run = game:GetService("RunService")
-
-local roots: { [Instance]: { arcs: { Beam }, lights: { PointLight }, finish: string } } = {}
-local function add(root: Instance)
-	local entry = { arcs = {}, lights = {}, finish = tostring(root:GetAttribute("Finish")) }
-	for _, d in root:GetDescendants() do
-		if d:IsA("Beam") then table.insert(entry.arcs, d)
-		elseif d:IsA("PointLight") then table.insert(entry.lights, d) end
-	end
-	roots[root] = entry
+--!nonstrict
+-- One bounded cosmetic scheduler for persistent coating AND fusion looks.
+-- Static decorations remain readable in every bay and ViewportFrame.
+local Tags=game:GetService("CollectionService")
+local Run=game:GetService("RunService")
+local RS=game:GetService("ReplicatedStorage")
+local Motion=require(RS:WaitForChild("Shared"):WaitForChild("CrusherFinishMotion"))
+local roots={} local connections={} local stopped=false local tick=0 local scan=0
+local function off(e)
+	for _,p in e.emitters do if p.Parent then p.Enabled=false p.Rate=0 p:Clear() end end
+	for _,b in e.arcs do if b.Parent then b.Enabled=false end end
+	for _,l in e.lights do if l.Parent then l.Enabled=false end end
+	for _,v in e.pulses do if v.part.Parent then v.part.Transparency=v.alpha end end
+	e.level=0
 end
-for _, r in Tags:GetTagged("CoatingFx") do add(r) end
-Tags:GetInstanceAddedSignal("CoatingFx"):Connect(function(r) task.defer(add, r) end)
-Tags:GetInstanceRemovedSignal("CoatingFx"):Connect(function(r) roots[r] = nil end)
-
-local rng = Random.new()
-local acc = 0
-Run.Heartbeat:Connect(function(dt)
-	acc += dt
-	if acc < 1 / 12 then return end
-	acc = 0
-	local camera = workspace.CurrentCamera
-	if not camera then return end
-	local eye = camera.CFrame.Position
-	for root, e in roots do
-		if not root.Parent then roots[root] = nil continue end
-		local first = e.arcs[1] or e.lights[1]
-		local holder = first and first.Parent
-		if not (holder and holder:IsA("BasePart")) or (holder.Position - eye).Magnitude > 150 then continue end
-		if e.finish == "Charged" then
-			for _, b in e.arcs do
-				b.Enabled = rng:NextNumber() < .85
-				local s = (b.Width0 * 18)
-				b.CurveSize0 = rng:NextNumber(-s, s) b.CurveSize1 = rng:NextNumber(-s, s)
-			end
-			for _, l in e.lights do l.Brightness = rng:NextNumber(1, 2.6) end
-		elseif e.finish == "Fire" then
-			for _, l in e.lights do l.Brightness = rng:NextNumber(1.6, 2.8) end
+local function add(root)
+	if stopped or not root.Parent or roots[root] then return end
+	local e={owner=root.Parent,finish=tostring(root:GetAttribute("Finish")),unit=root:GetAttribute("FinishUnit") or 1,emitters={},arcs={},lights={},pulses={},level=0,light=false,seed=0}
+	for _,d in root:GetDescendants() do
+		if d:IsA("ParticleEmitter") then table.insert(e.emitters,d)
+		elseif d:IsA("Beam") then table.insert(e.arcs,d)
+		elseif d:IsA("PointLight") then table.insert(e.lights,d)
+		elseif d:IsA("BasePart") then
+			if not e.anchor then e.anchor=d end
+			if d:GetAttribute("FinishPulse") or d.Name=="Gleam" then table.insert(e.pulses,{part=d,alpha=d.Transparency}) end
+		end
+	end
+	local id=tostring(e.owner:GetAttribute("InventoryId") or e.owner.Name)
+	for i=1,#id do e.seed=(e.seed+string.byte(id,i)*i)%997 end
+	e.seed=e.seed/79
+	off(e) roots[root]=e
+end
+for _,r in Tags:GetTagged("CoatingFx") do add(r) end
+connections[#connections+1]=Tags:GetInstanceAddedSignal("CoatingFx"):Connect(function(r) task.defer(add,r) end)
+connections[#connections+1]=Tags:GetInstanceRemovedSignal("CoatingFx"):Connect(function(r)
+	local e=roots[r] if e then off(e) end roots[r]=nil
+end)
+-- the event marks the whole plot (FactoryEventVisuals), so check the parents too
+local function hidden(owner)
+	local node=owner
+	while node and node~=workspace do
+		if node:GetAttribute("LocalEventHidden")==true then return true end
+		node=node.Parent
+	end
+	return false
+end
+local function focus()
+	local camera=workspace.CurrentCamera local groups={}
+	for root,e in roots do
+		if not root.Parent then off(e) roots[root]=nil
 		else
-			for _, l in e.lights do l.Brightness = 1.2 + .4 * math.sin(os.clock() * 3) end
+			e.light=false
+			local valid=camera and root:IsDescendantOf(workspace) and e.anchor and e.anchor.Parent and not hidden(e.owner)
+			if not valid then if e.level~=0 then off(e) end continue end
+			local distance=(e.anchor.Position-camera.CFrame.Position).Magnitude
+			local g=groups[e.owner]
+			if not g then
+				g={entries={},distance=distance,key=tostring(e.owner:GetAttribute("InventoryId") or e.owner:GetFullName())}
+				groups[e.owner]=g
+			end
+			g.distance=math.min(g.distance,distance) table.insert(g.entries,e)
+		end
+	end
+	local ordered={} for _,g in groups do table.insert(ordered,g) end
+	table.sort(ordered,function(a,b) return if a.distance==b.distance then a.key<b.key else a.distance<b.distance end)
+	local lightCount=0
+	for rank,g in ordered do
+		local level=Motion.level(g.distance,rank)
+		for _,e in g.entries do
+			if level==0 and e.level~=0 then off(e) end
+			e.level=level
+			if level==2 and #e.lights>0 and lightCount<Motion.Lights then e.light=true lightCount+=1 end
+		end
+	end
+end
+local function update(e,now)
+	local s=Motion.sample(e.finish,now,e.seed)
+	for _,emitter in e.emitters do if emitter.Parent then
+		local enabled=e.level==2
+		emitter.Enabled=enabled emitter.Rate=if enabled then (emitter:GetAttribute("FinishRate") or 0) else 0
+	end end
+	for _,beam in e.arcs do if beam.Parent then
+		beam.Enabled=e.level==2 and s.arc
+		beam.CurveSize0=s.curve*e.unit*.025 beam.CurveSize1=-beam.CurveSize0
+	end end
+	for _,light in e.lights do if light.Parent then light.Enabled=e.light and e.level==2 light.Brightness=s.brightness end end
+	for _,v in e.pulses do if v.part.Parent then
+		local amount=if e.level==0 then 0 elseif v.part.Name=="Gleam" then .58*(1-s.glint) else .18*(1-s.pulse)
+		v.part.Transparency=v.alpha+(1-v.alpha)*amount
+	end end
+end
+connections[#connections+1]=Run.Heartbeat:Connect(function(dt)
+	if stopped then return end
+	tick+=dt scan+=dt
+	if scan>=Motion.Scan then scan=0 focus() end
+	if tick<Motion.Tick then return end tick=0
+	local now=os.clock()
+	for root,e in roots do
+		if not root.Parent then off(e) roots[root]=nil
+		elseif e.level>0 then
+			-- Event-hidden owners are silenced immediately, before the next focus scan.
+			if hidden(e.owner) then off(e) else update(e,now) end
 		end
 	end
 end)
+local function stop()
+	if stopped then return end stopped=true
+	for _,c in connections do c:Disconnect() end
+	for _,e in roots do off(e) end table.clear(roots)
+end
+connections[#connections+1]=script.Destroying:Connect(stop)

@@ -1,250 +1,227 @@
 --!strict
--- Coating and fusion looks on a crusher model: bays, the held crusher and the
--- 3D pictures in the Coating Lab / Fusion screens all use this, so a coating
--- looks the same everywhere. Recolours the machine into the finish's palette
--- (keeping its light/dark structure so every type stays recognisable), turns
--- small details into glowing accents, and adds the finish's own dressing:
---   Fire: real flames on top and at the feet, embers, flickering orange light
---   Frost: ice crystal clusters, icicles, cold mist, snow, icy light
---   Charged: energy orbs with lightning arcs between them, sparks, purple light
---   Polished: the machine's own colours turned into reflective chrome, glints
--- Dressing sits in the "CrusherFinish" model (tag CoatingFx; the client
--- CoatingAnimator flickers lights and arcs). Moving groups keep working.
-local Tags=game:GetService("CollectionService")
-local F={}
+-- Persistent coating/fusion looks shared by working bays, held copies and UI previews.
+-- API compatible: Looks, dress, apply(model,modifier,front?), fused(model,front?).
+-- Static dressing is readable without particles; the client animator budgets motion/emitters.
+local Tags = game:GetService("CollectionService")
+local RS = game:GetService("ReplicatedStorage")
+local F = {}
+F.Looks = {
+	Polished = {dark=Color3.fromRGB(92,111,139),light=Color3.fromRGB(247,253,255),mix=.88,
+		material=Enum.Material.Metal,reflect=.28,keepTexture=true,glow=Color3.fromRGB(231,250,255),fx="glint"},
+	Frost = {dark=Color3.fromRGB(25,120,190),light=Color3.fromRGB(137,236,255),mix=.88,
+		material=Enum.Material.SmoothPlastic,glow=Color3.fromRGB(94,231,255),fx="snow"},
+	Fire = {dark=Color3.fromRGB(123,36,27),light=Color3.fromRGB(255,157,46),mix=.78,
+		material=Enum.Material.SmoothPlastic,glow=Color3.fromRGB(255,166,54),fx="ember"},
+	Charged = {dark=Color3.fromRGB(60,30,111),light=Color3.fromRGB(207,156,255),mix=.76,
+		material=Enum.Material.SmoothPlastic,glow=Color3.fromRGB(195,124,255),fx="spark"},
+} :: {[string]: any}
+local WHITE = Color3.fromRGB(255,249,224)
+local NAVY = Color3.fromRGB(19,23,42)
+local LIME = Color3.fromRGB(114,255,159)
+local GOLD = Color3.fromRGB(255,204,73)
 
-type Look={dark: Color3,light: Color3,mix: number,material: Enum.Material,darkMaterial: Enum.Material?,
-	reflect: number?,glow: Color3,fx: string,keepTexture: boolean?,lavaBelow: number?}
-F.Looks={
-	Polished={dark=Color3.fromRGB(104,116,136),light=Color3.fromRGB(250,252,255),mix=.25,material=Enum.Material.Metal,reflect=.45,keepTexture=true,
-		glow=Color3.fromRGB(255,255,255),fx="glint"},
-	Frost={dark=Color3.fromRGB(38,112,178),light=Color3.fromRGB(214,248,255),mix=.88,material=Enum.Material.Ice,
-		glow=Color3.fromRGB(120,235,255),fx="snow"},
-	Fire={dark=Color3.fromRGB(70,16,8),light=Color3.fromRGB(240,96,18),mix=.95,material=Enum.Material.SmoothPlastic,lavaBelow=2,
-		darkMaterial=Enum.Material.CrackedLava,glow=Color3.fromRGB(255,120,30),fx="flame"},
-	Charged={dark=Color3.fromRGB(46,20,98),light=Color3.fromRGB(206,150,255),mix=.85,material=Enum.Material.SmoothPlastic,
-		glow=Color3.fromRGB(190,110,255),fx="spark"},
-} :: {[string]: Look}
-local FUSED=Color3.fromRGB(90,255,110)
-
-local function bounds(model: Instance, front: CFrame): (Vector3, Vector3)
+local function decorated(p: Instance, model: Instance): boolean
+	local a = p.Parent
+	while a and a ~= model do
+		if a.Name == "CrusherFinish" or a.Name == "FusedLook" then return true end
+		a = a.Parent
+	end
+	return false
+end
+local function bounds(model: Instance, frame: CFrame): (Vector3, Vector3)
 	local lo=Vector3.new(math.huge,math.huge,math.huge) local hi=-lo
-	for _,p in model:GetDescendants() do if p:IsA("BasePart") and p.Transparency<1 then
-		for x=-1,1,2 do for y=-1,1,2 do for z=-1,1,2 do
-			local v=front:PointToObjectSpace(p.CFrame*Vector3.new(p.Size.X*x/2,p.Size.Y*y/2,p.Size.Z*z/2))
-			lo=lo:Min(v) hi=hi:Max(v)
-		end end end
-	end end
+	for _,p in model:GetDescendants() do
+		if p:IsA("BasePart") and p.Transparency<.99 and not decorated(p,model) then
+			for x=-1,1,2 do for y=-1,1,2 do for z=-1,1,2 do
+				local v=frame:PointToObjectSpace(p.CFrame*Vector3.new(p.Size.X*x/2,p.Size.Y*y/2,p.Size.Z*z/2))
+				lo=lo:Min(v) hi=hi:Max(v)
+			end end end
+		end
+	end
 	return lo,hi
 end
-local function lum(c: Color3): number return .299*c.R+.587*c.G+.114*c.B end
-local function accent(p: BasePart, span: number): boolean
-	if p.Material==Enum.Material.Neon then return true end
-	local n=p.Name:lower()
-	if n:find("light") or n:find("glow") or n:find("strip") or n:find("bolt") or n:find("lamp") or n:find("led") then return true end
-	return math.max(p.Size.X,p.Size.Y,p.Size.Z)<span*.07
-end
--- the emitter sits on the biggest part (snow, glints, sparks) or the highest
--- one (flames)
-local function host(model: Instance, top: boolean): BasePart?
-	local best,score=nil,-math.huge
-	for _,p in model:GetDescendants() do if p:IsA("BasePart") and p.Transparency<1 then
-		local s=if top then p.Position.Y+p.Size.Y/2+p.Size.X*p.Size.Z*.001 else p.Size.X*p.Size.Y*p.Size.Z
-		if s>score then best,score=p,s end
-	end end
-	return best
-end
-local function emitter(parent: BasePart, kind: string, span: number, color: Color3)
-	local e=Instance.new("ParticleEmitter") e.Name="FinishFx"
-	e.LightEmission=1 e.LightInfluence=0 e.Shape=Enum.ParticleEmitterShape.Box e.ShapeStyle=Enum.ParticleEmitterShapeStyle.Volume
-	e.Rotation=NumberRange.new(0,360) e.EmissionDirection=Enum.NormalId.Top
-	local s=math.clamp(span*.05,.15,1.2)
-	if kind=="flame" then
-		e.Texture="rbxasset://textures/particles/fire_main.dds" e.Rate=7 e.Lifetime=NumberRange.new(.45,.8)
-		e.Speed=NumberRange.new(span*.15,span*.25) e.SpreadAngle=Vector2.new(15,15) e.LightEmission=.85
-		e.Color=ColorSequence.new(Color3.fromRGB(255,210,80),Color3.fromRGB(255,70,20))
-		e.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,s*1.6),NumberSequenceKeypoint.new(1,0)})
-		e.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,.2),NumberSequenceKeypoint.new(1,1)})
-		e.ShapeStyle=Enum.ParticleEmitterShapeStyle.Surface e.ShapePartial=0
-	else
-		e.Texture="rbxasset://textures/particles/sparkles_main.dds"
-		e.Color=ColorSequence.new(color:Lerp(Color3.new(1,1,1),.5),color)
-		e.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(.2,0),NumberSequenceKeypoint.new(1,1)})
-		if kind=="snow" then
-			e.Rate=4 e.Lifetime=NumberRange.new(1.4,2.2) e.Speed=NumberRange.new(span*.02,span*.05) e.Acceleration=Vector3.new(0,-span*.06,0)
-			e.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,s),NumberSequenceKeypoint.new(1,s*.3)}) e.RotSpeed=NumberRange.new(-60,60)
-		elseif kind=="spark" then
-			e.Rate=6 e.Lifetime=NumberRange.new(.15,.35) e.Speed=NumberRange.new(span*.3,span*.5) e.SpreadAngle=Vector2.new(180,180)
-			e.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,s*1.3),NumberSequenceKeypoint.new(1,0)})
-		elseif kind=="rise" then
-			e.Rate=4 e.Lifetime=NumberRange.new(1,1.6) e.Speed=NumberRange.new(span*.06,span*.12)
-			e.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,s),NumberSequenceKeypoint.new(1,0)})
-		else -- glint
-			e.Rate=4 e.Lifetime=NumberRange.new(.35,.55) e.Speed=NumberRange.new(0,0)
-			e.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(.5,s*3),NumberSequenceKeypoint.new(1,0)})
-		end
-	end
-	e.Parent=parent
-end
-local function part(root: Instance, name: string, size: Vector3, cf: CFrame, color: Color3, transparency: number?)
-	local p=Instance.new("Part") p.Name=name p.Size=size p.CFrame=cf p.Color=color p.Material=Enum.Material.Neon
-	p.Transparency=transparency or 0 p.Anchored=true p.CanCollide=false p.CanTouch=false p.CanQuery=false p.CastShadow=false p.Parent=root
+local function part(root: Instance,name: string,size: Vector3,cf: CFrame,color: Color3,material: Enum.Material?,alpha: number?): BasePart
+	local p=Instance.new("Part") p.Name=name p.Size=size p.CFrame=cf p.Color=color
+	p.Material=material or Enum.Material.Neon p.Transparency=alpha or 0
+	p.Anchored=true p.CanCollide=false p.CanTouch=false p.CanQuery=false p.CastShadow=false p.Parent=root
 	return p
 end
-
--- The finish's own objects round the machine (in its frame: +Z front, +Y up).
-local ICE=Color3.fromRGB(150,230,255)
-function F.dress(root: Instance, modifier: string, frame: CFrame, lo: Vector3, hi: Vector3)
-	local size=hi-lo local span=size.Magnitude local c=(lo+hi)/2
-	local small=span<7 -- the held copy and other minis: no Fire objects or lights
-	local function at(x: number, y: number, z: number): CFrame return frame*CFrame.new(x,y,z) end
-	local function anchor(name: string, cf: CFrame): Part
-		local p=part(root,name,Vector3.new(.2,.2,.2),cf,Color3.new(1,1,1),1) return p
+local function mesh(root: Instance,kind: string,name: string,size: Vector3,cf: CFrame,color: Color3): BasePart
+	local folder=RS:FindFirstChild("CrusherFinishMeshes")
+	local source=folder and folder:FindFirstChild(kind)
+	if source and source:IsA("MeshPart") then
+		local p=source:Clone() p:ClearAllChildren() p.Name=name p.Size=size p.CFrame=cf p.Color=color
+		p.TextureID="" p.Material=Enum.Material.Neon p.Anchored=true
+		p.CanCollide=false p.CanTouch=false p.CanQuery=false p.CastShadow=false p.Parent=root
+		return p
 	end
-	local function light(parent: BasePart, color: Color3, range: number, brightness: number)
-		if small then return end
-		local l=Instance.new("PointLight") l.Name="CoatingLight" l.Color=color l.Range=range l.Brightness=brightness l.Shadows=false l.Parent=parent
+	-- Small native fallback. Import the optional meshes for pointed crystals and curved flames.
+	local p=part(root,name,size,cf,color,Enum.Material.SmoothPlastic)
+	if kind=="FinishFlame" then
+		local wedge=Instance.new("SpecialMesh") wedge.MeshType=Enum.MeshType.Wedge wedge.Parent=p
+	elseif kind=="FinishCrystal" then p.CFrame=cf*CFrame.Angles(0,math.pi/4,.22)
 	end
-	local corners={{lo.X,lo.Z},{hi.X,lo.Z},{lo.X,hi.Z},{hi.X,hi.Z}}
-	local plateColor=({Fire=Color3.fromRGB(255,110,25),Frost=Color3.fromRGB(110,225,255),Charged=Color3.fromRGB(175,90,255),Polished=Color3.fromRGB(230,240,255)})[modifier]
-	if plateColor then
-		part(root,"CoatingPlate",Vector3.new(size.X*1.04,math.max(.05,size.Y*.015),size.Z*1.04),at(c.X,lo.Y+size.Y*.008,c.Z),plateColor,.25)
+	return p
+end
+local function emitter(parent: BasePart,name: string,kind: string,unit: number,color: Color3): ParticleEmitter
+	local e=Instance.new("ParticleEmitter") e.Name=name e.Enabled=false e.Rate=0
+	e.LightInfluence=0 e.LightEmission=.6 e.EmissionDirection=Enum.NormalId.Top
+	e.Texture="rbxasset://textures/particles/sparkles_main.dds"
+	e.Lifetime=NumberRange.new(.65,1.15) e.Speed=NumberRange.new(unit*.035,unit*.09)
+	e.SpreadAngle=Vector2.new(20,20) e.Rotation=NumberRange.new(0,360)
+	e.Color=ColorSequence.new(color:Lerp(WHITE,.25),color)
+	e.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(.2,.18),NumberSequenceKeypoint.new(1,1)})
+	e.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,unit*.025),NumberSequenceKeypoint.new(1,0)})
+	local rate=2
+	if kind=="mist" then
+		e.Texture="rbxasset://textures/particles/smoke_main.dds" e.Lifetime=NumberRange.new(.65,1.05)
+		e.Speed=NumberRange.new(unit*.015,unit*.035) e.SpreadAngle=Vector2.new(65,65)
+		e.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,unit*.08),NumberSequenceKeypoint.new(1,unit*.18)})
+		e.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(.3,.84),NumberSequenceKeypoint.new(1,1)})
+	elseif kind=="ember" then
+		rate=3 e.Acceleration=Vector3.new(0,unit*.08,0)
+		e.Color=ColorSequence.new(WHITE,Color3.fromRGB(255,112,38))
+	elseif kind=="snow" then e.Acceleration=Vector3.new(0,-unit*.025,0)
+	elseif kind=="glint" then
+		rate=1 e.Speed=NumberRange.new(0) e.Lifetime=NumberRange.new(.3,.55)
+		e.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(.5,unit*.09),NumberSequenceKeypoint.new(1,0)})
 	end
-	if modifier=="Fire" then
-		-- flames along the top beam and at the two front feet
-		local spots={{lo.X+size.X*.18,hi.Y,c.Z,1},{c.X,hi.Y,c.Z,1.25},{hi.X-size.X*.18,hi.Y,c.Z,1},
-			{lo.X+size.X*.08,lo.Y+size.Y*.05,hi.Z-size.Z*.12,.7},{hi.X-size.X*.08,lo.Y+size.Y*.05,hi.Z-size.Z*.12,.7},
-			{lo.X+size.X*.04,lo.Y+size.Y*.55,hi.Z-size.Z*.2,.55},{hi.X-size.X*.04,lo.Y+size.Y*.55,hi.Z-size.Z*.2,.55}}
-		for i,sp in spots do
-			local a=anchor("FireSpot"..i,at(sp[1],sp[2],sp[3]))
-			if small then emitter(a,"flame",span*sp[4]*1.4,Color3.fromRGB(255,120,30))
-			else
-				local f=Instance.new("Fire") f.Size=math.clamp(span*.3*sp[4],3,10) f.Heat=math.clamp(span*.6,6,16)
-				f.Color=Color3.fromRGB(255,140,30) f.SecondaryColor=Color3.fromRGB(255,40,10) f.Parent=a
-			end
-			if i==2 then light(a,Color3.fromRGB(255,130,40),span*1.1,2.2) end
-		end
-		local embers=anchor("Embers",at(c.X,c.Y,c.Z)) embers.Size=Vector3.new(size.X*.8,size.Y*.6,size.Z*.6)
-		local e=Instance.new("ParticleEmitter") e.Name="Embers" e.Texture="rbxasset://textures/particles/sparkles_main.dds"
-		e.Rate=10 e.Lifetime=NumberRange.new(.8,1.6) e.Speed=NumberRange.new(span*.08,span*.18) e.SpreadAngle=Vector2.new(25,25)
-		e.Acceleration=Vector3.new(0,span*.08,0) e.LightEmission=1 e.LightInfluence=0
-		e.Color=ColorSequence.new(Color3.fromRGB(255,220,90),Color3.fromRGB(255,80,20))
-		e.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,span*.02),NumberSequenceKeypoint.new(1,0)}) e.Parent=embers
-	elseif modifier=="Frost" then
-		-- crystal clusters on the four corners (base front, top back), like the crystal icon
-		local rng=Random.new(math.floor(span*100))
-		local function crystal(base: CFrame, h: number, w: number)
-			local body=part(root,"IceCrystal",Vector3.new(w,h,w),base*CFrame.new(0,h/2,0)*CFrame.Angles(0,math.pi/4,0),ICE,.18)
-			body.Material=Enum.Material.Glass
-			local tip=part(root,"IceTip",Vector3.new(w*.72,w*.72,w*.72),base*CFrame.new(0,h,0)*CFrame.Angles(math.pi/4,math.pi/4,0),Color3.fromRGB(225,250,255),.1)
-			tip.Material=Enum.Material.Glass
-			part(root,"IceCore",Vector3.new(w*.3,h*.8,w*.3),base*CFrame.new(0,h*.45,0),Color3.fromRGB(120,235,255),.35)
-		end
-		-- (front corners get 3 crystals, back corners 2)
-		for i,cr in corners do
-			local z=if i<=2 then hi.Z-size.Z*.08 else lo.Z+size.Z*.08
-			local base=at(cr[1]+(if cr[1]<c.X then size.X*.06 else -size.X*.06),lo.Y,z)
-			local n=if i<=2 then 3 else 2
-			for k=1,n do
-				local tilt=CFrame.Angles(rng:NextNumber(-.45,.45),0,rng:NextNumber(-.5,.5))
-				crystal(base*CFrame.new(rng:NextNumber(-.4,.4)*size.X*.06,0,rng:NextNumber(-.4,.4)*size.Z*.06)*tilt,
-					size.Y*rng:NextNumber(.28,.42)*(if k==1 then 1.2 else .8),math.max(.16,size.X*.085))
-			end
-		end
-		-- icicles under the top front edge
-		for k=1,5 do
-			local x=lo.X+size.X*(k/6) local h=size.Y*(if k%2==0 then .16 else .1)
-			local ic=part(root,"Icicle",Vector3.new(size.X*.035,h,size.X*.035),at(x,hi.Y-size.Y*.04-h/2,hi.Z-size.Z*.05)*CFrame.Angles(0,math.pi/4,0),ICE,.15)
-			ic.Material=Enum.Material.Glass
-		end
-		local mist=anchor("FrostMist",at(c.X,lo.Y+size.Y*.06,c.Z)) mist.Size=Vector3.new(size.X,.2,size.Z)
-		local e=Instance.new("ParticleEmitter") e.Name="Mist" e.Texture="rbxasset://textures/particles/smoke_main.dds"
-		e.Rate=5 e.Lifetime=NumberRange.new(1.5,2.5) e.Speed=NumberRange.new(span*.01,span*.03) e.SpreadAngle=Vector2.new(60,60)
-		e.Color=ColorSequence.new(Color3.fromRGB(220,245,255)) e.LightEmission=.4 e.LightInfluence=0 e.RotSpeed=NumberRange.new(-20,20)
-		e.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,span*.08),NumberSequenceKeypoint.new(1,span*.16)})
-		e.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(.3,.6),NumberSequenceKeypoint.new(1,1)}) e.Parent=mist
-		light(mist,Color3.fromRGB(140,220,255),span*.9,1.6)
-	elseif modifier=="Charged" then
-		-- energy orbs on the top corners and at the front feet, lightning arcs between them
-		local function orb(name: string, cf: CFrame): Part
-			local r=math.max(.15,size.X*.075)
-			local o=part(root,name,Vector3.new(r,r,r),cf,Color3.fromRGB(235,190,255))
-			o.Shape=Enum.PartType.Ball
-			local halo=part(root,name.."Halo",Vector3.new(r*1.8,r*1.8,r*1.8),cf,Color3.fromRGB(170,80,255),.6) halo.Shape=Enum.PartType.Ball
-			return o
-		end
-		local tl=orb("OrbTL",at(lo.X+size.X*.06,hi.Y,c.Z)) local tr=orb("OrbTR",at(hi.X-size.X*.06,hi.Y,c.Z))
-		local bl=orb("OrbBL",at(lo.X+size.X*.06,lo.Y+size.Y*.08,hi.Z-size.Z*.1)) local br=orb("OrbBR",at(hi.X-size.X*.06,lo.Y+size.Y*.08,hi.Z-size.Z*.1))
-		light(tl,Color3.fromRGB(190,110,255),span*.9,2) light(tr,Color3.fromRGB(190,110,255),span*.9,1.6)
-		for i,pair in {{tl,tr},{tl,bl},{tr,br},{bl,br},{tl,br}} do
-			local a0=Instance.new("Attachment") a0.Parent=pair[1] local a1=Instance.new("Attachment") a1.Parent=pair[2]
-			local b=Instance.new("Beam") b.Name="Arc"..i b.Attachment0=a0 b.Attachment1=a1 b.Segments=12 b.FaceCamera=true
-			b.Width0=math.max(.12,size.X*.05) b.Width1=b.Width0*.6 b.LightEmission=1 b.LightInfluence=0
-			b.Color=ColorSequence.new(Color3.fromRGB(245,215,255),Color3.fromRGB(180,90,255)) b.Transparency=NumberSequence.new(.05)
-			b.CurveSize0=size.Y*.15 b.CurveSize1=-size.Y*.15 b.Parent=pair[1]
-		end
-	elseif modifier=="Polished" then
-		-- four-point gleam stars (two crossed glowing bars) on the top corners and a foot
-		local function gleam(cf: CFrame, r: number)
-			part(root,"Gleam",Vector3.new(r,r*.14,r*.14),cf,Color3.new(1,1,1))
-			part(root,"Gleam",Vector3.new(r*.14,r,r*.14),cf,Color3.new(1,1,1))
-			part(root,"GleamCore",Vector3.new(r*.3,r*.3,r*.3),cf*CFrame.Angles(0,0,math.pi/4),Color3.fromRGB(210,235,255))
-		end
-		local r=math.max(.4,size.X*.18)
-		gleam(at(lo.X+size.X*.08,hi.Y-size.Y*.06,hi.Z+.05),r) gleam(at(hi.X-size.X*.1,hi.Y-size.Y*.2,hi.Z+.05),r*.7)
-		gleam(at(hi.X-size.X*.08,lo.Y+size.Y*.15,hi.Z+.05),r*.55)
-		local shine=anchor("Shine",at(c.X,c.Y,hi.Z)) shine.Size=Vector3.new(size.X*.9,size.Y*.9,.2)
-		emitter(shine,"glint",span,Color3.new(1,1,1))
-		light(shine,Color3.fromRGB(235,245,255),span*.7,1)
+	e:SetAttribute("FinishRate",rate) e.Parent=parent
+	return e
+end
+local function lamp(parent: BasePart,color: Color3,unit: number)
+	local l=Instance.new("PointLight") l.Name="CoatingLight" l.Enabled=false l.Shadows=false
+	l.Range=unit*.65 l.Brightness=.65 l.Color=color l.Parent=parent
+end
+local function glint(root: Instance,cf: CFrame,r: number)
+	-- Star mesh faces local +Z; front convention of this module is +Z.
+	local folder=RS:FindFirstChild("CrusherFinishMeshes")
+	if folder and folder:FindFirstChild("FinishStar") then
+		mesh(root,"FinishStar","Gleam",Vector3.new(r,r,r*.08),cf,WHITE)
+	else
+		part(root,"Gleam",Vector3.new(r,r*.12,r*.10),cf,WHITE)
+		part(root,"Gleam",Vector3.new(r*.12,r,r*.10),cf,WHITE)
 	end
 end
 
--- Apply a coating look. front: the model's frame (+Z = its front); optional.
-function F.apply(model: Model, modifier: string, front: CFrame?)
+-- Permanent decorative geometry. Never spans the open crushing window.
+function F.dress(root: Instance,modifier: string,frame: CFrame,lo: Vector3,hi: Vector3)
+	if not F.Looks[modifier] then return end
+	local s=hi-lo local c=(lo+hi)/2 local unit=math.max(s.X,s.Y,s.Z)
+	local function at(x: number,y: number,z: number): CFrame return frame*CFrame.new(x,y,z) end
+	local glow=F.Looks[modifier].glow
+	root:SetAttribute("FinishUnit",unit)
+	if modifier=="Frost" then
+		for _,sign in {-1,1} do
+			local x=c.X+sign*s.X*.40
+			for k=1,2 do
+				local h=s.Y*(if k==1 then .25 else .17)
+				mesh(root,"FinishCrystal","IceCrystal",Vector3.new(s.X*.10,h,s.Z*.12),
+					at(x+sign*s.X*.055*(k-1),lo.Y+h*.5,hi.Z-s.Z*.10)*CFrame.Angles(0,0,-sign*.17),
+					if k==1 then glow else Color3.fromRGB(201,249,255))
+			end
+			mesh(root,"FinishCrystal","IceCrown",Vector3.new(s.X*.07,s.Y*.15,s.Z*.08),
+				at(x,hi.Y+s.Y*.03,lo.Z+s.Z*.16)*CFrame.Angles(0,0,-sign*.16),glow)
+		end
+		local a=part(root,"FrostMist",Vector3.new(s.X*.65,.05,s.Z*.55),at(c.X,lo.Y+s.Y*.035,c.Z),WHITE,nil,1)
+		emitter(a,"Mist","mist",unit,Color3.fromRGB(215,249,255)) emitter(a,"Snow","snow",unit,glow) lamp(a,glow,unit)
+	elseif modifier=="Fire" then
+		for i=1,5 do
+			local x,y,z,h,w
+			if i<=3 then x=lo.X+s.X*(.20+.30*(i-1)); y=hi.Y;z=lo.Z+s.Z*.23;h=s.Y*(if i==2 then .25 else .18);w=s.X*.14
+			else x=c.X+(if i==4 then -1 else 1)*s.X*.4;y=lo.Y+s.Y*.05;z=hi.Z-s.Z*.12;h=s.Y*.17;w=s.X*.12 end
+			local outer=mesh(root,"FinishFlame","FlameOuter",Vector3.new(w,h,s.Z*.10),at(x,y+h*.40,z),Color3.fromRGB(255,103,30))
+			outer:SetAttribute("FinishPulse",true)
+			mesh(root,"FinishFlame","FlameCore",Vector3.new(w*.48,h*.67,s.Z*.105),at(x,y+h*.28,z+s.Z*.01),Color3.fromRGB(255,228,95))
+		end
+		local a=part(root,"EmberSource",Vector3.new(s.X*.7,.05,s.Z*.5),at(c.X,hi.Y,c.Z),WHITE,nil,1)
+		emitter(a,"Embers","ember",unit,glow) lamp(a,glow,unit)
+	elseif modifier=="Charged" then
+		local points={}
+		for i=1,2 do
+			local sign=if i==1 then -1 else 1 local x=c.X+sign*s.X*.38
+			part(root,"CoilHousing",Vector3.new(s.X*.16,s.Y*.075,s.Z*.18),at(x,hi.Y,lo.Z+s.Z*.22),NAVY,Enum.Material.SmoothPlastic)
+			local o=part(root,"CoilCore",Vector3.new(s.X*.09,s.Y*.08,s.Z*.10),at(x,hi.Y+s.Y*.055,lo.Z+s.Z*.22),glow)
+			o.Shape=Enum.PartType.Ball
+			part(root,"CoilBand",Vector3.new(s.X*.18,s.Y*.023,s.Z*.20),at(x,hi.Y+s.Y*.015,lo.Z+s.Z*.22),glow)
+			points[i]=o
+		end
+		-- Thin zig-zag confined to the rear top beam. Not a bright X across the crusher.
+		local anchors={}
+		for i=0,4 do
+			local p=part(root,"ArcAnchor",Vector3.new(.03,.03,.03),at(lo.X+s.X*(.12+.19*i),hi.Y+s.Y*(.08+(if i%2==1 then .035 else 0)),lo.Z+s.Z*.22),glow,nil,1)
+			local a=Instance.new("Attachment") a.Parent=p anchors[i+1]=a
+		end
+		for i=1,4 do
+			local b=Instance.new("Beam") b.Name="Arc" b.Attachment0=anchors[i] b.Attachment1=anchors[i+1]
+			b.Width0=unit*.009 b.Width1=b.Width0*.7 b.FaceCamera=true b.Segments=3 b.Enabled=false
+			b.Color=ColorSequence.new(WHITE,glow) b.Transparency=NumberSequence.new(.15) b.LightEmission=1 b.Parent=points[1]
+		end
+		emitter(points[1],"ChargeSpark","spark",unit,glow) lamp(points[1],glow,unit)
+	elseif modifier=="Polished" then
+		glint(root,at(lo.X+s.X*.13,hi.Y-s.Y*.07,hi.Z+s.Z*.015),s.X*.12)
+		glint(root,at(hi.X-s.X*.10,lo.Y+s.Y*.15,hi.Z+s.Z*.015),s.X*.08)
+		local a=part(root,"ChromeGlint",Vector3.new(s.X*.65,s.Y*.6,.04),at(c.X,c.Y,hi.Z),WHITE,nil,1)
+		emitter(a,"PolishGlints","glint",unit,WHITE)
+	end
+end
+function F.apply(model: Model,modifier: string,front: CFrame?)
 	local look=F.Looks[modifier]
 	if not look or model:FindFirstChild("CrusherFinish") then return end
-	local frame=front or model:GetPivot()
-	local lo,hi=bounds(model,frame)
+	local frame=front or model:GetPivot() local lo,hi=bounds(model,frame)
 	if lo.X==math.huge then return end
-	local span=(hi-lo).Magnitude
 	for _,p in model:GetDescendants() do
-		if p:IsA("SurfaceAppearance") then p:Destroy()
-		elseif p:IsA("BasePart") and p.Transparency<1 then
-			if p:IsA("MeshPart") and not look.keepTexture then p.TextureID="" end
-			if accent(p,span) then
-				p.Color=look.glow p.Material=Enum.Material.Neon
-			else
-				local l=lum(p.Color)
-				p.Color=p.Color:Lerp(look.dark:Lerp(look.light,math.clamp(l*1.15,0,1)),look.mix)
-				p.Material=if look.darkMaterial and l<(look.lavaBelow or .38) then look.darkMaterial else look.material
-				if look.reflect then p.Reflectance=look.reflect end
+		if p:IsA("BasePart") and p.Transparency<.99 and not decorated(p,model) then
+			local lum=.299*p.Color.R+.587*p.Color.G+.114*p.Color.B
+			local name=p.Name:lower()
+			local outline=lum<.12 or name:find("outline") or name:find("navy")
+			local face=name:find("eye") or name=="face" or name:find("mascot face") or name:find("screen")
+			if not outline and not face then
+				if p.Material==Enum.Material.Neon then p.Color=look.glow
+				else
+					p.Color=p.Color:Lerp(look.dark:Lerp(look.light,math.clamp(lum*1.15,0,1)),look.mix)
+					p.Material=look.material p.Reflectance=look.reflect or .04
+				end
+				-- Keep imported UV palette/PBR maps and their dark outlines. Colour maps
+				-- can be tinted at runtime; destroying them flattened the special meshes.
+				local appearance=p:FindFirstChildOfClass("SurfaceAppearance")
+				if appearance and appearance:IsA("SurfaceAppearance") then
+					appearance.Color=appearance.Color:Lerp(look.glow,.55)
+				end
 			end
 		end
 	end
-	local root=Instance.new("Model") root.Name="CrusherFinish" root:SetAttribute("Finish",modifier) root.Parent=model
-	local at=host(model,look.fx=="flame")
-	if at then emitter(at,look.fx,span,look.glow) end
-	F.dress(root,modifier,frame,lo,hi)
-	Tags:AddTag(root,"CoatingFx")
-	model:SetAttribute("VisualModifier",modifier)
+	local root=Instance.new("Model") root.Name="CrusherFinish" root:SetAttribute("Finish",modifier)
+	F.dress(root,modifier,frame,lo,hi) root.Parent=model
+	model:SetAttribute("VisualModifier",modifier) Tags:AddTag(root,"CoatingFx")
 end
-
--- Fused look: a glowing green plate under the machine, green lights on the
--- top corners and rising green sparkles.
-function F.fused(model: Model, front: CFrame?)
+function F.fused(model: Model,front: CFrame?)
 	if model:FindFirstChild("FusedLook") then return end
-	local frame=front or model:GetPivot()
-	local lo,hi=bounds(model,frame)
+	local frame=front or model:GetPivot() local lo,hi=bounds(model,frame)
 	if lo.X==math.huge then return end
-	local size=hi-lo local span=size.Magnitude
-	local root=Instance.new("Model") root.Name="FusedLook" root.Parent=model
-	local base=part(root,"FusedPlate",Vector3.new(size.X*1.02,math.max(.06,size.Y*.02),size.Z*1.02),
-		frame*CFrame.new((lo.X+hi.X)/2,lo.Y+size.Y*.01,(lo.Z+hi.Z)/2),FUSED,.15)
-	local c=math.max(.12,math.min(size.X,size.Z)*.08)
-	for _,x in {lo.X+c/2,hi.X-c/2} do for _,z in {lo.Z+c/2,hi.Z-c/2} do
-		part(root,"FusedLight",Vector3.new(c,c,c),frame*CFrame.new(x,hi.Y-c/2,z),FUSED)
-	end end
-	emitter(base,"rise",span,FUSED)
-	model:SetAttribute("Fused",true)
+	local s=hi-lo local c=(lo+hi)/2 local unit=math.max(s.X,s.Y,s.Z)
+	local function at(x: number,y: number,z: number): CFrame return frame*CFrame.new(x,y,z) end
+	local root=Instance.new("Model") root.Name="FusedLook" root:SetAttribute("Finish","Fusion") root:SetAttribute("FinishUnit",unit)
+	-- Thin gold base rails and lime corner cores, leaving the coated machine visible.
+	for _,sign in {-1,1} do
+		part(root,"FusionRail",Vector3.new(s.X*.025,s.Y*.025,s.Z*.93),at(c.X+sign*s.X*.475,lo.Y+s.Y*.03,c.Z),GOLD)
+		for _,z in {lo.Z+s.Z*.065,hi.Z-s.Z*.065} do
+			part(root,"FusionSocket",Vector3.new(s.X*.12,s.Y*.04,s.Z*.12),at(c.X+sign*s.X*.43,lo.Y+s.Y*.055,z),NAVY,Enum.Material.SmoothPlastic)
+			local core=part(root,"FusionCore",Vector3.new(s.X*.07,s.Y*.045,s.Z*.07),at(c.X+sign*s.X*.43,lo.Y+s.Y*.08,z),LIME)
+			core:SetAttribute("FinishPulse",true)
+		end
+	end
+	part(root,"FusionBadgeBack",Vector3.new(s.X*.24,s.Y*.13,s.Z*.035),at(c.X,lo.Y+s.Y*.12,hi.Z+s.Z*.012),NAVY,Enum.Material.SmoothPlastic)
+	for _,side in {-1,1} do
+		local badge=part(root,"FusionChevron",Vector3.new(s.X*.105,s.Y*.026,s.Z*.04),at(c.X+side*s.X*.036,lo.Y+s.Y*.13,hi.Z+s.Z*.038)*CFrame.Angles(0,0,-side*.55),GOLD)
+		badge:SetAttribute("FinishPulse",true)
+	end
+	for _,side in {-1,1} do
+		local gem=mesh(root,"FinishCrystal","FusionGem",Vector3.new(s.X*.065,s.Y*.12,s.Z*.07),at(c.X+side*s.X*.34,hi.Y+s.Y*.035,lo.Z+s.Z*.13)*CFrame.Angles(0,0,-side*.28),LIME)
+		gem:SetAttribute("FinishPulse",true)
+	end
+	local a=part(root,"FusionSparkSource",Vector3.new(s.X*.65,.03,s.Z*.5),at(c.X,lo.Y+s.Y*.06,c.Z),WHITE,nil,1)
+	emitter(a,"FusionMotes","rise",unit,LIME)
+	root.Parent=model model:SetAttribute("Fused",true) Tags:AddTag(root,"CoatingFx")
 end
 return F
