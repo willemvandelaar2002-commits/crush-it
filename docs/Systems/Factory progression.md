@@ -155,6 +155,14 @@ them and adds one invisible collision box each.
   panels, gold caps, gold glow, flags. Front stays open; gap at the fusion
   wing doorway (z 46..76).
 
+## Machine effects (28 Oct)
+
+- `MachineEffects.client.luau` listens to CrusherState: `result.coating` (+`id`) plays `FX.playCoating` at the booth, `result.fused` plays `FX.playFusion` at the fuser. Only within 160 studs of your own machine.
+- Pictures: `CrusherPreviewModels[type]` + `CrusherFinish.apply/fused`, captured with `FX.captureModel` (max 120 parts). The coating's before item and the three used copies come from the previous CrusherState.
+- Tuning: `COATING_SCALE` 1.15 (nozzles 2.9 studs out, 3.3 up), `FUSION_SCALE` 1.2 (glass chamber radius 2.85). Put an Attachment named `FXOrigin` on a machine to override its origin.
+- Cancelled on death, respawn and plot change. Studio hook: `MachineEffectsPreview:Invoke(kind, result, beforeItems, afterItems)`.
+- Optional, not done: import FXRing/FXSpark/FXDroplet and run Install-Meshes (smoother rings), sounds through a limiter, driving the fuser's arms/lid.
+
 ## Lab screens and coating looks (27 Oct)
 
 - Screens: `src/client/LabUi.luau` (shared look), `Coating.client.luau`, `Fusion.client.luau`. Window 1000×640, scaled to fit.
