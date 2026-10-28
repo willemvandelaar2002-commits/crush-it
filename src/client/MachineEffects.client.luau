@@ -128,6 +128,12 @@ Net.event("CrusherState").OnClientEvent:Connect(function(v)
 	for _, item in v.items do previous[item.id] = item end
 end)
 me.CharacterRemoving:Connect(cancelAll)
+local function watchDeath(char: Model)
+	local hum = char:WaitForChild("Humanoid", 10)
+	if hum and hum:IsA("Humanoid") then hum.Died:Connect(cancelAll) end
+end
+me.CharacterAdded:Connect(watchDeath)
+if me.Character then task.spawn(watchDeath, me.Character) end
 me:GetAttributeChangedSignal("Plot"):Connect(cancelAll)
 -- Studio only: replay an effect with made-up data (visual only)
 if game:GetService("RunService"):IsStudio() then
