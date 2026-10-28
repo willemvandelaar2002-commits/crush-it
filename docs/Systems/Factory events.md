@@ -1,5 +1,17 @@
 # Factory events — Bear Breakdown
 
+28 Oct, night pass: the whole crusher platform (WorkshopBanks with floors,
+stairs and signs, bays, row plaques, trim braces) hides locally during the event
+and stops colliding; super crusher 2.6x (port z 9). Night during the event (from
+the intro's flash): a starry dark Sky + purple Atmosphere replace the place's
+Sky/Atmosphere, dimmer purple lighting; restored after. Audio: Willem's song
+131187734101917 while a round runs (normal music fades out), plus effects
+(FactoryEventConfig.Sounds) for the teddy shaking/lifting, flash, landing, roar
++ screech, beam, crushers flying/merging, the super crusher rising, core
+pickup/load, critical alarm, slam screech/alarm/impact, finale shatter, victory
+fanfare. Boss bar markers have no % labels.
+
+
 28 Oct, later: during the event your plot's bays and row plaques (WorkingBay*,
 RarityRow*, their PlayerGui screens) hide locally once the crushers have flown
 off; the super crusher is built 1.8x (FactoryEventConfig.SuperScale), core port

@@ -137,6 +137,8 @@ function Visuals:restoreMasks()
 	for p,old in self.hidden do if p.Parent then p.LocalTransparencyModifier=old end end
 	for p,old in self.disabled do if p.Parent then p.Enabled=old end end
 	for plot in self.marked do if plot.Parent then plot:SetAttribute("LocalEventHidden",nil) end end
+	for p,was in self.solid or {} do if p.Parent then p.CanCollide=was[1] p.CanQuery=was[2] end end
+	self.solid={}
 	self.hidden={} self.disabled={}
 	self.marked={}
 end
@@ -145,13 +147,47 @@ function Visuals:hide(root)
 		if p:IsA("BasePart") then
 			if self.hidden[p]==nil then self.hidden[p]=p.LocalTransparencyModifier end
 			p.LocalTransparencyModifier=1
+			-- no invisible walls/stairs (local: your own character's physics)
+			if p.CanCollide or p.CanQuery then
+				self.solid=self.solid or {}
+				if self.solid[p]==nil then self.solid[p]={p.CanCollide,p.CanQuery} end
+				p.CanCollide=false p.CanQuery=false
+			end
 		elseif p:IsA("ParticleEmitter") or p:IsA("Trail") or p:IsA("Beam") or p:IsA("Light") or p:IsA("SurfaceGui") or p:IsA("BillboardGui") or p:IsA("ProximityPrompt") then
 			if self.disabled[p]==nil then self.disabled[p]=p.Enabled end p.Enabled=false
 		end
 	end
 end
+-- Night for the event (local): from the intro's flash until the round ends the
+-- sky goes dark purple with stars and the hall's light dims; all restored after.
+local NIGHT={ClockTime=0.3,Brightness=2.2,Ambient=Color3.fromRGB(125,95,165),OutdoorAmbient=Color3.fromRGB(140,105,190),
+	ExposureCompensation=0.15,EnvironmentDiffuseScale=0.6,EnvironmentSpecularScale=0.5}
+function Visuals:darkSky(packet)
+	local age=workspace:GetServerTimeNow()-packet.started
+	local want=packet.phase~="Announce" or age>=2.6
+	if want and not self.night then
+		local saved={props={},kids={}}
+		for k,v in NIGHT do saved.props[k]=Lighting[k] end
+		for _,c in Lighting:GetChildren() do
+			if c:IsA("Sky") or c:IsA("Atmosphere") then table.insert(saved.kids,c) c.Parent=nil end
+		end
+		local sky=Instance.new("Sky") sky.Name="BearEventSky" sky.StarCount=4000 sky.CelestialBodiesShown=false sky.Parent=Lighting
+		local atmo=Instance.new("Atmosphere") atmo.Name="BearEventAtmosphere" atmo.Density=.22 atmo.Color=Color3.fromRGB(120,60,190)
+		atmo.Decay=Color3.fromRGB(60,20,110) atmo.Glare=0 atmo.Haze=1.6 atmo.Parent=Lighting
+		saved.sky=sky saved.atmo=atmo
+		game:GetService("TweenService"):Create(Lighting,TweenInfo.new(.6),NIGHT):Play()
+		self.night=saved
+	end
+end
+function Visuals:restoreSky()
+	local s=self.night if not s then return end self.night=nil
+	s.sky:Destroy() s.atmo:Destroy()
+	for _,c in s.kids do c.Parent=Lighting end
+	game:GetService("TweenService"):Create(Lighting,TweenInfo.new(1.2),s.props):Play()
+end
 function Visuals:clear()
 	self:restoreMasks()
+	self:restoreSky()
 	if self.bear and self.bear.ready then
 		-- the event bear goes, the normal teddy comes back (with a puff)
 		for _,p in self.bear.teddyParts do if p.Parent then p.LocalTransparencyModifier=0 end end
@@ -282,6 +318,7 @@ function Visuals:update(packet)
 	-- Crusher (for the intro cutscene); no super crushers, nothing hidden yet.
 	local announce=packet.phase=="Announce"
 	if not Motion.controls(packet.phase) and not announce then self:clear() return end
+	self:darkSky(packet)
 	if not self.tint then
 		self.tint=Instance.new("ColorCorrectionEffect") self.tint.Name="BearEventTint"
 		self.tint.TintColor=Color3.fromRGB(235,226,255) self.tint.Saturation=.06 self.tint.Parent=Lighting
@@ -327,10 +364,20 @@ function Visuals:update(packet)
 			if packet.phase~="Assemble" or bayAge>=E.Assemble*.4 then
 				local roots={}
 				for _,child in plot:GetChildren() do
-					if child:IsA("Model") and (child.Name:match("^WorkingBay%d+$") or child.Name:match("^RarityRow%d+$")) then
+					-- the whole crusher platform: bays, row plaques, the bank buildings
+					-- with their floors/stairs/signs, and their trim braces
+					if child:IsA("Model") and (child.Name:match("^WorkingBay%d+$") or child.Name:match("^RarityRow%d+$") or child.Name=="WorkshopBanks") then
 						self:hide(child) roots[child]=true
 					end
 				end
+				local trim=plot:FindFirstChild("TrimKit")
+				local o=rig.record.origin
+				if trim then for _,m in trim:GetChildren() do
+					if m:IsA("Model") then
+						local l=o:PointToObjectSpace(m:GetPivot().Position)
+						if m.Name:match("^CornerBrace") or (m.Name:match("^BoardFrame") and l.Y>15) then self:hide(m) roots[m]=true end
+					end
+				end end
 				for _,g in me.PlayerGui:GetDescendants() do
 					if (g:IsA("SurfaceGui") or g:IsA("BillboardGui")) and g.Adornee then
 						for root in roots do

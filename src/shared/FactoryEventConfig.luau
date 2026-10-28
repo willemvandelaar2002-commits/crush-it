@@ -17,8 +17,15 @@ return {
 	RewardSeconds = 120, MinReward = 250, MaxReward = 1e12, LedgerSize = 20,
 	PlotHalfWidth = 80, PlotRear = -125, PlotFront = 118, PlotHeight = 65, -- PlotFront: Plots.Front 112 + 6
 	VisualOrigin = Vector3.new(0, 1, -13), -- clear middle gap between the existing wing banks
-	SuperScale = 1.8, -- 28 Oct: the super crusher is built 1.8x (the bays hide during the event)
+	SuperScale = 2.6, -- 28 Oct: the super crusher is built 2.6x (the whole bank platform hides during the event)
 	MaxVisiblePlots = 6, VisualDistance = 420,
+	Music = 131187734101917, MusicVolume = .5, -- Willem's event song (normal music fades out)
+	-- event sound effects (Creator Store, checked to load 28 Oct)
+	Sounds = {
+		Roar = 9113980319, Screech = 9125474863, Impact = 9116700296, Whoosh = 123796710194563,
+		Alarm = 3165700530, Charge = 93424230108648, Sparkle = 117011707307950, Fanfare = 9067124098,
+		Shatter = 9114589178, Clunk = 9125788628, PowerUp = 3406813517,
+	},
 	-- 28 Oct: everyone takes part automatically. Players with no placed crusher
 	-- get an event-only stand-in machine with this power (no inventory change).
 	FallbackPower = 1.5,
@@ -28,7 +35,7 @@ return {
 	Cores = {
 		Max = 3, Respawn = 5, PromptDistance = 9,
 		Spots = { Vector3.new(-30,1.6,98), Vector3.new(30,1.6,98), Vector3.new(-24,1.6,60), Vector3.new(18,1.6,54), Vector3.new(0,1.6,92) },
-		Port = Vector3.new(0,1.6,3.5), -- in front of the (1.8x) super crusher
+		Port = Vector3.new(0,1.6,9), -- in front of the (2.6x) super crusher
 		Multiplier = 4, CriticalMultiplier = 10,
 		CriticalEvery = { 18, 28 }, CriticalSeconds = 8,
 	},

@@ -44,7 +44,6 @@ for i,pct in {25,50,75} do
 	local m=Instance.new("Frame") m.Name="Marker"..pct m.AnchorPoint=Vector2.new(.5,.5) m.Position=UDim2.fromScale(pct/100,.5)
 	m.Size=UDim2.fromOffset(44,44) m.BackgroundColor3=Color3.fromRGB(58,62,80) m.ZIndex=5 m.Parent=bar round(m,22) local st=edge(m,3)
 	local g=Instance.new("UIGradient") g.Rotation=90 g.Color=ColorSequence.new(Color3.fromRGB(150,155,175),Color3.fromRGB(45,48,62)) g.Parent=m
-	local txt=label(m,"Pct",pct.."%",UDim2.new(.1,0,.62,0),UDim2.new(.8,0,.32,0)) txt.ZIndex=6
 	markers[i]={frame=m,stroke=st,pct=pct,gradient=g}
 end
 local percent=label(panel,"Percent","100%",UDim2.fromOffset(676,14),UDim2.fromOffset(100,52)) Style.text(percent,4)
@@ -144,6 +143,82 @@ local packet=nil local visuals=Visuals.new() local cameraState=nil local seenFin
 local stopped=false local connections={} local lastSoundBeat=-1 local finaleSound=nil local buttonColor=nil
 local impact=Instance.new("Sound") impact.Name="FactoryEventImpact" impact.SoundId="rbxassetid://"..Config.Sounds.Thud
 impact.Volume=.22 impact.Parent=SoundService
+-- Event audio (28 Oct): Willem's song while a round runs (the normal music
+-- fades out), and one-shot effects for the intro, cores, slams and the finale.
+local sfx={}
+for name,id in E.Sounds do
+	local s=Instance.new("Sound") s.Name="Event"..name s.SoundId="rbxassetid://"..id s.Parent=SoundService sfx[name]=s
+end
+local function play(name,volume,speed)
+	local s=sfx[name] if not s then return end
+	local c=s:Clone() c.Volume=volume or .6 c.PlaybackSpeed=speed or 1 c.Parent=SoundService c:Play()
+	c.Ended:Once(function() c:Destroy() end) game:GetService("Debris"):AddItem(c,12)
+end
+local song=Instance.new("Sound") song.Name="EventMusic" song.SoundId="rbxassetid://"..E.Music song.Looped=true song.Volume=0 song.Parent=SoundService
+task.spawn(function() local list={song} for _,s in sfx do table.insert(list,s) end pcall(function() Content:PreloadAsync(list) end) end)
+local normalVolume=nil local musicState=false
+local function musicOn(on)
+	if on==musicState then return end musicState=on
+	local normal=SoundService:FindFirstChild("BackgroundMusic")
+	if on then
+		if not song.IsPlaying then song:Play() end
+		TweenService:Create(song,TweenInfo.new(1.5),{Volume=E.MusicVolume}):Play()
+		if normal and normalVolume==nil then normalVolume=normal.Volume TweenService:Create(normal,TweenInfo.new(1.5),{Volume=0}):Play() end
+	else
+		if song.IsPlaying then TweenService:Create(song,TweenInfo.new(2),{Volume=0}):Play() task.delay(2,function() if song.Volume<.01 then song:Stop() end end) end
+		if normal and normalVolume~=nil then TweenService:Create(normal,TweenInfo.new(2),{Volume=normalVolume}):Play() normalVolume=nil end
+	end
+end
+-- cue(key, condition, fn): runs fn once per round when condition turns true
+local fired={} local firedRound=nil
+local function cue(key,condition,fn)
+	if not packet then return end
+	if firedRound~=packet.roundId then fired={} firedRound=packet.roundId end
+	if condition and not fired[key] then fired[key]=true fn() end
+end
+local lastYou=nil local seenHazards={}
+local function soundStep(now)
+	local ph=packet.phase local age=now-packet.started
+	musicOn(ph~="Idle" and ph~="Recover")
+	if ph=="Announce" then
+		cue("rumble",age>=.2,function() play("Clunk",.7,.6) play("Impact",.5,.5) end)
+		cue("lift",age>=1.3,function() play("Whoosh",.8,.7) end)
+		cue("flash",age>=2.6,function() play("Shatter",.6,.8) play("Charge",.5,1.3) end)
+		cue("land",age>=3.2,function() play("Impact",1,.7) end)
+		cue("evil",age>=3.6,function() play("Charge",.6,.8) end)
+		cue("roar",age>=5.2,function() play("Roar",1,.9) play("Screech",.8,.8) end)
+		cue("beam",age>=7.2,function() play("Charge",.7,1.1) end)
+		cue("swoop",age>=7.6,function() play("Whoosh",.7,.6) end)
+	elseif ph=="Assemble" then
+		cue("fly",age>=.5,function() play("Whoosh",.8,.8) play("Clunk",.6,1) end)
+		cue("fly2",age>=1.3,function() play("Whoosh",.6,1.1) end)
+		cue("merge",age>=2.6,function() play("Sparkle",.8,1) play("PowerUp",.7,.8) end)
+		cue("rise",age>=E.Assemble*.5,function() play("Clunk",.9,.7) play("Impact",.6,.6) end)
+		cue("ready",age>=E.Assemble*.85,function() play("Impact",.9,.9) play("Charge",.5,1.4) end)
+	elseif ph=="Active" then
+		local you=packet.you
+		if you and lastYou then
+			if you.carrying and not lastYou.carrying then play("Sparkle",.7,1.2) end
+			if (you.loaded or 0)>(lastYou.loaded or 0) then play("PowerUp",.8,if (you.loaded or 0)>E.Cores.Multiplier then .8 else 1.1) end
+			if (you.critUntil or 0)>now and (lastYou.critUntil or 0)<=now then play("Alarm",.4,1.3) play("Sparkle",.6,.8) end
+		end
+		lastYou=you
+		for _,h in packet.hazards or {} do
+			if not seenHazards[h.id] then
+				seenHazards[h.id]=true
+				local mine=h.userId==me.UserId
+				play("Screech",if mine then .7 else .25,1.1) if mine then play("Alarm",.5,1) end
+				task.delay(math.max(0,h.at-now),function() play("Impact",if mine then 1 else .35,.8) end)
+			end
+		end
+	elseif ph=="Finale" then
+		cue("fcharge",age>=.1,function() play("Charge",.9,.7) play("Roar",.7,1.2) end)
+		cue("fbreak",age>=2.85,function() play("Shatter",1,.9) play("Impact",1,.6) end)
+		cue("fscreech",age>=3.2,function() play("Screech",.8,.7) end)
+	elseif ph=="Victory" then
+		cue("fanfare",age>=.1,function() play("Fanfare",.8,1) end)
+	end
+end
 task.spawn(function() pcall(function() Content:PreloadAsync({impact}) end) end)
 local hiddenGuis={}
 local function showOtherHuds(show)
@@ -206,8 +281,8 @@ local function introShots()
 	local plot=workspace:FindFirstChild("Plots") and workspace.Plots:FindFirstChild("Plot"..tostring(me:GetAttribute("Plot")))
 	local o=plot and plot:GetAttribute("Origin")
 	if typeof(o)=="CFrame" then
-		local middle=(o*CFrame.new(0,20,-13)).Position
-		shots[4]={from=(o*CFrame.new(-18,40,66)).Position,to=(o*CFrame.new(0,26,48)).Position,look=middle,fov=66} -- straight down the walkway into the gap between the banks
+		local middle=(o*CFrame.new(0,32,-13)).Position
+		shots[4]={from=(o*CFrame.new(-26,58,100)).Position,to=(o*CFrame.new(0,40,76)).Position,look=middle,fov=66} -- straight down the walkway into the gap between the banks
 	else shots[4]=shots[3] end
 	shots[1]=shots[1] or shots[3] shots[2]=shots[2] or shots[3]
 	return shots
@@ -333,7 +408,7 @@ table.insert(connections,Run.RenderStepped:Connect(function()
 	if stopped or not packet then return end
 	local now=workspace:GetServerTimeNow()
 	local ok,err=xpcall(function()
-		visuals:step(now) renderHud(now)
+		visuals:step(now) renderHud(now) soundStep(now)
 		if cameraState and cameraState.mode=="intro" then
 			local hum=me.Character and me.Character:FindFirstChildOfClass("Humanoid")
 			if not hum or hum.Health<=0 or workspace.CurrentCamera~=cameraState.camera then stopCamera() else introStep(now) end
