@@ -258,7 +258,7 @@ function V.create(plot)
 		W.part(wing,"RimCorner",V3(2.6,2.2,2.6),o*CFrame.new(wx1+1,1.1,z),Navy,true)
 		W.lamp(wing,o*CFrame.new(wx1+1,2.2,z),2.2)
 	end
-	local fuserModel,fuserHit=fuser(wing,o*CFrame.new(-97,0,57))
+	local fuserModel,fuserHit=fuser(wing,o*CFrame.new(-97,0,57)*CFrame.Angles(0,math.pi/2,0)) -- 28 Oct: front (input rings) toward the plot (+X)
 	if not Assets.template("MaintenanceBot") then robot(wing,o*CFrame.new(-86,0,68)*CFrame.Angles(0,-.7,0)) end
 	for _,c in {{-108,1.3,48,Orange},{-108,1.3,51,Color3.fromRGB(65,151,255)},{-108,3.9,49.5,Orange}} do
 		W.part(wing,"FusionCrate",V3(2.6,2.6,2.6),o*CFrame.new(c[1],c[2],c[3]),c[4],true)
