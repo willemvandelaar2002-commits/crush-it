@@ -138,12 +138,13 @@ function Visuals:restoreMasks()
 	for p,old in self.disabled do if p.Parent then p.Enabled=old end end
 	for plot in self.marked do if plot.Parent then plot:SetAttribute("LocalEventHidden",nil) end end
 	for p,was in self.solid or {} do if p.Parent then p.CanCollide=was[1] p.CanQuery=was[2] end end
-	self.solid={}
+	self.solid={} self.zoned={}
 	self.hidden={} self.disabled={}
 	self.marked={}
 end
-function Visuals:hide(root)
-	for _,p in root:GetDescendants() do
+function Visuals:hide(root,withSelf)
+	local list=root:GetDescendants() if withSelf then table.insert(list,root) end
+	for _,p in list do
 		if p:IsA("BasePart") then
 			if self.hidden[p]==nil then self.hidden[p]=p.LocalTransparencyModifier end
 			p.LocalTransparencyModifier=1
@@ -191,12 +192,12 @@ function Visuals:clear()
 	if self.bear and self.bear.ready then
 		-- the event bear goes, the normal teddy comes back (with a puff)
 		for _,p in self.bear.teddyParts do if p.Parent then p.LocalTransparencyModifier=0 end end
-		if self.teddyModel and self.teddyModel.Parent and self.teddyRest then if self.teddyModel:GetScale()~=1 then self.teddyModel:ScaleTo(1) end self.teddyModel:PivotTo(self.teddyRest) end
+		if self.teddyModel and self.teddyModel.Parent and self.teddyRest then local s0=self.teddyScale or 1 if self.teddyModel:GetScale()~=s0 then self.teddyModel:ScaleTo(s0) end self.teddyModel:PivotTo(self.teddyRest) end
 		local puff=part(workspace,"TeddyReturnPuff",V(1,1,1),CFrame.new(self.bear.bottom+V(0,10,0)),PURPLE) puff.Transparency=1
 		local e=self.bear.smoke:Clone() e.Parent=puff e:Emit(40)
 		game:GetService("Debris"):AddItem(puff,3)
 	end
-	self.teddyModel=nil self.teddyRest=nil self.teddyBox=nil
+	self.teddyModel=nil self.teddyRest=nil self.teddyBox=nil self.teddyScale=nil
 	self.hazards={} self.flyers=nil
 	self.folder:ClearAllChildren() self.rigs={} self.central=nil self.bear=nil
 	if self.tint then self.tint:Destroy() self.tint=nil end
@@ -236,6 +237,7 @@ function Visuals:centralRig(mega,ram)
 		reactorRest=reactor.CFrame,scale=scale,room=room,burst=nil}
 end
 -- The normal teddy (server, World) and where it stands.
+local teddyOriginal=setmetatable({},{__mode="k"})
 local function teddy()
 	local bear=workspace:FindFirstChild("FactoryTeddy",true)
 	return if bear and bear:IsA("Model") then bear else nil
@@ -255,8 +257,14 @@ function Visuals:bearRig()
 	-- away during the intro) and comes back afterwards.
 	local template=bearTemplate()
 	if template then
-		local cf,size=bear:GetBoundingBox()
-		self.teddyModel=bear self.teddyRest=bear:GetPivot() self.teddyBox=cf self.teddySize=size
+		-- measured once per teddy (never mid-shrink); the place builds it at scale 4
+		local orig=teddyOriginal[bear]
+		if not orig then
+			local bcf,bsize=bear:GetBoundingBox()
+			orig={pivot=bear:GetPivot(),scale=bear:GetScale(),box=bcf,size=bsize} teddyOriginal[bear]=orig
+		end
+		local cf,size=orig.box,orig.size
+		self.teddyModel=bear self.teddyRest=orig.pivot self.teddyBox=cf self.teddySize=size self.teddyScale=orig.scale
 		local copy=template:Clone() copy.Name="EventFactoryBear"
 		local _,own=copy:GetBoundingBox()
 		copy:ScaleTo(copy:GetScale()*size.Y/own.Y)
@@ -378,6 +386,23 @@ function Visuals:update(packet)
 						if m.Name:match("^CornerBrace") or (m.Name:match("^BoardFrame") and l.Y>15) then self:hide(m) roots[m]=true end
 					end
 				end end
+				-- 28 Oct: plot-stage upgrades decorate the platform too (stripes, gold
+				-- caps/feet, walkway lights, corner caps, support beams): anything of
+				-- PlotStages/FactoryProgression/TrimKit standing over the platform goes
+				self.zoned=self.zoned or {}
+				if not self.zoned[plot] then
+					self.zoned[plot]=true
+					local Z=E.PlatformZone
+					for _,folderName in {"PlotStages","FactoryProgression","TrimKit"} do
+						local f=plot:FindFirstChild(folderName)
+						if f then for _,p in f:GetDescendants() do
+							if p:IsA("BasePart") and not p.Parent.Name:match("^BoardFrame") then
+								local l=o:PointToObjectSpace(p.Position)
+								if math.abs(l.X)<Z.HalfWidth and l.Z>Z.Back and l.Z<Z.Front and l.Y>Z.Above then self:hide(p,true) end
+							end
+						end end
+					end
+				end
 				for _,g in me.PlayerGui:GetDescendants() do
 					if (g:IsA("SurfaceGui") or g:IsA("BillboardGui")) and g.Adornee then
 						for root in roots do
@@ -510,12 +535,13 @@ function Visuals:step(now)
 			local rise=math.clamp((age-1.2)/1.4,0,1)
 			local shake=if age<1.2 then math.sin(age*40)*.04*age else 0
 			-- lifts a little, spins and shrinks away under the booth roof (a 45-stud
-			-- rise went through the ceiling, 28 Oct)
-			local sc=math.max(.05,1-rise*rise*.95)
+			-- rise went through the ceiling, 28 Oct); scales relative to its own scale (4)
+			local sc=(self.teddyScale or 1)*math.max(.05,1-rise*rise*.95)
 			if math.abs(self.teddyModel:GetScale()-sc)>1e-3 then self.teddyModel:ScaleTo(sc) end
 			self.teddyModel:PivotTo(self.teddyRest*CFrame.new(0,rise*b.height*.35,0)*CFrame.Angles(0,rise*7+shake,shake))
 		elseif self.teddyModel and self.teddyRest then
-			if self.teddyModel:GetScale()~=1 then self.teddyModel:ScaleTo(1) end
+			local s0=self.teddyScale or 1
+			if self.teddyModel:GetScale()~=s0 then self.teddyModel:ScaleTo(s0) end
 			self.teddyModel:PivotTo(self.teddyRest)
 		end
 		b.smoke.Rate=if intro and age<3.4 then 45 else 0

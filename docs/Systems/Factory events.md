@@ -1,5 +1,15 @@
 # Factory events — Bear Breakdown
 
+28 Oct, evening: on upgraded plots the stage decorations over the platform
+(PlotStages/FactoryProgression/TrimKit parts inside FactoryEventConfig.PlatformZone:
+stripes, gold caps/feet, walkway lights, corner caps, support beams) hide too;
+they were the lines left floating. The teddy is built at scale 4: its pivot,
+scale and box are measured once per teddy and it shrinks/restores relative to
+that scale (restoring to 1 left it tiny after a round). The crusher toolbar
+(CrusherHotbar) hides and ignores clicks/number keys while a round runs (local
+player attribute FactoryEventRunning, set by FactoryEvent.client); a held
+crusher is put away when the round starts.
+
 28 Oct, latest: intro shot 1 now films the teddy from the open hall in front
 of it (the old over-the-shoulder view was blocked by your own crushers); the
 teddy shakes, then spins, lifts a little and shrinks away (ScaleTo, restored

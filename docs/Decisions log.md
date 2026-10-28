@@ -246,3 +246,4 @@
 - 2026-10-28: Event: bays hidden during the event, super crusher 1.8x bigger, boss bar redone like the reference (reactor badge, striped bar with 25/50/75 markers, top damage list with YOU rank).
 - 2026-10-28: Event: whole crusher platform hidden, super crusher 2.6x, dark starry sky during the event, Willem's event song + sound effects for every moment, no % labels on the bar markers.
 - 2026-10-28: Event intro: teddy filmed from the hall side so your crushers don't block it, teddy spins and shrinks away instead of flying through the roof; boss bar without marker circles and without the side badge. Willem's feedback.
+- 2026-10-28: Event: upgraded-plot decorations over the crusher platform hide too (the leftover lines), teddy keeps its real size after the event (it was shrunk back to scale 1 instead of 4), crusher toolbar hidden and unclickable during the event so it can't swap out the cores. Willem's feedback.

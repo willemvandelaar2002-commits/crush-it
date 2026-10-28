@@ -79,7 +79,22 @@ local function toolFor(id: string): Tool?
 	return nil
 end
 
+-- 28 Oct: hidden while a factory event runs (you carry cores then; a click
+-- on a tile would swap them for a crusher). FactoryEvent.client sets the flag.
+local itemCount = 0
+local function eventOn(): boolean return me:GetAttribute("FactoryEventRunning") == true end
+local function showBar() bar.Visible = itemCount > 0 and not eventOn() end
+me:GetAttributeChangedSignal("FactoryEventRunning"):Connect(function()
+	showBar()
+	if eventOn() then
+		local char = me.Character
+		local hum = char and char:FindFirstChildOfClass("Humanoid")
+		local t = char and char:FindFirstChildOfClass("Tool")
+		if hum and t and t:GetAttribute("InventoryId") ~= nil then hum:UnequipTools() end -- put a held crusher away
+	end
+end)
 local function select(id: string)
+	if eventOn() then return end
 	local char = character()
 	local hum = char and char:FindFirstChildOfClass("Humanoid")
 	if not hum then return end
@@ -148,7 +163,8 @@ local function rebuild()
 		local view = workspace.CurrentCamera.ViewportSize
 		local want = #items * (TILE + 6) + 4
 		bar.Size = UDim2.fromOffset(math.clamp(want, 80, math.max(300, view.X * .6)) + 16, TILE + 16)
-		bar.Visible = #items > 0
+		itemCount = #items
+		showBar()
 	end
 	paintSelection()
 end
@@ -163,7 +179,7 @@ local list_: { Enum.KeyCode } = {}
 for key in KEYS do table.insert(list_, key) end
 CAS:BindActionAtPriority("CrusherHotbarKeys", function(_, inputState, input)
 	if inputState ~= Enum.UserInputState.Begin then return Enum.ContextActionResult.Sink end
-	if UIS:GetFocusedTextBox() then return Enum.ContextActionResult.Pass end
+	if UIS:GetFocusedTextBox() or eventOn() then return Enum.ContextActionResult.Pass end
 	local id = order_[KEYS[input.KeyCode]]
 	if id then select(id) end
 	return Enum.ContextActionResult.Sink

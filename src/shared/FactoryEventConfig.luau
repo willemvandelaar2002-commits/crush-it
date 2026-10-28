@@ -1,6 +1,10 @@
 --!strict
 -- Event-only tuning. Existing production, roll, shop and plot numbers stay intact.
 return {
+	-- Plot-local box over the crusher platform: stage decorations inside it
+	-- hide during the event (side walls at |x| 79, rear beacon at z -109 and
+	-- the front yard stay). Measured on a Factory V plot, 28 Oct.
+	PlatformZone={HalfWidth=78,Back=-105,Front=12,Above=1.5},
 	Enabled = true,
 	Interval = 15 * 60, -- first announcement and time between completed rounds
 	Announce = 13, Assemble = 8, Active = 180, Finale = 7, Victory = 6, Recover = 3, -- 28 Oct: Announce+Assemble = the intro cutscene

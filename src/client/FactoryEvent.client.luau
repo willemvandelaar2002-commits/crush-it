@@ -318,6 +318,9 @@ table.insert(connections,Net.event("PlotUpgraded").OnClientEvent:Connect(stopCam
 local function renderHud(now)
 	if not packet then return end
 	local phase=packet.phase local you=packet.you
+	-- local flag for other HUD (the crusher toolbar hides while a round runs)
+	local running=if phase~="Idle" then true else nil
+	if me:GetAttribute("FactoryEventRunning")~=running then me:SetAttribute("FactoryEventRunning",running) end
 	-- no panel while the intro/assembly plays (Announce, Assemble)
 	panel.Visible=phase~="Idle" and phase~="Announce" and phase~="Assemble" and not (cameraState~=nil and cameraState.mode=="intro")
 	if not panel.Visible then return end
