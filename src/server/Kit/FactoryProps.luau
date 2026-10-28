@@ -329,7 +329,29 @@ function FactoryProps.shelf(parent: Instance, cf: CFrame, variant: number, theme
 	return m
 end
 
+local oldBear
+-- 28 Oct: the rigged Factory Bear (ReplicatedStorage.FactoryEventMeshes.FactoryBear,
+-- place-only, made by assets/factory-bear/Install-Bear.luau) replaces the teddy,
+-- fitted to the old bear's height and ground spot, facing the same way. Its
+-- ground pivot needs no GROUND_CENTRES fix. Without the template: the old teddy.
 function FactoryProps.bear(parent: Instance, cf: CFrame, scale: number): Model
+	local old = oldBear(parent, cf, scale)
+	local library = game:GetService("ReplicatedStorage"):FindFirstChild("FactoryEventMeshes")
+	local template = library and library:FindFirstChild("FactoryBear")
+	if not template or not template:IsA("Model") or template:GetAttribute("FactoryBearReady") ~= true then return old end
+	local box, size = old:GetBoundingBox()
+	local bear = template:Clone()
+	bear.Name = "FactoryTeddy"
+	local _, own = bear:GetBoundingBox()
+	bear:ScaleTo(bear:GetScale() * size.Y / own.Y)
+	bear:PivotTo(CFrame.new(box.Position.X, box.Position.Y - size.Y / 2, box.Position.Z) * cf.Rotation)
+	bear:SetAttribute("PropKind", "FactoryBear")
+	bear:SetAttribute("PropScale", scale)
+	bear.Parent = old.Parent
+	old:Destroy()
+	return bear
+end
+oldBear = function(parent: Instance, cf: CFrame, scale: number): Model
 	local imported = importedToy(parent, "FactoryTeddy", "TeddyBear", cf, scale)
 	if imported then return imported end
 	local m = model(parent, "FactoryTeddy")

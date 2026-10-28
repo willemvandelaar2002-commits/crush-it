@@ -19,35 +19,31 @@ local Format=require(RS.Shared.Format)
 local me=Players.LocalPlayer
 local gui=Instance.new("ScreenGui") gui.Name="FactoryEventHud" gui.ResetOnSpawn=false
 gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling gui.DisplayOrder=4 gui.Parent=me:WaitForChild("PlayerGui")
--- bottom centre, above the hotbar (the top centre has the travel buttons and tutorial card)
-local panel=Instance.new("Frame") panel.Name="EventPanel" panel.AnchorPoint=Vector2.new(.5,1)
-panel.Position=UDim2.new(.5,0,1,-108) panel.Size=UDim2.fromOffset(600,160) panel.Visible=false panel.Parent=gui
+-- compact boss bar, top centre under the travel buttons (28 Oct: no Join/Leave;
+-- everyone takes part). One instruction line; MY FACTORY only while away.
+local panel=Instance.new("Frame") panel.Name="EventPanel" panel.AnchorPoint=Vector2.new(.5,0)
+panel.Position=UDim2.new(.5,0,0,124) panel.Size=UDim2.fromOffset(560,104) panel.Visible=false panel.Parent=gui
 Style.panel(panel,Color3.fromRGB(147,54,227),Color3.fromRGB(68,33,121))
 local function label(parent,name,text,pos,size)
 	local t=Instance.new("TextLabel") t.Name=name t.Text=text t.BackgroundTransparency=1
 	t.Position=pos t.Size=size t.TextScaled=true t.ZIndex=2 t.Parent=parent Style.text(t,2) return t
 end
-local title=label(panel,"Title","BEAR BREAKDOWN",UDim2.fromOffset(15,9),UDim2.fromOffset(430,31))
-title.TextColor3=Color3.fromRGB(255,218,65)
-local timer=label(panel,"Timer","",UDim2.fromOffset(460,10),UDim2.fromOffset(125,28))
-local bar=Instance.new("Frame") bar.Name="ShieldBar" bar.Position=UDim2.fromOffset(16,46)
-bar.Size=UDim2.fromOffset(568,25) bar.ClipsDescendants=true bar.BorderSizePixel=0 bar.BackgroundColor3=Color3.fromRGB(19,23,42)
+local title=label(panel,"Title","BEAR BREAKDOWN",UDim2.fromOffset(14,7),UDim2.fromOffset(300,28))
+title.TextColor3=Color3.fromRGB(255,218,65) title.TextXAlignment=Enum.TextXAlignment.Left
+local timer=label(panel,"Timer","",UDim2.fromOffset(436,7),UDim2.fromOffset(110,28))
+timer.TextXAlignment=Enum.TextXAlignment.Right
+local bar=Instance.new("Frame") bar.Name="ShieldBar" bar.Position=UDim2.fromOffset(14,40)
+bar.Size=UDim2.fromOffset(532,26) bar.ClipsDescendants=true bar.BorderSizePixel=0 bar.BackgroundColor3=Color3.fromRGB(19,23,42)
 bar.ZIndex=2 bar.Parent=panel
 local corner=Instance.new("UICorner") corner.CornerRadius=UDim.new(0,8) corner.Parent=bar
 local fill=Instance.new("Frame") fill.Name="Fill" fill.Size=UDim2.fromScale(1,1) fill.BackgroundColor3=Color3.fromRGB(90,235,255)
 fill.BorderSizePixel=0 fill.Parent=bar
 local barText=label(bar,"BarText","",UDim2.fromScale(.02,.05),UDim2.fromScale(.96,.9)) barText.ZIndex=3
-local subtitle=label(panel,"Instruction","",UDim2.fromOffset(16,78),UDim2.fromOffset(568,24))
-local detail=label(panel,"Fleet","",UDim2.fromOffset(16,112),UDim2.fromOffset(260,31))
-detail.TextXAlignment=Enum.TextXAlignment.Left
-local function button(name,text,x,w,color)
-	local b=Instance.new("TextButton") b.Name=name b.Text=text b.Position=UDim2.fromOffset(x,111)
-	b.Size=UDim2.fromOffset(w,36) b.ZIndex=3 b.TextScaled=true b.Parent=panel Style.button(b,color)
-	local pad=Instance.new("UIPadding") pad.PaddingTop=UDim.new(0,6) pad.PaddingBottom=UDim.new(0,6) pad.PaddingLeft=UDim.new(0,8) pad.PaddingRight=UDim.new(0,8) pad.Parent=b
-	return b
-end
-local primary=button("JoinOrPulse","JOIN EVENT",290,190,Color3.fromRGB(65,230,80))
-local secondary=button("Leave","LEAVE",492,92,Color3.fromRGB(236,69,91))
+local subtitle=label(panel,"Instruction","",UDim2.fromOffset(14,72),UDim2.fromOffset(532,24))
+local primary=Instance.new("TextButton") primary.Name="GoToFactory" primary.Text="MY FACTORY"
+primary.AnchorPoint=Vector2.new(.5,0) primary.Position=UDim2.new(.5,0,1,8) primary.Size=UDim2.fromOffset(200,40)
+primary.TextScaled=true primary.ZIndex=3 primary.Visible=false primary.Parent=panel Style.button(primary,Color3.fromRGB(65,230,80))
+do local pad=Instance.new("UIPadding") pad.PaddingTop=UDim.new(0,6) pad.PaddingBottom=UDim.new(0,6) pad.Parent=primary end
 local skip=Instance.new("TextButton") skip.Name="SkipFinale" skip.Text="SKIP VIEW"
 skip.AnchorPoint=Vector2.new(1,1) skip.Position=UDim2.new(1,-28,1,-28) skip.Size=UDim2.fromOffset(170,48)
 skip.Visible=false skip.ZIndex=30 skip.TextScaled=true skip.Parent=gui Style.button(skip,Color3.fromRGB(255,150,35))
@@ -73,14 +69,11 @@ kicker.TextColor3=Color3.fromRGB(255,218,65)
 local INTRO={ -- seconds; each shot's caption
 	{t=0,text="Uh oh... the giant toy bear has gone BAD!"},
 	{t=3.4,text="Its corrupted core hides under the MEGA CRUSHER, behind a shield."},
-	{t=7,text="Join, and your crushers combine into one SUPER CRUSHER to break it!"},
+	{t=7,text="Every factory fights: your crushers combine into one SUPER CRUSHER!"},
 }
 local INTRO_LENGTH=10.4
 local packet=nil local visuals=Visuals.new() local cameraState=nil local seenFinale=nil local seenIntro=nil
 local stopped=false local connections={} local lastSoundBeat=-1 local finaleSound=nil local buttonColor=nil
-local function setColor(color)
-	if buttonColor~=color then buttonColor=color Style.setButtonColor(primary,color) end
-end
 local impact=Instance.new("Sound") impact.Name="FactoryEventImpact" impact.SoundId="rbxassetid://"..Config.Sounds.Thud
 impact.Volume=.22 impact.Parent=SoundService
 task.spawn(function() pcall(function() Content:PreloadAsync({impact}) end) end)
@@ -179,48 +172,40 @@ local function renderHud(now)
 	timer.Text=string.format("%d:%02d",math.floor(remaining/60),remaining%60)
 	local fraction=if packet.maxHp>0 then math.clamp(packet.hp/packet.maxHp,0,1) else 1
 	fill.Size=UDim2.fromScale(fraction,1)
+	-- cyan at full shield, warmer as it breaks
+	fill.BackgroundColor3=Color3.fromRGB(255,140,40):Lerp(Color3.fromRGB(90,235,255),fraction)
 	barText.Text=if phase=="Active" then string.format("BEAR'S SHIELD · %d%%",math.ceil(fraction*100))
 		elseif phase=="Finale" then "SHIELD BROKEN · MEGA CRUSHER CHARGING"
-		elseif phase=="Victory" then "CORE DESTROYED!" else "YOUR FACTORY POWERS THE FINAL BLOW"
-	detail.Text=if you then tostring(you.points).." POINTS · "..tostring(you.count).." CRUSHERS" else tostring(#packet.participants).." FACTORIES JOINED"
-	primary.Visible=false secondary.Visible=you~=nil and phase~="Victory" and phase~="Recover"
+		elseif phase=="Victory" then "CORE DESTROYED!" elseif phase=="Announce" then "STARTS IN "..remaining.."s"
+		else "YOUR FACTORY POWERS THE FINAL BLOW"
+	primary.Visible=false
+	subtitle.TextColor3=Color3.new(1,1,1)
 	if phase=="Announce" then
-		setColor(Color3.fromRGB(65,230,80))
-		subtitle.Text=if you then "You're in! Your placed crushers combine when the timer ends." else "The bear is corrupted! Join from your own factory."
-		primary.Visible=you==nil primary.Text="JOIN EVENT"
+		subtitle.Text="The bear is corrupted! Every factory fights: your crushers combine soon."
 	elseif phase=="Assemble" then
-		subtitle.Text=if you then E.Grades[you.grade].name.." · ASSEMBLING!" else "Factories are assembling their super crushers!"
+		subtitle.Text=if you and you.fallback then "No crushers placed: you get a stand-in SUPER PRESS!"
+			elseif you then E.Grades[you.grade].name.." · ASSEMBLING!" else "Factories are assembling their super crushers!"
 	elseif phase=="Active" then
-		if you then
-			local ready=now>=(you.pulseReady or 0)
-			local beat=Rules.onBeat(now,packet.started)
-			subtitle.Text=if not you.present then "Return to your factory to crush the core fragment!"
-				elseif you.eligible then "Reward qualified! Keep crushing to break the shared shield."
-				else string.format("Stay on your plot · %ds / %ds to qualify",math.min(E.MinimumActive,math.floor(you.active)),E.MinimumActive)
-			primary.Visible=true
-			primary.Text=if not you.present then "MY FACTORY" elseif not ready then "RECHARGING "..math.ceil(you.pulseReady-now).."s"
-				elseif beat then "OVERDRIVE · NOW!" else "WAIT FOR THE BEAT"
-			setColor(if ready and beat then Color3.fromRGB(65,230,80) else Color3.fromRGB(80,130,200))
-		else subtitle.Text="Factories are breaking the bear's shield! Join the next round." end
+		local danger=false
+		for _,h in packet.hazards or {} do if h.userId==me.UserId and not h.result then danger=true end end
+		if not you then subtitle.Text="Factories are breaking the bear's shield!"
+		elseif danger then subtitle.Text="BEAR SLAM! Get out of the red circle!" subtitle.TextColor3=Color3.fromRGB(255,110,110)
+		elseif not you.present then subtitle.Text="Go back to your factory to keep crushing!" primary.Visible=true
+		elseif now<=(you.critUntil or 0) then subtitle.Text="CRITICAL! Load a core into your super crusher NOW!" subtitle.TextColor3=Color3.fromRGB(255,218,65)
+		elseif you.carrying then subtitle.Text="Load the core into your super crusher's glowing port!"
+		elseif (you.loaded or 0)>1 then subtitle.Text="Core loaded! Your next hit does x"..you.loaded.." damage."
+		else subtitle.Text="Pick up the purple cores on your plot and load them into your super crusher!" end
 	elseif phase=="Finale" then
 		subtitle.Text="Your factories powered it up. The Mega Crusher is finishing the core!"
 	elseif phase=="Victory" then
 		subtitle.Text=if you and you.reward>0 then "YOU EARNED "..Format.cash(you.reward).."!"
-			elseif you then "Bear defeated! Stay active for 30 seconds to earn next round's reward."
+			elseif you then "Bear defeated! Stay on your plot longer next time to earn the reward."
 			else "The factory is safe again!"
 	elseif phase=="Recover" then
 		subtitle.Text=if packet.outcome=="Victory" then "Your original crushers are returning." else packet.outcome.." · restoring the factory."
 	end
 end
-primary.Activated:Connect(function()
-	if not packet then return end
-	if packet.phase=="Announce" and not packet.you then Net.event("FactoryEventAction"):FireServer("Join")
-	elseif packet.phase=="Active" and packet.you then
-		if not packet.you.present then Net.event("Travel"):FireServer("Plot")
-		else Net.event("FactoryEventAction"):FireServer("Pulse") end
-	end
-end)
-secondary.Activated:Connect(function() stopCamera() Net.event("FactoryEventAction"):FireServer("Leave") end)
+primary.Activated:Connect(function() Net.event("Travel"):FireServer("Plot") end)
 local function cleanup()
 	if stopped then return end stopped=true
 	stopCamera() visuals:destroy() impact:Destroy() gui:Destroy()

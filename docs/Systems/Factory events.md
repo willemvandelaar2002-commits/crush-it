@@ -1,5 +1,35 @@
 # Factory events — Bear Breakdown
 
+28 Oct revision (Studio Play checked):
+- **Everyone takes part automatically**: no Join/Leave. Everyone with a loaded plot
+  is listed at Announce, frozen at Assemble; players arriving later are added at
+  once (in Active the shield keeps its percentage when its maximum grows).
+  No placed crusher -> event-only stand-in machine (power FallbackPower, no
+  inventory change). Death/respawn keeps you in. Reward still needs both 30 s
+  on your plot and 10 strikes; idempotent per round ID.
+- **Event cores** (FactoryEventConfig.Cores): up to 3 purple cores at measured spots
+  on your plot, prompt only for the owner; carry one (shown above your head),
+  load it at your super crusher's port (purple ring in front of it) -> next strike
+  x4. Every 18-28 s the port glows gold for 8 s: a core loaded then is CRITICAL x10.
+  Leaving the plot or dying drops the core. Cores respawn after 5 s.
+- **Bear paw slam** (Config.Slam): every 13-19 s, a red circle (radius 9) under one
+  present player (rotated fairly, max 2 at once) with a filling countdown; 2.2 s
+  later the bear's paw falls, shockwave. The server checks your real position at
+  impact: hit = core dropped + walk speed 5 for 1.2 s; else DODGED.
+- **Factory Bear**: Willem's rigged model (ReplicatedStorage.FactoryEventMeshes.
+  FactoryBear, place-only; installer assets/factory-bear/Install-Bear.luau, fixed
+  for Studio's 180° import turn and untinted textures) replaces the teddy at the
+  same spot/height (World -> FactoryProps.bear). Event poses: roar at the intro,
+  corrupted (red eyes, chest doors open on the purple reactor), wind-up/slam with
+  each paw slam, defeated at the finale, recover after. Old eye/halo overlays are
+  only used without the template. Cores everywhere use the bear's own reactor.
+- HUD: compact boss bar top centre (title, timer, shield bar cyan->orange, one
+  instruction); MY FACTORY button only while away. Studio chat: /event, /event
+  win, /event cancel; ServerStorage.DevFactoryEvent also takes "Slam", "Critical".
+- Tested: auto entry, pickup/carry/load, critical, slam hit and dodge, death and
+  respawn, win with payout, cancel cleanup. Not yet: 2+ players, late join live.
+
+
 28 Oct (installed in the place, Studio Play): **intro cutscene** when a round is
 announced (client/FactoryEvent): letterbox bars, BEAR BREAKDOWN title, three
 shots of ~3.5 s with captions: the corrupted bear (red eyes, dark purple glow,

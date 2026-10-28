@@ -18,7 +18,25 @@ local function part(parent,name,size,cf,color,shape,neon)
 	p.Material=if neon then Enum.Material.Neon else Enum.Material.SmoothPlastic
 	if shape then p.Shape=shape end p.Parent=parent return p
 end
+local BearRig=require(RS.Shared.FactoryBearRig)
+local Players=game:GetService("Players")
+local me=Players.LocalPlayer
+local function bearTemplate()
+	local library=RS:FindFirstChild("FactoryEventMeshes")
+	local t=library and library:FindFirstChild("FactoryBear")
+	return if t and t:IsA("Model") and t:GetAttribute("FactoryBearReady")==true then t else nil
+end
 local function core(parent,origin,scale)
+	-- 28 Oct: the bear's own reactor + ring when the Factory Bear template is in
+	local template=bearTemplate()
+	if template then
+		local ok,m=pcall(BearRig.core,template,origin,5.25*scale)
+		if ok and m then
+			m.Name="CorruptedCore" m.Parent=parent
+			local light=Instance.new("PointLight") light.Color=PURPLE light.Range=8*scale+6 light.Brightness=1.5 light.Parent=m:FindFirstChild("Core")
+			return {model=m,template=true,base=m:GetScale(),origin=origin,scale=scale,heart=m:FindFirstChild("Core"),shell=m:FindFirstChild("CoreRing"),bands={}}
+		end
+	end
 	local m=Instance.new("Model") m.Name="CorruptedCore" m.Parent=parent
 	local shell=part(m,"CoreShell",V(5.25,5.25,4.75)*scale,origin,Color3.fromRGB(119,40,205),Enum.PartType.Ball,true)
 	local heart=part(m,"PurpleHeart",V(4.75,4.75,5.2)*scale,origin,PURPLE,Enum.PartType.Ball,true)
@@ -133,6 +151,8 @@ function Visuals:hide(root)
 end
 function Visuals:clear()
 	self:restoreMasks()
+	if self.bear and self.bear.ready and self.bear.model.Parent then BearRig.reset(self.bear.rig) end
+	self.hazards={}
 	self.folder:ClearAllChildren() self.rigs={} self.central=nil self.bear=nil
 	if self.tint then self.tint:Destroy() self.tint=nil end
 end
@@ -173,6 +193,12 @@ end
 function Visuals:bearRig()
 	local bear=workspace:FindFirstChild("FactoryTeddy",true)
 	if not bear or not bear:IsA("Model") then return nil end
+	-- the rigged Factory Bear: its own eyes/brows/chest doors do the corruption
+	if bear:GetAttribute("FactoryBearReady")==true then
+		local ok,rig=pcall(BearRig.capture,bear)
+		if ok then return {model=bear,folder=Instance.new("Folder"),ready=true,rig=rig} end
+		warn("[FactoryEvent] Factory Bear rig: "..tostring(rig))
+	end
 	local folder=Instance.new("Folder") folder.Name="EvilBearAura" folder.Parent=self.folder
 	local cf,size=bear:GetBoundingBox()
 	local pivot=bear:GetPivot()
@@ -254,6 +280,13 @@ function Visuals:update(packet)
 	if self.central then local toy=self.central.model:FindFirstChild("Toy") if toy then self:hide(toy) end end
 end
 local function animateCore(c,now,shrink)
+	if c.template then
+		local pulse=1+.04*math.sin(now*5)
+		local s=math.max(.01,c.base*shrink*pulse)
+		if math.abs(c.model:GetScale()-s)>1e-3 then c.model:ScaleTo(s) end
+		c.model:PivotTo(c.origin*CFrame.Angles(0,now*.8,0))
+		return
+	end
 	local rotation=CFrame.Angles(now*.35,now*.8,0)
 	local cf=c.origin*rotation
 	c.shell.CFrame=cf c.heart.CFrame=cf
@@ -331,7 +364,23 @@ function Visuals:step(now)
 		central.reactor.CFrame=central.reactorRest*CFrame.Angles(0,0,now*2)
 		central.reactor.Color=if exposed then GOLD else CYAN
 	end
-	if self.bear then
+	self:stepHazards(now,packet)
+	self:stepWork(now,packet)
+	if self.bear and self.bear.ready then
+		local mode,t="Corrupted",9
+		local ph=packet.phase
+		if ph=="Announce" then if age<1.8 then mode,t="Roar",age else mode,t="Corrupted",age-1.8 end
+		elseif ph=="Active" then
+			for _,h in packet.hazards or {} do
+				if not h.result and now<h.at then mode,t="Windup",now-h.warnAt
+				elseif now>=h.at and now-h.at<.9 then mode,t="Slam",now-h.at end
+			end
+		elseif ph=="Finale" then if age<2.85 then mode,t="Roar",age else mode,t="Defeated",age-2.85 end
+		elseif ph=="Victory" then mode,t="Recover",age
+		elseif ph=="Recover" then mode,t="Friendly",age end
+		local cam=workspace.CurrentCamera
+		if not cam or (cam.CFrame.Position-self.bear.model:GetPivot().Position).Magnitude<900 then BearRig.pose(self.bear.rig,mode,t) end
+	elseif self.bear then
 		local evil=packet.phase~="Victory" and packet.phase~="Recover"
 		for _,eye in self.bear.eyes do eye.Transparency=if evil then .05+.15*math.sin(now*4)^2 else 1 end
 		self.bear.halo.Transparency=if evil then .35 else 1
@@ -342,6 +391,89 @@ function Visuals:step(now)
 	if self.tint then
 		self.tint.TintColor=Color3.new(1,1,1):Lerp(Color3.fromRGB(235,226,255),recovery)
 		if packet.phase=="Victory" then self.tint.TintColor=Color3.new(1,1,1) end
+	end
+end
+-- Bear paw slams: red danger circle with a filling countdown, then a giant
+-- paw (the bear's own paw mesh when present) lands; shockwave on impact.
+function Visuals:stepHazards(now,packet)
+	self.hazards=self.hazards or {}
+	local live={}
+	for _,h in (if packet.phase=="Active" then packet.hazards or {} else {}) do
+		live[h.id]=true
+		local v=self.hazards[h.id]
+		if not v then
+			local ray=workspace:Raycast(h.position+V(0,6,0),V(0,-30,0),RaycastParams.new())
+			local floor=if ray then ray.Position else h.position
+			local base=CFrame.new(floor+V(0,.12,0))*CFrame.Angles(0,0,math.pi/2)
+			local r=E.Slam.Radius
+			local ring=part(self.folder,"SlamDanger",V(.15,r*2,r*2),base,RED,Enum.PartType.Cylinder,true) ring.Transparency=.45
+			local inner=part(self.folder,"SlamCountdown",V(.2,.1,.1),base+V(0,.03,0),Color3.fromRGB(255,170,60),Enum.PartType.Cylinder,true)
+			local paw
+			local template=bearTemplate() local source=template and template:FindFirstChild("Paw_L",true)
+			if source then
+				paw=source:Clone() paw.Anchored=true paw.CanCollide=false paw.CanQuery=false paw.CanTouch=false
+				paw.Size=paw.Size*(r*1.5/math.max(paw.Size.X,paw.Size.Z)) paw.Parent=self.folder
+			else paw=part(self.folder,"SlamPaw",V(r*1.4,r*.7,r*1.4),base,Color3.fromRGB(190,130,80),Enum.PartType.Ball) end
+			paw.Transparency=1
+			v={ring=ring,inner=inner,paw=paw,floor=floor,mine=h.userId==me.UserId}
+			self.hazards[h.id]=v
+		end
+		local k=math.clamp((now-h.warnAt)/math.max(.1,h.at-h.warnAt),0,1)
+		local r=E.Slam.Radius
+		v.inner.Size=V(.2,r*2*k,r*2*k)
+		v.ring.Transparency=.35+.25*math.sin(now*14)^2
+		local height=if now<h.at then 70*(1-k)^2+6*(1-k) else 0
+		v.paw.Transparency=if k>.35 then 0 else 1
+		v.paw.CFrame=CFrame.new(v.floor+V(0,height+v.paw.Size.Y/2,0))
+		if now>=h.at and not v.boom then
+			v.boom=part(self.folder,"SlamShock",V(.3,1,1),CFrame.new(v.floor+V(0,.4,0))*CFrame.Angles(0,0,math.pi/2),Color3.fromRGB(255,230,150),Enum.PartType.Cylinder,true)
+			v.boomAt=now v.ring.Transparency=1 v.inner.Transparency=1
+			if v.mine then
+				local cam=workspace.CurrentCamera
+				if cam then task.spawn(function() for i=1,8 do cam.CFrame*=CFrame.new(math.sin(i*7)*.4,math.cos(i*5)*.4,0) task.wait() end end) end
+			end
+		end
+		if v.boom then
+			local s=math.clamp((now-v.boomAt)/.6,0,1)
+			v.boom.Size=V(.3,1+r*3*s,1+r*3*s) v.boom.Transparency=s
+			v.paw.Transparency=math.clamp((now-v.boomAt-.5)/.5,0,1)
+		end
+	end
+	for id,v in self.hazards do if not live[id] then v.ring:Destroy() v.inner:Destroy() v.paw:Destroy() if v.boom then v.boom:Destroy() end self.hazards[id]=nil end end
+end
+-- Core pickups spin and bob; each super crusher's loading port shows a purple
+-- ring (gold + bigger during a critical window); other players' prompts hide.
+function Visuals:stepWork(now,packet)
+	local worldFolder=workspace:FindFirstChild("FactoryEventWorld")
+	if worldFolder then
+		for _,m in worldFolder:GetChildren() do
+			if m.Name=="EventCorePickup" and m:IsA("Model") then
+				local base=m:GetAttribute("BaseCF")
+				if not base then base=m:GetPivot() m:SetAttribute("BaseCF",base) end
+				m:PivotTo(base*CFrame.new(0,math.sin(now*2.2+base.X)*.5,0)*CFrame.Angles(0,now*1.5,0))
+			end
+		end
+		if not self.promptHook then
+			local function mark(d)
+				if d:IsA("ProximityPrompt") then d.Enabled=d:GetAttribute("OwnerUserId")==me.UserId end
+			end
+			for _,d in worldFolder:GetDescendants() do mark(d) end
+			self.promptHook=worldFolder.DescendantAdded:Connect(mark)
+		end
+	end
+	for _,rig in self.rigs do
+		local r=rig.record
+		if not rig.port then
+			local cf=r.origin*CFrame.new(E.Cores.Port)*CFrame.new(0,.15,0)*CFrame.Angles(0,0,math.pi/2)
+			rig.port=part(rig.model,"CorePortRing",V(.12,7,7),cf,PURPLE,Enum.PartType.Cylinder,true)
+			rig.portRest=cf
+		end
+		local active=packet.phase=="Active"
+		local crit=active and now<=(r.critUntil or 0)
+		rig.port.Transparency=if active then (if crit then .1 else .55) else 1
+		rig.port.Color=if crit then GOLD else PURPLE
+		local s=if crit then 8.5+math.sin(now*8) else 7
+		rig.port.Size=V(.12,s,s)
 	end
 end
 function Visuals:destroy()
