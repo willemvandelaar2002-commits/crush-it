@@ -110,3 +110,15 @@ Studio Output showed no gameplay-script errors in the final integration test.
 Studio DataStore API access remains disabled: persistence here is a mock-store
 roundtrip, not a published rejoin test. Desktop only; phone and live multiplayer
 performance are not verified by this pass. Save the place assets before publishing.
+
+## 29 Oct: Secret and Divine chase crushers (CrushIt-Secret-Divine pack)
+ShadowShredder, VoidVise, EclipseEngine, NightRipper (Secret) and HaloHammer,
+CelestialCrusher, ArchangelAnvil, AuroraPress (Divine): real models in
+`ServerStorage.SpecialCrusherMeshes` (place-only, Willem must Publish), kit="motion"
+metadata in `Shared/ChaseCrusherAssets` merged into SpecialCrusherAssets, icons in
+CrusherIcons. Install: Studio's importer brought them in turned 180 degrees from
+the rig metadata, so they were turned back before the pack's installer ran, and
+the templates have `BayFrontYaw = 0` (not pi) so they face the bay front like the
+others. The cm-scale imported originals were moved to `ServerStorage.ChaseCrusherImports`
+(out of the world). Checked in Studio: all eight build, face the front in a bay,
+and Ram/PistonShaft press and return.

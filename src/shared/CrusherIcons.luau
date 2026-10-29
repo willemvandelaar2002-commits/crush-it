@@ -33,6 +33,11 @@ I.Overrides={
 	WindUpWrecker="rbxassetid://76820861604914",KrakenClamp="rbxassetid://118908620786900",
 	GumballGobbler="rbxassetid://97847833312808",DuckyDynamo="rbxassetid://95075734278359",
 	DiscoDestroyer="rbxassetid://98862753364198",ArcadeClaw="rbxassetid://76980432342314",
+	-- Secret / Divine chase crushers (29 Oct pack, renders of the real models)
+	VoidVise="rbxassetid://107106493858843",ShadowShredder="rbxassetid://77738155515531",
+	NightRipper="rbxassetid://118145357442002",HaloHammer="rbxassetid://110923909916533",
+	EclipseEngine="rbxassetid://93138181415241",CelestialCrusher="rbxassetid://106945409122885",
+	AuroraPress="rbxassetid://86411239858094",ArchangelAnvil="rbxassetid://71903745878843",
 } :: {[string]: string}
 I.Ready={Titan=true,Laser=true,Plasma=true,Gravity=true,Quake=true,Cyclone=true,Mecha=true,
 	Quantum=true,Starforge=true,DragonJaw=true,BlackHole=true,Clockwork=true,FactoryHeart=true,

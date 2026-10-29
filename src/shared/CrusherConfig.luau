@@ -216,19 +216,19 @@ for _, entry in C.CrateTypes do
 	def.rarity = entry.rarity def.crate = true
 	table.insert(C.Types, def)
 end
--- Chase crushers (29 Oct): four Secret and four Divine, rollable. Until
--- Willem's models arrive they reuse a code-built rig (design) in new colours;
--- when a model is in ServerStorage.SpecialCrusherMeshes, set template = id
--- and remove design. value: production per input (Legendary is 220, Mythic 660).
+-- Chase crushers (29 Oct): four Secret and four Divine, rollable. Willem's
+-- models live in ServerStorage.SpecialCrusherMeshes (template = id); motion in
+-- Shared/ChaseCrusherAssets. A type without a model can borrow a code-built rig
+-- with design = "<rig id>" and color instead of template. value: production per input (Legendary is 220, Mythic 660).
 C.ChaseTypes = {
-	{ id = "ShadowShredder", name = "Shadow Shredder", rarity = "Secret", design = "BlackHole", color = Color3.fromRGB(64, 66, 84) },
-	{ id = "VoidVise", name = "Void Vise", rarity = "Secret", design = "DragonJaw", color = Color3.fromRGB(92, 60, 140) },
-	{ id = "EclipseEngine", name = "Eclipse Engine", rarity = "Secret", design = "Gravity", color = Color3.fromRGB(40, 40, 52) },
-	{ id = "NightRipper", name = "Night Ripper", rarity = "Secret", design = "Mecha", color = Color3.fromRGB(150, 30, 50) },
-	{ id = "HaloHammer", name = "Halo Hammer", rarity = "Divine", design = "Starforge", color = Color3.fromRGB(255, 244, 200) },
-	{ id = "CelestialCrusher", name = "Celestial Crusher", rarity = "Divine", design = "Clockwork", color = Color3.fromRGB(120, 220, 255) },
-	{ id = "ArchangelAnvil", name = "Archangel Anvil", rarity = "Divine", design = "FactoryHeart", color = Color3.fromRGB(255, 255, 255) },
-	{ id = "AuroraPress", name = "Aurora Press", rarity = "Divine", design = "Cyclone", color = Color3.fromRGB(140, 255, 200) },
+	{ id = "ShadowShredder", name = "Shadow Shredder", rarity = "Secret", template = "ShadowShredder" },
+	{ id = "VoidVise", name = "Void Vise", rarity = "Secret", template = "VoidVise" },
+	{ id = "EclipseEngine", name = "Eclipse Engine", rarity = "Secret", template = "EclipseEngine" },
+	{ id = "NightRipper", name = "Night Ripper", rarity = "Secret", template = "NightRipper" },
+	{ id = "HaloHammer", name = "Halo Hammer", rarity = "Divine", template = "HaloHammer" },
+	{ id = "CelestialCrusher", name = "Celestial Crusher", rarity = "Divine", template = "CelestialCrusher" },
+	{ id = "ArchangelAnvil", name = "Archangel Anvil", rarity = "Divine", template = "ArchangelAnvil" },
+	{ id = "AuroraPress", name = "Aurora Press", rarity = "Divine", template = "AuroraPress" },
 }
 C.ChaseValue = { Secret = 330, Divine = 500 }
 do

@@ -1,7 +1,7 @@
 --!strict
 -- Runtime measurements copied from assets/special-crushers/asset-manifest.json.
 -- Vector3 order is Roblox width, height, depth (manifest lists width, depth, height).
-return {
+local Assets = {
  TwinTitan={size=Vector3.new(11.6,12.8,8.2),bedTop=1.62,rams={
   {name="Ram_L",stroke=3.525},
   {name="Ram_R",stroke=3.525},
@@ -145,3 +145,8 @@ return {
   contact={"Jaw_L","Jaw_R"},
  },
 }
+-- Secret/Divine chase crushers (29 Oct pack): motion metadata in ChaseCrusherAssets.
+for id, entry in require(script.Parent.ChaseCrusherAssets) do
+	Assets[id] = entry
+end
+return Assets
