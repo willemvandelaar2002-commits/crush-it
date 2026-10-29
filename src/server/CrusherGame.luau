@@ -448,11 +448,23 @@ local function rollShow(p,offers)
 		local total=0 for _,e in pool do total+=e.w end local x=rng:NextNumber()*total
 		for _,e in pool do x-=e.w if x<=0 then return e.id end end return pool[#pool].id
 	end
-	-- turn a model slowly about its pedestal centre, from its stored base pose
-	local function turn(m,centre,a,lift)
-		local basePivot=m:GetAttribute("BasePivot")
-		if typeof(basePivot)~="CFrame" then basePivot=m:GetPivot() m:SetAttribute("BasePivot",basePivot) end
-		m:PivotTo(CFrame.new(0,lift or 0,0)*CFrame.new(centre)*CFrame.Angles(0,a,0)*CFrame.new(-centre)*basePivot)
+	-- Spinning is done by each client (RollSpin.client) from these attributes:
+	-- the server never moves the parts, so nothing is replicated per frame.
+	local function spin(m,centre,speed,lift)
+		if typeof(m:GetAttribute("BasePivot"))~="CFrame" then m:SetAttribute("BasePivot",m:GetPivot()) end
+		m:SetAttribute("SpinCentre",centre) m:SetAttribute("SpinSpeed",speed)
+		m:SetAttribute("SpinStart",workspace:GetServerTimeNow()) m:SetAttribute("SpinLift",lift)
+		game:GetService("CollectionService"):AddTag(m,"RollSpin")
+	end
+	-- each pedestal flickers between a few types per roll, mostly ones it
+	-- already built, so a roll builds at most a couple of new models
+	local candidates={}
+	for slot in offers do
+		local list={} local cached={}
+		for id in (plot.silhouettes[slot] or {}) do table.insert(cached,id) end
+		for _=1,3 do if #cached>0 then table.insert(list,table.remove(cached,rng:NextInteger(1,#cached))) end end
+		while #list<4 do table.insert(list,pick()) end
+		candidates[slot]=list
 	end
 	local shown={} local nextFlick={}
 	local function flick(slot,id)
@@ -464,6 +476,7 @@ local function rollShow(p,offers)
 			hl.OutlineColor=Color3.new(1,1,1) hl.DepthMode=Enum.HighlightDepthMode.Occluded plot.outlines[slot]=hl
 		end
 		hl.Parent=m hl.Enabled=true
+		spin(m,st.pedestals[slot].top.Position,1.1,nil)
 		card(st.pedestals[slot],"???","???","Rolling...","???","")
 	end
 	local function stop()
@@ -495,12 +508,7 @@ local function rollShow(p,offers)
 					model:SetAttribute("RevealUnowned",unowned==true) model:SetAttribute("RevealOdds",odds)
 					model.Parent=plot.model game:GetService("CollectionService"):AddTag(model,RollLook.Tag)
 					plot.offerModels[slot]=model
-					task.spawn(function()
-						local t0=os.clock() local centre=ped.top.Position
-						while model.Parent and os.clock()-t0<30 do
-							local age=os.clock()-t0 turn(model,centre,age*.8,RollLook.lift(item.rarity,age)) task.wait(1/20)
-						end
-					end)
+					spin(model,ped.top.Position,.8,item.rarity)
 					local perMin=d and Rules.stats(d,{type=item.type,rarity=item.rarity,modifier=item.modifier,level=1},perks(p)).cps*60 or 0
 					local name=C.typeById(item.type).name
 					card(ped,name,item.rarity..(if item.modifier~="Standard" then " · "..item.modifier else "")..(if unowned then " · UNOWNED" else ""),RollLook.oddsText(odds),
@@ -514,10 +522,10 @@ local function rollShow(p,offers)
 		for slot,item in offers do
 			if t>=nextFlick[slot] then
 				local last=seconds-t<.45
-				flick(slot,if last then item.type else pick())
-				nextFlick[slot]=t+.12+.35*(t/seconds)^2
+				local list=candidates[slot]
+				flick(slot,if last then item.type else list[rng:NextInteger(1,#list)])
+				nextFlick[slot]=t+.18+.35*(t/seconds)^2
 			end
-			if shown[slot] then turn(shown[slot],st.pedestals[slot].top.Position,t*1.1) end
 		end
 		local spin=t*14*(1-t/seconds*.6)
 		st.die:PivotTo(base*CFrame.new(0,math.abs(math.sin(t*9))*1.2,0)*CFrame.Angles(spin,spin*.7,spin*.4))
