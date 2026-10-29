@@ -30,18 +30,29 @@ local function off(e)
 	for _,v in e.pulses do if v.part.Parent then v.part.Transparency=v.alpha end end
 	e.level=0
 end
-local function add(root)
-	if stopped or not root.Parent or roots[root] then return end
-	local e={owner=root.Parent,finish=tostring(root:GetAttribute("Finish")),unit=root:GetAttribute("FinishUnit") or 1,emitters={},arcs={},lights={},pulses={},level=0,light=false,seed=0}
+-- (Re)collect a root's effect objects. With StreamingEnabled the parts,
+-- emitters and beams arrive after the tag, so this runs again as they stream in.
+local function collect(root,e)
+	table.clear(e.emitters) table.clear(e.arcs) table.clear(e.lights) table.clear(e.pulses) e.anchor=nil
 	for _,d in root:GetDescendants() do
 		if d:IsA("ParticleEmitter") then table.insert(e.emitters,d)
 		elseif d:IsA("Beam") then table.insert(e.arcs,d)
 		elseif d:IsA("PointLight") then table.insert(e.lights,d)
 		elseif d:IsA("BasePart") then
 			if not e.anchor then e.anchor=d end
-			if d:GetAttribute("FinishPulse") or d.Name=="Gleam" then table.insert(e.pulses,{part=d,alpha=d.Transparency}) end
+			if d:GetAttribute("FinishPulse") or d.Name=="Gleam" then table.insert(e.pulses,{part=d,alpha=d:GetAttribute("FinishAlpha") or d.Transparency}) d:SetAttribute("FinishAlpha",d:GetAttribute("FinishAlpha") or d.Transparency) end
 		end
 	end
+end
+local function add(root)
+	if stopped or not root.Parent or roots[root] then return end
+	local e={owner=root.Parent,finish=tostring(root:GetAttribute("Finish")),unit=root:GetAttribute("FinishUnit") or 1,emitters={},arcs={},lights={},pulses={},level=0,light=false,seed=0}
+	collect(root,e)
+	local pending=false
+	e.watch=root.DescendantAdded:Connect(function()
+		if pending then return end pending=true
+		task.delay(.2,function() pending=false if roots[root]==e then local was=e.level off(e) collect(root,e) e.level=was end end)
+	end)
 	local id=tostring(e.owner:GetAttribute("InventoryId") or e.owner.Name)
 	for i=1,#id do e.seed=(e.seed+string.byte(id,i)*i)%997 end
 	e.seed=e.seed/79
@@ -50,7 +61,7 @@ end
 for _,r in Tags:GetTagged("CoatingFx") do add(r) end
 connections[#connections+1]=Tags:GetInstanceAddedSignal("CoatingFx"):Connect(function(r) task.defer(add,r) end)
 connections[#connections+1]=Tags:GetInstanceRemovedSignal("CoatingFx"):Connect(function(r)
-	local e=roots[r] if e then off(e) end roots[r]=nil
+	local e=roots[r] if e then off(e) if e.watch then e.watch:Disconnect() end end roots[r]=nil
 end)
 -- the event marks the whole plot (FactoryEventVisuals), so check the parents too
 local function hidden(owner)
@@ -64,12 +75,14 @@ end
 local function focus()
 	local camera=workspace.CurrentCamera local groups={}
 	for root,e in roots do
-		if not root.Parent then off(e) roots[root]=nil
+		if not root.Parent then off(e) if e.watch then e.watch:Disconnect() end roots[root]=nil
 		else
 			e.light=false
-			local valid=camera and root:IsDescendantOf(workspace) and e.anchor and e.anchor.Parent and not hidden(e.owner)
+			local valid=camera and root:IsDescendantOf(workspace) and e.owner.Parent and not hidden(e.owner)
 			if not valid then if e.level~=0 then off(e) end continue end
-			local distance=(e.anchor.Position-camera.CFrame.Position).Magnitude
+			local at=if e.anchor and e.anchor.Parent then e.anchor.Position else (e.owner:IsA("Model") and e.owner:GetPivot().Position or nil)
+			if not at then continue end
+			local distance=(at-camera.CFrame.Position).Magnitude
 			local g=groups[e.owner]
 			if not g then
 				g={entries={},distance=distance,key=tostring(e.owner:GetAttribute("InventoryId") or e.owner:GetFullName())}
