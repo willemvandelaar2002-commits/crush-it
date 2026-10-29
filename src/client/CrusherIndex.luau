@@ -23,6 +23,7 @@ local function make(class, props, parent)
 	node.Parent = parent
 	return node
 end
+local function commas(n) return (tostring(n):reverse():gsub("(%d%d%d)","%1,"):reverse():gsub("^,","")) end
 local function label(parent, name, value, position, size, fontSize)
 	local node = make("TextLabel", {Name=name, Text=value, Position=position, Size=size,
 		TextSize=fontSize or 24, TextWrapped=true, BackgroundTransparency=1, ZIndex=3}, parent)
@@ -220,7 +221,7 @@ function I.new(gui, act)
 		else
 			local crate=def.crate==true
 			local exclusive=crate or (C.rarityOf(def.id) and C.rarityOf(def.id).exclusive)
-			local odds=label(frame,"Odds",if crate then "CRATE ONLY" elseif exclusive then "SHOP & SPIN ONLY" else "1 in "..tostring(C.oddsFor(def.id)),UDim2.new(0,4,1,-30),UDim2.new(1,-8,0,28),if exclusive then 18 else 24)
+			local odds=label(frame,"Odds",if crate then "CRATE ONLY" elseif exclusive then "SHOP & SPIN ONLY" else "1 in "..commas(C.oddsFor(def.id)),UDim2.new(0,4,1,-30),UDim2.new(1,-8,0,28),if exclusive then 18 else 24)
 			odds.ZIndex=4
 			if exclusive then odds.TextColor3=Color3.fromRGB(255,150,225) end
 		end

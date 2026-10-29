@@ -168,8 +168,18 @@ Offers can only be bought after the reveal (server cooldown) and only once.
 Fast requests cannot create extra rolls. The roll
 deadline is saved as an absolute timestamp and restored on profile reload.
 
-Rarity weights are Common 70, Uncommon 22, Rare 6, Epic 1.8 and Legendary 0.2.
-For rank 0..4, the weight is multiplied by (1 + 0.12 × LuckLevel × rank), then
+Rarity weights are Common 69.9912, Uncommon 22, Rare 6, Epic 1.8, Legendary 0.2,
+Secret 0.008 and Divine 0.0008 (total 100; Mythic 0, never rolled).
+
+Chase tiers (29 Oct, `C.ChaseTypes`): Secret (rank 5, 1 in 50,000 each, value 330,
+mult 2.2) and Divine (rank 6, 1 in 500,000 each, value 500, mult 2.4), four crushers
+each: Shadow Shredder, Void Vise, Eclipse Engine, Night Ripper / Halo Hammer,
+Celestial Crusher, Archangel Anvil, Aurora Press. Placeholders reuse a code-built
+rig (`design`) in new colours until Willem's models arrive (then set `template = id`
+and drop `design`). Output order: Legendary < Secret < Divine < Mythic (Mythic rank 7,
+still the strongest). Luck helps them most because it scales with rank.
+
+For every rank, the weight is multiplied by (1 + 0.12 × LuckLevel × rank), then
 normalised. Lucky pass doubles uncommon-and-rarer weights, rather than claiming
 that normalised probabilities literally double. Types: Common Bumper/Steel,
 Uncommon Cobalt, Rare Mega, Epic Titan and Legendary Quantum. The existing

@@ -93,7 +93,7 @@ local HEAVEN = ColorSequence.new({
 -- per top rarity: card colour, border shimmer, ray speed, halo, sparkles
 local LOOKS = {
 	Legendary = { base = Color3.fromRGB(255, 176, 20), rim = GOLD, spin = 24, sparkles = 4 },
-	Secret = { base = Color3.fromRGB(46, 48, 64), rim = SILVER, spin = 28, sparkles = 5, alpha = 0.7 },
+	Secret = { base = Color3.fromRGB(34, 35, 48), rim = SILVER, spin = 28, sparkles = 5, alpha = 0.84, glow = 0.88 },
 	Divine = { base = Color3.fromRGB(70, 180, 255), rim = HEAVEN, spin = 30, sparkles = 5,
 		halo = ColorSequence.new(Color3.fromRGB(255, 246, 190), Color3.fromRGB(150, 235, 255)) },
 	Mythic = { base = Color3.fromRGB(245, 40, 120), rainbow = true, spin = 34, sparkles = 5 },
@@ -116,7 +116,7 @@ function CardFx.special(card: GuiObject, rarity: string, gate: GuiObject?): bool
 		})
 	end
 	-- big turning rays over the whole card
-	Style.sunburst(card, { fullBleed = true, count = 10, width = 0.11, alpha = look.alpha or 0.62, glow = 0.75,
+	Style.sunburst(card, { fullBleed = true, count = 10, width = 0.11, alpha = look.alpha or 0.62, glow = look.glow or 0.75,
 		spin = look.spin, gate = gate, zIndex = z, center = UDim2.fromScale(0.5, 0.42) })
 
 	-- shimmering inner border, inside the dark outline
