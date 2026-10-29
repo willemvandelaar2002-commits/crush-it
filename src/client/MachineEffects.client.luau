@@ -102,6 +102,8 @@ local function playFusion(result: any, items: { any })
 		if #inputs >= 4 then break end
 		if not still[id] and item.type == result.type then table.insert(inputs, item) end
 	end
+	-- the fused crusher is collected minutes after the copies went in: show four of its type
+	while #inputs < 4 do table.insert(inputs, { type = result.type, modifier = if #inputs == 0 then result.modifier else "Standard" }) end
 	local snaps: { Model } = {}
 	for _, item in inputs do
 		local s = snapshot(item, item.modifier, item.fused)

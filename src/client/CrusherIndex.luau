@@ -139,6 +139,7 @@ function I.new(gui, act)
 		Style.collectionPanel(frame,Style.lighten(colour,.22),Style.darken(colour,.24))
 		local known=false
 		for _,owned in state.items do if owned.type==def.id then known=true break end end
+		if state.fusion and state.fusion.item and state.fusion.item.type==def.id then known=true end -- inside the Fusion Machine
 		label(frame,"Name",if known then def.name else "???",UDim2.fromOffset(5,4),UDim2.new(1,-10,0,30),22)
 		local fallback=Style.image(frame,Icons.Press,{Name="PreviewFallback",Position=UDim2.new(.5,0,0,94),Size=UDim2.fromOffset(94,94),ZIndex=2})
 		fallback.ImageColor3=if known then white else Color3.new(0,0,0)

@@ -6,7 +6,9 @@ return function()
 	local n=0 local checks=0
 	local function id() n+=1 return "fuse-"..n end
 	local function check(v,message) assert(v,message) checks+=1 end
-	local function act(d,args) return R.act(d,{},"Fuse",args,0,function() return .1 end,id,{}) end
+	local T0=1000000
+	local function act(d,args) args.serverTime=args.serverTime or T0 return R.act(d,{},"Fuse",args,0,function() return .1 end,id,{}) end
+	local function collect(d,t) return R.act(d,{},"CollectFusion",{serverTime=t},0,function() return .1 end,id,{}) end
 	local function setup()
 		local d=R.migrate({cash=0},id) local s=d.crushers
 		s.plotLevel=C.Fusion.PlotLevel s.bays=C.bayCapacity(s.plotLevel)
@@ -26,10 +28,18 @@ return function()
 	local before=R.stats(d,main,{},false).value
 	local copies,total=R.fusionCopies(d,main)
 	check(total==4 and #copies==3 and copies[1]==a and copies[2]==b and copies[3]==c,"suggested copies: weakest unequipped first, best spare kept")
-	local ok,_,result=act(d,{main=main.id,inputs={a.id,b.id,c.id}})
-	check(ok and result==main and main.fused,"fuse succeeds and marks the main")
-	check(main.level==30 and main.modifier=="Frost" and s.equipped["1"]==main.id,"main keeps level, coating and its bay")
+	local ok,_,started=act(d,{main=main.id,inputs={a.id,b.id,c.id}})
+	check(ok and started.fusing and s.fusion and s.fusion.readyAt==T0+C.Fusion.Seconds,"fuse starts a timed fusion")
+	check(not R.find(d,main.id) and s.equipped["1"]==nil,"the main waits inside the machine, out of its bay")
 	check(not R.find(d,a.id) and not R.find(d,b.id) and not R.find(d,c.id) and R.find(d,spare.id) and R.find(d,other.id),"exactly the three copies are used up")
+	local mid=R.migrate(R.copy(d),id)
+	check(mid.crushers.fusion and mid.crushers.fusion.item.id==main.id and mid.crushers.fusion.readyAt==T0+C.Fusion.Seconds,"a running fusion is saved")
+	check(not act(d,{main=spare.id,inputs={}}),"one fusion at a time")
+	check(not collect(d,T0+C.Fusion.Seconds-1) and s.fusion~=nil,"can't collect early")
+	local okc,_,result=collect(d,T0+C.Fusion.Seconds)
+	main=R.find(d,main.id)
+	check(okc and result==main and main.fused and s.fusion==nil,"collect gives the fused crusher back")
+	check(main.level==30 and main.modifier=="Frost","main keeps level and coating")
 	check(math.abs(R.stats(d,main,{},false).value-before*C.Fusion.Mult)<1e-6*before+0.02,"fused crusher makes 2x")
 	local saved=R.migrate(R.copy(d),id)
 	check(R.find(saved,main.id).fused==true and R.find(saved,spare.id).fused==nil,"fused flag is saved")
