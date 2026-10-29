@@ -36,6 +36,7 @@ return function()
 		check(not R.deliver(d),"duplicate delivery rejected")
 		if def.kind=="cash" then check(d.cash==cash+2*def.seconds,"existing cash balance")
 		elseif def.kind=="golden" then check(d.goldenRush==golden+def.count,"existing Golden Rush balance")
+		elseif def.kind=="boost" then check(prize.boost==def.boost and prize.amount==def.minutes and d.cash==cash,"boost prize: the server adds the time")
 		else check(#d.crushers.owned==owned+1 and d.crushers.owned[#d.crushers.owned].rarity==def.rarity,"existing inventory reward") end
 		-- Crash after delivery save: pending is cleared atomically with the reward.
 		d=Profiles.migrate(Profiles.copy(d),guid)

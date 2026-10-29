@@ -13,6 +13,8 @@ local function prize(raw)
 		local item=raw.item
 		if type(item)~="table" or type(item.id)~="string" or #item.id>64 or not table.find(C.rarity(def.rarity).types,item.type) then return nil end
 		out.item={id=item.id,type=item.type,rarity=def.rarity,modifier="Standard",level=1}
+	elseif def.kind=="boost" then
+		out.boost=def.boost out.amount=def.minutes
 	else
 		if not finite(raw.amount) or raw.amount<=0 then return nil end
 		out.amount=math.min(C.MaxMoney,raw.amount)
@@ -41,6 +43,7 @@ function R.reserve(d,now,cps,random,guid)
 	if def.kind=="crusher" then
 		local pool=C.rarity(def.rarity).types
 		out.item={id=guid(),type=pool[math.min(#pool,math.floor(random()*#pool)+1)],rarity=def.rarity,modifier="Standard",level=1}
+	elseif def.kind=="boost" then out.boost=def.boost out.amount=def.minutes -- granted by the server (Boosts.add)
 	else out.amount=if def.kind=="golden" then def.count else C.money(math.max(1,cps)*def.seconds) end
 	state.nextAt=now+S.Cooldown state.pending=out
 	return true,out
@@ -52,7 +55,8 @@ function R.deliver(d)
 		-- A purchase can fill the last slot while the reservation save yields.
 		if #d.crushers.owned>=C.MaxInventory then return false,"Your crusher prize is reserved. Make inventory space and reopen Daily Spin." end
 		table.insert(d.crushers.owned,table.clone(out.item))
-	elseif out.kind=="golden" then d.goldenRush=math.min(100000,(d.goldenRush or 0)+out.amount)
+	elseif out.kind=="golden" then d.goldenRush=math.min(100000,(d.goldenRush or 0)+out.amount) -- older saved prizes
+	elseif out.kind=="boost" then -- nothing here: the server adds the boost time after this
 	else d.cash=C.money(d.cash+out.amount) end
 	state.pending=nil state.last=out state.claims+=1
 	return true,out
