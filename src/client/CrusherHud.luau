@@ -38,6 +38,7 @@ function H.start()
  })
  gui.Destroying:Connect(function() favoriteGoal:Destroy() end)
  local indexView=require(script.Parent.CrusherIndex).new(gui,act)
+ local trashView=require(script.Parent.TrashPanel).new(gui,act) -- the trash can on the plot
  local book,bookBadge=Style.iconButton(gui,{name="BookButton",image=Icons.Book,label="INDEX",a=blue,b=navy})
  indexView.onReady=function(ready) bookBadge.Visible=ready end -- "!" when an Index reward can be claimed
  Style.placeHudButton(book,0) book.Activated:Connect(indexView.toggle)
@@ -72,6 +73,7 @@ function H.start()
  local function redraw()
   if not state then return end
   indexView.update(state)
+  trashView.update(state)
  end
  -- PlayerGui-hosted SurfaceGuis receive mouse input reliably. Replicated world
  -- templates remain visible to other players; only the owner's copies are interactive.
@@ -191,7 +193,7 @@ function H.start()
   if v.message then toast.Text=v.message noticeUntil=os.clock()+5 end
   redraw()
  end)
- Net.event("CrusherOpen").OnClientEvent:Connect(function(kind,bay) if kind=="Inventory" then toast.Text="Pick a crusher in your hotbar (bottom) and press E at the bay." noticeUntil=os.clock()+4 end end)
+ Net.event("CrusherOpen").OnClientEvent:Connect(function(kind,bay) if kind=="Trash" then trashView.open() return end if kind=="Inventory" then toast.Text="Pick a crusher in your hotbar (bottom) and press E at the bay." noticeUntil=os.clock()+4 end end)
  Net.event("Notice").OnClientEvent:Connect(function(v) toast.Text=v.text or "" noticeUntil=os.clock()+5 end)
  local last=0 Run.RenderStepped:Connect(function()
   if os.clock()-last<.1 then return end last=os.clock()

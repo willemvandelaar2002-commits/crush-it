@@ -642,7 +642,7 @@ function G.start()
 	for _,plot in Plots.all() do
 		for name,station in plot.stations do if station.prompt then station.prompt.Triggered:Connect(function(p)
 			if plot.owner~=p then Net.event("Notice"):FireClient(p,{text="Use your own factory."}) return end
-			if name=="Production" or name=="Rolling" then Net.event("CrusherOpen"):FireClient(p,name) else action(p,name) end
+			if name=="Production" or name=="Rolling" or name=="Trash" then Net.event("CrusherOpen"):FireClient(p,name) else action(p,name) end
 		end) end end
 		for slot,ped in plot.stations.Roll.pedestals do ped.prompt.Triggered:Connect(function(p)
 			if plot.owner~=p then Net.event("Notice"):FireClient(p,{text="Use your own factory."}) return end
@@ -698,11 +698,13 @@ function G.start()
 		elseif name=="UpgradePlot" then target=ctx.plot.progression.upgrade.part
 		elseif name=="Fuse" or name=="CollectFusion" then target=ctx.plot.stages and ctx.plot.stages.fuserPart reach=26
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
+		elseif name=="TrashMany" then target=ctx.plot.stations.Trash and ctx.plot.stations.Trash.part reach=40
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
 		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end
+		if name=="Trash" then Net.event("CrusherOpen"):FireClient(p,"Trash") return end -- the trash can's own button opens the picker
 		if name=="FavoriteStart" then
 			Goals.beginFavorite(ctx,guid(),workspace:GetServerTimeNow()) send(p) return
 		elseif name=="FavoriteConfirmed" then

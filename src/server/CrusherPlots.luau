@@ -220,7 +220,7 @@ function P.create(root,Plots)
   require(script.Parent.CrusherRowVisuals).create(plot)
   require(script.Parent.FactoryProgressionVisuals).create(plot)
   -- Boards stand low and forward, turned toward the walkway, so the banks show over them.
-  for _,spec in {{id="Production",x=-22,z=42,yaw=.3},{id="Rolling",x=22,z=42,yaw=-.3},{id="Collect",x=-60,z=60,yaw=math.pi/2},{id="Sell",x=-26,z=96,yaw=math.pi},{id="Roll",x=52,z=66,yaw=-math.pi/2},{id="Goals",x=52,z=102,yaw=math.pi}} do -- 28 Oct: Sell toward the plaza-side wall (z 80 -> 96), Goals in the front-right corner with its back to the plaza wall (was -44,24)
+  for _,spec in {{id="Production",x=-22,z=42,yaw=.3},{id="Rolling",x=22,z=42,yaw=-.3},{id="Collect",x=-60,z=60,yaw=math.pi/2},{id="Sell",x=-26,z=96,yaw=math.pi},{id="Roll",x=52,z=66,yaw=-math.pi/2},{id="Trash",x=57,z=92,yaw=-math.pi/2},{id="Goals",x=36,z=102,yaw=math.pi}} do -- 28 Oct: Sell toward the plaza-side wall (z 80 -> 96), Goals in the front-right corner with its back to the plaza wall (was -44,24). 29 Oct: Trash can right of the roller, Goals moved toward the centre path (x 52 -> 36)
    local cf=o*CFrame.new(spec.x,0,spec.z)*CFrame.Angles(0,spec.yaw or 0,0)
    local station=if spec.id=="Production" or spec.id=="Rolling" then W.board(m,cf,spec.id) elseif spec.id=="Goals" then W.goals(m,cf) else W.station(m,cf,spec.id)
    if not station.rows then station.prompt=P.prompt(station.part,spec.id,spec.id.." station") end

@@ -435,7 +435,7 @@ end
 -- skipped.
 local KIT_SUFFIX={"","_Plot3Orange","_Plot4Silver","_Plot5Gold"}
 local BOARDS={PlotUpgradeStation=true,ProductionStation=true,RollingStation=true,CollectStation=true,
-	SellStation=true,RollStation=true,GoalsStation=true,FloorSign1=true,FloorSign2=true}
+	SellStation=true,RollStation=true,GoalsStation=true,TrashStation=true,FloorSign1=true,FloorSign2=true}
 local function buildKit(plot,level)
 	if plot.stages.kit then plot.stages.kit:Destroy() plot.stages.kit=nil end
 	local suffix=KIT_SUFFIX[level] if not suffix then return end

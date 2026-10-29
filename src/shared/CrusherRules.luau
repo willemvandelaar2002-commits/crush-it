@@ -296,6 +296,23 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if copies<2 then return false,"Keep your last crusher of each type for the Index." end
 		for i,other in s.owned do if other.id==item.id then table.remove(s.owned,i) break end end
 		return true,"Duplicate recycled. Inventory space freed."
+	elseif action=="TrashMany" then
+		-- Trash can on the plot: throw away any unequipped crushers (the Index
+		-- remembers every type you ever owned, so even a last copy may go).
+		local ids=if type(args.ids)=="table" then args.ids else {}
+		if #ids==0 then return false,"Pick the crushers you want to trash first." end
+		if #ids>C.MaxInventory then return false,"Too many crushers in one go." end
+		local equipped={} for _,id in s.equipped do equipped[id]=true end
+		local want={} for _,id in ids do if type(id)=="string" then want[id]=true end end
+		local gone=0
+		for _,item in s.owned do if want[item.id] and not equipped[item.id] then gone+=1 end end
+		if gone==0 then return false,"Those crushers are equipped. Take them out of their bay first." end
+		if gone>=#s.owned then return false,"Keep at least one crusher." end
+		R.markSeen(s)
+		for i=#s.owned,1,-1 do local item=s.owned[i]
+			if want[item.id] and not equipped[item.id] then table.remove(s.owned,i) end
+		end
+		return true,"Trashed "..gone.." crusher"..(if gone==1 then "" else "s")..". Inventory space freed.",gone
 	elseif action=="RecycleDuplicates" then
 		local extras=R.duplicateExtras(s.owned,s.equipped,function(item) return R.stats(d,item,perks or {}).cps end)
 		if #extras==0 then return false,"No duplicates to recycle. Equipped crushers and your best copy of each type are kept." end
