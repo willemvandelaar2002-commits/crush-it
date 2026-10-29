@@ -377,7 +377,7 @@ local function renderHud(now)
 		elseif you.carrying then subtitle.Text="Load the "..item.." into your super crusher's glowing port!"
 		elseif (you.loaded or 0)>1 then subtitle.Text=(if look.pickup then "Candy" else "Core").." loaded! Your next hit does x"..you.loaded.." damage."
 		else subtitle.Text=if look.pickup then "Pick up the glowing candies on your plot and load them into your super crusher!"
-			else "Pick up the purple cores on your plot and load them into your super crusher!" end end
+			else "Pick up the purple cores on your plot and load them into your super crusher!" end
 	elseif phase=="Finale" then
 		subtitle.Text="Your factories powered it up. The Mega Crusher is finishing the "..(if look.core then "pumpkin" else "core").."!"
 	elseif phase=="Victory" then
