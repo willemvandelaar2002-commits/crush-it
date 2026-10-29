@@ -146,7 +146,10 @@ function R.migrate(d, guid)
 	s.rollReadyAt=number(s.rollReadyAt,0,1e12)
 	s.rolls=integer(s.rolls,0,1e9) -- rolls made (the first one is always cheap)
 	local owned,ids={},{}
+	-- crate crushers have one fixed tier: copies saved under an older tier follow it
+	local function fixTier(v) local def=C.typeById(v.type) if def and def.crate and def.rarity and C.rarity(def.rarity) then v.rarity=def.rarity end end
 	for _,v in (if type(s.owned)=="table" then s.owned else {}) do
+		if type(v)=="table" then fixTier(v) end
 		if type(v)=="table" and C.typeById(v.type) and C.rarity(v.rarity) and C.modifier(v.modifier) and (#owned<C.MaxInventory or C.rarity(v.rarity).exclusive) then
 			local id=if type(v.id)=="string" and #v.id<=64 and #v.id>0 and not ids[v.id] then v.id else guid()
 			ids[id]=true table.insert(owned,{id=id,type=v.type,rarity=v.rarity,modifier=v.modifier,level=math.clamp(integer(v.level,1,C.topLevelCap()),1,C.topLevelCap()),
@@ -158,6 +161,7 @@ function R.migrate(d, guid)
 	-- A running fusion: the main crusher waits inside the machine (not in owned)
 	-- until readyAt (unix seconds), then CollectFusion gives it back fused.
 	local f=s.fusion
+	if type(f)=="table" and type(f.item)=="table" then fixTier(f.item) end
 	if type(f)=="table" and type(f.item)=="table" and C.typeById(f.item.type) and C.rarity(f.item.rarity) and C.modifier(f.item.modifier) then
 		local v=f.item
 		local id=if type(v.id)=="string" and #v.id<=64 and #v.id>0 and not ids[v.id] then v.id else guid()
