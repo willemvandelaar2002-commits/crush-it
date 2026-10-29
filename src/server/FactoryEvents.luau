@@ -27,7 +27,8 @@ function Events.start(api)
 	if not E.Enabled then return end
 	local remote=Net.event("FactoryEventState") local action=Net.event("FactoryEventAction")
 	local notice=Net.event("Notice")
-	local phase="Idle" local since=workspace:GetServerTimeNow() local untilAt=since+E.Interval
+	local phase="Idle" local since=workspace:GetServerTimeNow() local untilAt=E.nextStart(since)
+	local variant=E.variantAt(untilAt) -- which version (E.Variants) the coming/running round is
 	local roundId="" local hp,maxHp=0,0 local roster={} local requestAt={}
 	local outcome="" local lastBroadcast=0 local accumulated=0
 	local hazards={} local nextSlam=0 local hazardId=0
@@ -37,7 +38,7 @@ function Events.start(api)
 	local function publishAttributes()
 		state:SetAttribute("RoundId",roundId) state:SetAttribute("PhaseStarted",since)
 		state:SetAttribute("PhaseEnds",untilAt) state:SetAttribute("Hp",hp) state:SetAttribute("MaxHp",maxHp)
-		state:SetAttribute("Outcome",outcome) state:SetAttribute("Phase",phase)
+		state:SetAttribute("Outcome",outcome) state:SetAttribute("Phase",phase) state:SetAttribute("Variant",variant)
 	end
 	local function packet(p)
 		local participants={}
@@ -51,7 +52,7 @@ function Events.start(api)
 		table.sort(participants,function(a,b) return a.userId<b.userId end)
 		local list={} for _,h in hazards do table.insert(list,{id=h.id,userId=h.userId,position=h.position,warnAt=h.warnAt,at=h.at,result=h.result}) end
 		local r=roster[p]
-		return {phase=phase,started=since,ends=untilAt,roundId=roundId,hp=hp,maxHp=maxHp,
+		return {phase=phase,started=since,ends=untilAt,roundId=roundId,hp=hp,maxHp=maxHp,variant=variant,
 			outcome=outcome,participants=participants,hazards=list,
 			you=if r and not r.pending then {points=r.points,grade=r.grade,
 				count=r.count,active=r.active,hits=r.hits,present=r.present==true,carrying=r.carrying,
@@ -95,7 +96,17 @@ function Events.start(api)
 	local function corePart(parent,cf,size)
 		local Rig=RS.Shared:FindFirstChild("FactoryBearRig")
 		local library=RS:FindFirstChild("FactoryEventMeshes")
-		local template=library and library:FindFirstChild("FactoryBear")
+		local look=E.variant(variant)
+		-- Halloween: a glowing ghost candy (CandySoul) instead of a reactor core
+		local candy=look.pickup and library and library:FindFirstChild(look.pickup)
+		if candy and candy:IsA("Model") then
+			local m=candy:Clone() m.Name="Core"
+			for _,part in m:GetDescendants() do if part:IsA("BasePart") then part.Anchored=true part.CanCollide=false part.CanTouch=false part.CanQuery=false end end
+			local _,box=m:GetBoundingBox()
+			m:ScaleTo(m:GetScale()*size*1.2/math.max(box.X,box.Y,box.Z)) m:PivotTo(cf) m.Parent=parent
+			return m
+		end
+		local template=library and library:FindFirstChild(look.boss)
 		if Rig and template and template:GetAttribute("FactoryBearReady")==true then
 			local ok,m=pcall(function() return require(Rig).core(template,cf,size) end)
 			if ok and m then m.Parent=parent return m end
@@ -123,14 +134,14 @@ function Events.start(api)
 		corePart(holder,cf,4)
 		local grab=Instance.new("Part") grab.Name="Grab" grab.Size=Vector3.new(3,3,3) grab.CFrame=cf grab.Transparency=1
 		grab.Anchored=true grab.CanCollide=false grab.CanTouch=false grab.CanQuery=false grab.Parent=holder
-		local light=Instance.new("PointLight") light.Color=Color3.fromRGB(174,77,255) light.Range=10 light.Brightness=1.4 light.Parent=grab
+		local light=Instance.new("PointLight") light.Color=E.variant(variant).accent light.Range=10 light.Brightness=1.4 light.Parent=grab
 		local tag=Instance.new("BillboardGui") tag.Name="CoreTag" tag.Size=UDim2.fromOffset(110,34) tag.StudsOffset=Vector3.new(0,3.6,0)
 		tag.AlwaysOnTop=true tag.MaxDistance=120 tag.Parent=grab
-		local text=Instance.new("TextLabel") text.Size=UDim2.fromScale(1,1) text.BackgroundTransparency=1 text.Text="CORE"
+		local text=Instance.new("TextLabel") text.Size=UDim2.fromScale(1,1) text.BackgroundTransparency=1 text.Text=if E.variant(variant).pickup then "CANDY" else "CORE"
 		text.TextScaled=true text.Font=Enum.Font.FredokaOne text.TextColor3=Color3.fromRGB(230,180,255) text.Parent=tag
 		local stroke=Instance.new("UIStroke") stroke.Thickness=2.5 stroke.Color=Color3.fromRGB(19,23,42) stroke.Parent=text
 		r.coreAt[i]=holder r.coreCount+=1
-		local pr=prompt(grab,"Pick up","Event core",p.UserId)
+		local pr=prompt(grab,"Pick up",if E.variant(variant).pickup then "Candy soul" else "Event core",p.UserId)
 		pr.Triggered:Connect(function(who)
 			if who~=p or roster[p]~=r or phase~="Active" or r.carrying or not holder.Parent then return end
 			if not ownPlot(p,r) then return end
@@ -167,7 +178,8 @@ function Events.start(api)
 			r.boost=math.max(r.boost or 0,if critical then E.Cores.CriticalMultiplier else E.Cores.Multiplier)
 			r.loads+=1
 			if critical then r.critUntil=0 r.nextCrit=t+rng:NextNumber(E.Cores.CriticalEvery[1],E.Cores.CriticalEvery[2]) end
-			notice:FireClient(p,{text=if critical then "CRITICAL CORE! x"..E.Cores.CriticalMultiplier.." hit" else "Core loaded! x"..E.Cores.Multiplier.." hit"})
+			local word=if E.variant(variant).pickup then "CANDY" else "CORE"
+			notice:FireClient(p,{text=if critical then "CRITICAL "..word.."! x"..E.Cores.CriticalMultiplier.." hit" else (if word=="CANDY" then "Candy" else "Core").." loaded! x"..E.Cores.Multiplier.." hit"})
 			broadcast()
 		end)
 		r.port=port
@@ -218,8 +230,9 @@ function Events.start(api)
 		end
 		broadcast()
 	end
-	local function announce()
+	local function announce(forced)
 		if phase~="Idle" then return false end
+		variant=if E.Variants[forced or ""] then forced else E.variantAt(now()+1)
 		roster={} hp=0 maxHp=0 outcome="" hazards={}
 		roundId=Http:GenerateGUID(false)
 		setPhase("Announce",E.Announce)
@@ -337,7 +350,11 @@ function Events.start(api)
 			elseif phase=="Active" then recover("Timeout")
 			elseif phase=="Finale" then victory()
 			elseif phase=="Victory" then setPhase("Recover",E.Recover)
-			elseif phase=="Recover" then roster={} hp=0 maxHp=0 setPhase("Idle",E.Interval) end
+			elseif phase=="Recover" then
+				roster={} hp=0 maxHp=0
+				local nextAt=E.nextStart(now()) variant=E.variantAt(nextAt)
+				setPhase("Idle",nextAt-now())
+			end
 		end
 		if t-lastBroadcast>=E.Broadcast and phase~="Idle" then broadcast() end
 	end
@@ -367,8 +384,8 @@ function Events.start(api)
 	-- No live client can start/win/cancel an event.
 	if RunService:IsStudio() then
 		local dev=Instance.new("BindableFunction") dev.Name="DevFactoryEvent"
-		dev.OnInvoke=function(command)
-			if command=="Start" then return announce()
+		dev.OnInvoke=function(command,arg)
+			if command=="Start" then return announce(arg) -- arg: "Bear" or "Halloween" (default: the scheduled one)
 			elseif command=="Cancel" then recover("Cancelled") return true
 			elseif command=="Win" and phase=="Active" then
 				-- Studio test win: count everyone taking part as qualified, so the

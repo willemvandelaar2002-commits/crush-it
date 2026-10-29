@@ -1,6 +1,6 @@
 --!strict
 -- Event-only tuning. Existing production, roll, shop and plot numbers stay intact.
-return {
+local E = {
 	-- Plot-local box over the crusher platform: stage decorations inside it
 	-- hide during the event (side walls at |x| 79, rear beacon at z -109 and
 	-- the front yard stay). Measured on a Factory V plot, 28 Oct.
@@ -63,3 +63,42 @@ return {
 	-- Bear paw slam: a red danger circle under one player at a time, then the slam.
 	Slam = { Every = { 13, 19 }, Warn = 2.2, Radius = 9, MaxActive = 2, Stagger = 1.2, StaggerSpeed = 5 },
 }
+
+-- 29 Oct: two versions of the event, taking turns on the hour (Willem: "13:00
+-- normal event, 14:00 Halloween event"). Same rules and rewards; only the boss,
+-- cores, colours and words change. Order[1] runs on even UTC hours (13:00 in
+-- Amsterdam winter time), Order[2] on odd ones. Hourly=false: the old Interval.
+E.Schedule = { Hourly = true, Order = { "Bear", "Halloween" } }
+E.Variants = {
+	Bear = {
+		boss = "FactoryBear", -- ReplicatedStorage.FactoryEventMeshes
+		bossWord = "bear", Boss = "Bear",
+		accent = Color3.fromRGB(173, 65, 255), -- cores, beams, port rings
+		sky = Color3.fromRGB(120, 60, 190), skyDecay = Color3.fromRGB(60, 20, 110),
+		ambient = Color3.fromRGB(125, 95, 165), outdoor = Color3.fromRGB(140, 105, 190),
+		tint = Color3.fromRGB(235, 226, 255),
+	},
+	Halloween = {
+		boss = "PumpkinForeman", core = "PumpkinCore", pickup = "CandySoul",
+		bossWord = "pumpkin", Boss = "Pumpkin",
+		accent = Color3.fromRGB(184, 255, 68), -- lime candy energy
+		sky = Color3.fromRGB(230, 110, 30), skyDecay = Color3.fromRGB(70, 30, 90),
+		ambient = Color3.fromRGB(160, 110, 80), outdoor = Color3.fromRGB(170, 120, 90),
+		tint = Color3.fromRGB(255, 232, 210),
+	},
+}
+-- Which version a round started at server time `t` is.
+function E.variantAt(t: number): string
+	if not E.Schedule.Hourly then return E.Schedule.Order[1] end
+	local order = E.Schedule.Order
+	return order[math.floor(t / 3600) % #order + 1]
+end
+-- When the next round is announced after time `t`.
+function E.nextStart(t: number): number
+	if not E.Schedule.Hourly then return t + E.Interval end
+	return (math.floor(t / 3600) + 1) * 3600
+end
+function E.variant(name: string?): any
+	return E.Variants[name or ""] or E.Variants.Bear
+end
+return E

@@ -6,6 +6,7 @@ local Lighting=game:GetService("Lighting")
 local E=require(RS.Shared.FactoryEventConfig)
 local Motion=require(RS.Shared.FactoryEventMotion)
 local C=require(RS.Shared.CrusherConfig)
+local Style=require(RS.Shared.Kit.Style)
 local V=Vector3.new
 local INK=Color3.fromRGB(19,23,42)
 local GOLD=Color3.fromRGB(255,211,45)
@@ -21,12 +22,31 @@ end
 local BearRig=require(RS.Shared.FactoryBearRig)
 local Players=game:GetService("Players")
 local me=Players.LocalPlayer
+-- 29 Oct: which version of the event this round is (E.Variants: Bear or
+-- Halloween). Set from every packet; PURPLE (the accent of cores, beams and
+-- port rings) follows it, so the whole module recolours with it.
+local look=E.variant("Bear")
+local function setLook(name)
+	look=E.variant(name)
+	PURPLE=look.accent
+end
 local function bearTemplate()
 	local library=RS:FindFirstChild("FactoryEventMeshes")
-	local t=library and library:FindFirstChild("FactoryBear")
+	local t=library and library:FindFirstChild(look.boss)
 	return if t and t:IsA("Model") and t:GetAttribute("FactoryBearReady")==true then t else nil
 end
 local function core(parent,origin,scale)
+	-- Halloween: the pumpkin core (rind shells round a glowing candy centre)
+	local library=RS:FindFirstChild("FactoryEventMeshes")
+	local pumpkin=look.core and library and library:FindFirstChild(look.core)
+	if pumpkin and pumpkin:IsA("Model") then
+		local m=pumpkin:Clone() m.Name="CorruptedCore"
+		local _,box=m:GetBoundingBox()
+		m:ScaleTo(m:GetScale()*5.25*scale/math.max(box.X,box.Y,box.Z)) m:PivotTo(origin) m.Parent=parent
+		local glow=m:FindFirstChild("Glow")
+		if glow then local light=Instance.new("PointLight") light.Color=PURPLE light.Range=8*scale+6 light.Brightness=1.5 light.Parent=glow end
+		return {model=m,template=true,base=m:GetScale(),origin=origin,scale=scale,heart=glow,shell=m:FindFirstChild("Frame"),bands={}}
+	end
 	-- 28 Oct: the bear's own reactor + ring when the Factory Bear template is in
 	local template=bearTemplate()
 	if template then
@@ -163,18 +183,20 @@ end
 -- sky goes dark purple with stars and the hall's light dims; all restored after.
 local NIGHT={ClockTime=0.3,Brightness=2.2,Ambient=Color3.fromRGB(125,95,165),OutdoorAmbient=Color3.fromRGB(140,105,190),
 	ExposureCompensation=0.15,EnvironmentDiffuseScale=0.6,EnvironmentSpecularScale=0.5}
+-- (the night colours follow the round's version, see setLook)
 function Visuals:darkSky(packet)
 	local age=workspace:GetServerTimeNow()-packet.started
 	local want=packet.phase~="Announce" or age>=2.6
 	if want and not self.night then
+		NIGHT.Ambient=look.ambient NIGHT.OutdoorAmbient=look.outdoor
 		local saved={props={},kids={}}
 		for k,v in NIGHT do saved.props[k]=Lighting[k] end
 		for _,c in Lighting:GetChildren() do
 			if c:IsA("Sky") or c:IsA("Atmosphere") then table.insert(saved.kids,c) c.Parent=nil end
 		end
 		local sky=Instance.new("Sky") sky.Name="BearEventSky" sky.StarCount=4000 sky.CelestialBodiesShown=false sky.Parent=Lighting
-		local atmo=Instance.new("Atmosphere") atmo.Name="BearEventAtmosphere" atmo.Density=.22 atmo.Color=Color3.fromRGB(120,60,190)
-		atmo.Decay=Color3.fromRGB(60,20,110) atmo.Glare=0 atmo.Haze=1.6 atmo.Parent=Lighting
+		local atmo=Instance.new("Atmosphere") atmo.Name="BearEventAtmosphere" atmo.Density=.22 atmo.Color=look.sky
+		atmo.Decay=look.skyDecay atmo.Glare=0 atmo.Haze=1.6 atmo.Parent=Lighting
 		saved.sky=sky saved.atmo=atmo
 		game:GetService("TweenService"):Create(Lighting,TweenInfo.new(.6),NIGHT):Play()
 		self.night=saved
@@ -278,7 +300,7 @@ function Visuals:bearRig()
 			local teddyParts={} for _,p in bear:GetDescendants() do if p:IsA("BasePart") then table.insert(teddyParts,p) end end
 			-- purple smoke for the change, and a landing ring
 			local smoke=part(self.folder,"TransformSmoke",V(size.X,2,size.X),CFrame.new(bottom+V(0,4,0)),PURPLE) smoke.Transparency=1
-			local emitter=Instance.new("ParticleEmitter") emitter.Color=ColorSequence.new(Color3.fromRGB(150,60,255),Color3.fromRGB(60,20,120))
+			local emitter=Instance.new("ParticleEmitter") emitter.Color=ColorSequence.new(PURPLE,Style.darken(PURPLE,.6))
 			emitter.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,10),NumberSequenceKeypoint.new(1,26)})
 			emitter.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,.3),NumberSequenceKeypoint.new(1,1)})
 			emitter.Lifetime=NumberRange.new(1.6,2.6) emitter.Speed=NumberRange.new(10,22) emitter.SpreadAngle=Vector2.new(70,70)
@@ -321,6 +343,7 @@ function Visuals:bearRig()
 end
 function Visuals:update(packet)
 	if self.roundId~=packet.roundId then self:clear() self.roundId=packet.roundId end
+	setLook(packet.variant)
 	self.packet=packet
 	-- Announce: only the corrupted bear and the shielded core under the Mega
 	-- Crusher (for the intro cutscene); no super crushers, nothing hidden yet.
@@ -329,7 +352,7 @@ function Visuals:update(packet)
 	self:darkSky(packet)
 	if not self.tint then
 		self.tint=Instance.new("ColorCorrectionEffect") self.tint.Name="BearEventTint"
-		self.tint.TintColor=Color3.fromRGB(235,226,255) self.tint.Saturation=.06 self.tint.Parent=Lighting
+		self.tint.TintColor=look.tint self.tint.Saturation=.06 self.tint.Parent=Lighting
 	end
 	local desired={}
 	local camera=workspace.CurrentCamera
@@ -515,7 +538,7 @@ function Visuals:step(now)
 			local a1=Instance.new("Attachment") a1.Parent=self.central.shield
 			local beam=Instance.new("Beam") beam.Name="CorruptionBeam" beam.Attachment0=a0 beam.Attachment1=a1
 			beam.FaceCamera=true beam.Segments=24 beam.CurveSize0=60 beam.CurveSize1=-30 beam.Width0=5 beam.Width1=2.5
-			beam.Color=ColorSequence.new(Color3.fromRGB(200,90,255),Color3.fromRGB(120,40,230)) beam.LightEmission=1
+			beam.Color=ColorSequence.new(Style.lighten(PURPLE,.2),Style.darken(PURPLE,.15)) beam.LightEmission=1
 			beam.Transparency=NumberSequence.new(.25) beam.TextureSpeed=2 beam.Parent=b.model
 			b.beam=beam
 		end

@@ -270,3 +270,4 @@
 - 2026-10-29: Reward balance: playtime/daily cash about a third of before, their crusher rewards one tier higher (Rare/Epic, grand prizes Legendary), quest time skips 2.5x the tokens, Index cash milestones smaller. Daily Spin and event rewards unchanged. Willem's feedback.
 - 2026-10-29: The toy a crusher crushes now follows its rarity (Apple, Teddy/Phone, TV/Fridge, Car/Truck, Tank, House/Statue, Plane/Ship, Planet), all 13 object meshes used again; visual only. Willem's request.
 - 2026-10-29: Daily Spin Golden prizes replaced by 2x Luck 10 min and 2x Cash 30 min; prize list brighter with rounded chances. Willem's feedback.
+- 2026-10-29: Factory event now every full hour, taking turns: normal Bear event on even UTC hours, Halloween event (Pumpkin Foreman boss, pumpkin cores, candy pickups, lime/orange colours) on odd ones; same rules and rewards. Willem's Halloween models.

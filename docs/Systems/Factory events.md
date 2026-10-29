@@ -228,3 +228,24 @@ streaming in/out; unchanged production/saves; full restoration and a second
 round. Inspect Output and screenshots at 1080p. Confirm the bear eye placement,
 central-core contact and nearby stations remain clear. Save/rejoin with a
 real enabled Studio DataStore and verify one reward/win and no lost inventory.
+
+## 29 Oct: two versions, taking turns on the hour
+
+`FactoryEventConfig.Schedule` (Hourly) and `Variants`: a round is announced on every
+full hour; even UTC hours run the normal **Bear** event, odd UTC hours the
+**Halloween** event (13:00 bear, 14:00 Halloween, 15:00 bear... in Amsterdam winter
+time; in summer time the pair swaps). Same rules, damage and rewards; only the
+look changes:
+- boss: PumpkinForeman (same 20 rigged channels as the Factory Bear, driven by
+  FactoryBearRig; candle eyes turn lime when corrupted, lime reactor)
+- cores under the Mega Crusher / on super crushers: PumpkinCore (rind + glowing centre)
+- pickups you carry: CandySoul ("CANDY", "Load the candy...")
+- lime beams, port rings and boss bar, orange night sky
+Models: ReplicatedStorage.FactoryEventMeshes.PumpkinForeman / PumpkinCore / CandySoul
+(place-only, Publish), installed by assets/halloween/Install-Halloween.luau with
+Shared.HalloweenRigData; all use texture rbxassetid://99524519148678. The raw
+imports are in ServerStorage.HalloweenImports. Studio chat: `/event halloween`,
+`/event bear` (or `/event` for the scheduled one). The packet and the state folder
+carry `Variant`. Set `Schedule.Hourly=false` to go back to `Interval`.
+Checked in Studio Play: both versions start, the pumpkin boss/candies/colours show,
+cancel cleans up. A full Halloween win (rewards) was not run on the real save.

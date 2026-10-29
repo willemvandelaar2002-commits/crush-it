@@ -343,7 +343,10 @@ local function renderHud(now)
 	fill.Size=UDim2.fromScale(math.max(shown,.001),1) fill.Visible=shown>.002
 	-- purple at full shield, magenta then orange as it breaks
 	local warm=1-fraction
-	fillGradient.Color=ColorSequence.new(Color3.fromRGB(215,95,255):Lerp(Color3.fromRGB(255,150,60),warm*warm),Color3.fromRGB(125,25,225):Lerp(Color3.fromRGB(220,50,70),warm*warm))
+	-- (Halloween: lime candy energy instead of purple)
+	local barTop,barBottom=if packet.variant=="Halloween" then Color3.fromRGB(205,255,110) else Color3.fromRGB(215,95,255),
+		if packet.variant=="Halloween" then Color3.fromRGB(95,190,20) else Color3.fromRGB(125,25,225)
+	fillGradient.Color=ColorSequence.new(barTop:Lerp(Color3.fromRGB(255,150,60),warm*warm),barBottom:Lerp(Color3.fromRGB(220,50,70),warm*warm))
 	percent.Text=math.ceil(fraction*100).."%"
 	for _,m in markers do
 		local broken=fraction*100<=m.pct
@@ -358,26 +361,31 @@ local function renderHud(now)
 	paintBoard(packet)
 	primary.Visible=false
 	subtitle.TextColor3=Color3.new(1,1,1)
+	-- words follow the round's version (E.Variants: Bear or Halloween)
+	local look=E.variant(packet.variant)
+	local boss,Boss=look.bossWord,look.Boss
+	local item=if look.pickup then "candy" else "core"
 	if phase=="Announce" then
-		subtitle.Text="The bear is corrupted! Every factory fights: your crushers combine soon."
+		subtitle.Text="The "..boss.." is corrupted! Every factory fights: your crushers combine soon."
 	elseif phase=="Assemble" then
 		subtitle.Text=if you and you.fallback then "No crushers placed: you get a stand-in SUPER PRESS!"
 			elseif you then E.Grades[you.grade].name.." · ASSEMBLING!" else "Factories are assembling their super crushers!"
 	elseif phase=="Active" then
 		local danger=false
 		for _,h in packet.hazards or {} do if h.userId==me.UserId and not h.result then danger=true end end
-		if not you then subtitle.Text="Factories are breaking the bear's shield!"
-		elseif danger then subtitle.Text="BEAR SLAM! Get out of the red circle!" subtitle.TextColor3=Color3.fromRGB(255,110,110)
+		if not you then subtitle.Text="Factories are breaking the "..boss.."'s shield!"
+		elseif danger then subtitle.Text=string.upper(boss).." SLAM! Get out of the red circle!" subtitle.TextColor3=Color3.fromRGB(255,110,110)
 		elseif not you.present then subtitle.Text="Go back to your factory to keep crushing!" primary.Visible=true
-		elseif now<=(you.critUntil or 0) then subtitle.Text="CRITICAL! Load a core into your super crusher NOW!" subtitle.TextColor3=Color3.fromRGB(255,218,65)
-		elseif you.carrying then subtitle.Text="Load the core into your super crusher's glowing port!"
-		elseif (you.loaded or 0)>1 then subtitle.Text="Core loaded! Your next hit does x"..you.loaded.." damage."
-		else subtitle.Text="Pick up the purple cores on your plot and load them into your super crusher!" end
+		elseif now<=(you.critUntil or 0) then subtitle.Text="CRITICAL! Load a "..item.." into your super crusher NOW!" subtitle.TextColor3=Color3.fromRGB(255,218,65)
+		elseif you.carrying then subtitle.Text="Load the "..item.." into your super crusher's glowing port!"
+		elseif (you.loaded or 0)>1 then subtitle.Text=(if look.pickup then "Candy" else "Core").." loaded! Your next hit does x"..you.loaded.." damage."
+		else subtitle.Text=if look.pickup then "Pick up the glowing candies on your plot and load them into your super crusher!"
+			else "Pick up the purple cores on your plot and load them into your super crusher!" end
 	elseif phase=="Finale" then
-		subtitle.Text="Your factories powered it up. The Mega Crusher is finishing the core!"
+		subtitle.Text="Your factories powered it up. The Mega Crusher is finishing the "..(if look.core then "pumpkin" else "core").."!"
 	elseif phase=="Victory" then
 		subtitle.Text=if you and you.reward>0 then "YOU EARNED "..Format.cash(you.reward).."!"
-			elseif you then "Bear defeated! Stay on your plot longer next time to earn the reward."
+			elseif you then Boss.." defeated! Stay on your plot longer next time to earn the reward."
 			else "The factory is safe again!"
 	elseif phase=="Recover" then
 		subtitle.Text=if packet.outcome=="Victory" then "Your original crushers are returning." else packet.outcome.." · restoring the factory."
