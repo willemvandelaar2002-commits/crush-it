@@ -234,7 +234,7 @@ function I.new(gui, act)
 		local rarityText=label(box,"Rarity",if item then item.rarity.." · Lv "..item.level else rarity.name,
 			UDim2.new(0,4,1,-44),UDim2.new(1,-8,0,36),30)
 		rarityText.TextScaled=true rarityText.ZIndex=4
-		local tint={Legendary=.2,Secret=.75,Divine=.45,Mythic=.6}
+		local tint={Legendary=.2,Secret=.75,Divine=.15,Mythic=.85}
 		rarityText.TextColor3=Style.lighten(colour,tint[if item then item.rarity else rarity.name] or .55)
 		if item then
 			local stats=label(frame,"Output",Format.cash(item.stats.cps*60).." scrap/min",UDim2.fromOffset(4,182),UDim2.new(1,-8,0,23),16)
