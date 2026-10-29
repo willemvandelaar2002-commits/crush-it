@@ -29,17 +29,17 @@ O.Crates = {
 	{
 		id = "FactoryCrate", title = "Factory Crate", provisional = true,
 		-- 27 Oct: + the six crate crushers. Each item's rarity comes from its type
-		-- (C.rarityOf). Test weights: Epic 18 each, Legendary 12 each, Mythic 10/3 each.
+		-- (C.rarityOf). Test weights: Epic 18 each, Legendary 12, Mythic 2 each (Disco Destroyer and Kraken Clamp are Mythic since 29 Oct).
 		items = {
 			{ type = "DuckyDynamo", weight = 18 },
 			{ type = "WindUpWrecker", weight = 18 },
 			{ type = "GumballGobbler", weight = 18 },
 			{ type = "ArcadeClaw", weight = 12 },
-			{ type = "DiscoDestroyer", weight = 12 },
-			{ type = "KrakenClamp", weight = 12 },
-			{ type = "JackpotPress", weight = 10 / 3 },
-			{ type = "SeraphPress", weight = 10 / 3 },
-			{ type = "PhantomPirate", weight = 10 / 3 },
+			{ type = "DiscoDestroyer", weight = 2 },
+			{ type = "KrakenClamp", weight = 2 },
+			{ type = "JackpotPress", weight = 2 },
+			{ type = "SeraphPress", weight = 2 },
+			{ type = "PhantomPirate", weight = 2 },
 		},
 		bundles = {
 			{ product = "FactoryCrate1", count = 1 },

@@ -2,7 +2,7 @@
 
 ## 27 Oct: six crate crushers (assets/crate-crushers)
 Ducky Dynamo, Wind-Up Wrecker, Gumball Gobbler (Epic, Titan band) and Arcade
-Claw, Disco Destroyer, Kraken Clamp (Legendary, Quantum band). **Crate-only**:
+Claw (Legendary, Quantum band); Disco Destroyer and Kraken Clamp (Mythic since 29 Oct, Mythic production band). **Crate-only**:
 `C.CrateTypes`, not in their rarity's roll list, so normal rolls, roll odds and
 free random drops (spin, rewards, quests) are unchanged; `C.rarityOf` finds
 their tier through `def.rarity`. Index shows CRATE ONLY. Tiers/bands are

@@ -196,8 +196,8 @@ C.CrateTypes = {
 	{ id = "WindUpWrecker", name = "Wind-Up Wrecker", rarity = "Epic", band = "Titan" },
 	{ id = "GumballGobbler", name = "Gumball Gobbler", rarity = "Epic", band = "Titan" },
 	{ id = "ArcadeClaw", name = "Arcade Claw", rarity = "Legendary", band = "Quantum" },
-	{ id = "DiscoDestroyer", name = "Disco Destroyer", rarity = "Legendary", band = "Quantum" },
-	{ id = "KrakenClamp", name = "Kraken Clamp", rarity = "Legendary", band = "Quantum" },
+	{ id = "DiscoDestroyer", name = "Disco Destroyer", rarity = "Mythic", band = "JackpotPress" },
+	{ id = "KrakenClamp", name = "Kraken Clamp", rarity = "Mythic", band = "JackpotPress" },
 }
 for _, entry in C.CrateTypes do
 	local band
