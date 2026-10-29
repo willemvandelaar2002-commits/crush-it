@@ -599,41 +599,78 @@ function Style.flowingStuds(parent: GuiObject, tile: number, transparency: numbe
 	return img
 end
 
--- White rays fanning out from a point (behind a reward icon or card portrait).
--- Bars cross at the centre and fade out before the edges, so nothing needs clipping.
--- props: count (12), width (scale of the parent width, .13), alpha (centre transparency, .55),
--- length (scale of the parent height, 1.05), center (UDim2), zIndex, color
+-- White rays fanning out from a point (behind a reward icon or card portrait),
+-- slowly turning in a circle. The rays sit in a clip frame, so they can run
+-- past the edges (fullBleed) and still end at the card border.
+-- props: count (12), width (scale of the parent width, .13), alpha (ray transparency, .55),
+-- length (scale of the parent height, 1.05), center (UDim2), zIndex, color,
+-- spin (degrees per second, 0 = still), gate (skip the spin while this is hidden),
+-- fullBleed (rays reach the edges instead of fading out in the middle)
+local spinning: { { holder: Frame, speed: number, gate: GuiObject? } } = {}
+local spinConn: RBXScriptConnection? = nil
 function Style.sunburst(parent: GuiObject, props: { [string]: any }?): Frame
 	local o = props or {}
-	local holder = decoration(parent, "Frame", "Sunburst", {
-		Name = "Sunburst", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, BorderSizePixel = 0,
-		ZIndex = o.zIndex or parent.ZIndex,
+	local z = o.zIndex or parent.ZIndex
+	local clip = decoration(parent, "Frame", "SunburstClip", {
+		Name = "SunburstClip", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, BorderSizePixel = 0,
+		ClipsDescendants = true, ZIndex = z,
 	})
-	holder:ClearAllChildren()
+	clip:ClearAllChildren()
+	-- a square holder centred on the burst, big enough to cover the card when turned
+	local holder = child("Frame", {
+		Name = "Sunburst", AnchorPoint = Vector2.new(0.5, 0.5), Position = o.center or UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, BorderSizePixel = 0, ZIndex = z,
+	}, clip)
+	child("UIAspectRatioConstraint", { AspectRatio = 1, DominantAxis = Enum.DominantAxis.Height }, holder)
 	local count = o.count or 12
 	local alpha = o.alpha or 0.55
-	local fade = NumberSequence.new({
+	local fade = if o.fullBleed then NumberSequence.new({
+		NumberSequenceKeypoint.new(0, alpha + 0.1), NumberSequenceKeypoint.new(0.5, math.max(0, alpha - 0.2)), NumberSequenceKeypoint.new(1, alpha + 0.1),
+	}) else NumberSequence.new({
 		NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.1, 1), NumberSequenceKeypoint.new(0.5, alpha),
 		NumberSequenceKeypoint.new(0.9, 1), NumberSequenceKeypoint.new(1, 1),
 	})
+	local length = o.length or (if o.fullBleed then 2.2 else 1.05)
 	for i = 1, count do
 		local ray = child("Frame", {
-			Name = "Ray", AnchorPoint = Vector2.new(0.5, 0.5), Position = o.center or UDim2.fromScale(0.5, 0.5),
-			Size = UDim2.fromScale(o.width or 0.13, o.length or 1.05), Rotation = (i - 1) * 180 / count,
-			BackgroundColor3 = o.color or Color3.new(1, 1, 1), BorderSizePixel = 0, ZIndex = holder.ZIndex,
+			Name = "Ray", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(o.width or 0.13, length), Rotation = (i - 1) * 180 / count,
+			BackgroundColor3 = o.color or Color3.new(1, 1, 1), BorderSizePixel = 0, ZIndex = z,
 		}, holder)
 		child("UIGradient", { Rotation = 90, Transparency = fade }, ray)
 	end
 	-- soft glow in the middle
 	local glow = child("Frame", {
-		Name = "Glow", AnchorPoint = Vector2.new(0.5, 0.5), Position = o.center or UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.fromScale(0.55, 0.55), BackgroundColor3 = o.color or Color3.new(1, 1, 1), BorderSizePixel = 0, ZIndex = holder.ZIndex,
+		Name = "Glow", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromScale(0.55, 0.55), BackgroundColor3 = o.color or Color3.new(1, 1, 1), BorderSizePixel = 0, ZIndex = z,
 	}, holder)
-	child("UIAspectRatioConstraint", { AspectRatio = 1, DominantAxis = Enum.DominantAxis.Width }, glow)
 	child("UICorner", { CornerRadius = UDim.new(0.5, 0) }, glow)
 	child("UIGradient", { Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, alpha + 0.15), NumberSequenceKeypoint.new(1, 1),
+		NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, math.min(1, alpha + 0.15)), NumberSequenceKeypoint.new(1, 1),
 	}) }, glow)
+	local speed = o.spin or 0
+	if speed ~= 0 then
+		holder.Rotation = math.random() * 30
+		table.insert(spinning, { holder = holder, speed = speed, gate = o.gate })
+		if not spinConn and game:GetService("RunService"):IsClient() then
+			local last = 0
+			spinConn = game:GetService("RunService").RenderStepped:Connect(function()
+				local now = os.clock()
+				local dt = now - last
+				if dt < 1 / 30 then return end
+				last = now
+				dt = math.min(dt, 0.1)
+				for i = #spinning, 1, -1 do
+					local sp = spinning[i]
+					if not sp.holder.Parent then
+						table.remove(spinning, i)
+					elseif not sp.gate or sp.gate.Visible then
+						sp.holder.Rotation = (sp.holder.Rotation + sp.speed * dt) % 360
+					end
+				end
+			end)
+		end
+	end
 	return holder
 end
 

@@ -6,6 +6,7 @@ local C = require(RS.Shared.CrusherConfig)
 local Rows = require(RS.Shared.CrusherRows)
 local Rules = require(RS.Shared.CrusherRules)
 local CrusherIcon = require(script.Parent.CrusherIcon)
+local CardFx = require(script.Parent.CardFx)
 local Style = require(RS.Shared.Kit.Style)
 local Icons = require(RS.Shared.Icons)
 local Format = require(RS.Shared.Format)
@@ -170,7 +171,8 @@ function I.new(gui, act)
 		make("UIGradient",{Name="Fill",Rotation=90,Color=ColorSequence.new({ColorSequenceKeypoint.new(0,Style.darken(colour,.12)),
 			ColorSequenceKeypoint.new(.45,Style.lighten(colour,.3)),ColorSequenceKeypoint.new(1,Style.darken(colour,.25))})},box)
 		Style.flowingStuds(box,28,.8,panel).ImageColor3=white
-		Style.sunburst(box,{center=UDim2.fromScale(.5,.42),alpha=.3,width=.12,length=1,zIndex=1})
+		Style.sunburst(box,{center=UDim2.fromScale(.5,.42),alpha=.3,width=.12,length=1,zIndex=1,spin=10,gate=panel})
+		CardFx.special(box,if item then item.rarity else rarity.name,panel) -- Legendary/Mythic: turning rays, shimmer, sparkles
 		local known=false
 		for _,owned in state.items do if owned.type==def.id then known=true break end end
 		if state.fusion and state.fusion.item and state.fusion.item.type==def.id then known=true end -- inside the Fusion Machine
@@ -181,7 +183,7 @@ function I.new(gui, act)
 		local rarityText=label(box,"Rarity",if item then item.rarity.." · Lv "..item.level else rarity.name,
 			UDim2.new(0,4,1,-44),UDim2.new(1,-8,0,36),30)
 		rarityText.TextScaled=true rarityText.ZIndex=4
-		rarityText.TextColor3=Style.lighten(colour,.55)
+		rarityText.TextColor3=Style.lighten(colour,if (C.rarity(if item then item.rarity else rarity.name) or rarity).rank>=4 then .2 else .55)
 		if item then
 			local stats=label(frame,"Output",Format.cash(item.stats.cps*60).." scrap/min",UDim2.fromOffset(4,182),UDim2.new(1,-8,0,23),16)
 			stats.TextColor3=Color3.fromRGB(255,241,175)
