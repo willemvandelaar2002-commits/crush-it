@@ -72,7 +72,13 @@ local function grant(player: Player, data: any, reward: any): string
 		local rarity = reward.rarity
 		if type(reward.mythicChance) == "number" and math.random() < reward.mythicChance then rarity = "Mythic" end
 		local name = api.giveCrusher and api.giveCrusher(player, rarity)
-		if name then return (if rarity == "Mythic" then "MYTHIC DROP! " else "New " .. rarity .. " crusher: ") .. name .. "!" end
+		local bonus = ""
+		if type(reward.bonusSeconds) == "number" then
+			local extra = math.max(Config.Rewards.MinCash, math.floor(api.cashPerSecond(player) * reward.bonusSeconds))
+			api.addCash(player, extra)
+			bonus = " +" .. Format.cash(extra)
+		end
+		if name then return (if rarity == "Mythic" then "MYTHIC DROP! " else "New " .. rarity .. " crusher: ") .. name .. "!" .. bonus end
 		-- inventory full: pay cash instead
 		reward = { seconds = Config.Rewards.FullInventorySeconds }
 	elseif reward.kind == "golden" then -- older config entries
