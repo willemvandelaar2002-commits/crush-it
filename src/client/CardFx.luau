@@ -90,14 +90,52 @@ local HEAVEN = ColorSequence.new({
 	ColorSequenceKeypoint.new(0.75, Color3.fromRGB(255, 255, 255)),
 	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 240, 170)),
 })
--- per top rarity: card colour, border shimmer, ray speed, halo, sparkles
+local function seq(...: Color3): ColorSequence
+	local list = { ... }
+	local keys = {}
+	for i, c in list do keys[i] = ColorSequenceKeypoint.new((i - 1) / (#list - 1), c) end
+	return ColorSequence.new(keys)
+end
+local rgb = Color3.fromRGB
+-- Per top rarity, more of everything the rarer it is: bigger and more rays
+-- (Divine and Mythic get a second layer turning the other way, Mythic's rays
+-- are rainbow), a multi-colour card, a shimmering border, sparkles and a halo.
+--   fill    card colours top to bottom (animated hue shift when `shift`)
+--   rays    { count, width, alpha, spin, colors? }   second = the counter-turning layer
 local LOOKS = {
-	Legendary = { base = Color3.fromRGB(255, 176, 20), rim = GOLD, spin = 24, sparkles = 4 },
-	Secret = { base = Color3.fromRGB(34, 35, 48), rim = SILVER, spin = 28, sparkles = 5, alpha = 0.84, glow = 0.88 },
-	Divine = { base = Color3.fromRGB(70, 180, 255), rim = HEAVEN, spin = 30, sparkles = 5,
-		halo = ColorSequence.new(Color3.fromRGB(255, 246, 190), Color3.fromRGB(150, 235, 255)) },
-	Mythic = { base = Color3.fromRGB(245, 40, 120), rainbow = true, spin = 34, sparkles = 5 },
+	Legendary = {
+		fill = seq(rgb(255, 150, 20), rgb(255, 236, 90), rgb(255, 196, 40), rgb(230, 110, 10)), rim = GOLD, sparkles = 3,
+		rays = { count = 8, width = 0.08, alpha = 0.68, spin = 16 },
+	},
+	Secret = {
+		fill = seq(rgb(30, 24, 90), rgb(120, 60, 230), rgb(40, 170, 230), rgb(20, 20, 70)), rim = SILVER, sparkles = 5,
+		rays = { count = 10, width = 0.1, alpha = 0.62, spin = 22, colors = { Color3.new(1, 1, 1), rgb(200, 170, 255) } },
+	},
+	Divine = {
+		fill = seq(rgb(110, 200, 255), rgb(255, 246, 200), rgb(255, 170, 225), rgb(90, 160, 255)), rim = HEAVEN, sparkles = 6,
+		halo = seq(rgb(255, 246, 190), rgb(150, 235, 255), rgb(255, 180, 230)),
+		rays = { count = 12, width = 0.11, alpha = 0.52, spin = 28, colors = { Color3.new(1, 1, 1), rgb(255, 230, 140) } },
+		second = { count = 8, width = 0.05, alpha = 0.5, spin = -16 },
+	},
+	Mythic = {
+		rainbowFill = true, rainbow = true, sparkles = 8,
+		rays = { count = 14, width = 0.12, alpha = 0.45, spin = 38, rainbowRays = true },
+		second = { count = 10, width = 0.05, alpha = 0.45, spin = -24 },
+	},
 }
+local SPOTS = { Vector2.new(0.16, 0.18), Vector2.new(0.84, 0.26), Vector2.new(0.22, 0.7), Vector2.new(0.8, 0.66), Vector2.new(0.52, 0.1),
+	Vector2.new(0.1, 0.45), Vector2.new(0.9, 0.48), Vector2.new(0.5, 0.78) }
+
+-- a bright, many-coloured card fill for Mythic, hues sliding over time
+local function mythicFill(shift: number): ColorSequence
+	local keys = {}
+	for i = 0, 4 do
+		local t = i / 4
+		local v = if i == 0 or i == 4 then 0.8 else 1
+		keys[i + 1] = ColorSequenceKeypoint.new(t, Color3.fromHSV((0.83 + t * 0.35 + shift) % 1, 0.7, v))
+	end
+	return ColorSequence.new(keys)
+end
 
 function CardFx.special(card: GuiObject, rarity: string, gate: GuiObject?): boolean
 	local look = LOOKS[rarity]
@@ -105,25 +143,30 @@ function CardFx.special(card: GuiObject, rarity: string, gate: GuiObject?): bool
 	local mythic = look.rainbow == true
 	local z = card.ZIndex
 
-	-- deeper, richer fill than the other rarities (the rays bring the light)
+	-- bright multi-colour fill (the rays bring the light)
 	local fill = card:FindFirstChild("Fill")
-	if fill and fill:IsA("UIGradient") then
-		local base = look.base
-		fill.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Style.darken(base, 0.25)),
-			ColorSequenceKeypoint.new(0.45, Style.lighten(base, 0.12)),
-			ColorSequenceKeypoint.new(1, Style.darken(base, 0.35)),
-		})
+	local fillGrad: UIGradient? = if fill and fill:IsA("UIGradient") then fill else nil
+	if fillGrad then
+		fillGrad.Color = if look.rainbowFill then mythicFill(0) else look.fill
 	end
-	-- big turning rays over the whole card
-	Style.sunburst(card, { fullBleed = true, count = 10, width = 0.11, alpha = look.alpha or 0.62, glow = look.glow or 0.75,
-		spin = look.spin, gate = gate, zIndex = z, center = UDim2.fromScale(0.5, 0.42) })
+	-- turning rays over the whole card; rarer = more, wider, faster
+	local function layer(r: any, name: string?)
+		local colors = r.colors
+		if r.rainbowRays then
+			colors = {}
+			for i = 1, r.count do colors[i] = Color3.fromHSV((i - 1) / r.count, 0.45, 1) end
+		end
+		Style.sunburst(card, { fullBleed = true, count = r.count, width = r.width, alpha = r.alpha, glow = 0.75, colors = colors,
+			spin = r.spin, gate = gate, zIndex = z, center = UDim2.fromScale(0.5, 0.42), name = name })
+	end
+	layer(look.rays)
+	if look.second then layer(look.second, "SunburstClip2") end
 
 	-- shimmering inner border, inside the dark outline
 	local rim = make("Frame", { Name = "RarityRim", Position = UDim2.fromOffset(3, 3), Size = UDim2.new(1, -6, 1, -6),
 		BackgroundTransparency = 1, ZIndex = z + 2 }, card)
 	make("UICorner", { CornerRadius = UDim.new(0, 2) }, rim)
-	local stroke = make("UIStroke", { Thickness = if look.sparkles > 4 then 4 else 3.5, Color = Color3.new(1, 1, 1),
+	local stroke = make("UIStroke", { Thickness = if look.sparkles >= 6 then 4.5 elseif look.sparkles > 3 then 4 else 3.5, Color = Color3.new(1, 1, 1),
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, rim)
 	local grad = make("UIGradient", { Color = if mythic then rainbow(0) else look.rim }, stroke)
 
@@ -146,13 +189,12 @@ function CardFx.special(card: GuiObject, rarity: string, gate: GuiObject?): bool
 	end
 
 	-- twinkling sparkles at fixed spots, each on its own beat
-	local allSpots = { Vector2.new(0.16, 0.18), Vector2.new(0.84, 0.26), Vector2.new(0.22, 0.7), Vector2.new(0.8, 0.66), Vector2.new(0.52, 0.1) }
 	local stars = {}
 	for i = 1, look.sparkles do
-		local p = allSpots[i]
+		local p = SPOTS[i]
 		local s = sparkle(card, z + 3)
 		s.Position = UDim2.fromScale(p.X, p.Y)
-		stars[i] = { frame = s, phase = math.random() * 6.28, speed = 1.6 + math.random() * 1.2, size = if look.sparkles > 4 then 20 else 16 }
+		stars[i] = { frame = s, phase = math.random() * 6.28, speed = 1.6 + math.random() * 1.2, size = 12 + look.sparkles * 1.3 }
 	end
 
 	local phase = math.random()
@@ -160,6 +202,9 @@ function CardFx.special(card: GuiObject, rarity: string, gate: GuiObject?): bool
 		grad.Rotation = (t * 120 + phase * 360) % 360
 		if mythic then
 			grad.Color = rainbow(t * 0.25 + phase)
+		end
+		if fillGrad and look.rainbowFill then
+			fillGrad.Color = mythicFill(t * 0.05 + phase)
 		end
 		if halo then
 			local h = halo :: Frame;

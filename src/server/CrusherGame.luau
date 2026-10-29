@@ -29,6 +29,7 @@ local Friend=require(script.Parent.FriendBoost)
 local Tools=require(script.Parent.CrusherTools)
 local Feel=require(script.Parent.CrusherFeedbackServer)
 local Goals=require(script.Parent.GoalsReward)
+local IndexRewards=require(RS.Shared.IndexRewards)
 local G={}
 local sessions={}
 local pedestalLook -- defined with the roll show helpers below
@@ -55,7 +56,8 @@ local Boost=require(RS.Shared.BoostConfig)
 local function perks(p)
 	local now=workspace:GetServerTimeNow() -- hub Boosts (server/Boosts) stack with the passes
 	return {autoCrush=Store.hasPass(p,"AutoCrush"),lucky=Store.hasPass(p,"Lucky") or Boost.active(p,"Luck",now),
-		mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)}
+		mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p),
+		indexLuck=(function() local d=Data.get(p) return if d then IndexRewards.luck(d.crushers) else 0 end)()}
 end
 local function cps(p,d)
 	local rows=Rows.snapshot(d) local buffs=perks(p)
@@ -166,6 +168,7 @@ local function send(p,message,result)
 		end
 	end
 	Rules.tutorialCatchUp(d)
+	Rules.markSeen(s) -- Index: remember every type this save has owned
 	Tools.sync(p,d) -- unequipped crushers live in the Roblox backpack
 	p:SetAttribute("Cash",d.cash) p:SetAttribute("Scrap",d.scrap) p:SetAttribute("AvailableScrap",s.available)
 	p:SetAttribute("Plot",ctx.plot.index) p:SetAttribute("Crushed",d.crushed) p:SetAttribute("Tier",d.tier)
@@ -179,7 +182,8 @@ local function send(p,message,result)
 		fusion=if s.fusion then {item=Rules.copy(s.fusion.item),readyAt=s.fusion.readyAt,now=os.time()} else nil,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
 		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered,coating=ctx.coatingQuote,
-		goals=Goals.view(ctx,d,workspace:GetServerTimeNow())})
+		goals=Goals.view(ctx,d,workspace:GetServerTimeNow()),
+		index={seen=(function() local list={} for id in s.seen do table.insert(list,id) end return list end)(),claimed=s.indexClaimed,luck=IndexRewards.luck(s)}})
 	local st=ctx.plot.stations
 	st.Collect.label.Text=Format.cash(s.available).." ready"
 	-- The pile grows with ready scrap (about one minute of output fills it).
@@ -765,6 +769,7 @@ function G.start()
 	require(script.Parent.TopBoards).start(api)
 	require(script.Parent.Boosts).start(api)
 	require(script.Parent.FactoryEvents).start(api)
+	require(script.Parent.IndexRewards).start(api)
 	-- /credits <amount> (or /cash): test cash, e.g. "/credits 5m". Studio, or the
 	-- place owner in live servers. No amount gives 1M.
 	local SUFFIX={k=1e3,m=1e6,b=1e9,t=1e12,qa=1e15}

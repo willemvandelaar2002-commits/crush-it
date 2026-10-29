@@ -38,7 +38,8 @@ function H.start()
  })
  gui.Destroying:Connect(function() favoriteGoal:Destroy() end)
  local indexView=require(script.Parent.CrusherIndex).new(gui,act)
- local book=Style.iconButton(gui,{name="BookButton",image=Icons.Book,label="INDEX",a=blue,b=navy})
+ local book,bookBadge=Style.iconButton(gui,{name="BookButton",image=Icons.Book,label="INDEX",a=blue,b=navy})
+ indexView.onReady=function(ready) bookBadge.Visible=ready end -- "!" when an Index reward can be claimed
  Style.placeHudButton(book,0) book.Activated:Connect(indexView.toggle)
  -- the crusher you're holding from the backpack (hotbar), if any
  local function heldId()

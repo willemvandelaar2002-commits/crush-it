@@ -203,3 +203,31 @@ red-pink fill, strong white rays reaching the edges that turn in a circle, a
 shimmering inner border (gold, or a moving rainbow for Mythic), twinkling
 sparkles and, for Mythic, a breathing rainbow halo. The rays on every other card
 turn slowly too. Reward cards of those rarities get the same treatment.
+
+## Index milestone rewards (29 Oct)
+
+Shared/IndexRewards (list + maths), server/IndexRewards (claim). "Found" = every
+type the save has ever owned (`crushers.seen`, kept after recycling; CrusherGame
+marks it on every state send). Claimed milestones in `crushers.indexClaimed`.
+The bottom bar shows "Unlocks needed: found / next", that milestone's rewards on
+the right and a CLAIM button when reached; the INDEX button gets a "!".
+
+| Found | Rewards |
+|---|---|
+| 5 | 10 min of cash |
+| 10 | +2% luck forever, 2x Luck 15 min |
+| 20 | Epic crusher, 30 min of cash |
+| 30 | +3% luck forever, 2x Cash 30 min |
+| 40 | Legendary crusher, +3% luck forever |
+| 50 | Mythic crusher, +5% luck forever |
+
+Permanent luck (13% in total) multiplies every non-Common rarity weight
+(`R.weights` bonus, `perks.indexLuck`). Crusher rewards always arrive (force).
+
+## Card looks per tier (29 Oct, client/CardFx LOOKS)
+
+Rarer = more: Legendary 8 gold-white rays and 3 sparkles; Secret a galaxy card
+(indigo, violet, teal), 10 white/lavender rays, silver border; Divine a pastel
+sky/cream/pink card, 12 white/gold rays plus a thin counter-turning layer and a
+halo; Mythic an animated rainbow card, 14 rainbow rays plus a counter layer,
+rainbow border and halo, 8 sparkles.

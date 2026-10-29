@@ -7,6 +7,9 @@ local Rows = require(RS.Shared.CrusherRows)
 local Rules = require(RS.Shared.CrusherRules)
 local CrusherIcon = require(script.Parent.CrusherIcon)
 local CardFx = require(script.Parent.CardFx)
+local IndexRewards = require(RS.Shared.IndexRewards)
+local Net = require(RS.Shared.Net)
+local claimEvent = Net.event("ClaimIndexReward")
 local Style = require(RS.Shared.Kit.Style)
 local Icons = require(RS.Shared.Icons)
 local Format = require(RS.Shared.Format)
@@ -52,7 +55,7 @@ local function button(parent, name, value, position, size, colour, callback)
 end
 
 function I.new(gui, act)
-	local self = {} local state local tab = "Index" local filter = "All" local selectedBay = 1
+	local self = {seenSet={}} local state local tab = "Index" local filter = "All" local selectedBay = 1
 	local signature = "" local records = {} local redraw local hydrate local recyclePending
 	local panel = make("Frame", {Name="Book", AnchorPoint=Vector2.new(.5,.5),
 		Position=UDim2.new(.5,70,.5,24), Size=UDim2.fromOffset(980,650), Visible=false,
@@ -125,22 +128,69 @@ function I.new(gui, act)
 	end)
 	dupes.LayoutOrder=100 dupesText.TextScaled=true
 	local content=make("ScrollingFrame",{Name="Content",Position=UDim2.fromOffset(12,94),
-		Size=UDim2.new(1,-24,1,-166),BackgroundTransparency=1,BorderSizePixel=0,
+		Size=UDim2.new(1,-24,1,-180),BackgroundTransparency=1,BorderSizePixel=0,
 		AutomaticCanvasSize=Enum.AutomaticSize.Y,CanvasSize=UDim2.new(),ScrollBarThickness=7,ZIndex=2},panel)
 	Style.scroll(content)
 	make("UIGridLayout",{SortOrder=Enum.SortOrder.LayoutOrder},content)
-	-- bottom: a rainbow progress bar with the book on its left
-	local footer=make("Frame",{Name="CollectionProgress",Position=UDim2.new(0,12,1,-62),Size=UDim2.new(1,-24,0,50),
+	-- bottom: milestone bar like the reference ("Unlocks needed"): progress to
+	-- the next Index reward, its rewards on the right, CLAIM when it's reached
+	local footer=make("Frame",{Name="CollectionProgress",Position=UDim2.new(0,12,1,-76),Size=UDim2.new(1,-24,0,64),
 		BackgroundColor3=Color3.fromRGB(30,33,40),BorderSizePixel=0,ZIndex=3},panel)
 	make("UICorner",{CornerRadius=UDim.new(0,4)},footer)
 	make("UIStroke",{Color=deep,Thickness=4},footer)
-	local fill=make("Frame",{Name="Fill",Size=UDim2.fromScale(0,1),BackgroundColor3=white,BorderSizePixel=0,ZIndex=3},footer)
+	local track=make("Frame",{Name="Track",Position=UDim2.fromOffset(74,26),Size=UDim2.new(1,-330,0,32),BackgroundColor3=Color3.fromRGB(18,20,26),
+		BorderSizePixel=0,ClipsDescendants=true,ZIndex=3},footer)
+	make("UICorner",{CornerRadius=UDim.new(0,4)},track)
+	make("UIStroke",{Color=deep,Thickness=3},track)
+	local fill=make("Frame",{Name="Fill",Size=UDim2.fromScale(0,1),BackgroundColor3=white,BorderSizePixel=0,ZIndex=3},track)
 	make("UICorner",{CornerRadius=UDim.new(0,3)},fill)
 	Style.rainbow(fill,.1).Rotation=0
 	Style.flowingStuds(fill,26,.78,panel).ImageColor3=white
-	Style.image(footer,Icons.Book,{Name="BookIcon",Position=UDim2.fromOffset(22,20),Size=UDim2.fromOffset(78,78),Rotation=-10,ZIndex=6})
-	local progress=label(footer,"ProgressText","Loading collection...",UDim2.fromOffset(70,4),UDim2.new(1,-80,1,-8),30)
+	Style.image(footer,Icons.Book,{Name="BookIcon",Position=UDim2.fromOffset(34,30),Size=UDim2.fromOffset(86,86),Rotation=-10,ZIndex=6})
+	local heading=label(footer,"Heading","Unlocks needed:",UDim2.fromOffset(80,2),UDim2.fromOffset(300,22),18)
+	heading.TextXAlignment=Enum.TextXAlignment.Left heading.ZIndex=6
+	local progress=label(track,"ProgressText","Loading collection...",UDim2.fromOffset(6,1),UDim2.new(1,-12,1,-2),26)
 	progress.TextScaled=true progress.ZIndex=6
+	-- reward chips (right) and the CLAIM button over the bar's end
+	local chips=make("Frame",{Name="Rewards",AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-8,.5,0),Size=UDim2.fromOffset(236,54),
+		BackgroundTransparency=1,ZIndex=4},footer)
+	make("UIListLayout",{FillDirection=Enum.FillDirection.Horizontal,HorizontalAlignment=Enum.HorizontalAlignment.Right,
+		VerticalAlignment=Enum.VerticalAlignment.Center,Padding=UDim.new(0,6),SortOrder=Enum.SortOrder.LayoutOrder},chips)
+	local claimButton,claimText=textButton(footer,"ClaimIndexReward","CLAIM!",UDim2.new(1,-354,0,8),UDim2.fromOffset(110,48),green,26,function()
+		if state and state.index then
+			local i=IndexRewards.next({seen=self.seenSet,indexClaimed=state.index.claimed})
+			if i then claimEvent:FireServer(i) end
+		end
+	end)
+	claimButton.ZIndex=7 claimText.ZIndex=8 claimButton.Visible=false
+	Style.wobble(claimButton,3,4)
+	local chipLook={
+		cash={image=Icons.Cash,color=Color3.fromRGB(110,215,60)},
+		boostLuck={image=Icons.Lucky,color=Color3.fromRGB(60,190,90)},
+		boostCash={image=Icons.DoubleCash,color=Color3.fromRGB(230,70,60)},
+		luck={image=Icons.Lucky,rainbow=true},
+		crusher={image=Icons.Press},
+	}
+	local chipKey=""
+	local function showChips(m)
+		local key=if m then tostring(m.need) else "done"
+		if key==chipKey then return end
+		chipKey=key
+		for _,c in chips:GetChildren() do if c:IsA("GuiObject") then c:Destroy() end end
+		if not m then return end
+		for order,r in m.rewards do
+			local look=if r.kind=="boost" then chipLook["boost"..r.id] or chipLook.boostLuck else chipLook[r.kind]
+			local chip=make("Frame",{Name="Chip",LayoutOrder=order,Size=UDim2.fromOffset(110,54),BackgroundColor3=white,BorderSizePixel=0,ZIndex=4},chips)
+			make("UICorner",{CornerRadius=UDim.new(0,4)},chip)
+			make("UIStroke",{Color=deep,Thickness=3},chip)
+			local colour=if r.kind=="crusher" then (C.rarity(r.rarity) or C.Rarities[1]).color else look.color
+			if look.rainbow then Style.rainbow(chip,.15) else
+				make("UIGradient",{Rotation=90,Color=ColorSequence.new(Style.lighten(colour,.2),Style.darken(colour,.25))},chip) end
+			Style.image(chip,look.image,{Position=UDim2.fromOffset(28,27),Size=UDim2.fromOffset(46,46),ZIndex=5})
+			local t=label(chip,"Text",IndexRewards.text(r,state and state.rate,Format.cash),UDim2.fromOffset(50,4),UDim2.new(1,-54,1,-8),18)
+			t.TextScaled=true t.ZIndex=6
+		end
+	end
 	local empty=label(content,"Empty","",UDim2.new(),UDim2.fromOffset(200,220),24)
 	empty.Visible=false
 	local function clear()
@@ -174,7 +224,7 @@ function I.new(gui, act)
 		Style.flowingStuds(box,28,.8,panel).ImageColor3=white
 		Style.sunburst(box,{center=UDim2.fromScale(.5,.42),alpha=.3,width=.12,length=1,zIndex=1,spin=10,gate=panel})
 		CardFx.special(box,if item then item.rarity else rarity.name,panel) -- Legendary and up: turning rays, shimmer, sparkles
-		local known=false
+		local known=self.seenSet[def.id]==true -- ever owned (server keeps the list, recycling doesn't forget)
 		for _,owned in state.items do if owned.type==def.id then known=true break end end
 		if state.fusion and state.fusion.item and state.fusion.item.type==def.id then known=true end -- inside the Fusion Machine
 		local name=label(frame,"Name",if known then def.name else "???",UDim2.fromOffset(2,0),UDim2.new(1,-4,0,32),26)
@@ -184,7 +234,7 @@ function I.new(gui, act)
 		local rarityText=label(box,"Rarity",if item then item.rarity.." · Lv "..item.level else rarity.name,
 			UDim2.new(0,4,1,-44),UDim2.new(1,-8,0,36),30)
 		rarityText.TextScaled=true rarityText.ZIndex=4
-		local tint={Legendary=.2,Secret=.75,Divine=.45,Mythic=.6}
+		local tint={Legendary=.2,Secret=.75,Divine=.15,Mythic=.85}
 		rarityText.TextColor3=Style.lighten(colour,tint[if item then item.rarity else rarity.name] or .55)
 		if item then
 			local stats=label(frame,"Output",Format.cash(item.stats.cps*60).." scrap/min",UDim2.fromOffset(4,182),UDim2.new(1,-8,0,23),16)
@@ -234,16 +284,27 @@ function I.new(gui, act)
 		title.Text=if tab=="Index" then "Index" else "Your Crushers"
 		selector.Text="BAY "..selectedBay.." / "..state.unlocked.." · "..C.bayName(selectedBay)
 		local seen={} local unique=0
+		for _,id in (if state.index then state.index.seen else {}) do if not seen[id] and C.typeById(id) then seen[id]=true unique+=1 end end
 		for _,item in state.items do if not seen[item.type] then seen[item.type]=true unique+=1 end end
+		self.seenSet=seen
+		-- next Index milestone
+		local claimedList=if state.index then state.index.claimed else {}
+		local nextI,nextM=IndexRewards.next({seen=seen,indexClaimed=claimedList})
+		local ready=nextI~=nil and IndexRewards.ready({seen=seen,indexClaimed=claimedList},nextI)
+		claimButton.Visible=ready and tab=="Index"
+		if self.onReady then self.onReady(ready) end
+		showChips(nextM)
+		local luckNow=math.floor((if state.index then state.index.luck or 0 else 0)*100+.5)
+		heading.Text=if nextM then "Unlocks needed:"..(if luckNow>0 then "   (Index luck +"..luckNow.."%)" else "") else "Every Index reward claimed!   (Index luck +"..luckNow.."%)"
 		count.Text=if tab=="Index" then unique.." / "..#C.Types else #state.items.." / "..C.MaxInventory
-		progress.Text=if tab=="Index" then unique.." / "..#C.Types.." discovered"
+		progress.Text=if tab=="Index" then (if nextM then math.min(unique,nextM.need).." / "..nextM.need else unique.." / "..#C.Types.." found")
 			else "Choose a bay and equip a crusher. Level up at its world plaque."
 		local row=state.rows and state.rows[Rows.index(selectedBay)]
 		if tab=="Owned" and row then
 			local heading=Rows.label(row)
 			progress.Text=heading.." · "..(if row.active then "+"..math.floor(row.bonus*100+.5).."% SCRAP" else "MATCH A RARITY FOR A SCRAP BOOST")
 		end
-		fill.Size=UDim2.fromScale(unique/math.max(1,#C.Types),1) fill.Visible=tab=="Index"
+		fill.Size=UDim2.fromScale(if nextM then math.min(1,unique/nextM.need) else 1,1) fill.Visible=tab=="Index"
 		if not dupesPending then local n=#extras() dupesText.Text=if n>0 then "RECYCLE "..n.." DUPE"..(if n==1 then "" else "S") else "NO DUPES"
 			Style.setButtonColor(dupes,if n>0 then Style.Colors.Red else Color3.fromRGB(104,116,138)) end
 		indexButton.TextTransparency=if tab=="Index" then 0 else .2

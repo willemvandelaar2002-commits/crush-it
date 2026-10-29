@@ -605,14 +605,16 @@ end
 -- props: count (12), width (scale of the parent width, .13), alpha (ray transparency, .55),
 -- length (scale of the parent height, 1.05), center (UDim2), zIndex, color,
 -- spin (degrees per second, 0 = still), gate (skip the spin while this is hidden),
--- fullBleed (rays reach the edges instead of fading out in the middle), glow (centre glow transparency)
+-- fullBleed (rays reach the edges instead of fading out in the middle), glow (centre glow transparency),
+-- colors (list: each ray takes the next colour), name (clip name, for a second layer)
 local spinning: { { holder: Frame, speed: number, gate: GuiObject? } } = {}
 local spinConn: RBXScriptConnection? = nil
 function Style.sunburst(parent: GuiObject, props: { [string]: any }?): Frame
 	local o = props or {}
 	local z = o.zIndex or parent.ZIndex
-	local clip = decoration(parent, "Frame", "SunburstClip", {
-		Name = "SunburstClip", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, BorderSizePixel = 0,
+	local clipName = o.name or "SunburstClip" -- a second layer needs its own name
+	local clip = decoration(parent, "Frame", clipName, {
+		Name = clipName, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, BorderSizePixel = 0,
 		ClipsDescendants = true, ZIndex = z,
 	})
 	clip:ClearAllChildren()
@@ -635,7 +637,8 @@ function Style.sunburst(parent: GuiObject, props: { [string]: any }?): Frame
 		local ray = child("Frame", {
 			Name = "Ray", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
 			Size = UDim2.fromScale(o.width or 0.13, length), Rotation = (i - 1) * 180 / count,
-			BackgroundColor3 = o.color or Color3.new(1, 1, 1), BorderSizePixel = 0, ZIndex = z,
+			BackgroundColor3 = if o.colors then o.colors[(i - 1) % #o.colors + 1] else o.color or Color3.new(1, 1, 1),
+			BorderSizePixel = 0, ZIndex = z,
 		}, holder)
 		child("UIGradient", { Rotation = 90, Transparency = fade }, ray)
 	end

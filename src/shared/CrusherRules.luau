@@ -158,6 +158,16 @@ function R.migrate(d, guid)
 	end
 	if #owned==0 then local id=guid() table.insert(owned,{id=id,type="Bumper",rarity="Common",modifier="Standard",level=1}) ids[id]=true end
 	s.owned=owned
+	-- Index: every type ever owned (kept after recycling) and claimed milestones
+	local seen={}
+	for typeId,v in (if type(s.seen)=="table" then s.seen else {}) do if v==true and C.typeById(typeId) then seen[typeId]=true end end
+	s.seen=seen
+	R.markSeen(s)
+	local claimed,claimedOnce={},{}
+	for _,i in (if type(s.indexClaimed)=="table" then s.indexClaimed else {}) do
+		i=tonumber(i) if i and i%1==0 and i>=1 and i<=64 and not claimedOnce[i] then claimedOnce[i]=true table.insert(claimed,i) end
+	end
+	s.indexClaimed=claimed
 	-- A running fusion: the main crusher waits inside the machine (not in owned)
 	-- until readyAt (unix seconds), then CollectFusion gives it back fused.
 	local f=s.fusion
@@ -192,8 +202,15 @@ function R.stats(d,item,perks,rows)
 	value*=multiplier
 	return {damage=damage,cycle=cycle,hp=t.hp,value=C.money(value),cps=value/(math.ceil(t.hp/damage)*cycle+C.InputDelay),rowBonus=multiplier-1}
 end
-function R.weights(luck,lucky)
-	local out={} for i,v in C.Rarities do out[i]=v.weight*(1+C.LuckPerLevel*luck*v.rank)*(if lucky and v.rank>0 then 2 else 1) end return out
+-- bonus: permanent Index-milestone luck (0.1 = +10% weight on every non-Common rarity)
+function R.weights(luck,lucky,bonus)
+	local out={} for i,v in C.Rarities do out[i]=v.weight*(1+C.LuckPerLevel*luck*v.rank)*(if lucky and v.rank>0 then 2 else 1)*(if v.rank>0 then 1+(bonus or 0) else 1) end return out
+end
+-- Remember every type the save owns now (and the one inside the fuser).
+function R.markSeen(s)
+	if type(s.seen)~="table" then s.seen={} end
+	for _,item in (if type(s.owned)=="table" then s.owned else {}) do if C.typeById(item.type) then s.seen[item.type]=true end end
+	if type(s.fusion)=="table" and type(s.fusion.item)=="table" and C.typeById(s.fusion.item.type) then s.seen[s.fusion.item.type]=true end
 end
 local function choose(weights, random)
 	local total=0 for _,w in weights do total+=w end
@@ -213,7 +230,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		-- the very first roll only offers plain Commons, so it is cheap to buy
 		local first=s.rolls==0
 		for i=1,C.pedestals(s.upgrades.Pedestals) do
-			local rarity=if first then C.Rarities[1] else C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky),random)]
+			local rarity=if first then C.Rarities[1] else C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky,perks and perks.indexLuck),random)]
 			local mod=if first then C.Modifiers[1] else C.Modifiers[choose(weights,random)]
 			offers[i]={type=rarity.types[math.min(#rarity.types,math.floor(random()*#rarity.types)+1)],rarity=rarity.name,modifier=mod.name,level=1}
 		end
