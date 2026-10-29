@@ -194,9 +194,10 @@ function Visuals:darkSky(packet)
 		for _,c in Lighting:GetChildren() do
 			if c:IsA("Sky") or c:IsA("Atmosphere") then table.insert(saved.kids,c) c.Parent=nil end
 		end
-		local sky=Instance.new("Sky") sky.Name="BearEventSky" sky.StarCount=4000 sky.CelestialBodiesShown=false sky.Parent=Lighting
+		local sky=Instance.new("Sky") sky.Name="BearEventSky" sky.StarCount=4000 sky.CelestialBodiesShown=look.moon~=nil
+		if look.moon then sky.MoonAngularSize=look.moon sky.SunAngularSize=0 end sky.Parent=Lighting
 		local atmo=Instance.new("Atmosphere") atmo.Name="BearEventAtmosphere" atmo.Density=.22 atmo.Color=look.sky
-		atmo.Decay=look.skyDecay atmo.Glare=0 atmo.Haze=1.6 atmo.Parent=Lighting
+		atmo.Decay=look.skyDecay atmo.Glare=0 atmo.Haze=look.haze or 1.6 atmo.Density=look.density or .22 atmo.Parent=Lighting
 		saved.sky=sky saved.atmo=atmo
 		game:GetService("TweenService"):Create(Lighting,TweenInfo.new(.6),NIGHT):Play()
 		self.night=saved
@@ -460,8 +461,46 @@ local function animateCore(c,now,shrink)
 		p.Size=V(.42,5.35,5.35)*c.scale*shrink
 	end
 end
+-- Halloween: little ghost candies (CandySoul) drifting and turning round the camera
+function Visuals:stepCandies(now,on)
+	local want=if on then look.candies or 0 else 0
+	local library=RS:FindFirstChild("FactoryEventMeshes")
+	local template=library and look.pickup and library:FindFirstChild(look.pickup)
+	if want==0 or not template then
+		if self.candies then self.candies.folder:Destroy() self.candies=nil end
+		return
+	end
+	local camera=workspace.CurrentCamera if not camera then return end
+	local c=self.candies
+	if not c then
+		c={folder=Instance.new("Folder"),list={}} c.folder.Name="FloatingCandies" c.folder.Parent=workspace
+		self.candies=c
+	end
+	local centre=camera.CFrame.Position+camera.CFrame.LookVector*22
+	local rng=Random.new()
+	local function place(k)
+		k.home=centre+V(rng:NextNumber(-34,34),rng:NextNumber(-8,14),rng:NextNumber(-34,34))
+		k.phase=rng:NextNumber(0,6.28) k.speed=rng:NextNumber(.5,1.1) k.born=now
+	end
+	while #c.list<want do
+		local m=template:Clone() m.Name="Candy"
+		for _,p in m:GetDescendants() do if p:IsA("BasePart") then p.Anchored=true p.CanCollide=false p.CanTouch=false p.CanQuery=false p.CastShadow=false end end
+		local _,box=m:GetBoundingBox() m:ScaleTo(m:GetScale()*rng:NextNumber(1,1.8)/math.max(box.X,box.Y,box.Z))
+		m.Parent=c.folder
+		local k={model=m} place(k) table.insert(c.list,k)
+	end
+	for _,k in c.list do
+		-- drift upward in a lazy loop; move to a new spot once far from the view
+		local t=now-k.born
+		if (k.home-centre).Magnitude>45 or t>14 then place(k) t=0 end
+		local pos=k.home+V(math.sin(t*k.speed+k.phase)*3,t*.6,math.cos(t*k.speed*.8+k.phase)*3)
+		k.model:PivotTo(CFrame.new(pos)*CFrame.Angles(now*.7+k.phase,now*1.1*k.speed,k.phase))
+	end
+end
 function Visuals:step(now)
-	local packet=self.packet if not packet or not (Motion.controls(packet.phase) or packet.phase=="Announce") then return end
+	local packet=self.packet
+	self:stepCandies(now,packet~=nil and (Motion.controls(packet.phase) or packet.phase=="Announce") and packet.phase~="Recover")
+	if not packet or not (Motion.controls(packet.phase) or packet.phase=="Announce") then return end
 	local age=now-packet.started
 	local progress=if packet.maxHp>0 then 1-packet.hp/packet.maxHp else 0
 	local recovery=if packet.phase=="Recover" then math.clamp(1-age/E.Recover,0,1) else 1
@@ -749,6 +788,7 @@ function Visuals:stepWork(now,packet)
 	end
 end
 function Visuals:destroy()
+	if self.candies then self.candies.folder:Destroy() self.candies=nil end
 	self:clear() self.folder:Destroy()
 end
 return Visuals

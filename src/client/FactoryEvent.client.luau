@@ -155,6 +155,9 @@ local song=Instance.new("Sound") song.Name="EventMusic" song.SoundId="rbxassetid
 task.spawn(function() local list={song} for _,s in sfx do table.insert(list,s) end pcall(function() Content:PreloadAsync(list) end) end)
 local normalVolume=nil local musicState=false
 local function musicOn(on)
+	-- each version has its own song (E.Variants[...].music; the bear uses E.Music)
+	local id="rbxassetid://"..tostring(E.variant(packet and packet.variant).music or E.Music)
+	if on and song.SoundId~=id then song:Stop() song.SoundId=id end
 	if on==musicState then return end musicState=on
 	local normal=SoundService:FindFirstChild("BackgroundMusic")
 	if on then
@@ -327,10 +330,14 @@ local function renderHud(now)
 	panel.Visible=phase~="Idle" and phase~="Announce" and phase~="Assemble" and not (cameraState~=nil and cameraState.mode=="intro")
 	-- win reward reels (server already granted the results); they replace the
 	-- boss bar until the round is over
-	if phase=="Victory" and you and type(you.prizes)=="table" and #you.prizes>0 and reels.round~=packet.roundId then
-		reels:play(packet.roundId,you.prizes,you.values,{
+	-- 29 Oct: the reels close 2.5 s after the last one lands (Willem: stayed ~10 s)
+	if phase=="Victory" and you and type(you.prizes)=="table" and #you.prizes>0 and reels.round~=packet.roundId and reels.shown~=packet.roundId then
+		local round=packet.roundId
+		reels.shown=round
+		reels:play(round,you.prizes,you.values,{
 			onTick=function() play("Clunk",.12,1.8) end,
 			onLand=function(_,won) play("Sparkle",if won.kind=="crusher" then .9 else .5) if won.kind=="crusher" then play("Fanfare",.6) end end,
+			onDone=function() task.delay(2.5,function() if reels.round==round then reels:clear() end end) end,
 		})
 	elseif reels.round and phase~="Victory" and phase~="Recover" then reels:clear() end
 	if reels.round then panel.Visible=false end

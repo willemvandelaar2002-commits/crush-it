@@ -249,3 +249,8 @@ imports are in ServerStorage.HalloweenImports. Studio chat: `/event halloween`,
 carry `Variant`. Set `Schedule.Hourly=false` to go back to `Interval`.
 Checked in Studio Play: both versions start, the pumpkin boss/candies/colours show,
 cancel cleans up. A full Halloween win (rewards) was not run on the real save.
+
+29 Oct, later: Halloween has its own song (83398637668977), a spooky night sky (violet
+with an orange horizon glow and a big moon) and 18 little ghost candies floating round
+your view during the round. Reward reels: Spin 3.2 s, Stagger .4 s, and they close
+2.5 s after the last reel lands (Victory 11 -> 8 s).
