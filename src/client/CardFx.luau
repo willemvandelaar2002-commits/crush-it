@@ -97,16 +97,17 @@ function CardFx.special(card: GuiObject, rarity: string, gate: GuiObject?): bool
 	local parent = card.Parent
 	local laidOut = parent ~= nil and parent:FindFirstChildWhichIsA("UIGridStyleLayout") ~= nil
 	if mythic and parent and parent:IsA("GuiObject") and not laidOut then
-		halo = make("Frame", { Name = "MythicHalo", AnchorPoint = Vector2.new(0.5, 0.5),
+		local h: Frame = make("Frame", { Name = "MythicHalo", AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.new(card.Position.X.Scale + card.Size.X.Scale / 2, card.Position.X.Offset + card.Size.X.Offset / 2,
 				card.Position.Y.Scale + card.Size.Y.Scale / 2, card.Position.Y.Offset + card.Size.Y.Offset / 2),
 			Size = UDim2.new(card.Size.X.Scale, card.Size.X.Offset + 14, card.Size.Y.Scale, card.Size.Y.Offset + 14),
 			BackgroundColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0, ZIndex = z }, parent)
-		make("UICorner", { CornerRadius = UDim.new(0, 8) }, halo :: Frame)
-		make("UIGradient", { Name = "Rainbow", Color = rainbow(0), Rotation = 45 }, halo :: Frame)
+		make("UICorner", { CornerRadius = UDim.new(0, 8) }, h)
+		make("UIGradient", { Name = "Rainbow", Color = rainbow(0), Rotation = 45 }, h)
 		-- the halo sits just under the card
-		(halo :: Frame).ZIndex = card.ZIndex
+		h.ZIndex = card.ZIndex
 		card.ZIndex += 1
+		halo = h
 	end
 
 	-- twinkling sparkles at fixed spots, each on its own beat
