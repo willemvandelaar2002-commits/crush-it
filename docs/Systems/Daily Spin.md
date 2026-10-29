@@ -126,3 +126,11 @@ angles plus wrapped/repeated angles moved only Rotor, with Frame/Stand unchanged
 Fixed rest-pose caching so garbage collection cannot capture a mid-spin pose.
 Rojo build passed; Output contained only the existing disabled-DataStore and
 asset 203785492 warnings. Live persistence remains untested as described above.
+
+## 29 Oct: boosts instead of Golden, brighter list
+The two Golden prizes (the next 10 / 30 crushed toys pay 10x scrap; worked, but
+nothing on screen showed it) became 2x Luck for 10 min (20%) and 2x Cash for
+30 min (3%), granted through server/Boosts after the saved delivery. Older saved
+Golden prizes still pay out. The prize list uses the prizes' own bright colours
+and rounded chances (40.0%, 0.10%). Golden Rush still exists as a (hidden) shop
+product.

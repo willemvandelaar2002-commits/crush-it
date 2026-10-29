@@ -269,3 +269,4 @@
 - 2026-10-29: Trash can on the plot right of the roller: pick any unequipped crushers (quick select per rarity) and trash them, confirm on second press; equipped and the very last crusher are kept, no refund. Goals board moved toward the centre path (x 52 -> 36). Willem's request.
 - 2026-10-29: Reward balance: playtime/daily cash about a third of before, their crusher rewards one tier higher (Rare/Epic, grand prizes Legendary), quest time skips 2.5x the tokens, Index cash milestones smaller. Daily Spin and event rewards unchanged. Willem's feedback.
 - 2026-10-29: The toy a crusher crushes now follows its rarity (Apple, Teddy/Phone, TV/Fridge, Car/Truck, Tank, House/Statue, Plane/Ship, Planet), all 13 object meshes used again; visual only. Willem's request.
+- 2026-10-29: Daily Spin Golden prizes replaced by 2x Luck 10 min and 2x Cash 30 min; prize list brighter with rounded chances. Willem's feedback.

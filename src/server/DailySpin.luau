@@ -17,6 +17,7 @@ function Spin.start(api)
 	local function description(out)
 		if out.kind=="crusher" then return C.typeById(out.item.type).name.." ("..out.item.rarity..")" end
 		if out.kind=="golden" then return out.amount.." Golden production bonuses" end
+		if out.kind=="boost" then return "2x "..out.boost.." for "..out.amount.." minutes" end
 		return Format.cash(out.amount).." cash"
 	end
 	local function send(p,open,message,result)
@@ -24,6 +25,7 @@ function Spin.start(api)
 		local rewards={}
 		for _,def in S.Rewards do
 			local text=if def.kind=="cash" then Format.cash(C.money(math.max(1,api.cashPerSecond(p))*def.seconds)).." cash"
+				elseif def.kind=="boost" then "2x "..def.boost.." · "..def.minutes.." min"
 				elseif def.kind=="golden" then def.count.." Golden bonuses" else def.rarity.." crusher"
 			table.insert(rewards,{id=def.id,text=text,odds=S.odds(def.id)})
 		end
@@ -50,6 +52,7 @@ function Spin.start(api)
 				if not delivered then send(p,open,result) return end
 				d.stats=d.stats or {} d.stats.spins=(d.stats.spins or 0)+1 -- for quests
 				local saved=Data.saveNow(p)
+				if result.kind=="boost" then require(script.Parent.Boosts).add(p,result.boost,result.amount) end
 				p:SetAttribute("GoldenRush",d.goldenRush) api.sync(p)
 				send(p,open,if saved then "Reward granted!" else "Reward granted. Saving will retry automatically.",result)
 			else send(p,open) end

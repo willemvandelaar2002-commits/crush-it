@@ -39,13 +39,15 @@ local frame=make("ImageLabel",{Name="FixedFrame",Image=S.FrameImage,AnchorPoint=
 text(canvas,"RewardHeading","PRIZES & CHANCES",UDim2.fromOffset(490,85),UDim2.fromOffset(400,32),25)
 local rows={}
 for i,def in S.Rewards do
-	local row=make("Frame",{Name=def.id,Position=UDim2.fromOffset(490,126+(i-1)*43),Size=UDim2.fromOffset(405,38)},canvas)
-	Style.collectionPanel(row,Style.darken(def.color,.35),Style.darken(def.color,.6))
-	local l=text(row,"Reward","Loading...",UDim2.fromOffset(10,0),UDim2.fromOffset(302,38),19) l.TextXAlignment=Enum.TextXAlignment.Left
-	text(row,"Odds",string.format("%g%%",S.odds(def.id)),UDim2.fromOffset(315,0),UDim2.fromOffset(80,38),19)
+	-- bright rows in the prize's own colour (29 Oct: were darkened, looked dull)
+	local row=make("Frame",{Name=def.id,Position=UDim2.fromOffset(490,124+(i-1)*40),Size=UDim2.fromOffset(405,36)},canvas)
+	Style.collectionPanel(row,Style.lighten(def.color,.1),Style.darken(def.color,.22))
+	local l=text(row,"Reward","Loading...",UDim2.fromOffset(10,0),UDim2.fromOffset(302,36),20) l.TextXAlignment=Enum.TextXAlignment.Left
+	local odds=S.odds(def.id)
+	text(row,"Odds",if odds>=10 then string.format("%.1f%%",odds) else string.format("%.2f%%",odds),UDim2.fromOffset(315,0),UDim2.fromOffset(80,36),20)
 	rows[def.id]=l
 end
-text(canvas,"Explanation","One free spin every 24 hours.\nChances shown above determine the result.",UDim2.fromOffset(490,478),UDim2.fromOffset(405,54),18)
+text(canvas,"Explanation","One free spin every 24 hours.\nChances shown above determine the result.",UDim2.fromOffset(490,488),UDim2.fromOffset(405,54),18)
 local result=text(canvas,"Result","Visit the Daily Spin station for a free prize!",UDim2.fromOffset(22,520),UDim2.fromOffset(444,43),21)
 local timer=text(canvas,"Timer","Loading...",UDim2.fromOffset(28,604),UDim2.fromOffset(432,26),18)
 local state local spinning=false local requesting=false local seen={} local currentTween
