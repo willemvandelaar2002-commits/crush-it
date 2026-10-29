@@ -23,6 +23,7 @@ local Net = require(ReplicatedStorage.Shared.Net)
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Icons = require(ReplicatedStorage.Shared.Icons)
 local CrusherIcon = require(script.Parent.CrusherIcon)
+local CardFx = require(script.Parent.CardFx)
 
 local player = Players.LocalPlayer
 local Claim = Net.event("ClaimReward")
@@ -229,7 +230,8 @@ local function makeTile(parent: Frame, order: number, reward: any, onClaim: () -
 	cardFill(b, color)
 	local studs = Style.flowingStuds(b, 30, 0.8, panel)
 	studs.ImageColor3 = Color3.new(1, 1, 1)
-	Style.sunburst(b, { center = UDim2.fromScale(0.5, 0.5), alpha = 0.3, zIndex = 6, length = 0.95, width = 0.11 })
+	Style.sunburst(b, { center = UDim2.fromScale(0.5, 0.5), alpha = 0.3, zIndex = 6, length = 0.95, width = 0.11, spin = 12, gate = panel })
+	if reward.kind == "crusher" then CardFx.special(b, reward.rarity, panel) end
 	Style.feedback(b)
 	local title = label(b, "", UDim2.fromOffset(8, 4), UDim2.new(1, -16, 0, 38), 3.5)
 	local sub = label(b, "", UDim2.new(1, -112, 0, 40), UDim2.fromOffset(104, 20), 2.5)
@@ -259,7 +261,7 @@ local function makeGrand(name: string, reward: any, onClaim: () -> ()): Tile
 	rainbow.Rotation = 0
 	local studs = Style.flowingStuds(b, 30, 0.78, panel)
 	studs.ImageColor3 = Color3.new(1, 1, 1)
-	Style.sunburst(b, { center = UDim2.new(0, 120, 0.55, 0), alpha = 0.35, zIndex = 6, width = 0.05, length = 1.4 })
+	Style.sunburst(b, { center = UDim2.new(0, 120, 0.55, 0), alpha = 0.35, zIndex = 6, width = 0.05, length = 1.4, spin = 14, gate = panel })
 	local title = label(b, "", UDim2.fromOffset(12, 4), UDim2.fromOffset(300, 32), 3.5)
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	local sub = label(b, "", UDim2.fromOffset(14, GRAND_H - 28), UDim2.fromOffset(200, 22), 2.5)

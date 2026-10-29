@@ -197,3 +197,9 @@ RECYCLE DUPES are a column of tabs on the left. Cards are rarity-coloured with
 white rays behind the portrait, the name on the top edge (??? when unknown, a
 black silhouette), the rarity name in a light rarity tint and "1 in N" on the
 bottom edge. A rainbow progress bar at the bottom shows how many are found.
+
+Legendary and Mythic cards are extra special (client/CardFx.luau): deeper gold /
+red-pink fill, strong white rays reaching the edges that turn in a circle, a
+shimmering inner border (gold, or a moving rainbow for Mythic), twinkling
+sparkles and, for Mythic, a breathing rainbow halo. The rays on every other card
+turn slowly too. Reward cards of those rarities get the same treatment.
