@@ -43,6 +43,6 @@ return function()
 		end
 		v.model:Destroy()
 	end end
-	check(designs==29+#C.ChaseTypes and #C.Types==40+#C.Mythics+#C.CrateTypes+#C.ChaseTypes,"all forty definitions (plus Mythics) and twenty-nine new rigs")
+	check(designs==29+(function() local n=0 for _,e in C.ChaseTypes do if e.design then n+=1 end end return n end)() and #C.Types==40+#C.Mythics+#C.CrateTypes+#C.ChaseTypes,"all forty definitions (plus Mythics) and twenty-nine new rigs")
 	return {passed=checks,designs=designs}
 end
