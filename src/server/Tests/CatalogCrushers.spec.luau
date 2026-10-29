@@ -43,6 +43,6 @@ return function()
 		end
 		v.model:Destroy()
 	end end
-	check(designs==29 and #C.Types==40+#C.Mythics+#C.CrateTypes,"all forty definitions (plus Mythics) and twenty-nine new rigs")
+	check(designs==29+#C.ChaseTypes and #C.Types==40+#C.Mythics+#C.CrateTypes+#C.ChaseTypes,"all forty definitions (plus Mythics) and twenty-nine new rigs")
 	return {passed=checks,designs=designs}
 end

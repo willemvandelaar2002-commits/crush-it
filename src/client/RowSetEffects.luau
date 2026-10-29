@@ -9,7 +9,8 @@ local CURTAIN=9 -- studs the light curtain rises above the rail
 local V,F=Vector3.new,CFrame.new
 -- sparkles for every full rarity set (Common/Uncommon/Rare softer)
 local palettes={Common=Color3.fromRGB(205,220,235),Uncommon=Color3.fromRGB(90,235,120),Rare=Color3.fromRGB(80,170,255),
-	Epic=Color3.fromRGB(193,105,255),Legendary=Color3.fromRGB(255,204,62),Mythic=Color3.fromRGB(255,90,200)}
+	Epic=Color3.fromRGB(193,105,255),Legendary=Color3.fromRGB(255,204,62),Secret=Color3.fromRGB(205,210,235),Divine=Color3.fromRGB(150,235,255),Mythic=Color3.fromRGB(255,90,200)}
+local TOP={Legendary=true,Secret=true,Divine=true,Mythic=true}
 local white=Color3.new(1,1,1)
 local function part(parent,name,size)
 	local p=Instance.new("Part") p.Name=name p.Size=size p.Anchored=true
@@ -103,7 +104,7 @@ function E.new(world)
 			if slot.rarity~=rarity then
 				slot.rarity=rarity slot.glint.Color=color:Lerp(white,.65)
 				for _,e in slot.emitters do e:Clear() e.Color=ColorSequence.new(color:Lerp(white,.5),color)
-					e.Rate=if rarity=="Legendary" then 16 elseif rarity=="Epic" then 12 else 8
+					e.Rate=if TOP[rarity] then 16 elseif rarity=="Epic" then 12 else 8
 				end
 				for _,b in slot.beams do b.Color=ColorSequence.new(color:Lerp(white,.25),color) end
 				for _,h in slot.hazes do h:Clear() h.Color=ColorSequence.new(color) end
@@ -121,7 +122,7 @@ function E.new(world)
 					local host=slot.hosts[i] host.Size=V(math.max(1,rail.Size.X),.1,1.2)
 					host.CFrame=rail.CFrame*F(0,.2,0)
 					slot.beams[i].Width0=rail.Size.X slot.beams[i].Width1=rail.Size.X
-					if burst then e:Emit(if rarity=="Legendary" then 30 else 22) end
+					if burst then e:Emit(if TOP[rarity] then 30 else 22) end
 				else e:Clear() end
 			end
 		end

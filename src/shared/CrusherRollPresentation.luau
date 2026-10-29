@@ -8,7 +8,9 @@ local profiles={
 	Rare={rank=2,duration=.7,lift=.7,pitch=1.05},
 	Epic={rank=3,duration=1.0,lift=1.0,pitch=.98},
 	Legendary={rank=4,duration=1.35,lift=1.3,pitch=.9},
-	Mythic={rank=5,duration=1.6,lift=1.5,pitch=.85},
+	Secret={rank=5,duration=1.6,lift=1.5,pitch=.84},
+	Divine={rank=6,duration=1.85,lift=1.7,pitch=.8},
+	Mythic={rank=7,duration=1.9,lift=1.7,pitch=.78},
 }
 function P.profile(rarity) return profiles[rarity] or profiles.Common end
 function P.owns(items,id)
