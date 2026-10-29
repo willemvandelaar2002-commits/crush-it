@@ -220,3 +220,11 @@ Willem picked option C from the layout canvas. Numbers in `Config.Loop` / `Confi
 - Sell station moved toward the plaza-side (front) wall: (-26,96) (was -26,80).
 - Coating Lab booth: plot (34,27) (was 42,19), nearer the walkway/front, and 1.35x bigger (CrusherConfig.CoatingBoothScale; PlotAssets.place has a `scale` option, the prompt moves with it).
 - Fuser 1.4x bigger (CrusherConfig.Fusion.MachineScale; collision box and prompt scale with it), same spot (-97,57) in the fusion wing, turned so its input rings face the plot (+X, the doorway).
+
+## What each crusher crushes (29 Oct)
+`C.RarityObjects`: the toy on a bay's bed follows the crusher's rarity (the 13
+meshes in ReplicatedStorage.ObjectMeshes / Config.Objects). Common Apple;
+Uncommon Teddy Bear or Phone; Rare TV or Fridge; Epic Car or Truck; Legendary
+Tank; Secret House or Statue; Divine Plane or Ship; Mythic Planet. Two options:
+random per input. Visual only. Toys fill up to 90% of the clearance and ~90% of
+the bed width.
