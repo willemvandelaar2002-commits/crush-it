@@ -468,7 +468,7 @@ local function rollShow(p,offers)
 	end
 	local shown={} local nextFlick={}
 	local function flick(slot,id)
-		if shown[slot] then showModel(shown[slot],false) end
+		if shown[slot] then showModel(shown[slot],false) game:GetService("CollectionService"):RemoveTag(shown[slot],"RollSpin") end
 		local m=silhouetteFor(slot,id) shown[slot]=m showModel(m,true)
 		local hl=plot.outlines[slot]
 		if not hl then
@@ -480,7 +480,7 @@ local function rollShow(p,offers)
 		card(st.pedestals[slot],"???","???","Rolling...","???","")
 	end
 	local function stop()
-		for slot,m in shown do showModel(m,false) if plot.outlines[slot] then plot.outlines[slot].Enabled=false end end
+		for slot,m in shown do showModel(m,false) game:GetService("CollectionService"):RemoveTag(m,"RollSpin") if plot.outlines[slot] then plot.outlines[slot].Enabled=false end end
 		shown={}
 	end
 	local start=os.clock() local base=st.die:GetPivot() local rollers={}
