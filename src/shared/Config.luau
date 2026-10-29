@@ -379,22 +379,19 @@ Config.Rewards = {
 	-- kind "cash": `seconds` of your current earnings; kind "crusher": a random
 	-- crusher of that rarity, straight into the backpack (cash if it is full).
 	-- Playtime: unlock after `minutes` in this session (resets when you rejoin).
+	-- Six gift tiles and a grand prize (the last entry, shown in the big rainbow
+	-- bar). bonusSeconds: the grand prize also pays that much cash on top.
 	Playtime = {
-		{ minutes = 2, kind = "cash", seconds = 60 },
-		{ minutes = 5, kind = "cash", seconds = 120 },
-		{ minutes = 8, kind = "crusher", rarity = "Uncommon" },
-		{ minutes = 12, kind = "cash", seconds = 300 },
-		{ minutes = 16, kind = "crusher", rarity = "Uncommon" },
-		{ minutes = 20, kind = "cash", seconds = 600 },
-		{ minutes = 25, kind = "cash", seconds = 900 },
-		{ minutes = 30, kind = "crusher", rarity = "Rare" },
-		{ minutes = 40, kind = "cash", seconds = 1200 },
-		{ minutes = 50, kind = "cash", seconds = 1800 },
-		{ minutes = 60, kind = "cash", seconds = 2400 },
-		{ minutes = 75, kind = "crusher", rarity = "Epic", mythicChance = 0.03 },
+		{ minutes = 2, kind = "cash", seconds = 90 },
+		{ minutes = 5, kind = "cash", seconds = 240 },
+		{ minutes = 10, kind = "crusher", rarity = "Uncommon" },
+		{ minutes = 15, kind = "cash", seconds = 600 },
+		{ minutes = 25, kind = "crusher", rarity = "Rare" },
+		{ minutes = 40, kind = "cash", seconds = 1800 },
+		{ minutes = 60, kind = "crusher", rarity = "Epic", mythicChance = 0.05, bonusSeconds = 3600 },
 	},
 	-- Daily check-in: one claim per UTC day; missing a day restarts at day 1;
-	-- after day 7 it starts over.
+	-- after day 7 it starts over. Day 7 is the grand prize.
 	Daily = {
 		{ kind = "cash", seconds = 300 },
 		{ kind = "cash", seconds = 600 },
@@ -402,7 +399,7 @@ Config.Rewards = {
 		{ kind = "cash", seconds = 900 },
 		{ kind = "cash", seconds = 1200 },
 		{ kind = "crusher", rarity = "Rare", mythicChance = 0.01 },
-		{ kind = "cash", seconds = 3600 },
+		{ kind = "crusher", rarity = "Epic", mythicChance = 0.02, bonusSeconds = 3600 },
 	},
 	-- mythicChance: rare chance a crusher reward becomes a random Mythic instead
 	-- crusher rewards when the inventory is full: this many seconds of earnings

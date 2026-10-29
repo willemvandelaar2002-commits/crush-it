@@ -45,10 +45,13 @@ OrderedDataStore "CashBoard_v1", refreshed every 2 min; empty in Studio).
 Score is current cash (like Destroy a Vault), so it drops when you spend or rebirth.
 
 ## Free rewards (server/Rewards.luau + client/Rewards.client.luau)
-REWARDS gift button next to BOOK/SHOP, "!" badge when something can be claimed.
-- Playtime gifts: 8 rewards after 2, 5, 10, 15, 25, 40, 60, 90 minutes in this session (reset on rejoin).
-- Daily check-in: 7 days, one claim per UTC day (`data.daily = { day, streak }`); missing a day restarts at day 1, after day 7 it starts over.
-- Cash rewards are N seconds of your current earning rate (min $25), so they stay useful at every stage; some slots give Golden objects (adds to goldenRush).
+REWARDS gift button next to INDEX/SHOP, "!" badge when something can be claimed.
+Panel styled after the reference game: purple header with the gift poking out, Skip All and X in the header,
+Playtime/Daily tabs down the left, six cards (3x2) and the grand prize (the last entry) in a wide rainbow bar.
+Cards: reward on top, icon on white rays, green CLAIM / red countdown / grey CLAIMED bar. Stud pattern drifts.
+- Playtime gifts: 6 cards after 2, 5, 10, 15, 25, 40 minutes plus the grand prize at 60 minutes (Epic crusher + 1 hour of cash, 5% Mythic chance); per session, reset on rejoin.
+- Daily check-in: 7 days, one claim per UTC day (`data.daily = { day, streak }`); missing a day restarts at day 1, after day 7 it starts over. Day 7 is the grand prize (Epic crusher + 1 hour of cash, 2% Mythic chance).
+- Cash rewards are N seconds of your current earning rate (min $25), so they stay useful at every stage. `bonusSeconds` on a crusher reward pays that much cash on top.
 - All numbers in `Config.Rewards`. Server checks time and claims; analytics events PlaytimeReward / DailyReward.
 
 ## Friend boost (server/FriendBoost.luau)

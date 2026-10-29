@@ -16,6 +16,8 @@
 --   Style.iconButton(parent, opts) -> (TextButton, badge)  big chunky icon tile with a label and a "!" badge
 --   Style.rainbow(guiObject, speed?) -> UIGradient          animated rainbow fill (client only)
 --   Style.wobble(guiObject, degrees?, speed?)               gentle tilt back and forth (client only)
+--   Style.flowingStuds(guiObject, tile, transparency, gate?) stud pattern that slowly drifts (client only)
+--   Style.sunburst(guiObject, props?) -> Frame              white rays fanning out behind an icon
 
 local Style = {}
 
@@ -404,6 +406,15 @@ function Style.hasModal(): boolean
 	return activePanel ~= nil
 end
 
+-- Fixed-size panels can set attributes FitWidth/FitHeight (pixels, incl. bits
+-- that poke out); they then shrink to fit small screens when opened.
+function Style.fitScale(panel: Frame): number
+	local w, h = panel:GetAttribute("FitWidth"), panel:GetAttribute("FitHeight")
+	if type(w) ~= "number" or type(h) ~= "number" then return 1 end
+	local v = workspace.CurrentCamera.ViewportSize
+	return math.clamp(math.min((v.X - 24) / w, (v.Y - 70) / h), 0.4, 1)
+end
+
 function Style.setOpen(panel: Frame, open: boolean)
 	local scale = panel:FindFirstChild("ModalScale") :: UIScale?
 	if not scale then panel.Visible = open; return end
@@ -416,11 +427,11 @@ function Style.setOpen(panel: Frame, open: boolean)
 			return
 		end
 		panel.Visible = true
-		local tween = TweenService:Create(scale, TweenInfo.new(0.24, Enum.EasingStyle.Back), { Scale = 1 })
+		local tween = TweenService:Create(scale, TweenInfo.new(0.24, Enum.EasingStyle.Back), { Scale = Style.fitScale(panel) })
 		panelTweens[panel] = tween
 		tween:Play()
 	else
-		local tween = TweenService:Create(scale, TweenInfo.new(0.12, Enum.EasingStyle.Quad), { Scale = 0.92 })
+		local tween = TweenService:Create(scale, TweenInfo.new(0.12, Enum.EasingStyle.Quad), { Scale = 0.92 * Style.fitScale(panel) })
 		panelTweens[panel] = tween
 		tween:Play()
 		tween.Completed:Once(function()
@@ -445,7 +456,7 @@ function Style.modal(panel: Frame)
 			if activePanel and activePanel ~= panel then activePanel.Visible = false end
 			activePanel = panel
 			gui.DisplayOrder = 30
-			scale.Scale = 0.92
+			scale.Scale = 0.92 * Style.fitScale(panel)
 			Style.setOpen(panel, true)
 		else
 			if activePanel == panel then activePanel = nil end
@@ -548,6 +559,82 @@ function Style.wobble(gui: GuiObject, degrees: number?, speed: number?)
 		end
 		gui.Rotation = math.sin(os.clock() * s + phase) * d
 	end)
+end
+
+-- Stud pattern that slowly drifts diagonally (the "moving white pattern" on
+-- cards and headers). A clip frame holds a tiled image one tile larger than its
+-- parent; sliding it by up to one tile loops seamlessly. `gate`: skip the work
+-- while that GuiObject (usually the panel) is hidden.
+local flowing: { { img: ImageLabel, tile: number, gate: GuiObject? } } = {}
+local flowConn: RBXScriptConnection? = nil
+local FLOW_SPEED = 16 -- pixels per second
+function Style.flowingStuds(parent: GuiObject, tile: number, transparency: number, gate: GuiObject?): ImageLabel
+	local clip = decoration(parent, "Frame", "StudsFlow", {
+		Name = "StudsFlow", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ClipsDescendants = true,
+		ZIndex = parent.ZIndex, BorderSizePixel = 0,
+	})
+	local img = decoration(clip, "ImageLabel", "Studs", {
+		Name = "Studs", Size = UDim2.new(1, tile, 1, tile), Position = UDim2.fromOffset(-tile, -tile), BackgroundTransparency = 1,
+		Image = Style.Studs.UiImage, ScaleType = Enum.ScaleType.Tile, TileSize = UDim2.fromOffset(tile, tile),
+		ImageTransparency = transparency, ZIndex = parent.ZIndex,
+	})
+	table.insert(flowing, { img = img, tile = tile, gate = gate })
+	if not flowConn and game:GetService("RunService"):IsClient() then
+		local last = 0
+		flowConn = game:GetService("RunService").RenderStepped:Connect(function()
+			local now = os.clock()
+			if now - last < 1 / 30 then return end
+			last = now
+			for i = #flowing, 1, -1 do
+				local f = flowing[i]
+				if not f.img.Parent then
+					table.remove(flowing, i)
+				elseif not f.gate or f.gate.Visible then
+					local o = (now * FLOW_SPEED) % f.tile
+					f.img.Position = UDim2.fromOffset(o - f.tile, o - f.tile)
+				end
+			end
+		end)
+	end
+	return img
+end
+
+-- White rays fanning out from a point (behind a reward icon or card portrait).
+-- Bars cross at the centre and fade out before the edges, so nothing needs clipping.
+-- props: count (12), width (scale of the parent width, .13), alpha (centre transparency, .55),
+-- length (scale of the parent height, 1.05), center (UDim2), zIndex, color
+function Style.sunburst(parent: GuiObject, props: { [string]: any }?): Frame
+	local o = props or {}
+	local holder = decoration(parent, "Frame", "Sunburst", {
+		Name = "Sunburst", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, BorderSizePixel = 0,
+		ZIndex = o.zIndex or parent.ZIndex,
+	})
+	holder:ClearAllChildren()
+	local count = o.count or 12
+	local alpha = o.alpha or 0.55
+	local fade = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.1, 1), NumberSequenceKeypoint.new(0.5, alpha),
+		NumberSequenceKeypoint.new(0.9, 1), NumberSequenceKeypoint.new(1, 1),
+	})
+	for i = 1, count do
+		local ray = child("Frame", {
+			Name = "Ray", AnchorPoint = Vector2.new(0.5, 0.5), Position = o.center or UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(o.width or 0.13, o.length or 1.05), Rotation = (i - 1) * 180 / count,
+			BackgroundColor3 = o.color or Color3.new(1, 1, 1), BorderSizePixel = 0, ZIndex = holder.ZIndex,
+		}, holder)
+		child("UIGradient", { Rotation = 90, Transparency = fade }, ray)
+	end
+	-- soft glow in the middle
+	local glow = child("Frame", {
+		Name = "Glow", AnchorPoint = Vector2.new(0.5, 0.5), Position = o.center or UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromScale(0.55, 0.55), BackgroundColor3 = o.color or Color3.new(1, 1, 1), BorderSizePixel = 0, ZIndex = holder.ZIndex,
+	}, holder)
+	child("UIAspectRatioConstraint", { AspectRatio = 1, DominantAxis = Enum.DominantAxis.Width }, glow)
+	child("UICorner", { CornerRadius = UDim.new(0.5, 0) }, glow)
+	child("UIGradient", { Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, alpha + 0.15), NumberSequenceKeypoint.new(1, 1),
+	}) }, glow)
+	return holder
 end
 
 Style.GREEN = GREEN

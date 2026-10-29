@@ -188,3 +188,12 @@ sources installed; the game was not published.
 Remaining: physical-phone behavior, live save persistence and multiplayer load
 are unverified. Every new rig passed engine motion tests, but a separate visual
 review of each of the 29 machines in a working bay has not been completed.
+
+## Look (2026-10-29)
+
+Restyled after the reference game: grey body, bright blue header with drifting
+studs, the book poking out of the corner, count and red X. Rarity filters and
+RECYCLE DUPES are a column of tabs on the left. Cards are rarity-coloured with
+white rays behind the portrait, the name on the top edge (??? when unknown, a
+black silhouette), the rarity name in a light rarity tint and "1 in N" on the
+bottom edge. A rainbow progress bar at the bottom shows how many are found.

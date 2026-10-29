@@ -52,6 +52,9 @@ assets, lighting, player profiles or gameplay files were changed by this patch.
 - `Style.image(parent, image, props?)` an uploaded icon (ImageLabel, Fit, centred); `Style.iconButton` takes `image` too
 - `Style.rainbow(gui, speed?)` moving rainbow gradient (client only)
 - `Style.wobble(gui, degrees?, speed?)` gentle tilt back and forth (client only)
+- `Style.flowingStuds(gui, tile, transparency, gate?)` stud pattern that slowly drifts diagonally (the moving white pattern on cards and headers); `gate` = the panel, so hidden panels cost nothing
+- `Style.sunburst(gui, props?)` white rays fanning out behind an icon (no clipping needed)
+- Panels can set attributes `FitWidth`/`FitHeight`; `Style.setOpen` then shrinks them to fit small screens
 
 The original Style helper names and arguments are unchanged. Panel, button and
 text decorations are named and updated in place, so repeated styling does not
