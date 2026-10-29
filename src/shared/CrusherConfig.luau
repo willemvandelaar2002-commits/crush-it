@@ -242,6 +242,20 @@ do
 		for _, rarity in C.Rarities do if rarity.name == entry.rarity then table.insert(rarity.types, entry.id) break end end
 	end
 end
+-- What a crusher crushes, by its rarity (29 Oct): the toy objects in
+-- Config.Objects (meshes in ReplicatedStorage.ObjectMeshes). Rarer crushers get
+-- bigger, cooler things; a tier with two picks one at random for each input.
+-- Visual only: production and value don't change.
+C.RarityObjects = {
+	Common = { "Apple" },
+	Uncommon = { "Teddy Bear", "Phone" },
+	Rare = { "TV", "Fridge" },
+	Epic = { "Car", "Truck" },
+	Legendary = { "Tank" },
+	Secret = { "House", "Statue" },
+	Divine = { "Plane", "Ship" },
+	Mythic = { "Planet" },
+}
 C.Modifiers = {
 	{ name = "Standard", weight = 80, mult = 1 }, { name = "Rusty", weight = 14, mult = 1.15 },
 	{ name = "Polished", weight = 5, mult = 1.5 }, { name = "Charged", weight = 1, mult = 2 },

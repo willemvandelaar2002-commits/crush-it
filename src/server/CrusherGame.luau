@@ -283,7 +283,7 @@ local function buildBay(p,i,item)
 	local t=C.typeById(item.type) local o=bay.origin
 	local special=Catalog.build(o,t.id) or (if t.template then Special.build(o,t.template) else nil)
 	if special then
-		special.id=item.id special.tier=t.input special.model.Name="EquippedCrusher"
+		special.id=item.id special.tier=t.input special.rarity=item.rarity special.model.Name="EquippedCrusher"
 		special.model:SetAttribute("InventoryId",item.id) special.model:SetAttribute("Rarity",item.rarity) special.model:SetAttribute("Modifier",item.modifier)
 		Finish.apply(special.model,item.modifier,o)
 		if item.fused then fusedMark(special.model,o) end
@@ -314,7 +314,7 @@ local function buildBay(p,i,item)
 	for _,x in {-3.3,3.3} do Workshop.part(built.model,"HeaderBolt",Vector3.new(.5,.5,.4),header.CFrame*CFrame.new(x,0,1.1),Color3.fromRGB(222,233,245)) end
 	local bed=(built.model:FindFirstChild("Bed") :: BasePart)
 	ctx.visuals[i]={id=item.id,model=built.model,ram=built.ram,rest=built.ram.CFrame,
-		base=CFrame.new(o.Position.X,bed.Position.Y+bed.Size.Y/2,o.Position.Z)*(o-o.Position),input=nil,tier=t.input,
+		base=CFrame.new(o.Position.X,bed.Position.Y+bed.Size.Y/2,o.Position.Z)*(o-o.Position),input=nil,tier=t.input,rarity=item.rarity,
 		clearance=built.ram.Position.Y-built.ram.Size.Y/2-(bed.Position.Y+bed.Size.Y/2),bedWidth=math.min(bed.Size.X,bed.Size.Z)}
 	Feel.track(ctx.visuals[i],t.id)
 end
@@ -584,11 +584,18 @@ local function action(p,name,args)
 	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" or name=="Fuse" or name=="CollectFusion" or name=="ApplyCoating" then result else nil) ctx.justRolled=nil ctx.justDiscovered=nil
 	return ok,message,result
 end
+-- the toy a crusher of this rarity crushes (C.RarityObjects), as a Config.Objects index
+local objectIndex={} for i,def in Config.Objects do objectIndex[def.name]=i end
+local function objectFor(rarity)
+	local list=C.RarityObjects[rarity] or C.RarityObjects.Common
+	return objectIndex[list[rng:NextInteger(1,#list)]] or 1
+end
 local function visualEvent(p,event)
 	local v=sessions[p].visuals[event.bay] if not v then return end
 	if event.kind=="Input" then
 		if v.input then v.input:Destroy() end
-		v.input=Objects.build(v.tier,v.base,"Normal") v.input.Name="ProductionInput" v.input.Parent=v.model
+		v.objectIndex=objectFor(v.rarity)
+		v.input=Objects.build(v.objectIndex,v.base,"Normal") v.input.Name="ProductionInput" v.input.Parent=v.model
 		local _,size=v.input:GetBoundingBox()
 		local scale=math.min(1,v.clearance*.85/size.Y,v.bedWidth/(math.max(size.X,size.Z)*1.35))
 		Objects.scale(v.input,v.base,scale) v.input:SetAttribute("Height",size.Y*scale)
@@ -604,7 +611,7 @@ local function visualEvent(p,event)
 		end)
 		if v.catalog then Catalog.strike(v,event) return end
 		if v.special then Special.strike(v,event) return end
-		local height=(if v.input then v.input:GetAttribute("Height") else Config.Objects[v.tier].height)*event.fraction
+		local height=(if v.input then v.input:GetAttribute("Height") else Config.Objects[v.objectIndex or v.tier].height)*event.fraction
 		local down=CFrame.new(v.rest.Position.X,v.base.Position.Y+height+v.ram.Size.Y/2,v.rest.Position.Z)*(v.rest-v.rest.Position)
 		local model=v.model
 		Tween:Create(v.ram,TweenInfo.new(timing.hit,Enum.EasingStyle.Quad,Enum.EasingDirection.In),{CFrame=down}):Play()
