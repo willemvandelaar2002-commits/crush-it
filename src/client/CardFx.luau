@@ -91,7 +91,7 @@ function CardFx.special(card: GuiObject, rarity: string, gate: GuiObject?): bool
 		})
 	end
 	-- big turning rays over the whole card
-	Style.sunburst(card, { fullBleed = true, count = if mythic then 10 else 9, width = 0.24, alpha = if mythic then 0.62 else 0.6,
+	Style.sunburst(card, { fullBleed = true, count = 10, width = 0.11, alpha = 0.62, glow = 0.75,
 		spin = if mythic then 34 else 24, gate = gate, zIndex = z, center = UDim2.fromScale(0.5, 0.42) })
 
 	-- shimmering inner border, inside the dark outline

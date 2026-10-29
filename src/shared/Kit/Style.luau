@@ -605,7 +605,7 @@ end
 -- props: count (12), width (scale of the parent width, .13), alpha (ray transparency, .55),
 -- length (scale of the parent height, 1.05), center (UDim2), zIndex, color,
 -- spin (degrees per second, 0 = still), gate (skip the spin while this is hidden),
--- fullBleed (rays reach the edges instead of fading out in the middle)
+-- fullBleed (rays reach the edges instead of fading out in the middle), glow (centre glow transparency)
 local spinning: { { holder: Frame, speed: number, gate: GuiObject? } } = {}
 local spinConn: RBXScriptConnection? = nil
 function Style.sunburst(parent: GuiObject, props: { [string]: any }?): Frame
@@ -646,7 +646,7 @@ function Style.sunburst(parent: GuiObject, props: { [string]: any }?): Frame
 	}, holder)
 	child("UICorner", { CornerRadius = UDim.new(0.5, 0) }, glow)
 	child("UIGradient", { Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, math.min(1, alpha + 0.15)), NumberSequenceKeypoint.new(1, 1),
+		NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, o.glow or math.min(1, alpha + 0.15)), NumberSequenceKeypoint.new(1, 1),
 	}) }, glow)
 	local speed = o.spin or 0
 	if speed ~= 0 then
