@@ -352,6 +352,31 @@ function W.station(parent,cf,kind)
 		W.text(gui,"SignText","SELL SCRAP",UDim2.fromScale(.2,.08),UDim2.fromScale(.76,.84))
 		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.2,5.9),W.Green,"SELL SCRAP","SELL",16)
 		station={part=face,label=label,button=button}
+	elseif kind=="Trash" then
+		-- Toy trash can (29 Oct): a studded bin with its lid flipped open, scrap
+		-- bricks peeking out, a red TRASH sign and the panel on the front.
+		local red=Color3.fromRGB(226,52,58) local bin=Color3.fromRGB(64,82,100)
+		studs(W.part(m,"MachineFoot",V(13,1,12),cf*CFrame.new(0,.5,0),W.Navy,true))
+		studs(W.part(m,"BinBody",V(10,7.4,9),cf*CFrame.new(0,4.7,-.4),bin,true))
+		for _,x in {-3,0,3} do studs(W.part(m,"BinRib",V(1,7.4,.5),cf*CFrame.new(x,4.7,4.2),Style.darken(bin,.25))) end
+		studs(W.part(m,"BinRim",V(11,.9,10),cf*CFrame.new(0,8.8,-.4),W.Navy))
+		W.hazard(m,cf*CFrame.new(0,1.4,4.25),10,.8,.3)
+		-- lid hinged at the back, flipped up and over
+		studs(W.part(m,"BinLid",V(11,.8,9.6),cf*CFrame.new(0,9.4,-5.4)*CFrame.Angles(math.rad(70),0,0)*CFrame.new(0,0,-4.6),red))
+		studs(W.part(m,"LidHandle",V(3,.6,.8),cf*CFrame.new(0,13.6,-6.6),W.Navy))
+		local rng=Random.new(11)
+		for i=1,7 do
+			studs(W.part(m,"TrashBrick",V(rng:NextNumber(1.6,2.8),rng:NextNumber(1,1.8),rng:NextNumber(1.6,2.6)),
+				cf*CFrame.new(rng:NextNumber(-3.2,3.2),9.1+rng:NextNumber(0,.8),rng:NextNumber(-3.4,2))*CFrame.Angles(rng:NextNumber(-.6,.6),rng:NextNumber(0,6),rng:NextNumber(-.6,.6)),TOY[(i-1)%#TOY+1]))
+		end
+		for _,x in {-5.2,5.2} do studs(W.part(m,"SignPost",V(.9,6,.9),cf*CFrame.new(x,12,-5.6),W.Navy)) end
+		local board=W.part(m,"TrashSign",V(11,2.8,.7),cf*CFrame.new(0,15.6,-5.6),red)
+		studs(W.part(m,"SignFrame",V(12,3.8,.5),cf*CFrame.new(0,15.6,-6.1),W.Navy))
+		local gui=W.sign(board)
+		W.text(gui,"SignText","TRASH",UDim2.fromScale(.05,.08),UDim2.fromScale(.9,.84))
+		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.3,5),red,"TRASH CAN","TRASH",12)
+		label.Text="Throw away crushers"
+		station={part=face,label=label,button=button}
 	else
 		-- Purple roll machine: crushing rollers, a big die and a reveal stand.
 		studs(W.part(m,"MachineFoot",V(24,1,16),cf*CFrame.new(0,.5,0),W.Navy,true))

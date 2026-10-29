@@ -231,3 +231,13 @@ Rarer = more: Legendary 8 gold-white rays and 3 sparkles; Secret a galaxy card
 sky/cream/pink card, 12 white/gold rays plus a thin counter-turning layer and a
 halo; Mythic an animated rainbow card, 14 rainbow rays plus a counter layer,
 rainbow border and halo, 8 sparkles.
+
+## Trash can (29 Oct)
+
+A toy trash can stands right of the roll machine (plot x 57, z 92; the Goals
+board moved toward the centre path to x 36, z 102). Its prompt or TRASH button
+opens client/TrashPanel: every crusher that isn't in a bay as a card, tap to
+pick, quick "All <rarity> (n)" toggles, TRASH n (second press confirms; it warns
+when Legendary or rarer is picked). Server: Rules "TrashMany" {ids}, only near the
+trash can, never equipped crushers, never your very last crusher. Last copies of a
+type may go: the Index keeps every type you ever owned (crushers.seen). No refund.
