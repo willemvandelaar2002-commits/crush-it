@@ -80,8 +80,18 @@ function CardFx.special(card: GuiObject, rarity: string, gate: GuiObject?): bool
 	if not mythic and rarity ~= "Legendary" then return false end
 	local z = card.ZIndex
 
+	-- deeper, richer fill than the other rarities (the rays bring the light)
+	local fill = card:FindFirstChild("Fill")
+	if fill and fill:IsA("UIGradient") then
+		local base = if mythic then Color3.fromRGB(245, 40, 120) else Color3.fromRGB(255, 176, 20)
+		fill.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Style.darken(base, 0.25)),
+			ColorSequenceKeypoint.new(0.45, Style.lighten(base, 0.12)),
+			ColorSequenceKeypoint.new(1, Style.darken(base, 0.35)),
+		})
+	end
 	-- big turning rays over the whole card
-	Style.sunburst(card, { fullBleed = true, count = if mythic then 10 else 9, width = 0.2, alpha = if mythic then 0.42 else 0.48,
+	Style.sunburst(card, { fullBleed = true, count = if mythic then 10 else 9, width = 0.24, alpha = if mythic then 0.62 else 0.6,
 		spin = if mythic then 34 else 24, gate = gate, zIndex = z, center = UDim2.fromScale(0.5, 0.42) })
 
 	-- shimmering inner border, inside the dark outline
@@ -130,7 +140,7 @@ function CardFx.special(card: GuiObject, rarity: string, gate: GuiObject?): bool
 		if halo then
 			local h = halo :: Frame;
 			(h:FindFirstChild("Rainbow") :: UIGradient).Color = rainbow(t * 0.2 + phase)
-			h.BackgroundTransparency = 0.35 + 0.3 * (0.5 + 0.5 * math.sin(t * 3 + phase * 6))
+			h.BackgroundTransparency = 0.15 + 0.4 * (0.5 + 0.5 * math.sin(t * 3 + phase * 6))
 		end
 		for _, st in stars do
 			local k = math.max(0, math.sin(t * st.speed + st.phase))
