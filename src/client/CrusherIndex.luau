@@ -14,6 +14,7 @@ local ink = Style.Colors.Ink
 local blue = Color3.fromRGB(60, 172, 255)
 local green = Color3.fromRGB(70, 225, 86)
 local white = Color3.new(1, 1, 1)
+local deep = Color3.fromRGB(12, 14, 20)
 
 local function make(class, props, parent)
 	local node = Instance.new(class)
@@ -41,20 +42,29 @@ function I.new(gui, act)
 	local self = {} local state local tab = "Index" local filter = "All" local selectedBay = 1
 	local signature = "" local records = {} local redraw local hydrate local recyclePending
 	local panel = make("Frame", {Name="Book", AnchorPoint=Vector2.new(.5,.5),
-		Position=UDim2.fromScale(.54,.52), Size=UDim2.fromOffset(980,650), Visible=false,
-		BackgroundColor3=ink, BackgroundTransparency=.08, BorderSizePixel=0, ZIndex=5}, gui)
-	make("UICorner", {CornerRadius=UDim.new(0,5)}, panel)
-	make("UIStroke", {Color=ink, Thickness=4}, panel)
+		Position=UDim2.new(.5,70,.5,24), Size=UDim2.fromOffset(980,650), Visible=false,
+		BackgroundColor3=Color3.fromRGB(56,60,68), BorderSizePixel=0, ZIndex=5}, gui)
+	make("UICorner", {CornerRadius=UDim.new(0,6)}, panel)
+	make("UIStroke", {Color=deep, Thickness=5}, panel)
 	Style.modal(panel)
-	local header = make("Frame", {Name="Header", Size=UDim2.new(1,0,0,76), ZIndex=2}, panel)
-	Style.collectionPanel(header, blue, Color3.fromRGB(33,121,207))
-	Style.image(header, Icons.Book, {Name="BookIcon", Position=UDim2.fromOffset(20,34),
-		Size=UDim2.fromOffset(114,114), Rotation=-12, ZIndex=4})
-	local title = label(header,"Title","Index",UDim2.fromOffset(84,3),UDim2.new(1,-330,1,-6),48)
-	title.TextXAlignment = Enum.TextXAlignment.Left
-	local count = label(header,"Count","0 / "..#C.Types,UDim2.new(1,-245,0,10),UDim2.fromOffset(160,54),34)
-	button(header,"Close","X",UDim2.new(1,-67,0,10),UDim2.fromOffset(54,54),Style.Colors.Red,function() Style.setOpen(panel,false) end)
-	local nav = make("Frame", {Name="Tabs", Position=UDim2.fromOffset(-157,103),
+	-- header: bright blue, drifting studs, the book poking out of the corner
+	local header = make("Frame", {Name="Header", Position=UDim2.fromOffset(-4,-4), Size=UDim2.new(1,8,0,84),
+		BackgroundColor3=white, ZIndex=6}, panel)
+	make("UICorner", {CornerRadius=UDim.new(0,6)}, header)
+	make("UIStroke", {Color=deep, Thickness=5}, header)
+	make("UIGradient", {Rotation=90, Color=ColorSequence.new({ColorSequenceKeypoint.new(0,Color3.fromRGB(120,206,255)),
+		ColorSequenceKeypoint.new(.5,Color3.fromRGB(64,170,255)),ColorSequenceKeypoint.new(1,Color3.fromRGB(30,118,222))})}, header)
+	Style.flowingStuds(header,34,.74,panel).ImageColor3=Color3.fromRGB(200,235,255)
+	local book=Style.image(header, Icons.Book, {Name="BookIcon", Position=UDim2.fromOffset(46,30),
+		Size=UDim2.fromOffset(140,140), Rotation=-12, ZIndex=9})
+	Style.wobble(book,3,1.5)
+	local title = label(header,"Title","Index",UDim2.fromOffset(122,6),UDim2.new(1,-480,1,-12),60)
+	title.TextXAlignment = Enum.TextXAlignment.Left title.TextScaled=true title.ZIndex=8
+	local count = label(header,"Count","0 / "..#C.Types,UDim2.new(1,-290,0,10),UDim2.fromOffset(200,64),44)
+	count.TextScaled=true count.TextXAlignment=Enum.TextXAlignment.Right count.ZIndex=8
+	local closeButton=button(header,"Close","X",UDim2.new(1,-80,0,9),UDim2.fromOffset(66,66),Style.Colors.Red,function() Style.setOpen(panel,false) end)
+	closeButton.TextSize=44 closeButton.ZIndex=8
+	local nav = make("Frame", {Name="Tabs", Visible=false, Position=UDim2.fromOffset(-157,103),
 		Size=UDim2.fromOffset(142,150), BackgroundTransparency=1, ZIndex=2}, panel)
 	local indexButton local ownedButton
 	local function chooseTab(value)
@@ -63,20 +73,20 @@ function I.new(gui, act)
 	indexButton=button(nav,"IndexTab","INDEX",UDim2.new(),UDim2.fromOffset(142,58),blue,function() chooseTab("Index") end)
 	ownedButton=button(nav,"OwnedTab","OWNED",UDim2.fromOffset(0,72),UDim2.fromOffset(142,58),Style.Colors.Purple,function() chooseTab("Owned") end)
 	ownedButton.Visible=false -- your crushers live in the bottom hotbar now
-	local controls = make("Frame", {Name="Controls", Position=UDim2.fromOffset(12,88),
-		Size=UDim2.new(1,-24,0,44), BackgroundTransparency=1, ZIndex=2}, panel)
+	local controls = make("Frame", {Name="Controls", AnchorPoint=Vector2.new(1,0), Position=UDim2.fromOffset(-12,96),
+		Size=UDim2.fromOffset(148,560), BackgroundTransparency=1, ZIndex=2}, panel) -- filters: a column down the left side
 	local filters = make("Frame", {Name="RarityFilters", Size=UDim2.fromScale(1,1), BackgroundTransparency=1}, controls)
-	make("UIListLayout", {FillDirection=Enum.FillDirection.Horizontal, Padding=UDim.new(0,8),
+	make("UIListLayout", {FillDirection=Enum.FillDirection.Vertical, Padding=UDim.new(0,8),
 		SortOrder=Enum.SortOrder.LayoutOrder}, filters)
 	local filterButtons={}
 	local options={{name="All",color=blue}}
 	for _,rarity in C.Rarities do table.insert(options,{name=rarity.name,color=rarity.color}) end
 	for order,option in options do
 		local node=button(filters,"Filter_"..option.name,option.name,UDim2.new(),
-			UDim2.new(1/#options,-8,1,0),option.color,function() filter=option.name signature="" redraw() end)
-		node.TextSize=18 node.LayoutOrder=order filterButtons[option.name]=node
+			UDim2.new(1,0,0,48),option.color,function() filter=option.name signature="" redraw() end)
+		node.TextSize=24 node.LayoutOrder=order filterButtons[option.name]=node node:SetAttribute("Base",option.color)
 	end
-	local bayControls=make("Frame",{Name="BayControls",Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Visible=false},controls)
+	local bayControls=make("Frame",{Name="BayControls",Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Visible=false},panel)
 	button(bayControls,"PreviousBay","<",UDim2.new(),UDim2.fromOffset(48,40),blue,function()
 		selectedBay=math.max(1,selectedBay-1) signature="" redraw()
 	end)
@@ -93,25 +103,31 @@ function I.new(gui, act)
 		return Rules.duplicateExtras(state.items,equipped,function(item) return item.stats.cps end)
 	end
 	-- in the header (the OWNED tab is hidden; your crushers live in the hotbar)
-	local dupes dupes=button(header,"RecycleDuplicates","🗑 RECYCLE DUPES",UDim2.new(1,-480,0,14),UDim2.fromOffset(220,48),Style.Colors.Red,function()
+	local dupes dupes=button(filters,"RecycleDuplicates","RECYCLE DUPES",UDim2.new(),UDim2.new(1,0,0,58),Style.Colors.Red,function()
 		local n=#extras()
-		if n==0 then dupesPending=false dupes.Text="🗑 NO DUPES" return end
+		if n==0 then dupesPending=false dupes.Text="NO DUPES" return end
 		if dupesPending then dupesPending=false act("RecycleDuplicates",{}) return end
-		dupesPending=true dupes.Text="CONFIRM · "..n.." CRUSHER"..(if n==1 then "" else "S")
+		dupesPending=true dupes.Text="CONFIRM? "..n
 		task.delay(3,function() if dupesPending then dupesPending=false signature="" redraw() end end)
 	end)
-	dupes.TextSize=18
-	local content=make("ScrollingFrame",{Name="Content",Position=UDim2.fromOffset(10,145),
-		Size=UDim2.new(1,-20,1,-207),BackgroundTransparency=1,BorderSizePixel=0,
+	dupes.TextSize=18 dupes.LayoutOrder=100
+	local content=make("ScrollingFrame",{Name="Content",Position=UDim2.fromOffset(12,94),
+		Size=UDim2.new(1,-24,1,-166),BackgroundTransparency=1,BorderSizePixel=0,
 		AutomaticCanvasSize=Enum.AutomaticSize.Y,CanvasSize=UDim2.new(),ScrollBarThickness=7,ZIndex=2},panel)
 	Style.scroll(content)
 	make("UIGridLayout",{SortOrder=Enum.SortOrder.LayoutOrder},content)
-	local footer=make("Frame",{Name="CollectionProgress",Position=UDim2.new(0,12,1,-49),Size=UDim2.new(1,-24,0,35),ZIndex=2},panel)
-	Style.collectionPanel(footer,Color3.fromRGB(49,67,98),ink)
-	local fill=make("Frame",{Name="Fill",Size=UDim2.fromScale(0,1),BackgroundColor3=green,BorderSizePixel=0,ZIndex=1},footer)
+	-- bottom: a rainbow progress bar with the book on its left
+	local footer=make("Frame",{Name="CollectionProgress",Position=UDim2.new(0,12,1,-62),Size=UDim2.new(1,-24,0,50),
+		BackgroundColor3=Color3.fromRGB(30,33,40),BorderSizePixel=0,ZIndex=3},panel)
+	make("UICorner",{CornerRadius=UDim.new(0,4)},footer)
+	make("UIStroke",{Color=deep,Thickness=4},footer)
+	local fill=make("Frame",{Name="Fill",Size=UDim2.fromScale(0,1),BackgroundColor3=white,BorderSizePixel=0,ZIndex=3},footer)
 	make("UICorner",{CornerRadius=UDim.new(0,3)},fill)
-	Style.studsImage(fill,24,.75)
-	local progress=label(footer,"ProgressText","Loading collection...",UDim2.new(),UDim2.fromScale(1,1),21)
+	Style.rainbow(fill,.1).Rotation=0
+	Style.flowingStuds(fill,26,.78,panel).ImageColor3=white
+	Style.image(footer,Icons.Book,{Name="BookIcon",Position=UDim2.fromOffset(22,20),Size=UDim2.fromOffset(78,78),Rotation=-10,ZIndex=6})
+	local progress=label(footer,"ProgressText","Loading collection...",UDim2.fromOffset(70,4),UDim2.new(1,-80,1,-8),30)
+	progress.TextScaled=true progress.ZIndex=6
 	local empty=label(content,"Empty","",UDim2.new(),UDim2.fromOffset(200,220),24)
 	empty.Visible=false
 	local function clear()
@@ -120,7 +136,7 @@ function I.new(gui, act)
 	end
 	local function preview(record)
 		if record.rendered or not panel.Visible then return end
-		record.viewport=CrusherIcon.new(record.card,record.type,{position=UDim2.fromOffset(0,30),size=UDim2.new(1,0,0,133),hidden=record.hidden,modifier=record.modifier,zIndex=2})
+		record.viewport=CrusherIcon.new(record.box,record.type,{position=UDim2.fromOffset(0,14),size=UDim2.new(1,0,0,130),hidden=record.hidden,modifier=record.modifier,zIndex=2})
 		record.rendered=true record.fallback.Visible=false
 	end
 	hydrate=function()
@@ -135,16 +151,26 @@ function I.new(gui, act)
 	local function card(def,item,order,equipped)
 		local rarity=C.rarityOf(def.id)
 		local colour=(if item then C.rarity(item.rarity) else rarity).color
-		local frame=make("Frame",{Name="Card_"..(if item then item.id else def.id),LayoutOrder=order,ZIndex=1},content)
-		Style.collectionPanel(frame,Style.lighten(colour,.22),Style.darken(colour,.24))
+		-- a cell holds the card box; the name sits on its top edge, the odds on its bottom edge
+		local frame=make("Frame",{Name="Card_"..(if item then item.id else def.id),LayoutOrder=order,BackgroundTransparency=1,ZIndex=1},content)
+		local box=make("Frame",{Name="Box",Position=UDim2.fromOffset(2,16),Size=UDim2.new(1,-4,1,-34),BackgroundColor3=white,BorderSizePixel=0,ZIndex=1},frame)
+		make("UICorner",{CornerRadius=UDim.new(0,3)},box)
+		make("UIStroke",{Color=deep,Thickness=4},box)
+		make("UIGradient",{Name="Fill",Rotation=90,Color=ColorSequence.new({ColorSequenceKeypoint.new(0,Style.darken(colour,.12)),
+			ColorSequenceKeypoint.new(.45,Style.lighten(colour,.3)),ColorSequenceKeypoint.new(1,Style.darken(colour,.25))})},box)
+		Style.flowingStuds(box,28,.8,panel).ImageColor3=white
+		Style.sunburst(box,{center=UDim2.fromScale(.5,.42),alpha=.3,width=.12,length=1,zIndex=1})
 		local known=false
 		for _,owned in state.items do if owned.type==def.id then known=true break end end
 		if state.fusion and state.fusion.item and state.fusion.item.type==def.id then known=true end -- inside the Fusion Machine
-		label(frame,"Name",if known then def.name else "???",UDim2.fromOffset(5,4),UDim2.new(1,-10,0,30),22)
-		local fallback=Style.image(frame,Icons.Press,{Name="PreviewFallback",Position=UDim2.new(.5,0,0,94),Size=UDim2.fromOffset(94,94),ZIndex=2})
+		local name=label(frame,"Name",if known then def.name else "???",UDim2.fromOffset(2,0),UDim2.new(1,-4,0,32),26)
+		name.TextScaled=true name.ZIndex=4
+		local fallback=Style.image(box,Icons.Press,{Name="PreviewFallback",Position=UDim2.new(.5,0,0,78),Size=UDim2.fromOffset(94,94),ZIndex=2})
 		fallback.ImageColor3=if known then white else Color3.new(0,0,0)
-		label(frame,"Rarity",if item then item.rarity.." · Lv "..item.level else rarity.name,
-			UDim2.fromOffset(4,158),UDim2.new(1,-8,0,25),19)
+		local rarityText=label(box,"Rarity",if item then item.rarity.." · Lv "..item.level else rarity.name,
+			UDim2.new(0,4,1,-44),UDim2.new(1,-8,0,36),30)
+		rarityText.TextScaled=true rarityText.ZIndex=4
+		rarityText.TextColor3=Style.lighten(colour,.55)
 		if item then
 			local stats=label(frame,"Output",Format.cash(item.stats.cps*60).." scrap/min",UDim2.fromOffset(4,182),UDim2.new(1,-8,0,23),16)
 			stats.TextColor3=Color3.fromRGB(255,241,175)
@@ -180,10 +206,11 @@ function I.new(gui, act)
 		else
 			local crate=def.crate==true
 			local exclusive=crate or (C.rarityOf(def.id) and C.rarityOf(def.id).exclusive)
-			local odds=label(frame,"Odds",if crate then "CRATE ONLY" elseif exclusive then "SHOP & SPIN ONLY" else "1 in "..tostring(C.oddsFor(def.id)),UDim2.fromOffset(4,185),UDim2.new(1,-8,0,28),if exclusive then 17 else 22)
+			local odds=label(frame,"Odds",if crate then "CRATE ONLY" elseif exclusive then "SHOP & SPIN ONLY" else "1 in "..tostring(C.oddsFor(def.id)),UDim2.new(0,4,1,-30),UDim2.new(1,-8,0,28),if exclusive then 18 else 24)
+			odds.ZIndex=4
 			if exclusive then odds.TextColor3=Color3.fromRGB(255,150,225) end
 		end
-		table.insert(records,{card=frame,type=def.id,hidden=not known,fallback=fallback,modifier=if item then item.modifier else nil})
+		table.insert(records,{card=frame,box=box,type=def.id,hidden=not known,fallback=fallback,modifier=if item then item.modifier else nil})
 	end
 	redraw=function()
 		if not state then return end
@@ -194,7 +221,7 @@ function I.new(gui, act)
 		local seen={} local unique=0
 		for _,item in state.items do if not seen[item.type] then seen[item.type]=true unique+=1 end end
 		count.Text=if tab=="Index" then unique.." / "..#C.Types else #state.items.." / "..C.MaxInventory
-		progress.Text=if tab=="Index" then unique.." / "..#C.Types.." crushers discovered · base odds before luck"
+		progress.Text=if tab=="Index" then unique.." / "..#C.Types.." discovered"
 			else "Choose a bay and equip a crusher. Level up at its world plaque."
 		local row=state.rows and state.rows[Rows.index(selectedBay)]
 		if tab=="Owned" and row then
@@ -202,11 +229,15 @@ function I.new(gui, act)
 			progress.Text=heading.." · "..(if row.active then "+"..math.floor(row.bonus*100+.5).."% SCRAP" else "MATCH A RARITY FOR A SCRAP BOOST")
 		end
 		fill.Size=UDim2.fromScale(unique/math.max(1,#C.Types),1) fill.Visible=tab=="Index"
-		if not dupesPending then local n=#extras() dupes.Text=if n>0 then "🗑 RECYCLE "..n.." DUPE"..(if n==1 then "" else "S") else "🗑 NO DUPES"
+		if not dupesPending then local n=#extras() dupes.Text=if n>0 then "RECYCLE "..n.." DUPE"..(if n==1 then "" else "S") else "NO DUPES"
 			Style.setButtonColor(dupes,if n>0 then Style.Colors.Red else Color3.fromRGB(104,116,138)) end
 		indexButton.TextTransparency=if tab=="Index" then 0 else .2
 		ownedButton.TextTransparency=if tab=="Owned" then 0 else .2
-		for name,node in filterButtons do node.TextTransparency=if name==filter then 0 else .2 end
+		for name,node in filterButtons do
+			local base=node:GetAttribute("Base") :: Color3
+			Style.setButtonColor(node,if name==filter then base else Style.darken(base,.45))
+			node.TextTransparency=if name==filter then 0 else .25
+		end
 		local keys={tab,filter,tostring(selectedBay),tostring(state.unlocked)}
 		for _,item in state.items do table.insert(keys,item.id..":"..item.type..":"..item.rarity..":"..item.modifier..":"..item.level..":"..item.stats.cps..":"..tostring(item.fused)) end
 		for bay=1,C.MaxBays do table.insert(keys,state.bays[tostring(bay)] or "-") end
@@ -216,7 +247,7 @@ function I.new(gui, act)
 		local position=content.CanvasPosition clear()
 		local grid=content:FindFirstChildOfClass("UIGridLayout")
 		recyclePending=nil
-		grid.CellSize=UDim2.fromOffset(grid.CellSize.X.Offset,if tab=="Index" then 220 else 296)
+		grid.CellSize=UDim2.fromOffset(grid.CellSize.X.Offset,if tab=="Index" then 238 else 296)
 		if tab=="Index" then
 			local defs=table.clone(C.Types)
 			table.sort(defs,function(a,b)
@@ -240,12 +271,12 @@ function I.new(gui, act)
 	end
 	local function fitDesktop()
 		local size=workspace.CurrentCamera.ViewportSize
-		panel.Size=UDim2.fromOffset(math.clamp(size.X-360,560,1000),math.clamp(size.Y-155,440,720))
+		panel.Size=UDim2.fromOffset(math.clamp(size.X-420,520,1000),math.clamp(size.Y-130,420,720))
 		local grid=content:FindFirstChildOfClass("UIGridLayout")
 		local width=math.max(350,content.AbsoluteSize.X)
 		local columns=math.max(2,math.floor((width-4)/192))
 		grid.CellPadding=UDim2.fromOffset(12,12)
-		grid.CellSize=UDim2.fromOffset(math.floor((width-24-(columns-1)*12)/columns),if tab=="Index" then 220 else 296)
+		grid.CellSize=UDim2.fromOffset(math.floor((width-24-(columns-1)*12)/columns),if tab=="Index" then 238 else 296)
 		task.defer(hydrate)
 	end
 	content:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitDesktop)

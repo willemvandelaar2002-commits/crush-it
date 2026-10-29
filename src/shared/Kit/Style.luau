@@ -406,6 +406,15 @@ function Style.hasModal(): boolean
 	return activePanel ~= nil
 end
 
+-- Fixed-size panels can set attributes FitWidth/FitHeight (pixels, incl. bits
+-- that poke out); they then shrink to fit small screens when opened.
+function Style.fitScale(panel: Frame): number
+	local w, h = panel:GetAttribute("FitWidth"), panel:GetAttribute("FitHeight")
+	if type(w) ~= "number" or type(h) ~= "number" then return 1 end
+	local v = workspace.CurrentCamera.ViewportSize
+	return math.clamp(math.min((v.X - 24) / w, (v.Y - 70) / h), 0.4, 1)
+end
+
 function Style.setOpen(panel: Frame, open: boolean)
 	local scale = panel:FindFirstChild("ModalScale") :: UIScale?
 	if not scale then panel.Visible = open; return end
@@ -418,11 +427,11 @@ function Style.setOpen(panel: Frame, open: boolean)
 			return
 		end
 		panel.Visible = true
-		local tween = TweenService:Create(scale, TweenInfo.new(0.24, Enum.EasingStyle.Back), { Scale = 1 })
+		local tween = TweenService:Create(scale, TweenInfo.new(0.24, Enum.EasingStyle.Back), { Scale = Style.fitScale(panel) })
 		panelTweens[panel] = tween
 		tween:Play()
 	else
-		local tween = TweenService:Create(scale, TweenInfo.new(0.12, Enum.EasingStyle.Quad), { Scale = 0.92 })
+		local tween = TweenService:Create(scale, TweenInfo.new(0.12, Enum.EasingStyle.Quad), { Scale = 0.92 * Style.fitScale(panel) })
 		panelTweens[panel] = tween
 		tween:Play()
 		tween.Completed:Once(function()
@@ -447,7 +456,7 @@ function Style.modal(panel: Frame)
 			if activePanel and activePanel ~= panel then activePanel.Visible = false end
 			activePanel = panel
 			gui.DisplayOrder = 30
-			scale.Scale = 0.92
+			scale.Scale = 0.92 * Style.fitScale(panel)
 			Style.setOpen(panel, true)
 		else
 			if activePanel == panel then activePanel = nil end

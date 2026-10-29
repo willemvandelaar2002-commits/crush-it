@@ -110,12 +110,15 @@ Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(functio
 
 -- Panel ----------------------------------------------------------------------------
 local panel = make("Frame", {
-	Name = "RewardsPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.53), Size = UDim2.fromOffset(W, H),
+	Name = "RewardsPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 28), Size = UDim2.fromOffset(W, H),
 	BackgroundColor3 = BODY, Visible = false, ZIndex = 5,
 }, gui)
 corner(panel, 6)
 stroke(panel, 5)
 Style.modal(panel)
+-- tabs on the left (160px) and the gift poking out of the top (50px)
+panel:SetAttribute("FitWidth", W + 340)
+panel:SetAttribute("FitHeight", H + 60)
 local header = make("Frame", { Name = "Header", Position = UDim2.fromOffset(-4, -4), Size = UDim2.new(1, 8, 0, 90), BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 6 }, panel)
 corner(header, 6)
 stroke(header, 5)
@@ -226,7 +229,7 @@ local function makeTile(parent: Frame, order: number, reward: any, onClaim: () -
 	cardFill(b, color)
 	local studs = Style.flowingStuds(b, 30, 0.8, panel)
 	studs.ImageColor3 = Color3.new(1, 1, 1)
-	Style.sunburst(b, { center = UDim2.fromScale(0.5, 0.5), alpha = 0.45, zIndex = 6, length = 0.95, width = 0.11 })
+	Style.sunburst(b, { center = UDim2.fromScale(0.5, 0.5), alpha = 0.3, zIndex = 6, length = 0.95, width = 0.11 })
 	Style.feedback(b)
 	local title = label(b, "", UDim2.fromOffset(8, 4), UDim2.new(1, -16, 0, 38), 3.5)
 	local sub = label(b, "", UDim2.new(1, -112, 0, 40), UDim2.fromOffset(104, 20), 2.5)
@@ -256,7 +259,7 @@ local function makeGrand(name: string, reward: any, onClaim: () -> ()): Tile
 	rainbow.Rotation = 0
 	local studs = Style.flowingStuds(b, 30, 0.78, panel)
 	studs.ImageColor3 = Color3.new(1, 1, 1)
-	Style.sunburst(b, { center = UDim2.new(0, 120, 0.55, 0), alpha = 0.5, zIndex = 6, width = 0.05, length = 1.4 })
+	Style.sunburst(b, { center = UDim2.new(0, 120, 0.55, 0), alpha = 0.35, zIndex = 6, width = 0.05, length = 1.4 })
 	local title = label(b, "", UDim2.fromOffset(12, 4), UDim2.fromOffset(300, 32), 3.5)
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	local sub = label(b, "", UDim2.fromOffset(14, GRAND_H - 28), UDim2.fromOffset(200, 22), 2.5)
