@@ -1,6 +1,9 @@
 --!strict
 -- Put beside FactoryBearRigData in ReplicatedStorage.Shared. One cosmetic
 -- animator per bear; call capture AFTER cloning, scaling and positioning.
+-- 29 Oct: also drives the Halloween Pumpkin Foreman (same 20 channels). A model
+-- may carry its own parents (part attribute RigParent) and glow colours (model
+-- attributes EyeColor, EyeAngryColor, CoreColor).
 local D=require(script.Parent.FactoryBearRigData)
 local Rig={}
 local CYAN=Color3.fromRGB(91,232,255)
@@ -25,9 +28,12 @@ function Rig.capture(model)
 		local part=assert(byName[def.name],"Factory Bear missing "..def.name)
 		local rest=assert(part:GetAttribute("RigRest"),"Missing rest pose: "..def.name)
 		local pivot=assert(part:GetAttribute("RigPivot"),"Missing pivot: "..def.name)
-		nodes[def.name]={part=part,rest=CFrame.new(rest.Position*scale)*rest.Rotation,pivot=pivot*scale,parent=def.parent}
+		local parent=part:GetAttribute("RigParent")
+		if type(parent)~="string" then parent=def.parent elseif parent=="" then parent=nil end
+		nodes[def.name]={part=part,rest=CFrame.new(rest.Position*scale)*rest.Rotation,pivot=pivot*scale,parent=parent}
 	end
-	return {model=model,nodes=nodes,basis=basis,basisInverse=basis:Inverse()}
+	return {model=model,nodes=nodes,basis=basis,basisInverse=basis:Inverse(),
+		eye=model:GetAttribute("EyeColor") or CYAN,angry=model:GetAttribute("EyeAngryColor") or RED,heart=model:GetAttribute("CoreColor") or PURPLE}
 end
 function Rig.pose(rig,mode,age)
 	local t=math.max(0,age or 0)
@@ -60,15 +66,15 @@ function Rig.pose(rig,mode,age)
 		if node.part.Parent then node.part.CFrame=base*transform(name)*node.rest end
 	end
 	for _,name in {"Eye_L","Eye_R"} do
-		local p=rig.nodes[name].part p.Color=CYAN:Lerp(RED,corrupt) p.Material=Enum.Material.Neon
+		local p=rig.nodes[name].part p.Color=rig.eye:Lerp(rig.angry,corrupt) p.Material=Enum.Material.Neon
 	end
-	local heart=rig.nodes.Core.part heart.Color=PURPLE heart.Material=Enum.Material.Neon
+	local heart=rig.nodes.Core.part heart.Color=rig.heart heart.Material=Enum.Material.Neon
 end
 function Rig.reset(rig)
 	local base=rig.model:GetPivot()
 	for _,node in rig.nodes do if node.part.Parent then node.part.CFrame=base*node.rest end end
-	for _,name in {"Eye_L","Eye_R"} do rig.nodes[name].part.Color=CYAN end
-	rig.nodes.Core.part.Color=PURPLE
+	for _,name in {"Eye_L","Eye_R"} do rig.nodes[name].part.Color=rig.eye end
+	rig.nodes.Core.part.Color=rig.heart
 end
 function Rig.core(template,at,diameter)
 	assert(template:GetAttribute("FactoryBearReady")==true,"Factory Bear is not ready")
@@ -89,7 +95,7 @@ function Rig.core(template,at,diameter)
 	core.WorldPivot=at
 	local _,size=core:GetBoundingBox()
 	core:ScaleTo(core:GetScale()*diameter/math.max(size.X,size.Y,size.Z))
-	core:FindFirstChild("Core").Color=PURPLE core:FindFirstChild("Core").Material=Enum.Material.Neon
+	core:FindFirstChild("Core").Color=template:GetAttribute("CoreColor") or PURPLE core:FindFirstChild("Core").Material=Enum.Material.Neon
 	return core
 end
 return Rig
