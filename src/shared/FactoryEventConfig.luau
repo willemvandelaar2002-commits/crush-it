@@ -7,7 +7,7 @@ local E = {
 	PlatformZone={HalfWidth=78,Back=-105,Front=12,Above=1.5},
 	Enabled = true,
 	Interval = 15 * 60, -- first announcement and time between completed rounds
-	Announce = 13, Assemble = 8, Active = 180, Finale = 7, Victory = 11, Recover = 3, -- Victory 11: room for the reward reels -- 28 Oct: Announce+Assemble = the intro cutscene
+	Announce = 13, Assemble = 8, Active = 180, Finale = 7, Victory = 8, Recover = 3, -- 29 Oct: Victory 11 -> 8 (reels shorter) -- Victory 11: room for the reward reels -- 28 Oct: Announce+Assemble = the intro cutscene
 	Tick = .2, Broadcast = .5, Strike = 2,
 	TargetSeconds = 90, MinimumActive = 30, MinimumHits = 10,
 	Points = {Common=1, Uncommon=2, Rare=3, Epic=4, Legendary=5, Secret=6, Divine=7, Mythic=8},
@@ -25,7 +25,7 @@ local E = {
 	-- the reels only show it. TEST DEFAULTS: weights and amounts not approved.
 	Reels = {
 		ByRank = {3, 2, 2}, Others = 1, -- #1 gets 3 reels, #2-#3 get 2, everyone else 1
-		Spin = 4.2, Stagger = .55, Tiles = 34, -- seconds per reel, delay between reels, tiles per strip
+		Spin = 3.2, Stagger = .4, Tiles = 34, -- seconds per reel, delay between reels, tiles per strip (29 Oct: was 4.2 / .55)
 		Prizes = {
 			{id="Cash", kind="cash", seconds=120, weight=37},                -- your cash/sec x seconds
 			{id="BigCash", kind="cash", seconds=360, weight=18},
@@ -81,10 +81,13 @@ E.Variants = {
 	Halloween = {
 		boss = "PumpkinForeman", core = "PumpkinCore", pickup = "CandySoul",
 		bossWord = "pumpkin", Boss = "Pumpkin",
+		music = 83398637668977, -- Willem's Halloween song
 		accent = Color3.fromRGB(184, 255, 68), -- lime candy energy
-		sky = Color3.fromRGB(230, 110, 30), skyDecay = Color3.fromRGB(70, 30, 90),
-		ambient = Color3.fromRGB(160, 110, 80), outdoor = Color3.fromRGB(170, 120, 90),
-		tint = Color3.fromRGB(255, 232, 210),
+		-- 29 Oct: spooky night: violet sky, orange glow on the horizon, a big moon
+		sky = Color3.fromRGB(70, 40, 105), skyDecay = Color3.fromRGB(255, 120, 35), haze = 2.4, density = .3, moon = 22,
+		ambient = Color3.fromRGB(105, 95, 135), outdoor = Color3.fromRGB(115, 100, 145),
+		tint = Color3.fromRGB(250, 238, 230),
+		candies = 18, -- little candies floating round you during the round
 	},
 }
 -- Which version a round started at server time `t` is.
