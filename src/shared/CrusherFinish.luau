@@ -154,8 +154,22 @@ function F.dress(root: Instance,modifier: string,frame: CFrame,lo: Vector3,hi: V
 		end
 		for i=1,4 do
 			local b=Instance.new("Beam") b.Name="Arc" b.Attachment0=anchors[i] b.Attachment1=anchors[i+1]
-			b.Width0=unit*.009 b.Width1=b.Width0*.7 b.FaceCamera=true b.Segments=3 b.Enabled=false
+			b.Width0=unit*.022 b.Width1=b.Width0*.7 b.FaceCamera=true b.Segments=5 b.Enabled=false
 			b.Color=ColorSequence.new(WHITE,glow) b.Transparency=NumberSequence.new(.15) b.LightEmission=1 b.Parent=points[1]
+		end
+		-- lightning down the two rear pillars, from each coil to the foot
+		for i,sign in {-1,1} do
+			local foot=part(root,"ArcAnchor",Vector3.new(.03,.03,.03),at(c.X+sign*s.X*.42,lo.Y+s.Y*.06,lo.Z+s.Z*.12),glow,nil,1)
+			local mid=part(root,"ArcAnchor",Vector3.new(.03,.03,.03),at(c.X+sign*s.X*.47,lo.Y+s.Y*.5,lo.Z+s.Z*.14),glow,nil,1)
+			local a0=Instance.new("Attachment") a0.Parent=points[i]
+			local a1=Instance.new("Attachment") a1.Parent=mid
+			local a2_=Instance.new("Attachment") a2_.Parent=foot
+			for k,pair in {{a0,a1},{a1,a2_}} do
+				local b=Instance.new("Beam") b.Name="Arc" b.Attachment0=pair[1] b.Attachment1=pair[2]
+				b.Width0=unit*.02 b.Width1=b.Width0*.6 b.FaceCamera=true b.Segments=5 b.Enabled=false
+				b.Color=ColorSequence.new(WHITE,glow) b.Transparency=NumberSequence.new(.1) b.LightEmission=1 b.Parent=points[i]
+				local _=k
+			end
 		end
 		emitter(points[1],"ChargeSpark","spark",unit,glow) lamp(points[1],glow,unit)
 	elseif modifier=="Polished" then
@@ -170,27 +184,10 @@ function F.apply(model: Model,modifier: string,front: CFrame?)
 	if not look or model:FindFirstChild("CrusherFinish") then return end
 	local frame=front or model:GetPivot() local lo,hi=bounds(model,frame)
 	if lo.X==math.huge then return end
-	for _,p in model:GetDescendants() do
-		if p:IsA("BasePart") and p.Transparency<.99 and not decorated(p,model) then
-			local lum=.299*p.Color.R+.587*p.Color.G+.114*p.Color.B
-			local name=p.Name:lower()
-			local outline=lum<.12 or name:find("outline") or name:find("navy")
-			local face=name:find("eye") or name=="face" or name:find("mascot face") or name:find("screen")
-			if not outline and not face then
-				if p.Material==Enum.Material.Neon then p.Color=look.glow
-				else
-					p.Color=p.Color:Lerp(look.dark:Lerp(look.light,math.clamp(lum*1.15,0,1)),look.mix)
-					p.Material=look.material p.Reflectance=look.reflect or .04
-				end
-				-- Keep imported UV palette/PBR maps and their dark outlines. Colour maps
-				-- can be tinted at runtime; destroying them flattened the special meshes.
-				local appearance=p:FindFirstChildOfClass("SurfaceAppearance")
-				if appearance and appearance:IsA("SurfaceAppearance") then
-					appearance.Color=appearance.Color:Lerp(look.glow,.55)
-				end
-			end
-		end
-	end
+	-- No repaint: the crusher keeps its own colours, textures and SurfaceAppearance
+	-- maps (Legendaries/Mythics stay recognisable). The coating shows through the
+	-- dressing below and a smooth coloured glow the client lays over the model
+	-- (CoatingAnimator, Highlight in the coating's glow colour).
 	local root=Instance.new("Model") root.Name="CrusherFinish" root:SetAttribute("Finish",modifier)
 	F.dress(root,modifier,frame,lo,hi) root.Parent=model
 	model:SetAttribute("VisualModifier",modifier) Tags:AddTag(root,"CoatingFx")
