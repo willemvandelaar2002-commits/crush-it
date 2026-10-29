@@ -6,7 +6,9 @@
 --          FUSED result with its 2x OUTPUT badge, a note and FUSE 4 -> 1
 -- The main keeps its id, level, coating and bay; the three copies are used
 -- up. Click the MAIN tile to switch which one is kept. FUSE asks once more
--- before it sends. The server checks and does everything (action "Fuse").
+-- before it sends. Fusing then takes C.Fusion.Seconds (10 min, runs offline);
+-- the screen and a sign over the machine count down, then COLLECT
+-- (action "CollectFusion"). The server checks and does everything (action "Fuse").
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
 local PPS = game:GetService("ProximityPromptService")
@@ -154,8 +156,48 @@ local function setSlot(s: any, item: any?, typeId: string, role: string)
 	;(s.frame:FindFirstChild("PanelFill") :: UIGradient).Transparency = NumberSequence.new(if item then 0 else .4)
 end
 
+local function clock(sec: number): string
+	sec = math.max(0, math.ceil(sec))
+	return string.format("%d:%02d", sec // 60, sec % 60)
+end
+-- seconds left on the running fusion (server clock offset taken from the last state)
+local function fusionLeft(): number?
+	local f = state and state.fusion
+	if not f then return nil end
+	return f.readyAt - (f.now + (os.clock() - (f.receivedAt or os.clock())))
+end
 local function redraw()
 	if not state or not panel.Visible then return end
+	local f = state.fusion
+	if f then
+		-- the machine is busy: show what's inside and the countdown / COLLECT
+		for _, t in tiles do t:Destroy() end
+		table.clear(tiles)
+		empty.Visible = true
+		empty.Text = "The Fusion Machine is busy. One fusion at a time."
+		right.Visible = true
+		for i = 1, NEED do setSlot(slots[i], f.item, f.item.type, if i == 1 then "main" else "copy") end
+		slots[1].note.Text = "In the machine"
+		for i = 2, NEED do L.setPill(slots[i].tag, "FUSING", Color3.fromRGB(26, 30, 52)) end
+		local key = f.item.type .. ":" .. f.item.modifier
+		if key ~= resultKey then
+			if resultIcon then resultIcon:Destroy() end
+			resultIcon = CrusherIcon.new(resultBox, f.item.type, { zIndex = 9, fused = true,
+				modifier = if f.item.modifier ~= "Standard" then f.item.modifier else nil })
+			resultKey = key
+		end
+		resultName.Text = "FUSED " .. C.typeById(f.item.type).name
+		local left = fusionLeft() or 0
+		local ready = left <= 0
+		fuse.Text = if ready then "COLLECT!" else "FUSING " .. clock(left)
+		fuse.TextSize = if ready then 52 else 40
+		Style.setButtonColor(fuse, if ready then L.GOLD else L.GREY)
+		fuse:SetAttribute("Collect", ready)
+		fuse:SetAttribute("Main", nil)
+		footerText.Text = if ready then "Your fused crusher is ready!" else "Takes " .. math.floor(C.Fusion.Seconds / 60) .. " min, also offline."
+		return
+	end
+	fuse:SetAttribute("Collect", nil)
 	for _, t in tiles do t:Destroy() end
 	table.clear(tiles)
 	local locked = (state.plotLevel or 0) < C.Fusion.PlotLevel
@@ -201,6 +243,13 @@ end
 slots[1].frame.Activated:Connect(function() mainIndex += 1 pending = false redraw() end)
 local lastSent = 0
 fuse.Activated:Connect(function()
+	if fuse:GetAttribute("Collect") == true then
+		if os.clock() - lastSent < .5 then return end
+		lastSent = os.clock()
+		status.Text = "Collecting..." status.TextColor3 = L.WHITE
+		actionRemote:FireServer("CollectFusion", {})
+		return
+	end
 	if not state or fuse:GetAttribute("Main") == nil then return end
 	if not pending then
 		pending = true redraw()
@@ -219,10 +268,13 @@ local previewing = false
 Net.event("CrusherState").OnClientEvent:Connect(function(v)
 	if previewing then return end
 	state = v
+	if v.fusion then v.fusion.receivedAt = os.clock() end
 	if panel.Visible and v.message then
 		if v.message == "Done!" and v.result and v.result.fused then
 			status.Text = "FUSED! " .. C.Fusion.Mult .. "x output" status.TextColor3 = L.GOLD
-		elseif v.message ~= "Done!" then
+		elseif v.result and v.result.fusing then
+			status.Text = "Fusing started! Come back in " .. math.floor(C.Fusion.Seconds / 60) .. " min." status.TextColor3 = L.GOLD
+		elseif v.message ~= "Done!" and not (v.result and v.result.fusing) then
 			status.Text = v.message status.TextColor3 = Color3.fromRGB(255, 130, 130)
 		end
 	end
@@ -252,3 +304,35 @@ if game:GetService("RunService"):IsStudio() then
 		return true
 	end
 end
+
+-- Countdown: refresh the busy screen every second, and a sign over your fuser.
+local sign: BillboardGui? = nil
+local signText: TextLabel? = nil
+local function mySign(): BillboardGui?
+	local plots = workspace:FindFirstChild("Plots")
+	local plot = plots and plots:FindFirstChild("Plot" .. tostring(me:GetAttribute("Plot")))
+	local fuser = plot and plot:FindFirstChild("Fuser", true)
+	local lid = fuser and (fuser:FindFirstChild("ChamberLid", true) or fuser:FindFirstChildWhichIsA("BasePart", true))
+	if not lid then return nil end
+	if sign and sign.Adornee == lid then return sign end
+	if sign then sign:Destroy() end
+	sign = make("BillboardGui", { Name = "FusionTimer", Adornee = lid, Size = UDim2.fromOffset(260, 70), StudsOffset = Vector3.new(0, 4, 0),
+		MaxDistance = 120, LightInfluence = 0, AlwaysOnTop = false, ResetOnSpawn = false }, me:WaitForChild("PlayerGui"))
+	signText = L.text(sign, "Text", "", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), 34, 4)
+	return sign
+end
+task.spawn(function()
+	while true do
+		task.wait(1)
+		local left = fusionLeft()
+		local s = mySign()
+		if s and signText then
+			s.Enabled = left ~= nil
+			if left then
+				signText.Text = if left <= 0 then "FUSION READY!" else "FUSING " .. clock(left)
+				signText.TextColor3 = if left <= 0 then L.GOLD else Color3.fromRGB(150, 255, 160)
+			end
+		end
+		if panel.Visible and state and state.fusion then redraw() end
+	end
+end)

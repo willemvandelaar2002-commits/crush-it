@@ -175,7 +175,8 @@ local function send(p,message,result)
 		local v=Rules.copy(item) v.stats=Rules.stats(d,item,perks(p),rowState) v.cost=C.individualCost(item) table.insert(items,v)
 	end
 	Net.event("CrusherState"):FireClient(p,{cash=d.cash,carried=d.scrap,available=s.available,items=items,
-		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,plotLevel=s.plotLevel,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
+		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,plotLevel=s.plotLevel,
+		fusion=if s.fusion then {item=Rules.copy(s.fusion.item),readyAt=s.fusion.readyAt,now=os.time()} else nil,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
 		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered,coating=ctx.coatingQuote,
 		goals=Goals.view(ctx,d,workspace:GetServerTimeNow())})
@@ -557,7 +558,11 @@ local function action(p,name,args)
 		ok,message=Progression.apply(d,quote,args.token,chosen,os.clock())
 		if ok and quote then result={coating=quote.target,id=quote.id} end
 		ctx.coatingQuote=nil
-	else ok,message,result=Rules.act(d,ctx,name,args,os.clock(),random,guid,perks(p)) end
+	else
+		-- fusion timing uses real unix time (it runs while you're offline); never trust a client time
+		if name=="Fuse" or name=="CollectFusion" then args.serverTime=os.time() end
+		ok,message,result=Rules.act(d,ctx,name,args,os.clock(),random,guid,perks(p))
+	end
 	if ok and name=="Roll" then d.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock()) rollShow(p,result) end
 	if ok and name=="Buy" then
 		if newType then ctx.justDiscovered={id=result.id,type=result.type,rarity=result.rarity} end
@@ -572,7 +577,7 @@ local function action(p,name,args)
 		Net.event("PlotUpgraded"):FireClient(p,upgradeSummary(levelBefore,Progression.level(d)))
 	end
 	ctx.justRolled=ok and name=="Roll" or nil
-	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" or name=="Fuse" or name=="ApplyCoating" then result else nil) ctx.justRolled=nil ctx.justDiscovered=nil
+	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" or name=="Fuse" or name=="CollectFusion" or name=="ApplyCoating" then result else nil) ctx.justRolled=nil ctx.justDiscovered=nil
 	return ok,message,result
 end
 local function visualEvent(p,event)
@@ -687,7 +692,7 @@ function G.start()
 		elseif name=="TimeSkip" or name=="FavoriteStart" or name=="FavoriteConfirmed" then target=ctx.plot.stations.Goals and ctx.plot.stations.Goals.part
 		elseif name=="Buy" then local ped=type(args.slot)=="number" and ctx.plot.stations.Roll.pedestals[args.slot] if ped then target=ped.part end
 		elseif name=="UpgradePlot" then target=ctx.plot.progression.upgrade.part
-		elseif name=="Fuse" then target=ctx.plot.stages and ctx.plot.stages.fuserPart reach=26
+		elseif name=="Fuse" or name=="CollectFusion" then target=ctx.plot.stages and ctx.plot.stages.fuserPart reach=26
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
 		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" then

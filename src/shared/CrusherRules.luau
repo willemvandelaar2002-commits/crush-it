@@ -155,6 +155,15 @@ function R.migrate(d, guid)
 	end
 	if #owned==0 then local id=guid() table.insert(owned,{id=id,type="Bumper",rarity="Common",modifier="Standard",level=1}) ids[id]=true end
 	s.owned=owned
+	-- A running fusion: the main crusher waits inside the machine (not in owned)
+	-- until readyAt (unix seconds), then CollectFusion gives it back fused.
+	local f=s.fusion
+	if type(f)=="table" and type(f.item)=="table" and C.typeById(f.item.type) and C.rarity(f.item.rarity) and C.modifier(f.item.modifier) then
+		local v=f.item
+		local id=if type(v.id)=="string" and #v.id<=64 and #v.id>0 and not ids[v.id] then v.id else guid()
+		ids[id]=true
+		s.fusion={readyAt=number(f.readyAt,0,1e12),item={id=id,type=v.type,rarity=v.rarity,modifier=v.modifier,level=math.clamp(integer(v.level,1,C.topLevelCap()),1,C.topLevelCap())}}
+	else s.fusion=nil end
 	local equipped,used={},{} local old=if type(s.equipped)=="table" then s.equipped else {}
 	for i=1,s.bays do local id=old[tostring(i)] if ids[id] and not used[id] then equipped[tostring(i)]=id used[id]=true end end
 	if next(equipped)==nil then equipped["1"]=owned[1].id end
@@ -287,10 +296,21 @@ local function act(d,session,action,args,now,random,guid,perks)
 	elseif action=="Fuse" then
 		local main,problem=R.fusionProblem(d,args.main,args.inputs)
 		if not main then return false,problem end
+		if s.fusion then return false,"The Fusion Machine is still busy. Collect the fused crusher first." end
+		local now=tonumber(args.serverTime) if not now then return false,"Try again." end
 		local gone={} for _,id in args.inputs do gone[id]=true end
+		gone[main.id]=true
+		for key,id in s.equipped do if id==main.id then s.equipped[key]=nil end end
 		for i=#s.owned,1,-1 do if gone[s.owned[i].id] then table.remove(s.owned,i) end end
-		main.fused=true
-		return true,"Done!",main
+		s.fusion={readyAt=now+C.Fusion.Seconds,item=main}
+		return true,"Fusing! Come back in "..math.floor(C.Fusion.Seconds/60).." minutes.",{fusing=true,readyAt=s.fusion.readyAt,type=main.type}
+	elseif action=="CollectFusion" then
+		local f=s.fusion if not f then return false,"Nothing is fusing." end
+		local now=tonumber(args.serverTime) if not now then return false,"Try again." end
+		if now<f.readyAt then return false,"Still fusing. Ready in "..math.ceil((f.readyAt-now)/60).." min." end
+		local item=f.item item.fused=true
+		table.insert(s.owned,item) s.fusion=nil
+		return true,"Done!",item
 	elseif action=="Upgrade" then
 		local u=C.Upgrades[args.id] if not u then return false,"Unknown upgrade." end
 		local lv=s.upgrades[args.id] if lv>=C.upgradeMax(args.id,s.plotLevel) then return false,if u.max then "Upgrade is at maximum level." else R.capMessage(s.plotLevel) end
