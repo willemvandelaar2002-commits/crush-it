@@ -12,6 +12,8 @@ assert(Run:IsStudio() and not Run:IsRunning(), "Stop Play before installing the 
 local RS = game:GetService("ReplicatedStorage")
 local Data = require(RS.Shared.HalloweenRigData)
 
+-- Willem's upload of HalloweenPalette.png (29 Oct); every mesh uses this one texture
+local PALETTE = "rbxassetid://99524519148678"
 local LIME = Color3.fromRGB(184, 255, 68)
 local CANDLE = Color3.fromRGB(255, 196, 70)
 
@@ -35,6 +37,7 @@ local function prepare(name: string): (Model, { [string]: BasePart }, any)
 			parts[p.Name] = p
 			p.Anchored = true p.CanCollide = false p.CanTouch = false p.CanQuery = false p.CastShadow = true
 			p.Color = Color3.new(1, 1, 1)
+			if p:IsA("MeshPart") then p.TextureID = PALETTE end
 		elseif p:IsA("LuaSourceContainer") or p:IsA("Constraint") or p:IsA("JointInstance") then
 			p:Destroy()
 		end
