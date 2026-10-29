@@ -110,7 +110,7 @@ Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(functio
 
 -- Panel ----------------------------------------------------------------------------
 local panel = make("Frame", {
-	Name = "RewardsPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 28), Size = UDim2.fromOffset(W, H),
+	Name = "RewardsPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 20), Size = UDim2.fromOffset(W, H),
 	BackgroundColor3 = BODY, Visible = false, ZIndex = 5,
 }, gui)
 corner(panel, 6)
@@ -118,7 +118,7 @@ stroke(panel, 5)
 Style.modal(panel)
 -- tabs on the left (160px) and the gift poking out of the top (50px)
 panel:SetAttribute("FitWidth", W + 340)
-panel:SetAttribute("FitHeight", H + 60)
+panel:SetAttribute("FitHeight", H + 90)
 local header = make("Frame", { Name = "Header", Position = UDim2.fromOffset(-4, -4), Size = UDim2.new(1, 8, 0, 90), BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 6 }, panel)
 corner(header, 6)
 stroke(header, 5)
@@ -368,7 +368,6 @@ local function set(tile: Tile, title: string, sub: string, status: string, barTe
 end
 
 local function subFor(r: any, day: number?): string
-	if day then return "DAY " .. day end
 	if r.mythicChance then return "+ Mythic chance!" end
 	return ""
 end
