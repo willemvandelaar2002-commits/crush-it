@@ -381,29 +381,30 @@ Config.Rewards = {
 	-- Playtime: unlock after `minutes` in this session (resets when you rejoin).
 	-- Six gift tiles and a grand prize (the last entry, shown in the big rainbow
 	-- bar). bonusSeconds: the grand prize also pays that much cash on top.
+	-- 29 Oct balance: cash about a third of before, crushers one tier higher.
 	Playtime = {
-		{ minutes = 2, kind = "cash", seconds = 90 },
-		{ minutes = 5, kind = "cash", seconds = 240 },
-		{ minutes = 10, kind = "crusher", rarity = "Uncommon" },
-		{ minutes = 15, kind = "cash", seconds = 600 },
-		{ minutes = 25, kind = "crusher", rarity = "Rare" },
-		{ minutes = 40, kind = "cash", seconds = 1800 },
-		{ minutes = 60, kind = "crusher", rarity = "Epic", mythicChance = 0.05, bonusSeconds = 3600 },
+		{ minutes = 2, kind = "cash", seconds = 30 },
+		{ minutes = 5, kind = "cash", seconds = 90 },
+		{ minutes = 10, kind = "crusher", rarity = "Rare" },
+		{ minutes = 15, kind = "cash", seconds = 200 },
+		{ minutes = 25, kind = "crusher", rarity = "Epic" },
+		{ minutes = 40, kind = "cash", seconds = 600 },
+		{ minutes = 60, kind = "crusher", rarity = "Legendary", mythicChance = 0.05, bonusSeconds = 1200 },
 	},
 	-- Daily check-in: one claim per UTC day; missing a day restarts at day 1;
 	-- after day 7 it starts over. Day 7 is the grand prize.
 	Daily = {
-		{ kind = "cash", seconds = 300 },
-		{ kind = "cash", seconds = 600 },
-		{ kind = "crusher", rarity = "Uncommon" },
-		{ kind = "cash", seconds = 900 },
-		{ kind = "cash", seconds = 1200 },
-		{ kind = "crusher", rarity = "Rare", mythicChance = 0.01 },
-		{ kind = "crusher", rarity = "Epic", mythicChance = 0.02, bonusSeconds = 3600 },
+		{ kind = "cash", seconds = 120 },
+		{ kind = "cash", seconds = 240 },
+		{ kind = "crusher", rarity = "Rare" },
+		{ kind = "cash", seconds = 360 },
+		{ kind = "cash", seconds = 480 },
+		{ kind = "crusher", rarity = "Epic", mythicChance = 0.01 },
+		{ kind = "crusher", rarity = "Legendary", mythicChance = 0.02, bonusSeconds = 1200 },
 	},
 	-- mythicChance: rare chance a crusher reward becomes a random Mythic instead
 	-- crusher rewards when the inventory is full: this many seconds of earnings
-	FullInventorySeconds = 600,
+	FullInventorySeconds = 240,
 }
 
 -- Client guard against falling through floors that haven't streamed in yet

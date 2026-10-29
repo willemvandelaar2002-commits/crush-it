@@ -13,9 +13,9 @@ local C = require(script.Parent.CrusherConfig)
 local M = {}
 
 M.List = {
-	{ need = 5, rewards = { { kind = "cash", seconds = 600 } } },
+	{ need = 5, rewards = { { kind = "cash", seconds = 240 } } },
 	{ need = 10, rewards = { { kind = "luck", percent = 2 }, { kind = "boost", id = "Luck", minutes = 15 } } },
-	{ need = 20, rewards = { { kind = "crusher", rarity = "Epic" }, { kind = "cash", seconds = 1800 } } },
+	{ need = 20, rewards = { { kind = "crusher", rarity = "Epic" }, { kind = "cash", seconds = 600 } } },
 	{ need = 30, rewards = { { kind = "luck", percent = 3 }, { kind = "boost", id = "Cash", minutes = 30 } } },
 	{ need = 40, rewards = { { kind = "crusher", rarity = "Legendary" }, { kind = "luck", percent = 3 } } },
 	{ need = 50, rewards = { { kind = "crusher", rarity = "Mythic" }, { kind = "luck", percent = 5 } } },
