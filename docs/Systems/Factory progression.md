@@ -331,3 +331,7 @@ streaming and device performance. Initial game Output showed the existing
 asset 203785492 warning; rejected fixture probes also logged test-command
 errors. No new production-script failure was observed. Temporary fixtures
 were discarded, storage sources restored, and nothing was published.
+
+## Bank wall studs (27 Oct)
+
+CrusherPlots applies Style.studs to the blue bank back walls, parapets and solid steps beneath upper floors, including third-floor and rear-yard banks. Uses the existing imported Studs MaterialVariant. Verified 120 matching parts in the running Studio preview; size, CFrame, colour and collision stayed unchanged.
