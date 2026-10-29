@@ -28,6 +28,17 @@ local function label(parent, name, value, position, size, fontSize)
 	Style.text(node, 2)
 	return node
 end
+-- a button with its text in a child label (the button's gradient would tint its own text)
+local function textButton(parent, name, value, position, size, colour, fontSize, callback)
+	local node = make("TextButton", {Name=name, Text="", Position=position, Size=size, ZIndex=3}, parent)
+	Style.button(node, colour)
+	local corner = node:FindFirstChildOfClass("UICorner")
+	if corner then corner.CornerRadius = UDim.new(0, 4) end
+	local text = label(node, "Label", value, UDim2.fromOffset(4, 2), UDim2.new(1, -8, 1, -4), fontSize)
+	text.ZIndex = node.ZIndex + 1
+	node.Activated:Connect(callback)
+	return node, text
+end
 local function button(parent, name, value, position, size, colour, callback)
 	local node = make("TextButton", {Name=name, Text=value, Position=position, Size=size,
 		TextSize=22, TextWrapped=true, ZIndex=3}, parent)
@@ -60,10 +71,10 @@ function I.new(gui, act)
 	Style.wobble(book,3,1.5)
 	local title = label(header,"Title","Index",UDim2.fromOffset(122,6),UDim2.new(1,-480,1,-12),60)
 	title.TextXAlignment = Enum.TextXAlignment.Left title.TextScaled=true title.ZIndex=8
-	local count = label(header,"Count","0 / "..#C.Types,UDim2.new(1,-290,0,10),UDim2.fromOffset(200,64),44)
+	local count = label(header,"Count","0 / "..#C.Types,UDim2.new(1,-316,0,10),UDim2.fromOffset(220,64),44)
 	count.TextScaled=true count.TextXAlignment=Enum.TextXAlignment.Right count.ZIndex=8
-	local closeButton=button(header,"Close","X",UDim2.new(1,-80,0,9),UDim2.fromOffset(66,66),Style.Colors.Red,function() Style.setOpen(panel,false) end)
-	closeButton.TextSize=44 closeButton.ZIndex=8
+	local closeButton,closeText=textButton(header,"Close","X",UDim2.new(1,-80,0,9),UDim2.fromOffset(66,66),Style.Colors.Red,46,function() Style.setOpen(panel,false) end)
+	closeButton.ZIndex=8 closeText.ZIndex=9
 	local nav = make("Frame", {Name="Tabs", Visible=false, Position=UDim2.fromOffset(-157,103),
 		Size=UDim2.fromOffset(142,150), BackgroundTransparency=1, ZIndex=2}, panel)
 	local indexButton local ownedButton
@@ -78,13 +89,13 @@ function I.new(gui, act)
 	local filters = make("Frame", {Name="RarityFilters", Size=UDim2.fromScale(1,1), BackgroundTransparency=1}, controls)
 	make("UIListLayout", {FillDirection=Enum.FillDirection.Vertical, Padding=UDim.new(0,8),
 		SortOrder=Enum.SortOrder.LayoutOrder}, filters)
-	local filterButtons={}
+	local filterButtons={} local filterLabels={}
 	local options={{name="All",color=blue}}
 	for _,rarity in C.Rarities do table.insert(options,{name=rarity.name,color=rarity.color}) end
 	for order,option in options do
-		local node=button(filters,"Filter_"..option.name,option.name,UDim2.new(),
-			UDim2.new(1,0,0,48),option.color,function() filter=option.name signature="" redraw() end)
-		node.TextSize=24 node.LayoutOrder=order filterButtons[option.name]=node node:SetAttribute("Base",option.color)
+		local node,text=textButton(filters,"Filter_"..option.name,option.name,UDim2.new(),
+			UDim2.new(1,0,0,48),option.color,24,function() filter=option.name signature="" redraw() end)
+		node:SetAttribute("Label",true) filterLabels[option.name]=text node.LayoutOrder=order filterButtons[option.name]=node node:SetAttribute("Base",option.color)
 	end
 	local bayControls=make("Frame",{Name="BayControls",Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Visible=false},panel)
 	button(bayControls,"PreviousBay","<",UDim2.new(),UDim2.fromOffset(48,40),blue,function()
@@ -103,14 +114,14 @@ function I.new(gui, act)
 		return Rules.duplicateExtras(state.items,equipped,function(item) return item.stats.cps end)
 	end
 	-- in the header (the OWNED tab is hidden; your crushers live in the hotbar)
-	local dupes dupes=button(filters,"RecycleDuplicates","RECYCLE DUPES",UDim2.new(),UDim2.new(1,0,0,58),Style.Colors.Red,function()
+	local dupes,dupesText dupes,dupesText=textButton(filters,"RecycleDuplicates","RECYCLE DUPES",UDim2.new(),UDim2.new(1,0,0,58),Style.Colors.Red,20,function()
 		local n=#extras()
-		if n==0 then dupesPending=false dupes.Text="NO DUPES" return end
+		if n==0 then dupesPending=false dupesText.Text="NO DUPES" return end
 		if dupesPending then dupesPending=false act("RecycleDuplicates",{}) return end
-		dupesPending=true dupes.Text="CONFIRM? "..n
+		dupesPending=true dupesText.Text="CONFIRM? "..n
 		task.delay(3,function() if dupesPending then dupesPending=false signature="" redraw() end end)
 	end)
-	dupes.TextSize=18 dupes.LayoutOrder=100
+	dupes.LayoutOrder=100 dupesText.TextScaled=true
 	local content=make("ScrollingFrame",{Name="Content",Position=UDim2.fromOffset(12,94),
 		Size=UDim2.new(1,-24,1,-166),BackgroundTransparency=1,BorderSizePixel=0,
 		AutomaticCanvasSize=Enum.AutomaticSize.Y,CanvasSize=UDim2.new(),ScrollBarThickness=7,ZIndex=2},panel)
@@ -229,14 +240,14 @@ function I.new(gui, act)
 			progress.Text=heading.." · "..(if row.active then "+"..math.floor(row.bonus*100+.5).."% SCRAP" else "MATCH A RARITY FOR A SCRAP BOOST")
 		end
 		fill.Size=UDim2.fromScale(unique/math.max(1,#C.Types),1) fill.Visible=tab=="Index"
-		if not dupesPending then local n=#extras() dupes.Text=if n>0 then "RECYCLE "..n.." DUPE"..(if n==1 then "" else "S") else "NO DUPES"
+		if not dupesPending then local n=#extras() dupesText.Text=if n>0 then "RECYCLE "..n.." DUPE"..(if n==1 then "" else "S") else "NO DUPES"
 			Style.setButtonColor(dupes,if n>0 then Style.Colors.Red else Color3.fromRGB(104,116,138)) end
 		indexButton.TextTransparency=if tab=="Index" then 0 else .2
 		ownedButton.TextTransparency=if tab=="Owned" then 0 else .2
 		for name,node in filterButtons do
 			local base=node:GetAttribute("Base") :: Color3
 			Style.setButtonColor(node,if name==filter then base else Style.darken(base,.45))
-			node.TextTransparency=if name==filter then 0 else .25
+			filterLabels[name].TextColor3=if name==filter then white else Color3.fromRGB(200,204,214)
 		end
 		local keys={tab,filter,tostring(selectedBay),tostring(state.unlocked)}
 		for _,item in state.items do table.insert(keys,item.id..":"..item.type..":"..item.rarity..":"..item.modifier..":"..item.level..":"..item.stats.cps..":"..tostring(item.fused)) end
