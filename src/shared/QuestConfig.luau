@@ -31,8 +31,9 @@ Q.Weekly = {
 -- kind "crusher": a random crusher of that rarity into the backpack.
 Q.MinCash = 100
 Q.Shop = {
-	{ id = "skip15", title = "15m Time Skip", kind = "cash", seconds = 900, cost = 20, icon = "Offline" },
-	{ id = "skip60", title = "1h Time Skip", kind = "cash", seconds = 3600, cost = 60, icon = "Offline" },
+	-- 29 Oct balance: time skips cost about 2.5x more tokens (they paid out too much cash)
+	{ id = "skip15", title = "15m Time Skip", kind = "cash", seconds = 900, cost = 50, icon = "Offline" },
+	{ id = "skip60", title = "1h Time Skip", kind = "cash", seconds = 3600, cost = 160, icon = "Offline" },
 	{ id = "uncommon", title = "Uncommon Crusher", kind = "crusher", rarity = "Uncommon", cost = 30 },
 	{ id = "rare", title = "Rare Crusher", kind = "crusher", rarity = "Rare", cost = 80 },
 	{ id = "epic", title = "Epic Crusher", kind = "crusher", rarity = "Epic", cost = 200 },

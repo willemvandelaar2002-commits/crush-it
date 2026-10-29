@@ -49,9 +49,10 @@ REWARDS gift button next to INDEX/SHOP, "!" badge when something can be claimed.
 Panel styled after the reference game: purple header with the gift poking out, Skip All and X in the header,
 Playtime/Daily tabs down the left, six cards (3x2) and the grand prize (the last entry) in a wide rainbow bar.
 Cards: reward on top, icon on white rays, green CLAIM / red countdown / grey CLAIMED bar. Stud pattern drifts.
-- Playtime gifts: 6 cards after 2, 5, 10, 15, 25, 40 minutes plus the grand prize at 60 minutes (Epic crusher + 1 hour of cash, 5% Mythic chance); per session, reset on rejoin.
-- Daily check-in: 7 days, one claim per UTC day (`data.daily = { day, streak }`); missing a day restarts at day 1, after day 7 it starts over. Day 7 is the grand prize (Epic crusher + 1 hour of cash, 2% Mythic chance).
-- Cash rewards are N seconds of your current earning rate (min $25), so they stay useful at every stage. `bonusSeconds` on a crusher reward pays that much cash on top.
+- Playtime gifts (29 Oct balance): cash 30s / 90s / 200s / 600s of earnings at 2, 5, 15, 40 min; Rare crusher at 10 min, Epic at 25 min; grand prize at 60 min = Legendary crusher + 20 min of cash (5% Mythic chance). Per session, reset on rejoin.
+- Daily check-in: 7 days, one claim per UTC day (`data.daily = { day, streak }`); missing a day restarts at day 1, after day 7 it starts over. Cash 2/4/6/8 min of earnings, Rare on day 3, Epic on day 6 (1% Mythic), day 7 = Legendary + 20 min of cash (2% Mythic).
+- Cash rewards are N seconds of your current earning rate (min $25), so they stay useful at every stage. `bonusSeconds` on a crusher reward pays that much cash on top. Full inventory: a crusher reward becomes 4 min of cash.
+- Quest token shop: 15m Time Skip 50 tokens, 1h Time Skip 160 tokens (were 20/60). Index milestones: 4 min and 10 min of cash (were 10/30).
 - All numbers in `Config.Rewards`. Server checks time and claims; analytics events PlaytimeReward / DailyReward.
 
 ## Friend boost (server/FriendBoost.luau)
