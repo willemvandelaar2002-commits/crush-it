@@ -6,6 +6,7 @@ local Lighting=game:GetService("Lighting")
 local E=require(RS.Shared.FactoryEventConfig)
 local Motion=require(RS.Shared.FactoryEventMotion)
 local C=require(RS.Shared.CrusherConfig)
+local Style=require(RS.Shared.Kit.Style)
 local V=Vector3.new
 local INK=Color3.fromRGB(19,23,42)
 local GOLD=Color3.fromRGB(255,211,45)
@@ -299,7 +300,7 @@ function Visuals:bearRig()
 			local teddyParts={} for _,p in bear:GetDescendants() do if p:IsA("BasePart") then table.insert(teddyParts,p) end end
 			-- purple smoke for the change, and a landing ring
 			local smoke=part(self.folder,"TransformSmoke",V(size.X,2,size.X),CFrame.new(bottom+V(0,4,0)),PURPLE) smoke.Transparency=1
-			local emitter=Instance.new("ParticleEmitter") emitter.Color=ColorSequence.new(Color3.fromRGB(150,60,255),Color3.fromRGB(60,20,120))
+			local emitter=Instance.new("ParticleEmitter") emitter.Color=ColorSequence.new(PURPLE,Style.darken(PURPLE,.6))
 			emitter.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,10),NumberSequenceKeypoint.new(1,26)})
 			emitter.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,.3),NumberSequenceKeypoint.new(1,1)})
 			emitter.Lifetime=NumberRange.new(1.6,2.6) emitter.Speed=NumberRange.new(10,22) emitter.SpreadAngle=Vector2.new(70,70)
@@ -537,7 +538,7 @@ function Visuals:step(now)
 			local a1=Instance.new("Attachment") a1.Parent=self.central.shield
 			local beam=Instance.new("Beam") beam.Name="CorruptionBeam" beam.Attachment0=a0 beam.Attachment1=a1
 			beam.FaceCamera=true beam.Segments=24 beam.CurveSize0=60 beam.CurveSize1=-30 beam.Width0=5 beam.Width1=2.5
-			beam.Color=ColorSequence.new(Color3.fromRGB(200,90,255),Color3.fromRGB(120,40,230)) beam.LightEmission=1
+			beam.Color=ColorSequence.new(Style.lighten(PURPLE,.2),Style.darken(PURPLE,.15)) beam.LightEmission=1
 			beam.Transparency=NumberSequence.new(.25) beam.TextureSpeed=2 beam.Parent=b.model
 			b.beam=beam
 		end
