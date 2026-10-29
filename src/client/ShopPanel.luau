@@ -424,28 +424,10 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		end)
 	end
 	local function crateArt(parent: Instance, pos: UDim2, size: number, z: number): Frame
-		-- a chunky blue crate drawn in UI (no image asset needed)
-		local box = make("Frame", { Position = pos, Size = UDim2.fromOffset(size, size * 0.82), BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = z }, parent)
-		corner(box, 14)
-		outline(box, 4)
-		gradient(box, { C(70, 120, 235), C(30, 50, 140) })
-		local lid = make("Frame", { Position = UDim2.new(0, 0, 0.28, 0), Size = UDim2.new(1, 0, 0, 6), BackgroundColor3 = INK, BorderSizePixel = 0, ZIndex = z + 1 }, box)
-		lid.BackgroundTransparency = 0.2
-		for _, x in { 0.08, 0.92 } do
-			local strip = make("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(x, 0.62), Size = UDim2.new(0, 7, 0.42, 0), BackgroundColor3 = C(110, 240, 255), ZIndex = z + 1 }, box)
-			corner(strip, 4)
-		end
-		for _, p in { Vector2.new(0, 0), Vector2.new(1, 0), Vector2.new(0, 1), Vector2.new(1, 1) } do
-			local c = make("Frame", { AnchorPoint = p, Position = UDim2.fromScale(p.X, p.Y), Size = UDim2.fromOffset(size * 0.2, size * 0.2), BackgroundColor3 = C(255, 205, 50), ZIndex = z + 2 }, box)
-			corner(c, 6)
-			outline(c, 3)
-		end
-		local plate = make("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.6), Size = UDim2.fromOffset(size * 0.42, size * 0.42), BackgroundColor3 = C(255, 205, 50), ZIndex = z + 2 }, box)
-		corner(plate, 10)
-		outline(plate, 3)
-		local hole = make("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromScale(0.72, 0.72), BackgroundColor3 = NAVY_DARK, ZIndex = z + 3 }, plate)
-		corner(hole, 8)
-		label(hole, "?", UDim2.fromScale(0.15, 0.08), UDim2.fromScale(0.7, 0.84), 3, z + 4).TextColor3 = C(255, 230, 110)
+		-- the Factory Crate image (29 Oct; replaces the blue crate drawn in UI)
+		local box = make("Frame", { Position = pos, Size = UDim2.fromOffset(size, size), BackgroundTransparency = 1, ZIndex = z }, parent)
+		make("ImageLabel", { Name = "CrateImage", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = Icons.FactoryCrate,
+			ScaleType = Enum.ScaleType.Fit, ZIndex = z + 1 }, box)
 		return box
 	end
 	local function crateBanner(page: ScrollingFrame, order: number)

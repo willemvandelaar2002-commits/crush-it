@@ -28,6 +28,7 @@ return {
 	Trophy = id("101098329602259"), -- decal 139626264780814
 	-- Coating Lab / Fusion Machine art (Willem's PNGs in docs/art/icons, 27 Oct).
 	-- An empty id makes the screen show an emoji stand-in.
+	FactoryCrate = id("134946124538197"), -- the Factory Crate in the shop (29 Oct)
 	CoatingLab = id("89003452709321"), -- spray can (Brasslight Studio image)
 	FusionMachine = id("95171948221071"), -- fusion canister (Brasslight Studio image)
 	FinishPolished = id("90505902880419"), -- silver droplet (Brasslight Studio image)
