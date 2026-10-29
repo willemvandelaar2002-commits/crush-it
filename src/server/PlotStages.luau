@@ -462,7 +462,15 @@ local function buildKit(plot,level)
 	for _,x in {-1,1} do
 		for z=-90,FRONT-8,12 do
 			local cf=o*CFrame.new(x*(L.RoadHalf+3.6),0,z)
-			if clear(cf*CFrame.new(0,2.2,0),Vector3.new(1.6,3.6,1.6)) then Assets.place("SupportBeam"..suffix,kit,cf) end
+			if clear(cf*CFrame.new(0,2.2,0),Vector3.new(1.6,3.6,1.6)) then
+				local post=Assets.place("SupportBeam"..suffix,kit,cf)
+				-- 29 Oct: the black body's top sat exactly level with the trim's top and
+				-- flickered (z-fighting) as you walked past; sink it a hair into the trim
+				local body=post and post:FindFirstChild("Beam_Body",true)
+				if body and body:IsA("BasePart") then
+					body.Size-=Vector3.new(0,.08,0) body.CFrame*=CFrame.new(0,-.04,0)
+				end
+			end
 		end
 	end
 	-- column guards at the plaza side of each visible ground column

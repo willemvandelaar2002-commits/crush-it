@@ -273,3 +273,4 @@
 - 2026-10-29: Factory event now every full hour, taking turns: normal Bear event on even UTC hours, Halloween event (Pumpkin Foreman boss, pumpkin cores, candy pickups, lime/orange colours) on odd ones; same rules and rewards. Willem's Halloween models.
 - 2026-10-29: Halloween event: own song, night sky with moon and orange horizon, floating candies; reward reels faster and close 2.5 s after landing. Willem's feedback.
 - 2026-10-29: Plot gate sign shows the owner's factory level (FACTORY I for a new plot) and is blank on free plots; it used to say FACTORY II on every empty plot. Willem's report.
+- 2026-10-29: Road posts (SupportBeam trim kit): the black body top was level with the trim top and flickered; body sunk 0.04 into the trim. Willem's report.
