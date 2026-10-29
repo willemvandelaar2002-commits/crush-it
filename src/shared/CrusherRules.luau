@@ -96,7 +96,7 @@ function R.migrate(d, guid)
 		local levels = if type(d.levels)=="table" then d.levels else {}
 		local oldTier=integer(d.tier,1,13)
 		local t=C.typeById(C.LegacyTypes[math.clamp(math.ceil(oldTier/2),1,#C.LegacyTypes)])
-		local item={id=guid(),type=t.id,rarity=C.Rarities[math.clamp(math.ceil(oldTier/2)-1,1,5)].name -- old saves top out at Legendary (index 5),modifier="Standard",
+		local item={id=guid(),type=t.id,rarity=C.Rarities[math.clamp(math.ceil(oldTier/2)-1,1,5)].name --[[old saves top out at Legendary]],modifier="Standard",
 			level=math.clamp(1+math.floor((number(levels.Power,0,50)+number(levels.Value,0,50))/2),1,C.topLevelCap())}
 		local owned={item}
 		for _,lv in (if type(d.helpers)=="table" then d.helpers else {}) do
