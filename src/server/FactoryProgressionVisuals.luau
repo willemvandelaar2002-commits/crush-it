@@ -68,7 +68,7 @@ function V.create(plot)
 	end
 	local gate=W.part(accents,"FactoryLevelPlate",Vector3.new(8,1.4,.25),o*CFrame.new(0,10,FRONT-3),W.Navy)
 	for _,x in {-3,3} do W.part(accents,"LevelPlateStem",Vector3.new(.25,1.2,.25),o*CFrame.new(x,9.1,FRONT-3.1),Style.Colors.Gold) end
-	local levelText=W.text(W.sign(gate),"FactoryLevel","FACTORY II",UDim2.fromScale(.02,.02),UDim2.fromScale(.96,.96))
+	local levelText=W.text(W.sign(gate),"FactoryLevel","",UDim2.fromScale(.02,.02),UDim2.fromScale(.96,.96))
 	for first=1,C.BaseMaxBays,C.Layout.PerWing do for _,bay in {first,first+C.Layout.PerWing-1} do
 		local at=C.bayLayout(bay)
 		local cap=W.part(accents,"FactoryCornerCap",Vector3.new(1.35,.6,1.5),o*C.wingFrame(at.side)*CFrame.new(at.x,at.y+C.Layout.TierHeight-1.3,at.z+C.Layout.BayDepth/2-.5),Style.Colors.Gold)
@@ -176,7 +176,9 @@ function V.sync(plot,d,quote,now,preview)
 		elseif level==1 then "+12 BAYS · REAR YARD · FUSION MACHINE"
 		elseif level==2 then "+6 BAYS · REAR UPPER LEFT · HIGHER LV CAPS"
 		else "+6 BAYS · REAR UPPER RIGHT · HIGHER LV CAPS"
-	if d then v.levelText.Text=C.PlotUpgrade.Names[math.max(1,level)] end
+	-- the gate sign shows the owner's level (29 Oct: was FACTORY II on every empty plot
+	-- and on level 0 plots); empty plots show nothing
+	v.levelText.Text=if not d then "" elseif level<=0 then "FACTORY I" else C.PlotUpgrade.Names[level]
 	if not v.lab.info then return end -- booth: the coating screen shows the preview
 	local valid=quote and now<quote.expires
 	v.lab.info.Text=if valid then preview else "Hold an unequipped crusher. Select a finish to preview."
