@@ -16,7 +16,7 @@ local C = {
 	CashPacks = { CashSmall = 60, CashMedium = 300, CashLarge = 1200 },
 	-- Complete one physical six-bay row with a single rarity. Scrap only;
 	-- applies to that row, never stacks across rows or changes roll odds.
-	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40, Mythic=.60 },
+	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40, Secret=.48, Divine=.54, Mythic=.60 },
 }
 -- Stadium banks: ground bays open to the plaza, the upper row steps back on
 -- top of them (its walkway is the ground bays' roof). Local plot coordinates,
@@ -152,14 +152,22 @@ C.Types = {
 	{ id = "Toyzilla", name = "Toyzilla", template="Toyzilla", tier=11, input=3, damage=40, hp=120, value=220, cycle=1.8 },
 }
 C.Rarities = {
-	{ name = "Common", price = 30, weight = 70, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
+	{ name = "Common", price = 30, weight = 69.9912, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
 	{ name = "Uncommon", price = 150, weight = 22, rank = 1, types = { "Cobalt", "RocketPress" }, mult = 1.15, color = Color3.fromRGB(99, 210, 132) },
 	{ name = "Rare", price = 900, weight = 6, rank = 2, types = { "Mega", "Magnetron" }, mult = 1.35, color = Color3.fromRGB(75, 148, 255) },
 	{ name = "Epic", price = 6000, weight = 1.8, rank = 3, types = { "Titan", "TwinTitan" }, mult = 1.65, color = Color3.fromRGB(187, 105, 246) },
 	{ name = "Legendary", price = 60000, weight = 0.2, rank = 4, types = { "Quantum", "GoldenKing", "Toyzilla" }, mult = 2, color = Color3.fromRGB(255, 200, 55) },
+	-- Chase tiers above Legendary (29 Oct): rollable but very rare, and luck helps
+	-- them most (luck scales with rank). Weights give 1 in 50,000 (Secret) and
+	-- 1 in 500,000 (Divine) per crusher with four crushers each; Common was
+	-- trimmed by the same amount so the total stays 100. Their crushers are in
+	-- C.ChaseTypes below.
+	{ name = "Secret", price = 750000, weight = 0.008, rank = 5, types = {}, mult = 2.2, color = Color3.fromRGB(120, 122, 150) },
+	{ name = "Divine", price = 7500000, weight = 0.0008, rank = 6, types = {}, mult = 2.4, color = Color3.fromRGB(110, 225, 255) },
 	-- Mythic: never rolled (weight 0). Only from the Robux shop, a rare Daily
-	-- Spin prize and rare playtime/daily reward drops. 3x Legendary output.
-	{ name = "Mythic", price = 600000, weight = 0, rank = 5, types = {}, mult = 2, color = Color3.fromRGB(255, 70, 190), exclusive = true },
+	-- Spin prize, crates and rare playtime/daily reward drops. 3x Legendary
+	-- output, still the strongest tier. Keep it LAST in this list.
+	{ name = "Mythic", price = 600000, weight = 0, rank = 7, types = {}, mult = 2, color = Color3.fromRGB(255, 70, 190), exclusive = true },
 }
 -- Extend the real roll catalogue, not just the Index. Each rarity now contains
 -- eight types. Existing definitions and legacy migration order are unchanged.
@@ -207,6 +215,32 @@ for _, entry in C.CrateTypes do
 	def.id = entry.id def.name = entry.name def.template = entry.id def.design = nil
 	def.rarity = entry.rarity def.crate = true
 	table.insert(C.Types, def)
+end
+-- Chase crushers (29 Oct): four Secret and four Divine, rollable. Until
+-- Willem's models arrive they reuse a code-built rig (design) in new colours;
+-- when a model is in ServerStorage.SpecialCrusherMeshes, set template = id
+-- and remove design. value: production per input (Legendary is 220, Mythic 660).
+C.ChaseTypes = {
+	{ id = "ShadowShredder", name = "Shadow Shredder", rarity = "Secret", design = "BlackHole", color = Color3.fromRGB(64, 66, 84) },
+	{ id = "VoidVise", name = "Void Vise", rarity = "Secret", design = "DragonJaw", color = Color3.fromRGB(92, 60, 140) },
+	{ id = "EclipseEngine", name = "Eclipse Engine", rarity = "Secret", design = "Gravity", color = Color3.fromRGB(40, 40, 52) },
+	{ id = "NightRipper", name = "Night Ripper", rarity = "Secret", design = "Mecha", color = Color3.fromRGB(150, 30, 50) },
+	{ id = "HaloHammer", name = "Halo Hammer", rarity = "Divine", design = "Starforge", color = Color3.fromRGB(255, 244, 200) },
+	{ id = "CelestialCrusher", name = "Celestial Crusher", rarity = "Divine", design = "Clockwork", color = Color3.fromRGB(120, 220, 255) },
+	{ id = "ArchangelAnvil", name = "Archangel Anvil", rarity = "Divine", design = "FactoryHeart", color = Color3.fromRGB(255, 255, 255) },
+	{ id = "AuroraPress", name = "Aurora Press", rarity = "Divine", design = "Cyclone", color = Color3.fromRGB(140, 255, 200) },
+}
+C.ChaseValue = { Secret = 330, Divine = 500 }
+do
+	local band
+	for _, existing in C.Types do if existing.id == "Quantum" then band = existing break end end
+	for _, entry in C.ChaseTypes do
+		local def = table.clone(band)
+		def.id = entry.id def.name = entry.name def.design = entry.design def.accent = entry.color
+		def.template = entry.template def.value = C.ChaseValue[entry.rarity]
+		table.insert(C.Types, def)
+		for _, rarity in C.Rarities do if rarity.name == entry.rarity then table.insert(rarity.types, entry.id) break end end
+	end
 end
 C.Modifiers = {
 	{ name = "Standard", weight = 80, mult = 1 }, { name = "Rusty", weight = 14, mult = 1.15 },

@@ -11,7 +11,12 @@ R.Types = {"Titan","Laser","Plasma","Gravity","Quake","Cyclone","Mecha",
 	"Cobalt","Gearbox","Flywheel","Pneumatic","DoubleStamp","Boiler","Conveyor",
 	"Bumper","Steel","Clamp","Spring","Screw","Rivet","Bottle","Bench"}
 local supported = {} for _, id in R.Types do supported[id] = true end
-function R.supports(id) return supported[id] == true end
+-- Chase crushers without their own model borrow a rig through def.design.
+function R.supports(id)
+	if supported[id] then return true end
+	local def = C.typeById(id)
+	return def ~= nil and def.template == nil and def.design ~= nil and supported[def.design] == true
+end
 local V, F, A = Vector3.new, CFrame.new, CFrame.Angles
 local ink = Color3.fromRGB(19,23,42)
 local silver = Color3.fromRGB(208,231,247)
@@ -25,6 +30,8 @@ function R.build(origin, id)
 	if not R.supports(id) then return nil end
 	local def = C.typeById(id)
 	local accent = def.accent or colors[id]
+	local typeId = id
+	id = if supported[id] then id else def.design -- the rig shape to build
 	local model = Instance.new("Model") model.Name=def.name model.WorldPivot=F()
 	local frame = Instance.new("Model") frame.Name="Frame" frame.Parent=model
 	local groups = {}
@@ -556,7 +563,7 @@ function R.build(origin, id)
 		g.stroke*=fit
 		if g.pivot then g.pivot=origin*F(g.pivot*fit) end
 	end
-	model:SetAttribute("CrusherType",id) model:SetAttribute("IdentityVersion",2)
+	model:SetAttribute("CrusherType",typeId) model:SetAttribute("IdentityVersion",2)
 	model:SetAttribute("RigFit",fit)
 	-- Plain starter rigs have no idle ornaments; do not let them occupy the
 	-- four-machine cosmetic budget while a nearby special has moving parts.

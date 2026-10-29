@@ -95,7 +95,7 @@ function I.new(gui, act)
 	for _,rarity in C.Rarities do table.insert(options,{name=rarity.name,color=rarity.color}) end
 	for order,option in options do
 		local node,text=textButton(filters,"Filter_"..option.name,option.name,UDim2.new(),
-			UDim2.new(1,0,0,48),option.color,24,function() filter=option.name signature="" redraw() end)
+			UDim2.new(1,0,0,44),option.color,22,function() filter=option.name signature="" redraw() end)
 		node:SetAttribute("Label",true) filterLabels[option.name]=text node.LayoutOrder=order filterButtons[option.name]=node node:SetAttribute("Base",option.color)
 	end
 	local bayControls=make("Frame",{Name="BayControls",Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Visible=false},panel)
@@ -172,7 +172,7 @@ function I.new(gui, act)
 			ColorSequenceKeypoint.new(.45,Style.lighten(colour,.3)),ColorSequenceKeypoint.new(1,Style.darken(colour,.25))})},box)
 		Style.flowingStuds(box,28,.8,panel).ImageColor3=white
 		Style.sunburst(box,{center=UDim2.fromScale(.5,.42),alpha=.3,width=.12,length=1,zIndex=1,spin=10,gate=panel})
-		CardFx.special(box,if item then item.rarity else rarity.name,panel) -- Legendary/Mythic: turning rays, shimmer, sparkles
+		CardFx.special(box,if item then item.rarity else rarity.name,panel) -- Legendary and up: turning rays, shimmer, sparkles
 		local known=false
 		for _,owned in state.items do if owned.type==def.id then known=true break end end
 		if state.fusion and state.fusion.item and state.fusion.item.type==def.id then known=true end -- inside the Fusion Machine
@@ -183,8 +183,8 @@ function I.new(gui, act)
 		local rarityText=label(box,"Rarity",if item then item.rarity.." · Lv "..item.level else rarity.name,
 			UDim2.new(0,4,1,-44),UDim2.new(1,-8,0,36),30)
 		rarityText.TextScaled=true rarityText.ZIndex=4
-		local rankNow=(C.rarity(if item then item.rarity else rarity.name) or rarity).rank
-		rarityText.TextColor3=Style.lighten(colour,if rankNow==4 then .2 elseif rankNow>=5 then .6 else .55)
+		local tint={Legendary=.2,Secret=.75,Divine=.45,Mythic=.6}
+		rarityText.TextColor3=Style.lighten(colour,tint[if item then item.rarity else rarity.name] or .55)
 		if item then
 			local stats=label(frame,"Output",Format.cash(item.stats.cps*60).." scrap/min",UDim2.fromOffset(4,182),UDim2.new(1,-8,0,23),16)
 			stats.TextColor3=Color3.fromRGB(255,241,175)

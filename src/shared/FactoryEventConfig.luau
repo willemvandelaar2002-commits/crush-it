@@ -10,7 +10,7 @@ return {
 	Announce = 13, Assemble = 8, Active = 180, Finale = 7, Victory = 11, Recover = 3, -- Victory 11: room for the reward reels -- 28 Oct: Announce+Assemble = the intro cutscene
 	Tick = .2, Broadcast = .5, Strike = 2,
 	TargetSeconds = 90, MinimumActive = 30, MinimumHits = 10,
-	Points = {Common=1, Uncommon=2, Rare=3, Epic=4, Legendary=5, Mythic=6},
+	Points = {Common=1, Uncommon=2, Rare=3, Epic=4, Legendary=5, Secret=6, Divine=7, Mythic=8},
 	Grades = { -- points change the silhouette, never the saved crusher rarity
 		{points=0, name="SUPER PRESS"}, {points=15, name="TWIN HYDRAULIC"},
 		{points=45, name="REACTOR PRESS"}, {points=100, name="TITAN ENGINE"},
