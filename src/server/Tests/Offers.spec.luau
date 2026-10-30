@@ -22,10 +22,11 @@ return function()
 	local total = 0
 	for _, o in odds do total += o.percent end
 	check(math.abs(total - 100) < 1e-9, "odds add to 100%")
-	check(rounded and odds[1].text == "18%" and odds[9].text == "3.3333%", "exact odds print exactly, others with 4 digits + the rounding note: " .. odds[9].text)
+	-- 29 Oct weights: Epic 18 x3, Legendary 12, Mythic 2 x5 (total 76)
+	check(rounded and odds[1].text == "23.684%" and odds[9].text == "2.6316%", "exact odds print exactly, others with 4 digits + the rounding note: " .. odds[9].text)
 	local exact = O.odds({ items = { { type = "A", weight = 1 }, { type = "B", weight = 3 } } })
 	check(exact[1].text == "25%" and exact[2].text == "75%", "exact odds print exactly")
-	check(O.pick(crate, 0) == "DuckyDynamo" and O.pick(crate, 0.55) == "ArcadeClaw" and O.pick(crate, 0.999) == "PhantomPirate", "pick follows the weights")
+	check(O.pick(crate, 0) == "DuckyDynamo" and O.pick(crate, 0.75) == "ArcadeClaw" and O.pick(crate, 0.999) == "PhantomPirate", "pick follows the weights")
 	local C = require(S.CrusherConfig)
 	for _, o in odds do check(C.rarityOf(o.type) ~= nil and C.typeById(o.type) ~= nil, o.type .. " is a known type with a rarity") end
 
