@@ -1,7 +1,6 @@
 --!strict
 -- Shop offers (shop Featured / Crates / Packs tabs, server/Offers).
--- TEST DEFAULTS ONLY: prices, bundle contents and crate odds are not approved
--- yet. Robux product ids live in Shared/Store (0 = shows SOON, can't be
+-- Factory Crate odds and the Starter Pack contents approved by Willem (30 Oct). Robux product ids live in Shared/Store (0 = shows SOON, can't be
 -- bought); the price the shop shows always comes from Roblox, never from here.
 --
 --   Starter Pack   once per player: guaranteed Candy Colossus + cash + a boost
@@ -20,14 +19,14 @@ O.StarterPack = {
 	title = "Starter Pack", tag = "ONE-TIME PACK",
 	crusher = "CandyColossus", rarity = "Mythic",
 	cashMinutes = 60, -- 30 Oct: 1 hour of your earnings (like Cash Stack)
-	boost = { id = "Cash", minutes = (BoostConfig.find("Cash") :: any).minutes }, -- test default: the 2x Cash boost
+	boost = { id = "Cash", minutes = (BoostConfig.find("Cash") :: any).minutes }, -- the 2x Cash boost (approved 30 Oct)
 }
 
 -- Crates: `bundles` = what can be bought (one product each); only x1 for now.
--- Weights are relative; equal weights are PROVISIONAL Studio test data.
+-- Weights are relative.
 O.Crates = {
 	{
-		id = "FactoryCrate", title = "Factory Crate", provisional = true,
+		id = "FactoryCrate", title = "Factory Crate", -- odds approved by Willem 30 Oct
 		-- 27 Oct: + the six crate crushers. Each item's rarity comes from its type
 		-- (C.rarityOf). Test weights: Epic 18 each, Legendary 12, Mythic 2 each (Disco Destroyer and Kraken Clamp are Mythic since 29 Oct).
 		items = {

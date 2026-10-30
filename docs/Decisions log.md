@@ -284,3 +284,4 @@
 - 2026-10-30: Phone patch: one phone flag (Style.compact), every menu fits and centres on any screen, phone HUD layout (travel top right, cash/boosts in a left column, smaller tutorial card, toolbar, notices, event bar/reels, pop-ups), Index filters scroll. Tested in Studio's phone emulator and on desktop. Willem's request.
 - 2026-10-30: Event boss bar moved up, right under the travel buttons (desktop and phone). Willem's feedback.
 - 2026-10-30: Reward reels: Mythic 1% (was 2%), Mythic tile leaves out shop-only crushers (Candy Colossus, Prism Mech). Willem's choice.
+- 2026-10-30: Factory Crate odds (Epic 71%, Legendary 16%, Mythic 13%) and Starter Pack (Candy Colossus, 1 h earnings, 15 min 2x Cash) approved as final; Studio 'test odds' note removed. Willem.
