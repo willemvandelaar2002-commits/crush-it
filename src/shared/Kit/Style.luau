@@ -812,6 +812,21 @@ function Style.sunburst(parent: GuiObject, props: { [string]: any }?): Frame
 	return holder
 end
 
+-- Showcase art helpers share one client scheduler and pause under hidden/clipped UI.
+-- New APIs; existing panel/button/wobble arguments and behavior remain compatible.
+function Style.floatArt(gui: GuiObject, props: any?): () -> ()
+	return require(script.Parent.ShowcaseMotion).floatArt(gui, props)
+end
+function Style.spinArt(gui: GuiObject, props: any?): () -> ()
+	return require(script.Parent.ShowcaseMotion).spinArt(gui, props)
+end
+function Style.glint(gui: GuiObject, props: any?): () -> ()
+	return require(script.Parent.ShowcaseMotion).glint(gui, props)
+end
+function Style.focusBlur(panel: Frame, size: number?): () -> ()
+	return require(script.Parent.ShowcaseMotion).focusBlur(panel, size)
+end
+
 Style.GREEN = GREEN
 
 return Style

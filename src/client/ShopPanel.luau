@@ -24,6 +24,7 @@ local O = require(ReplicatedStorage.Shared.OfferConfig)
 local BoostConfig = require(ReplicatedStorage.Shared.BoostConfig)
 local CrusherConfig = require(ReplicatedStorage.Shared.CrusherConfig)
 local CrusherIcons = require(ReplicatedStorage.Shared.CrusherIcons)
+local FactoryCrateCard = require(script.Parent.FactoryCrateCard)
 
 local player = Players.LocalPlayer
 local C = Color3.fromRGB
@@ -142,6 +143,9 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	local ps = Style.studsImage(panel, 30, 0.93) ps.ZIndex = 5
 	panel:SetAttribute("FitWidth", W / 0.94) panel:SetAttribute("FitHeight", H / 0.92) -- 30 Oct: fitted by Style.modal
 	Style.modal(panel)
+	Style.focusBlur(panel, 12)
+	local backdrop = gui:FindFirstChild(panel.Name .. "Backdrop") :: TextButton?
+	if backdrop then backdrop.BackgroundTransparency = 0.52 end
 
 	-- gold studded header with the tilted basket and the chunky red X
 	local header = make("Frame", { Name = "Header", Position = UDim2.fromOffset(10, 10), Size = UDim2.fromOffset(W - 20, 72), BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 6 }, panel)
@@ -279,10 +283,15 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	local detailBody = make("Frame", { Name = "Body", Position = UDim2.fromOffset(0, 0), Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = 21 }, detail)
 	local detailRefresh: (() -> ())? = nil
 	table.insert(refreshers, function() if detail.Visible and detailRefresh then detailRefresh() end end)
+	local detailTween: Tween? = nil
 	local function openDetail(build: (Frame) -> (() -> ())?)
 		detailBody:ClearAllChildren()
 		detailRefresh = build(detailBody)
+		if detailTween then detailTween:Cancel() end
+		detail.Position = UDim2.fromOffset(12, 0)
 		detail.Visible = true
+		detailTween = TweenService:Create(detail, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Position = UDim2.new() })
+		detailTween:Play()
 		if detailRefresh then detailRefresh() end
 	end
 	local function detailTitle(text: string, color: Color3?)
@@ -425,45 +434,16 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		return box
 	end
 	local function crateBanner(page: ScrollingFrame, order: number)
-		local f = banner(page, order, { C(120, 60, 230), C(170, 80, 240), C(90, 70, 220), C(60, 150, 255) })
-		glow(f, UDim2.fromOffset(96, 88), 150)
-		crateArt(f, UDim2.fromOffset(16, 24), 156, 9)
-		twoTone(f, "FACTORY", "#FFD84A", "CRATE", "#62E9FF", UDim2.fromOffset(196, 6), UDim2.fromOffset(400, 54), 9)
-		-- one tile per rarity: its crushers' icons and their combined chance
-		-- (every crusher's own chance is on See all rewards & chances)
-		local groups, order = {}, {}
-		for _, o in odds do
-			local r = CrusherConfig.rarityOf(o.type)
-			if not groups[r.name] then groups[r.name] = { rarity = r, types = {}, percent = 0 } table.insert(order, r.name) end
-			table.insert(groups[r.name].types, o.type)
-			groups[r.name].percent += o.percent
-		end
-		for i, name in order do
-			local g = groups[name]
-			local tile = make("Frame", { Position = UDim2.fromOffset(196 + (i - 1) * 112, 60), Size = UDim2.fromOffset(104, 86), BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 9 }, f)
-			corner(tile, 10)
-			outline(tile, 3, g.rarity.color)
-			gradient(tile, { Style.darken(g.rarity.color, 0.35), C(40, 30, 90) })
-			for k, typeId in g.types do
-				if k > 3 then break end
-				icon(tile, crusherImage(typeId), UDim2.fromOffset(2 + (k - 1) * 30, 8 + (k % 2) * 4), UDim2.fromOffset(46, 46), 10 + k)
-			end
-			local n = label(tile, string.upper(name) .. " x" .. #g.types, UDim2.fromOffset(4, 58), UDim2.new(1, -8, 0, 24), 2, 14)
-			n.Name = "Name"
-			n.TextColor3 = Style.lighten(g.rarity.color, 0.2)
-			local text = string.format("%.4g%%", g.percent)
-			local pct = label(tile, text, UDim2.new(1, -62, 0, 2), UDim2.fromOffset(58, 22), 2.5, 15)
-			pct.TextColor3 = C(255, 236, 110)
-			pct.TextXAlignment = Enum.TextXAlignment.Right
-		end
-		local chances = make("TextButton", { Text = "", Position = UDim2.fromOffset(196, 150), Size = UDim2.fromOffset(328, 22), BackgroundColor3 = C(80, 40, 170), ZIndex = 9, AutoButtonColor = false }, f)
-		corner(chances, 99)
-		outline(chances, 2.5)
-		label(chances, "See all rewards & chances", UDim2.fromScale(0.04, 0.08), UDim2.fromScale(0.92, 0.84), 2, 10)
-		Style.feedback(chances)
-		chances.Activated:Connect(function() openDetail(crateDetail) end)
-		local view = bigButton(f, "VIEW CRATE", UDim2.new(1, -236, 0, 74), UDim2.fromOffset(220, 82), nil, 10)
-		view.Activated:Connect(function() openDetail(crateDetail) end)
+		FactoryCrateCard.build(page, {
+			width = BANNER_W, order = order, title = crate.title, odds = odds,
+			crateImage = Icons.FactoryCrate, image = crusherImage, typeName = typeName, rarityOf = CrusherConfig.rarityOf,
+			gate = panel,
+			enabled = function()
+				local reveal = gui:FindFirstChild("CrateReveal") :: GuiObject?
+				return not detail.Visible and not (reveal and reveal.Visible)
+			end,
+			open = function() openDetail(crateDetail) end,
+		})
 	end
 	local function showroomBanner(page: ScrollingFrame, order: number)
 		local f = banner(page, order, { C(80, 220, 255), C(120, 150, 255), C(200, 110, 255), C(255, 120, 190) })
@@ -562,8 +542,8 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 
 	-- Pages ------------------------------------------------------------------------------
 	heading(pages.FEATURED, "Featured", 1)
-	starterBanner(pages.FEATURED, 2)
-	crateBanner(pages.FEATURED, 3)
+	crateBanner(pages.FEATURED, 2)
+	starterBanner(pages.FEATURED, 3)
 	showroomBanner(pages.FEATURED, 4)
 
 	heading(pages.CRATES, "Crates", 1)

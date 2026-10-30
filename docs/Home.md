@@ -1,5 +1,9 @@
 # Crush It
 
+30 Oct shop presentation: the Factory Crate card now previews individual rewards,
+with a larger spotlight, floating artwork and glints; shop focus uses mild camera
+blur. Existing crate rules/purchases stay intact. See [[Systems/Shop]].
+
 28 Oct Bear Breakdown event (every 15 min): intro cutscene, own-plot super crushers,
 shared shield, Mega Crusher finale. Timings/rewards provisional. See [[Systems/Factory events]].
 

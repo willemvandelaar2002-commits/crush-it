@@ -291,3 +291,5 @@
 - 2026-10-30: Studs stand still again on the top buttons, the offline header and Take It; only the 2X IT! / 5X IT! buttons keep drifting studs. Willem.
 - 2026-10-30: Trial: studded walkway road (Style.studs on WalkTop; one line in W.walkway to revert). Willem wants to compare.
 - 2026-10-30: Studded walkway road kept. Willem.
+- 2026-10-31: Factory Crate gets a taller blue/gold showcase with a floating chest, individual reward portraits, a larger rarity/chance-based spotlight, rotating rays and staggered glints. Added reusable visibility-gated Style art-motion helpers and shop-only camera blur/detail entrance. Existing odds, catalogue, products, eligibility, purchases and reveals are preserved. Offline checks cover data/layout/motion lifecycle; Studio Play verification remains.
+- 2026-10-31: Crate card checked in Studio Play: livelier chest tilt/bob, softer rays, header/caption spacing fixed; blur clears on close. Willem's reference.

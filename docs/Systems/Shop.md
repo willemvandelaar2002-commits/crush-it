@@ -1,5 +1,30 @@
 # Shop, onboarding, analytics
 
+## 30 Oct Factory Crate presentation
+
+`client/FactoryCrateCard.luau` builds the same showcase in Featured and Crates.
+The crate is first in Featured for this presentation pass. The card is taller (338 authored pixels): blue/gold factory theme, large existing
+crate image, four individual preview portraits and one larger spotlight. Every
+percentage is copied verbatim from `OfferConfig.odds`; this is a labelled subset
+of the full reward list. The spotlight uses highest rarity then lowest chance,
+with source-order ties; it does not claim unique best output or change weights.
+All artwork/portrait/CTA clicks open the existing full crate details. No new
+images or upload IDs are needed.
+
+Shared Style helpers `floatArt`, `spinArt`, `glint` and `focusBlur` delegate to
+`Kit/ShowcaseMotion`. Art motion shares one client 30 Hz connection, stops writing
+while an ancestor/page/ScreenGui is hidden, the card is clipped offscreen, or a
+detail/reveal overlay covers it, and cleans up destroyed targets. Camera blur is
+owned by the shop and preserves other effects. Buttons retain Style.feedback.
+The common detail page gets a short cancellable entrance slide.
+
+Desktop presentation first; existing panel fitting remains, but this pass does
+not claim phone-layout acceptance. Studio checks: Featured/Crates, scroll edges,
+all preview/CTA routes, full odds and price/eligibility states, detail back/close,
+reveal/skip/collect, modal handoff, camera replacement and repeated open/close.
+No changes to server/OfferConfig/Store/remotes/receipts. Offline validation is
+not Studio Play verification.
+
 ## 27 Oct shop window and offers (current)
 Shop window = `client/ShopPanel.luau` (built by `Shop.client`, same `ShopHud`,
 `ShopButton` and `OpenShop` contract; new `OpenOffer` = offer id opens its
