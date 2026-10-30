@@ -144,23 +144,36 @@ function W.goals(parent,cf)
 end
 -- Bay plaque, laid out like a collectible card: name, rarity + modifier,
 -- level + output, a big green level-up price and a small swap button.
+-- Bay plaque (30 Oct): two looks on one panel. COMPACT (default, readable
+-- from the normal camera distance): crusher name, one short line ("LV 3 ·
+-- $1.2K/min") and one big LEVEL UP button. DETAIL (the owner's client swaps
+-- to it within C.PlaqueDetailDistance): rarity/coating, LV a > b, $/min a > b,
+-- MAX and REMOVE. The name label drives the compact title.
 function W.plaque(parent,cf,index)
 	local face,gui=W.panel(parent,cf,8.6,4,W.Blue)
-	local scope=W.text(gui,"UpgradeScope","BAY "..index,UDim2.fromScale(.04,.025),UDim2.fromScale(.6,.14))
+	local compact=Instance.new("Frame") compact.Name="Compact" compact.Size=UDim2.fromScale(1,1) compact.BackgroundTransparency=1 compact.Parent=gui
+	local detail=Instance.new("Frame") detail.Name="Detail" detail.Size=UDim2.fromScale(1,1) detail.BackgroundTransparency=1 detail.Visible=false detail.Parent=gui
+	local title=W.text(compact,"Title","LOCKED",UDim2.fromScale(.04,.06),UDim2.fromScale(.6,.46))
+	title.TextXAlignment=Enum.TextXAlignment.Left
+	local line=W.text(compact,"Line","",UDim2.fromScale(.04,.56),UDim2.fromScale(.6,.36))
+	line.TextXAlignment=Enum.TextXAlignment.Left line.TextColor3=Color3.fromRGB(255,240,170) line.TextWrapped=false -- one line, as big as fits
+	local scope=W.text(detail,"UpgradeScope","BAY "..index,UDim2.fromScale(.04,.025),UDim2.fromScale(.6,.14))
 	scope.TextXAlignment=Enum.TextXAlignment.Left scope.TextColor3=Color3.fromRGB(255,240,170)
-	local name=W.text(gui,"CrusherName","LOCKED",UDim2.fromScale(.04,.19),UDim2.fromScale(.6,.27))
+	local name=W.text(detail,"CrusherName","LOCKED",UDim2.fromScale(.04,.19),UDim2.fromScale(.6,.27))
 	name.TextXAlignment=Enum.TextXAlignment.Left
-	local rarity=W.text(gui,"Rarity","",UDim2.fromScale(.04,.48),UDim2.fromScale(.6,.17))
+	name:GetPropertyChangedSignal("Text"):Connect(function() title.Text=name.Text end)
+	local rarity=W.text(detail,"Rarity","",UDim2.fromScale(.04,.48),UDim2.fromScale(.6,.17))
 	rarity.TextXAlignment=Enum.TextXAlignment.Left
-	local stats=W.text(gui,"Output","",UDim2.fromScale(.04,.68),UDim2.fromScale(.6,.29))
+	local stats=W.text(detail,"Output","",UDim2.fromScale(.04,.68),UDim2.fromScale(.6,.29))
 	stats.TextXAlignment=Enum.TextXAlignment.Left stats.TextColor3=Color3.fromRGB(255,240,170)
-	local buy=W.button(gui,"Level","",UDim2.fromScale(.66,.07),UDim2.fromScale(.32,.55),"Bay",nil,index)
-	-- bottom row: MAX (buy as many levels as the cash covers) and SWAP
-	local max=W.button(gui,"LevelMax","MAX",UDim2.fromScale(.66,.67),UDim2.fromScale(.17,.27),"LevelMax",nil,index)
-	-- REMOVE: take the crusher out of this bay into your hotbar
-	local manage=W.button(gui,"Manage","REMOVE",UDim2.fromScale(.84,.67),UDim2.fromScale(.14,.27),"Manage",nil,index)
+	-- the one button both looks share (the client moves/resizes it per look)
+	local buy=W.button(gui,"Level","",UDim2.fromScale(.66,.07),UDim2.fromScale(.32,.86),"Bay",nil,index)
+	-- detail only: MAX (buy as many levels as the cash covers) and REMOVE
+	local max=W.button(detail,"LevelMax","MAX",UDim2.fromScale(.66,.67),UDim2.fromScale(.17,.27),"LevelMax",nil,index)
+	local manage=W.button(detail,"Manage","REMOVE",UDim2.fromScale(.84,.67),UDim2.fromScale(.14,.27),"Manage",nil,index)
 	Style.setButtonColor(manage,Color3.fromRGB(235,60,60))
-	return face,{name=name,rarity=rarity,stats=stats,scope=scope},buy,manage,max
+	gui:SetAttribute("BayPlaque",index)
+	return face,{name=name,rarity=rarity,stats=stats,scope=scope,title=title,line=line},buy,manage,max
 end
 -- Yellow/navy hazard band (alternating chunky blocks).
 function W.hazard(parent,cf,width,height,depth)

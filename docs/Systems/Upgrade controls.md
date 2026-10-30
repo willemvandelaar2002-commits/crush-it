@@ -125,3 +125,16 @@ across outer-bay button faces on unbuilt wings; every sample reached its own
 plaque. Rojo build and whitespace checks passed. This verifies the obstruction
 fix; a full real mouse hover/click and streaming review remains manual.
 No profile fixtures, live-save changes or purchases were used for this fix.
+
+## Bay plaques: compact from afar, detail up close (30 Oct)
+Willem's reference comparison: the plaques packed name, rarity, LV a>b, $/min a>b,
+MAX and REMOVE into small text. Now each plaque has two looks on the same panel:
+- **Compact** (default): crusher name, one line `LV 3 · $1.2K/min` (UpgradeView
+  `short`), and one big LEVEL UP / UNLOCK / EQUIP button. Empty bays say
+  "Equip a crusher", the next bay "More output".
+- **Detail**: the old layout (THIS CRUSHER, rarity/coating, LV a > b,
+  $/min a > b, MAX, REMOVE) once your character is within
+  `CrusherConfig.PlaqueDetailDistance` (16 studs) of that plaque.
+The server builds both (frames `Compact` and `Detail`, the name label drives the
+compact title); the owner's client (CrusherHud) only swaps the frames and the
+button size on its PlayerGui copy, so texts and purchase states keep mirroring.

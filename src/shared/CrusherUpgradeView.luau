@@ -62,6 +62,7 @@ function V.crusher(d,item,perks)
 		view.effect="LV "..item.level.." > "..nextItem.level.."\n"..Format.cash(current.cps*60).." > "..Format.cash(nextStats.cps*60).."/min"
 	end
 	view.button=if maxed then "MAX\nLEVEL" else "LEVEL UP\n"..Format.cash(view.cost)
+	view.short="LV "..item.level.." · "..Format.cash(current.cps*60).."/min" -- compact plaque line
 	return view
 end
 -- MAX on the plaque: as many LEVEL UPs for this crusher as the cash covers.

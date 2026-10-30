@@ -231,7 +231,7 @@ local function send(p,message,result)
 		local hidden=(f~=nil and f.mode~="built")
 		if bay.hidden~=hidden then bay.hidden=hidden bay.shown=nil partsLook(bay.model,if hidden then "hidden" else "built") end
 		if hidden then
-			bay.label.name.Text="" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="" bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false bay.lockLabel.Text=""
+			bay.label.name.Text="" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.line.Text="" bay.label.scope.Text="" bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false bay.lockLabel.Text=""
 			continue
 		end
 		local item=Rules.find(d,s.equipped[tostring(i)])
@@ -244,7 +244,7 @@ local function send(p,message,result)
 			card.rarity.Text=(if item.fused then "FUSED · " else "")..item.rarity..(if item.modifier~="Standard" then "  ·  "..item.modifier.." x"..C.modifier(item.modifier).mult else "")
 			card.rarity.TextColor3=r.color:Lerp(Color3.new(1,1,1),.25)
 			local view=UpgradeView.crusher(d,item,displayPerks)
-			card.stats.Text=view.effect Workshop.purchase(bay.buy,view)
+			card.stats.Text=view.effect card.line.Text=view.short Workshop.purchase(bay.buy,view)
 			Workshop.purchase(bay.max,UpgradeView.crusherMax(d,item))
 		else
 			card.scope.Text="BAY "..i
@@ -252,6 +252,7 @@ local function send(p,message,result)
 			card.rarity.Text=if state=="open" then "Equip a crusher here" elseif state=="next" then "Unlock for more output" else ""
 			card.rarity.TextColor3=Color3.new(1,1,1)
 			card.stats.Text=""
+			card.line.Text=if state=="open" then "Equip a crusher" elseif state=="next" then "More output" else ""
 			if state=="next" then
 				local view=UpgradeView.purchase(d.cash,C.BayCosts[i],false,"Adds a working bay; does not level a crusher.","BAY UNLOCKED!")
 				view.button="UNLOCK\n"..Format.cash(C.BayCosts[i]) Workshop.purchase(bay.buy,view)
@@ -627,7 +628,7 @@ function G.start()
 	Data.start("CrushItPlayer_v1",{cash=C.StartCash,scrap=0,purchases={},daily={day=0,streak=0},goldenRush=0,lastSeen=0},function(d) return Rules.migrate(d,guid) end)
 	Plots.create() require(script.Parent.World).create() Friend.start()
 	require(script.Parent.CrusherPreviews).start()
-	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false end end
+	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.line.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false end end
 	for _,plot in Plots.all() do pedestalLook(plot,C.StartPedestals) end
 	for _,plot in Plots.all() do floorLook(plot,0) ProgressVisuals.sync(plot,nil,nil,0,"") for i,bay in plot.bays do if floorFor(plot,i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end end
 	require(script.Parent.Moat).start(function(p) local ctx=sessions[p] return if ctx then Plots.spawnFor(ctx.plot) else CFrame.new(0,5,14) end, G.safeTeleport)
@@ -684,7 +685,7 @@ function G.start()
 		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory"
 			if ctx.plot.progression and ctx.plot.progression.levelText then ctx.plot.progression.levelText.Text="" end ctx.rollToken=nil
 			for i in ctx.plot.stations.Roll.pedestals do clearOffer(ctx.plot,i) end ctx.plot.pedestalCount=nil pedestalLook(ctx.plot,C.StartPedestals)
-			for i,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.scope.Text="BAY "..i Workshop.clearPurchase(bay.buy) bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false end end
+			for i,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.line.Text="" bay.label.scope.Text="BAY "..i Workshop.clearPurchase(bay.buy) bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false end end
 			floorLook(ctx.plot,0) RowVisuals.sync(ctx.plot,nil) ProgressVisuals.sync(ctx.plot,nil,nil,0,"") for i,bay in ctx.plot.bays do if floorFor(ctx.plot,i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
 		sessions[p]=nil
 	end)

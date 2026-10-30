@@ -89,6 +89,29 @@ function H.start()
   for _,x in plotConnections do x:Disconnect() end table.clear(plotConnections)
   for original in copies do unbind(original) end
  end
+ -- Bay plaques (30 Oct): compact look from afar, full detail up close.
+ -- Only the copy's frames/button layout change here; texts still mirror.
+ local function plaqueLook(copy,near)
+  if copy:GetAttribute("PlaqueNear")==near then return end
+  copy:SetAttribute("PlaqueNear",near)
+  local compact,detail,buy=copy:FindFirstChild("Compact"),copy:FindFirstChild("Detail"),copy:FindFirstChild("Level")
+  if compact then compact.Visible=not near end
+  if detail then detail.Visible=near end
+  if buy then buy.Size=if near then UDim2.fromScale(.32,.55) else UDim2.fromScale(.32,.86) end
+ end
+ task.spawn(function()
+  while true do
+   task.wait(.15)
+   local char=p.Character local root=char and char:FindFirstChild("HumanoidRootPart")
+   for _,c in copies do
+    local copy=c.copy
+    if copy.Parent and copy:GetAttribute("BayPlaque") and copy.Adornee then
+     local near=root~=nil and (root.Position-copy.Adornee.Position).Magnitude<=C.PlaqueDetailDistance
+     plaqueLook(copy,near)
+    end
+   end
+  end
+ end)
  local function bindOne(original)
   if copies[original] or not original:IsA("SurfaceGui") or not original:GetAttribute("CrusherWorldControls") then return end
   local adornee=original.Parent if not (adornee and adornee:IsA("BasePart")) then return end
