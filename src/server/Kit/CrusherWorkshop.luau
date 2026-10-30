@@ -324,10 +324,19 @@ function W.station(parent,cf,kind)
 		for _,x in {-10.5,10.5} do for _,z in {-6.5,6.5} do studs(W.part(m,"CornerCap",V(1.6,.6,1.6),cf*CFrame.new(x,8.3,z),W.Navy)) end end
 		local fill=Instance.new("Model") fill.Name="StoredScrap" fill.Parent=m
 		local rng=Random.new(7)
-		for i=1,24 do
-			local x,z=rng:NextNumber(-8.5,8.5),rng:NextNumber(-5,4.5) local layer=math.floor((i-1)/8)
-			studs(W.part(fill,"ToyScrap",V(rng:NextNumber(2,3.4),rng:NextNumber(1.4,2.4),rng:NextNumber(2,3)),
-				cf*CFrame.new(x,2.6+layer*1.6,z)*CFrame.Angles(rng:NextNumber(-.4,.4),rng:NextNumber(0,6),rng:NextNumber(-.4,.4)),TOY[(i-1)%#TOY+1]))
+		-- 30 Oct: three layers inside the hopper, then a heap that rises well above
+		-- the walls (narrower each layer). Pieces are listed bottom-up, so showing
+		-- the first N grows the pile from the floor (CrusherGame sets N).
+		local i=0
+		for layer=0,8 do
+			local count=if layer<=2 then 8 else 11-layer
+			local shrink=if layer<=2 then 1 else 1-.13*(layer-2)
+			for _=1,count do
+				i+=1
+				local x,z=rng:NextNumber(-8.5,8.5)*shrink,rng:NextNumber(-5,4.5)*shrink
+				studs(W.part(fill,"ToyScrap",V(rng:NextNumber(2,3.4),rng:NextNumber(1.4,2.4),rng:NextNumber(2,3)),
+					cf*CFrame.new(x,2.6+layer*1.6,z)*CFrame.Angles(rng:NextNumber(-.4,.4),rng:NextNumber(0,6),rng:NextNumber(-.4,.4)),TOY[(i-1)%#TOY+1]))
+			end
 		end
 		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.1,7.6),W.Blue,"COLLECT SCRAP","COLLECT")
 		station={part=face,label=label,button=button,fill=fill}

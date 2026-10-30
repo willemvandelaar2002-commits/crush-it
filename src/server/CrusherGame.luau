@@ -186,9 +186,14 @@ local function send(p,message,result)
 		index={seen=(function() local list={} for id in s.seen do table.insert(list,id) end return list end)(),claimed=s.indexClaimed,luck=IndexRewards.luck(s)}})
 	local st=ctx.plot.stations
 	st.Collect.label.Text=Format.cash(s.available).." ready"
-	-- The pile grows with ready scrap (about one minute of output fills it).
-	local pieces=st.Collect.fill:GetChildren()
-	local shown=if s.available<=0 then 0 else math.clamp(math.ceil(#pieces*s.available/math.max(1,cps(p,d)*60)),3,#pieces)
+	-- The pile grows with ready scrap: fast at first, then slower, full at about
+	-- 15 minutes of output (30 Oct; was full after 1 minute). Pieces are bottom-up.
+	local pieces=st.Collect.sorted
+	if not pieces then
+		pieces=st.Collect.fill:GetChildren() table.sort(pieces,function(a,b) return a.Position.Y<b.Position.Y end) st.Collect.sorted=pieces
+	end
+	local minutes=s.available/math.max(1e-6,cps(p,d)*60)
+	local shown=if s.available<=0 then 0 else math.clamp(math.ceil(#pieces*math.log(1+minutes)/math.log(16)),3,#pieces)
 	if st.Collect.shown~=shown then st.Collect.shown=shown
 		for i,v in pieces do v.Transparency=if i<=shown then 0 else 1 end
 	end
