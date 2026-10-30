@@ -6,10 +6,20 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local RS = game:GetService("ReplicatedStorage")
-local Format = require(RS.Shared.Format)
 local Style = require(RS.Shared.Kit.Style)
 
 local player = Players.LocalPlayer
+-- exact digits so it visibly ticks ("$651,940"); from a billion on, 3 decimals + suffix
+local SUFFIX = { "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc" }
+local function money(n: number): string
+	if n < 1e9 then
+		local s = tostring(math.floor(n)):reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", "")
+		return "$" .. s
+	end
+	local i = 1 n /= 1e9
+	while n >= 1000 and i < #SUFFIX do n /= 1000 i += 1 end
+	return "$" .. string.format("%.3f", n) .. SUFFIX[i]
+end
 local GREEN = Color3.fromRGB(120, 255, 90)
 
 local board: BillboardGui? = nil
@@ -56,7 +66,7 @@ RunService.RenderStepped:Connect(function(dt)
 	if target < shown then shown = target -- collected: snap down
 	else shown += (target - shown) * math.min(1, dt * 4) end -- roll up smoothly
 	if target - shown < 0.5 then shown = target end
-	label.Text = if shown >= 1 then Format.cash(shown) else ""
+	label.Text = if shown >= 1 then money(shown) else ""
 	-- a little pulse while it climbs
 	scale.Scale = 1 + math.min(.12, (target - shown) / math.max(1, target) * .6)
 end)
