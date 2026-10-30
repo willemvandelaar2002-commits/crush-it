@@ -25,8 +25,9 @@ Store.Products = {
 	{ id = "CashSmall", productId = 3723657331, price = 19, title = "Cash Pile", desc = "25% of your next press", color = Color3.fromRGB(80, 200, 110) },
 	{ id = "CashMedium", productId = 3723657452, price = 59, title = "Cash Stack", desc = "A whole next press", color = Color3.fromRGB(60, 180, 90) },
 	{ id = "CashLarge", productId = 3723657672, price = 129, title = "Cash Vault", desc = "4x your next press", color = Color3.fromRGB(40, 160, 80) },
-	{ id = "FinishSmelt", productId = 0, price = 19, title = "Finish Now", desc = "Your smelter finishes all its scrap at once", color = Color3.fromRGB(255, 140, 40) },
-	{ id = "GoldenRush", productId = 0, price = 49, title = "Golden Rush", desc = "Your next 10 objects are Golden", color = Color3.fromRGB(255, 200, 50) },
+	-- 30 Oct: no longer sold (Willem); kept hidden for old code paths
+	{ id = "FinishSmelt", productId = 0, price = 19, title = "Finish Now", desc = "Your smelter finishes all its scrap at once", color = Color3.fromRGB(255, 140, 40), hidden = true },
+	{ id = "GoldenRush", productId = 0, price = 49, title = "Golden Rush", desc = "Your next 10 objects are Golden", color = Color3.fromRGB(255, 200, 50), hidden = true },
 	-- Rewards panel "Skip All": every playtime gift unlocks now (not in the shop list)
 	-- Hub Boosts station (Shared/BoostConfig); hidden from the shop list
 	{ id = "BoostCash", productId = 3723657898, price = 19, title = "2x Cash Boost", desc = "15 minutes of double cash", color = Color3.fromRGB(230, 70, 60), hidden = true },
@@ -49,10 +50,19 @@ Store.Products = {
 
 -- What a cash pack pays: a share of the next press (or of the current one at max size).
 Store.CashPackShare = { CashSmall = 0.25, CashMedium = 1, CashLarge = 4 }
+-- 30 Oct: cash packs pay minutes of YOUR current earnings, so they stay worth it
+-- at every stage (Pile 10 min, Stack 1 h, Vault 4 h). Never less than MinPackCash.
+Store.CashPackMinutes = { CashSmall = 10, CashMedium = 60, CashLarge = 240 }
+Store.MinPackCash = 100
+-- cash for `seconds` of earnings at `cps` cash per second
+function Store.cashFor(cps: number, seconds: number): number
+	return math.max(Store.MinPackCash, math.floor((cps or 0) * seconds))
+end
 Store.GoldenRushCount = 10
 
-function Store.cashPackAmount(productId: string, tier: number): number
-	if Config.Crushers.Enabled then return Config.Crushers.CashPacks[productId] or 0 end
+-- cps: current cash per second (server: api.cashPerSecond; client: attribute CashRate)
+function Store.cashPackAmount(productId: string, tier: number, cps: number?): number
+	if Config.Crushers.Enabled then return Store.cashFor(cps or 0, (Store.CashPackMinutes[productId] or 0) * 60) end
 	local share = Store.CashPackShare[productId] or 0
 	return math.floor(Config.SizeCost(math.min(tier, Config.MaxTier - 1)) * share)
 end
@@ -95,7 +105,7 @@ if Config.Crushers.Enabled then
 	for _, product in Store.Products do
 		if product.id == "FinishSmelt" then product.title = "Sell All Scrap" product.desc = "Collect and sell all finished scrap instantly." end
 		if product.id == "GoldenRush" then product.title = "Golden Batch" product.desc = "Next 10 completed inputs award 10x scrap value." end
-		if Store.CashPackShare[product.id] then product.desc = "Cash for crusher rolls and upgrades." end
+		if Store.CashPackShare[product.id] then product.desc = (Store.CashPackMinutes[product.id] or 0) // 60 > 0 and ((Store.CashPackMinutes[product.id] // 60) .. "h of your earnings, instantly.") or (Store.CashPackMinutes[product.id] .. " min of your earnings, instantly.") end
 	end
 end
 return Store

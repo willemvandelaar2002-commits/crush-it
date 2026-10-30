@@ -59,6 +59,7 @@ function Offers.grant(p: Player, d: any, product: string, purchaseId: string): s
 	local ok, result = R.fulfil(d, product, purchaseId, {
 		giveCrusher = function(rarity: string, typeId: string) return api.giveCrusher(p, rarity, typeId, true) end,
 		addCash = function(n: number) api.addCash(p, n) end,
+		cashFor = function(seconds: number) return Store.cashFor(api.cashPerSecond(p), seconds) end,
 		addBoost = function(id: string, minutes: number) require(script.Parent.Boosts).add(p, id, minutes) end,
 		random = function() return rng:NextNumber() end,
 	})

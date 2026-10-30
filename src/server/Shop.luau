@@ -138,7 +138,7 @@ local function grant(player: Player, productId: string, purchaseId: string)
 		player:SetAttribute("GoldenRush", data.goldenRush)
 		Purchased:FireClient(player, { id = productId, text = Store.GoldenRushCount .. " Golden production bonuses!" })
 	else
-		local amount = Store.cashPackAmount(productId, data.tier)
+		local amount = Store.cashPackAmount(productId, data.tier, api.cashPerSecond(player))
 		api.addCash(player, amount)
 		Purchased:FireClient(player, { id = productId, text = "+" .. Format.cash(amount) })
 	end

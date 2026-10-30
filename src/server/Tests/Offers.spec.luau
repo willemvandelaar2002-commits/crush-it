@@ -36,6 +36,7 @@ return function()
 		return {
 			giveCrusher = function(rarity, t) table.insert(log.crushers, rarity .. ":" .. t) return t end,
 			addCash = function(n) log.cash += n end,
+			cashFor = function(seconds) return seconds end,
 			addBoost = function(id, m) table.insert(log.boosts, id .. ":" .. m) end,
 			random = function() return r or 0.5 end,
 		}
@@ -45,7 +46,7 @@ return function()
 	local d = profile()
 	local ok, res = R.fulfil(d, O.StarterPack.product, "p1", hooks())
 	check(ok and #log.crushers == 1 and log.crushers[1] == "Mythic:CandyColossus", "starter gives Candy Colossus")
-	check(log.cash == O.StarterPack.cash and log.boosts[1] == "Cash:" .. O.StarterPack.boost.minutes, "starter gives its cash and boost")
+	check(log.cash == O.StarterPack.cashMinutes * 60 and log.boosts[1] == "Cash:" .. O.StarterPack.boost.minutes, "starter gives its cash and boost")
 	check(R.owns(d, "StarterPack") and not res.repeatOnce, "starter owned after purchase")
 	ok, res = R.fulfil(d, O.StarterPack.product, "p2", hooks())
 	check(ok and res.repeatOnce and #log.crushers == 1, "a second paid starter receipt still delivers (and is flagged)")

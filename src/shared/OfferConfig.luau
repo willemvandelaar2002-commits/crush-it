@@ -19,7 +19,7 @@ O.StarterPack = {
 	id = "StarterPack", product = "StarterPack", once = true,
 	title = "Starter Pack", tag = "ONE-TIME PACK",
 	crusher = "CandyColossus", rarity = "Mythic",
-	cash = CrusherConfig.CashPacks.CashMedium, -- test default: the "Cash Stack" amount
+	cashMinutes = 60, -- 30 Oct: 1 hour of your earnings (like Cash Stack)
 	boost = { id = "Cash", minutes = (BoostConfig.find("Cash") :: any).minutes }, -- test default: the 2x Cash boost
 }
 
