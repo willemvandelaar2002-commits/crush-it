@@ -191,6 +191,7 @@ local function bayFrame(holder,cf)
  for _,x in {-1.15,1.15} do W.part(lock,"Shackle",V(.55,1.9,.55),cf*CFrame.new(x,5.5,-d/2+.9),white) end
  W.part(lock,"Shackle",V(2.85,.55,.55),cf*CFrame.new(0,6.3,-d/2+.9),white)
  local gui=W.surface(panel) gui:SetAttribute("CrusherWorldControls",false)
+ gui.MaxDistance=C.QuietLabelDistance -- 30 Oct: EMPTY / price words on the bay wall only up close
  local label=W.text(gui,"Lock","",UDim2.fromScale(.06,.06),UDim2.fromScale(.88,.3))
  return panel,lock,strip,label
 end

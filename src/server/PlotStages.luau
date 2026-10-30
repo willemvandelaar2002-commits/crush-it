@@ -61,6 +61,24 @@ end
 local UP=CFrame.Angles(0,0,math.pi/2) -- turns a cylinder upright
 local ALONG_Z=CFrame.Angles(0,math.pi/2,0) -- turns a cylinder to run along Z
 
+-- 30 Oct (less busy plot): trims only on the outer columns of each bank
+-- (smallest and largest plot-local X per bank model), not on every column.
+local function outerColumns(banks,o,names)
+	local byBank={}
+	for _,p in (banks and banks:GetDescendants() or {}) do
+		if p:IsA("BasePart") and names[p.Name] then
+			local x=o:PointToObjectSpace(p.Position).X
+			local b=byBank[p.Parent] if not b then b={lo=math.huge,hi=-math.huge} byBank[p.Parent]=b end
+			b.lo=math.min(b.lo,x) b.hi=math.max(b.hi,x)
+		end
+	end
+	return function(p)
+		local b=byBank[p.Parent] if not b then return false end
+		local x=o:PointToObjectSpace(p.Position).X
+		return math.abs(x-b.lo)<.5 or math.abs(x-b.hi)<.5
+	end
+end
+
 -- The fuser: navy base, glowing tank, four input rings, two orange arms.
 -- The prompt the owner's client listens for (Fusion.client opens the screen):
 -- small, at the front where you stand (prompt range counts from this part).
@@ -326,8 +344,9 @@ function V.create(plot)
 	-- Factory V, the master factory: gold column caps, warm light strips under
 	-- every walkway, a gold entrance arch, banners on the rear yard backs and a
 	-- tall gold beacon in the rear yard you can see from the front.
+	local outerCol=outerColumns(banks,o,{GroundColumn=true,UpperColumn=true,TopColumn=true})
 	for _,p in (banks and banks:GetDescendants() or {}) do
-		if p:IsA("BasePart") and (p.Name=="GroundColumn" or p.Name=="UpperColumn" or p.Name=="TopColumn") then
+		if p:IsA("BasePart") and (p.Name=="GroundColumn" or p.Name=="UpperColumn" or p.Name=="TopColumn") and outerCol(p) then
 			local cap=W.part(s5,"GoldCap",V3(1.6,.5,1.6),p.CFrame*CFrame.new(0,p.Size.Y/2-.25,0),Gold) cap.Material=Enum.Material.Metal
 			local foot=W.part(s5,"GoldFoot",V3(1.5,.4,1.5),p.CFrame*CFrame.new(0,-p.Size.Y/2+.2,0),Gold) foot.Material=Enum.Material.Metal
 		elseif p:IsA("BasePart") and (p.Name=="DeckFascia" or p.Name=="TopFascia") then
@@ -460,7 +479,7 @@ local function buildKit(plot,level)
 	end
 	local L=C.Layout
 	for _,x in {-1,1} do
-		for z=-90,FRONT-8,12 do
+		for z=-90,FRONT-8,C.TrimPostSpacing do -- 30 Oct: every 24 studs (was 12)
 			local cf=o*CFrame.new(x*(L.RoadHalf+3.6),0,z)
 			if clear(cf*CFrame.new(0,2.2,0),Vector3.new(1.6,3.6,1.6)) then
 				local post=Assets.place("SupportBeam"..suffix,kit,cf)
@@ -475,7 +494,9 @@ local function buildKit(plot,level)
 	end
 	-- column guards at the plaza side of each visible ground column
 	local banks=plot.model:FindFirstChild("WorkshopBanks")
+	local outerGround=outerColumns(banks,o,{GroundColumn=true})
 	for _,p in (banks and banks:GetDescendants() or {}) do
+		if p:IsA("BasePart") and p.Name=="GroundColumn" and not outerGround(p) then continue end
 		-- front banks always; the rear ground banks from Factory III (level 2)
 		local inRear=p.Parent and p.Parent.Name:match("^RearGround")
 		if p:IsA("BasePart") and p.Name=="GroundColumn" and (p.Parent==banks or (inRear and level>=2)) then
