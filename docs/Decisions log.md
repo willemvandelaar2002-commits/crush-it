@@ -277,3 +277,4 @@
 - 2026-10-29: Factory Crate image 134946124538197 replaces the blue crate drawn in UI (shop banner and crate reveal). Willem.
 - 2026-10-30: Developer product IDs connected (Cash Pile/Stack/Vault, 2x Cash/Luck/Super boosts, Skip All, Starter Pack, Factory Crate, Prism Mech) with Willem's dashboard prices. Game passes, Sell All Scrap and Golden Batch still 0.
 - 2026-10-30: Cash packs pay minutes of your own earnings (Pile 10 min, Stack 1 h, Vault 4 h, min $100); Starter Pack cash = 1 h of earnings. Sell All Scrap and Golden Batch removed from the shop. Willem.
+- 2026-10-30: Collect bin: the scrap pile grows into a heap above the hopper (57 pieces, full at ~15 min of output, was 1 min) and a big ticking cash number floats over your own bin (client/ScrapCounter). Quiet "Halloween/Bear event in m:ss" line bottom right in the last 10 minutes before an event (client/EventCountdown). Willem.
