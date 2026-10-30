@@ -1,6 +1,18 @@
 --!strict
 -- Pure event arithmetic / profile transactions, independent of Roblox services.
 local E = require(script.Parent.FactoryEventConfig)
+local C = require(script.Parent.CrusherConfig)
+local O = require(script.Parent.OfferConfig)
+-- 30 Oct: crushers sold on their own in the shop (Starter Pack, Prism Mech
+-- showroom) never come from the reward reels
+local SHOP_ONLY = { [O.StarterPack.crusher] = true, [O.Showroom.crusher] = true }
+local function R_reelTypes(rarity: string, notShop: boolean?): { string }
+	local r = C.rarity(rarity) local out = {}
+	for _, t in (if r then r.types else {}) do
+		if not (notShop and SHOP_ONLY[t]) then table.insert(out, t) end
+	end
+	return out
+end
 local R = {}
 local function finite(n)
 	return type(n)=="number" and n==n and math.abs(n)<math.huge
@@ -102,7 +114,9 @@ function R.grant(d,roundId,record,money,hooks)
 		local prize=R.prize(id) :: any
 		local won={id=id,kind=prize.kind}
 		if prize.kind=="crusher" then
-			local name=hooks.giveCrusher(prize.rarity)
+			local pool=R_reelTypes(prize.rarity,prize.notShop)
+			local typeId=if #pool>0 then pool[math.clamp(math.floor(hooks.random()*#pool)+1,1,#pool)] else nil
+			local name=if typeId then hooks.giveCrusher(prize.rarity,typeId) else nil
 			if name then won.name=name won.rarity=prize.rarity
 			else prize=R.prize(E.Reels.FullFallback) won.fallback=true won.kind="cash" end
 		elseif prize.kind=="boost" then
@@ -122,4 +136,5 @@ function R.resize(hp,maxHp,newMax)
 	if maxHp<=0 then return newMax,newMax end
 	return math.clamp(hp/maxHp,0,1)*newMax,newMax
 end
+R.reelTypes=R_reelTypes
 return R

@@ -1,5 +1,7 @@
 # Factory events — Bear Breakdown
 
+30 Oct: reward reels: Mythic 1% (was 2%; Cash 38% to keep 100), and the Mythic tile never gives a shop-only crusher (Starter Pack's Candy Colossus, the Prism Mech showroom; taken from OfferConfig, so it follows the shop). Pool now: Jackpot Press, Seraph Press, Phantom Pirate.
+
 30 Oct: boss bar higher, right under the travel buttons (desktop y 62, was 122; phones y 48, right of the INDEX/SHOP/REWARDS icons).
 
 28 Oct: Studio `/event win` (DevFactoryEvent Win) now counts everyone taking part

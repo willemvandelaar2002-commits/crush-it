@@ -283,3 +283,4 @@
 - 2026-10-30: Reverted the quiet locked bays (upper floors only show after upgrading anyway); kept close-up labels and fewer trims. Scrap counter over the bin now sized in studs and hidden beyond 80 studs. Willem's feedback.
 - 2026-10-30: Phone patch: one phone flag (Style.compact), every menu fits and centres on any screen, phone HUD layout (travel top right, cash/boosts in a left column, smaller tutorial card, toolbar, notices, event bar/reels, pop-ups), Index filters scroll. Tested in Studio's phone emulator and on desktop. Willem's request.
 - 2026-10-30: Event boss bar moved up, right under the travel buttons (desktop and phone). Willem's feedback.
+- 2026-10-30: Reward reels: Mythic 1% (was 2%), Mythic tile leaves out shop-only crushers (Candy Colossus, Prism Mech). Willem's choice.

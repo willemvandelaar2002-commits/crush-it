@@ -255,7 +255,7 @@ function Events.start(api)
 			if d and not r.pending then
 				local granted,result=Rules.grant(d,roundId,r,C.money,{
 					random=function() return rng:NextNumber() end,
-					giveCrusher=function(rarity) return api.giveCrusher(p,rarity) end,
+					giveCrusher=function(rarity,typeId) return api.giveCrusher(p,rarity,typeId) end,
 					addBoost=function(id,minutes) return Boosts.add(p,id,minutes) end,
 				})
 				if granted then

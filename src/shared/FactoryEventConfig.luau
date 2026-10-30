@@ -27,12 +27,12 @@ local E = {
 		ByRank = {3, 2, 2}, Others = 1, -- #1 gets 3 reels, #2-#3 get 2, everyone else 1
 		Spin = 3.2, Stagger = .4, Tiles = 34, -- seconds per reel, delay between reels, tiles per strip (29 Oct: was 4.2 / .55)
 		Prizes = {
-			{id="Cash", kind="cash", seconds=120, weight=37},                -- your cash/sec x seconds
+			{id="Cash", kind="cash", seconds=120, weight=38},                -- your cash/sec x seconds
 			{id="BigCash", kind="cash", seconds=360, weight=18},
 			{id="CashBoost", kind="boost", boost="Cash", minutes=10, weight=20},
 			{id="LuckBoost", kind="boost", boost="Luck", minutes=10, weight=15},
 			{id="Legendary", kind="crusher", rarity="Legendary", weight=8},
-			{id="Mythic", kind="crusher", rarity="Mythic", weight=2},
+			{id="Mythic", kind="crusher", rarity="Mythic", weight=1, notShop=true}, -- 30 Oct: 1% (was 2), never a shop-only Mythic
 		},
 		FullFallback = "BigCash", -- a crusher prize with a full inventory pays this instead
 	},

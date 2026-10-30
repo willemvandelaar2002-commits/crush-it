@@ -66,7 +66,7 @@ return function()
 	local function hooks(rolls,full)
 		local i=0
 		return {random=function() i+=1 return rolls[i] or 0 end,
-			giveCrusher=function(rarity) if full then return nil end table.insert(given,rarity) return rarity.." Thing" end,
+			giveCrusher=function(rarity,typeId) if full then return nil end table.insert(given,rarity) given.lastType=typeId return rarity.." Thing" end,
 			addBoost=function(b,m) table.insert(boosted,b) return true end}
 	end
 	local cashOnly={0,0,0}
@@ -90,6 +90,9 @@ return function()
 	record.rank=50
 	local ok2,r2=R.grant(profile,"round-crusher",record,C.money,hooks({mythicAt}))
 	check(ok2 and #r2.prizes==1 and r2.prizes[1].kind=="crusher" and given[#given]=="Mythic","crusher tile grants that rarity")
+	local O=require(Shared.OfferConfig)
+	check(given.lastType~=O.Showroom.crusher and given.lastType~=O.StarterPack.crusher,"reels never give a shop-only Mythic")
+	for _,t in R.reelTypes("Mythic",true) do check(t~=O.Showroom.crusher and t~=O.StarterPack.crusher,"shop-only Mythics left out of the pool") end
 	local before=profile.cash
 	local ok3,r3=R.grant(profile,"round-full",record,C.money,hooks({mythicAt},true))
 	check(ok3 and r3.prizes[1].fallback and r3.prizes[1].id=="Mythic" and profile.cash>before,"full inventory turns a crusher tile into cash")
