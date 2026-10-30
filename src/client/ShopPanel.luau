@@ -327,7 +327,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	local function starterDetail(body: Frame)
 		detailTitle(string.upper(starter.title), C(255, 150, 215))
 		detailRow(70, crusherImage(starter.crusher), typeName(starter.crusher), mythicDesc, "x1", C(255, 90, 170))
-		detailRow(166, Icons.Cash, Format.cash(starter.cash) .. " cash", "Added to your cash right away", "x1", C(60, 180, 90))
+		detailRow(166, Icons.Cash, Format.cash(Store.cashFor((player:GetAttribute("CashRate") :: number?) or 0, starter.cashMinutes * 60)) .. " cash", starter.cashMinutes .. " min of your earnings, right away", "x1", C(60, 180, 90))
 		detailRow(262, (Icons :: any)[boost.icon] or Icons.DoubleCash, boost.title .. " boost", starter.boost.minutes .. " minutes · " .. boost.desc, "x1", boost.color)
 		local note = label(body, "One-time pack: everything above is guaranteed, once per player.", UDim2.fromOffset(20, 360), UDim2.new(1, -300, 0, 26), 2, 22)
 		note.TextXAlignment = Enum.TextXAlignment.Left
@@ -411,7 +411,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		local tag, tagText = pill(f, starter.tag, UDim2.new(1, -196, 0, 14), UDim2.fromOffset(180, 34), NAVY_DARK, C(255, 110, 190), 9)
 		itemChip(f, crusherImage(starter.crusher), typeName(starter.crusher), UDim2.fromOffset(196, 70), 9)
 		plus(f, UDim2.fromOffset(302, 96), 9)
-		itemChip(f, Icons.Cash, Format.cash(starter.cash), UDim2.fromOffset(330, 70), 9)
+		itemChip(f, Icons.Cash, (starter.cashMinutes // 60) .. "h cash", UDim2.fromOffset(330, 70), 9)
 		plus(f, UDim2.fromOffset(436, 96), 9)
 		itemChip(f, (Icons :: any)[boost.icon] or Icons.DoubleCash, boost.title .. " " .. starter.boost.minutes .. "m", UDim2.fromOffset(464, 70), 9)
 		local view = bigButton(f, "VIEW PACK", UDim2.new(1, -236, 0, 74), UDim2.fromOffset(220, 82), nil, 10)
@@ -555,7 +555,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 				deps.buyProduct(id)
 			end)
 			local function update()
-				if Store.CashPackShare[id] then d.Text = "+" .. Format.cash(Store.cashPackAmount(id, (player:GetAttribute("Tier") :: number?) or 1)) .. " cash. " .. product.desc end
+				if Store.CashPackShare[id] then d.Text = "+" .. Format.cash(Store.cashPackAmount(id, 1, (player:GetAttribute("CashRate") :: number?) or 0)) .. " · " .. product.desc end
 				if product.productId == 0 then setCaption(b, "SOON", GREY)
 				else
 					local price = priceOf("product", product.productId)
@@ -586,7 +586,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	starterBanner(pages.PACKS, 2)
 	showroomBanner(pages.PACKS, 3)
 	heading(pages.PACKS, "Boosts", 4)
-	productCards(pages.PACKS, 5, { "BoostCash", "BoostLuck", "BoostSuper", "GoldenRush", "FinishSmelt" })
+	productCards(pages.PACKS, 5, { "BoostCash", "BoostLuck", "BoostSuper" })
 
 	heading(pages.PASSES, "Gamepasses", 1)
 	passCards(pages.PASSES, 2)

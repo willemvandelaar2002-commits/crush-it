@@ -49,7 +49,7 @@ function R.fulfil(d: any, product: string, purchaseId: string, hooks: any): (boo
 		if not name then error("offer crusher grant failed") end
 		local parts = { name }
 		if entry.kind == "starter" then
-			if offer.cash > 0 then hooks.addCash(offer.cash) table.insert(parts, "cash") end
+			if (offer.cashMinutes or 0) > 0 then hooks.addCash(hooks.cashFor(offer.cashMinutes * 60)) table.insert(parts, "cash") end
 			if offer.boost then hooks.addBoost(offer.boost.id, offer.boost.minutes) table.insert(parts, "boost") end
 		end
 		offers.owned[offer.id] = true

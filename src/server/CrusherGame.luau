@@ -172,7 +172,7 @@ local function send(p,message,result)
 	Tools.sync(p,d) -- unequipped crushers live in the Roblox backpack
 	p:SetAttribute("Cash",d.cash) p:SetAttribute("Scrap",d.scrap) p:SetAttribute("AvailableScrap",s.available)
 	p:SetAttribute("Plot",ctx.plot.index) p:SetAttribute("Crushed",d.crushed) p:SetAttribute("Tier",d.tier)
-	p:SetAttribute("AutoOn",true) p:SetAttribute("GoldenRush",d.goldenRush) p:SetAttribute("Rebirths",d.rebirths)
+	p:SetAttribute("CashRate",cps(p,d)) p:SetAttribute("AutoOn",true) p:SetAttribute("GoldenRush",d.goldenRush) p:SetAttribute("Rebirths",d.rebirths)
 	local items={}
 	for _,item in s.owned do
 		local v=Rules.copy(item) v.stats=Rules.stats(d,item,perks(p),rowState) v.cost=C.individualCost(item) table.insert(items,v)
