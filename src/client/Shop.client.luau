@@ -314,6 +314,7 @@ local offlineCard = make("Frame", {
 	BackgroundColor3 = Color3.fromRGB(34, 36, 48), BackgroundTransparency = 0.12, Visible = false, ZIndex = 8, Parent = gui,
 }, { corner(10), make("UIStroke", { Thickness = 4, Color = Style.Colors.Ink }) })
 Style.modal(offlineCard)
+do local st = Style.studsImage(offlineCard, 34, 0.55) st.ZIndex = 8 st.ImageColor3 = Color3.fromRGB(60, 64, 82) end -- subtle studs on the dark body too
 local function olabel(parent: Instance, text: string, pos: UDim2, size: UDim2, color: Color3?, thick: number?): TextLabel
 	local l = make("TextLabel", { Text = text, Position = pos, Size = size, BackgroundTransparency = 1, TextScaled = true, ZIndex = 10, Parent = parent })
 	Style.text(l, thick or 3) if color then l.TextColor3 = color end
@@ -322,8 +323,9 @@ end
 -- gold header with the studs and a tilted icon poking out
 local header = make("Frame", { Name = "Header", Position = UDim2.fromOffset(-4, -4), Size = UDim2.new(1, 8, 0, 96),
 	BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 9, Parent = offlineCard }, { corner(10), make("UIStroke", { Thickness = 4, Color = Style.Colors.Ink }),
-	make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(255, 205, 70), Color3.fromRGB(245, 150, 20)) }) })
-Style.studsImage(header, 30, 0.75).ZIndex = 9
+	make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(255, 226, 90), Color3.fromRGB(255, 170, 20)) }) })
+-- 30 Oct: studs clearly visible (like the reference), drifting slowly
+do local st = Style.flowingStuds(header, 34, 0.2, offlineCard) st.ZIndex = 9 st.ImageColor3 = Color3.fromRGB(255, 175, 20) end -- tinted like the header: studs read as raised bumps
 olabel(header, "Offline Earnings", UDim2.fromOffset(150, 10), UDim2.new(1, -170, 0, 76), nil, 4).TextXAlignment = Enum.TextXAlignment.Left
 local icon = Style.image(offlineCard, Icons.Offline, { Name = "Icon", Position = UDim2.fromOffset(-50, -46), Size = UDim2.fromOffset(170, 170), Rotation = -14, ZIndex = 12 })
 Style.wobble(icon, 3, 1.4)
@@ -345,28 +347,52 @@ local function column(i: number, title: string): (TextLabel, TextLabel, TextButt
 	btn.TextTransparency = 1
 	local cap = olabel(btn, "", UDim2.fromScale(0.04, 0.08), UDim2.fromScale(0.92, 0.84), nil, 3)
 	cap.ZIndex = 12
-	Style.studsImage(btn, 22, 0.8).ZIndex = 11
+	local st = Style.flowingStuds(btn, 26, 0.25, offlineCard) st.ZIndex = 11 btn:SetAttribute("StudsLabel", true)
 	return t, amount, btn, cap
 end
 local _, takeAmount, takeButton, takeCap = column(1, "CURRENT")
 local _, x2Amount, x2Button, x2Cap = column(2, "Double")
 local _, x5Amount, x5Button, x5Cap = column(3, "Five Times")
-takeAmount.TextColor3 = Color3.fromRGB(150, 255, 60)
-x2Amount.TextColor3 = Color3.fromRGB(110, 200, 255)
+takeAmount.TextColor3 = Color3.fromRGB(140, 255, 40)
+x2Amount.TextColor3 = Color3.fromRGB(80, 210, 255)
 x5Amount.TextColor3 = Color3.new(1, 1, 1)
-make("UIGradient", { Color = RAINBOW, Parent = x5Amount })
-Style.setButtonColor(takeButton, Color3.fromRGB(235, 50, 60)) takeCap.Text = "Take It"
-Style.setButtonColor(x2Button, Color3.fromRGB(60, 140, 255))
+local x5TextGradient = make("UIGradient", { Color = RAINBOW, Parent = x5Amount })
+Style.setButtonColor(takeButton, Color3.fromRGB(255, 40, 55)) takeCap.Text = "Take It"
+Style.setButtonColor(x2Button, Color3.fromRGB(40, 150, 255))
+-- studs tinted with each button's own colour (white studs wash the colour out)
+local function tintStuds(btn: GuiObject, c: Color3, transparency: number)
+	local flow = btn:FindFirstChild("StudsFlow") local img = flow and flow:FindFirstChild("Studs") :: ImageLabel?
+	if img then img.ImageColor3 = c img.ImageTransparency = transparency end
+end
+tintStuds(takeButton, Color3.fromRGB(255, 50, 60), 0.15)
+tintStuds(x2Button, Color3.fromRGB(50, 150, 255), 0.15)
+tintStuds(x5Button, Color3.new(1, 1, 1), 0.72)
 -- the rainbow 5X IT! button, with a glow pulse and a little "x5" tag
 local fill = x5Button:FindFirstChild("Fill") :: UIGradient?
 if fill then fill.Color = RAINBOW fill.Rotation = 0 end
 local tag = olabel(x5Button, "x5", UDim2.new(0.5, -30, 0, -24), UDim2.fromOffset(60, 32), nil, 3)
 tag.ZIndex = 13
-task.spawn(function()
-	while true do
-		if offlineCard.Visible and fill then fill.Offset = Vector2.new(math.sin(os.clock() * 2) * 0.15, 0) end
-		task.wait(0.05)
+-- the 5X IT! rainbow keeps flowing (hue cycles), the button pulses and glows
+local glow = make("UIStroke", { Thickness = 4, Color = Color3.new(1, 1, 1), ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Transparency = 0.2 })
+local outline = x5Button:FindFirstChild("Outline") :: UIStroke?
+if outline then outline:Destroy() end
+glow.Parent = x5Button
+local x5Scale = make("UIScale", { Parent = x5Button })
+local function rainbowAt(t: number): ColorSequence
+	local keys = {}
+	for i = 0, 6 do
+		keys[i + 1] = ColorSequenceKeypoint.new(i / 6, Color3.fromHSV((t + i / 6) % 1, 0.85, 1))
 	end
+	return ColorSequence.new(keys)
+end
+game:GetService("RunService").RenderStepped:Connect(function()
+	if not offlineCard.Visible then return end
+	local t = os.clock()
+	local seq = rainbowAt(t * 0.35)
+	if fill then fill.Color = seq fill.Rotation = 0 end
+	x5TextGradient.Color = seq
+	glow.Color = Color3.fromHSV((t * 0.35) % 1, 0.6, 1)
+	x5Scale.Scale = 1 + 0.04 * math.sin(t * 5)
 end)
 -- price shown under the multiplier buttons (Roblox's price once a product id is set)
 local function priceText(id: string): string

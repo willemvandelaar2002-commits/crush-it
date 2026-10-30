@@ -286,3 +286,4 @@
 - 2026-10-30: Reward reels: Mythic 1% (was 2%), Mythic tile leaves out shop-only crushers (Candy Colossus, Prism Mech). Willem's choice.
 - 2026-10-30: Factory Crate odds (Epic 71%, Legendary 16%, Mythic 13%) and Starter Pack (Candy Colossus, 1 h earnings, 15 min 2x Cash) approved as final; Studio 'test odds' note removed. Willem.
 - 2026-10-30: Offline earnings free for everyone; the Offline Earnings pass is dropped. New welcome-back card like Destroy a Vault's: Take It (1x) / 2X IT! (R$ 25) / 5X IT! (R$ 59). Products still need ids. Willem's request.
+- 2026-10-30: Offline card restyled closer to Destroy a Vault: clearly visible studs tinted per colour (drifting), brighter buttons, a 5X IT! button whose rainbow keeps flowing, glows and pulses. Willem's feedback.

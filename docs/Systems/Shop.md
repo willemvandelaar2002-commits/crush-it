@@ -115,7 +115,7 @@ The Offline Earnings game pass is gone: everyone gets offline cash (Store.Offlin
 50% of the normal rate, up to 8 h, from 5 min away). The welcome-back card has a
 gold studded header with the moon icon, "While OFFLINE you earned...", and three
 columns: **Take It** (free, 1x, red), **2X IT!** (blue) and a rainbow **5X IT!**,
-each with its amount. Products OfflineX2 (R$ 25) and OfflineX5 (R$ 59) are in
+each with its amount. Studs are tinted with each colour and drift; the 5X IT! rainbow flows (hue cycles), glows and pulses. Products OfflineX2 (R$ 25) and OfflineX5 (R$ 59) are in
 Store.Products with productId 0 (the card shows SOON) until Willem creates them.
 Server (Shop.luau): the record is saved as `data.offline = {cash, seconds, paid}`.
 Take It pays 1x; a multiplier receipt pays up to mult x the cash minus what was
