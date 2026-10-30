@@ -275,3 +275,4 @@
 - 2026-10-29: Plot gate sign shows the owner's factory level (FACTORY I for a new plot) and is blank on free plots; it used to say FACTORY II on every empty plot. Willem's report.
 - 2026-10-29: Road posts (SupportBeam trim kit): the black body top was level with the trim top and flickered; body sunk 0.04 into the trim. Willem's report.
 - 2026-10-29: Factory Crate image 134946124538197 replaces the blue crate drawn in UI (shop banner and crate reveal). Willem.
+- 2026-10-30: Developer product IDs connected (Cash Pile/Stack/Vault, 2x Cash/Luck/Super boosts, Skip All, Starter Pack, Factory Crate, Prism Mech) with Willem's dashboard prices. Game passes, Sell All Scrap and Golden Batch still 0.
