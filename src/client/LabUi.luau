@@ -66,7 +66,6 @@ function L.window(gui: ScreenGui, opts: any): (Frame, TextButton)
 	Style.panel(panel, Color3.fromRGB(34, 40, 78), Color3.fromRGB(20, 24, 50))
 	;(panel:FindFirstChild("Corner") :: UICorner).CornerRadius = UDim.new(0, 22)
 	;(panel:FindFirstChild("Outline") :: UIStroke).Thickness = 6
-	make("UIScale", { Name = "Fit" }, panel)
 	Style.modal(panel)
 	local header = L.panel(panel, "Header", UDim2.fromOffset(10, 10), UDim2.new(1, -20, 0, 118), opts.color, opts.colorDark, 18)
 	header.ZIndex = 6
@@ -84,20 +83,11 @@ function L.window(gui: ScreenGui, opts: any): (Frame, TextButton)
 	return panel, close
 end
 
-local fitted: { [Frame]: boolean } = {}
 function L.fit(panel: Frame, w: number, h: number)
-	local camera = workspace.CurrentCamera
-	local scale = panel:FindFirstChild("Fit") :: UIScale
-	local function apply()
-		local view = workspace.CurrentCamera.ViewportSize
-		scale.Scale = math.min(1, (view.X - 30) / w, (view.Y - 40) / h)
-	end
-	apply()
-	-- refit when the game window changes size
-	if not fitted[panel] then
-		fitted[panel] = true
-		camera:GetPropertyChangedSignal("ViewportSize"):Connect(apply)
-	end
+	-- 30 Oct: Style.modal's ModalScale does the fitting (one UIScale per panel)
+	panel:SetAttribute("FitWidth", w) panel:SetAttribute("FitHeight", h)
+	local scale = panel:FindFirstChild("ModalScale") :: UIScale?
+	if scale and panel.Visible then scale.Scale = Style.fitScale(panel) end
 end
 
 -- Dark rounded label ("Lv. 1", "COPY", "4/4").

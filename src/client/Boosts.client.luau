@@ -109,6 +109,7 @@ end
 
 -- Active boost chips (left side, under the menu buttons) ------------------------------------
 local chips = make("Frame", { Name = "ActiveBoosts", Position = UDim2.new(0, 12, 0, 190), Size = UDim2.fromOffset(170, 160), BackgroundTransparency = 1 }, gui)
+Style.phoneFit(chips, { scale = 0.65, position = UDim2.new(0, 12, 0, 164) }) -- 30 Oct: under cash + friend boost on phones
 make("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, chips)
 local chipFor: { [string]: TextLabel } = {}
 for i, b in B.List do

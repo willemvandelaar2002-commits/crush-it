@@ -140,13 +140,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	outline(panel, 5)
 	gradient(panel, { C(44, 52, 98), NAVY_DARK })
 	local ps = Style.studsImage(panel, 30, 0.93) ps.ZIndex = 5
-	local fit = make("UIScale", { Name = "FitScale" }, panel)
-	local function refit()
-		local v = Workspace.CurrentCamera.ViewportSize
-		fit.Scale = math.min(1, v.X * 0.94 / W, (v.Y - 40) * 0.92 / H)
-	end
-	Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(refit)
-	refit()
+	panel:SetAttribute("FitWidth", W / 0.94) panel:SetAttribute("FitHeight", H / 0.92) -- 30 Oct: fitted by Style.modal
 	Style.modal(panel)
 
 	-- gold studded header with the tilted basket and the chunky red X

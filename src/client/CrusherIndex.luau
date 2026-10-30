@@ -91,7 +91,15 @@ function I.new(gui, act)
 	ownedButton.Visible=false -- your crushers live in the bottom hotbar now
 	local controls = make("Frame", {Name="Controls", AnchorPoint=Vector2.new(1,0), Position=UDim2.fromOffset(-12,96),
 		Size=UDim2.fromOffset(148,560), BackgroundTransparency=1, ZIndex=2}, panel) -- filters: a column down the left side
-	local filters = make("Frame", {Name="RarityFilters", Size=UDim2.fromScale(1,1), BackgroundTransparency=1}, controls)
+	-- 30 Oct (phone patch): the column is as tall as the panel and scrolls when
+	-- it doesn't fit (phones, short windows)
+	local compact=true
+	if compact then controls.Size=UDim2.new(0,148,1,-108) end
+	local filters = make(if compact then "ScrollingFrame" else "Frame", {Name="RarityFilters", Size=UDim2.fromScale(1,1), BackgroundTransparency=1}, controls)
+	if compact then
+		filters.BorderSizePixel=0 filters.ScrollBarThickness=6 filters.CanvasSize=UDim2.new()
+		filters.AutomaticCanvasSize=Enum.AutomaticSize.Y filters.ScrollingDirection=Enum.ScrollingDirection.Y
+	end
 	make("UIListLayout", {FillDirection=Enum.FillDirection.Vertical, Padding=UDim.new(0,8),
 		SortOrder=Enum.SortOrder.LayoutOrder}, filters)
 	local filterButtons={} local filterLabels={}

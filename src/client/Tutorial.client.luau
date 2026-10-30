@@ -44,8 +44,13 @@ end
 
 -- Card --------------------------------------------------------------------------
 local gui = make("ScreenGui", { Name = "TutorialHud", ResetOnSpawn = false, DisplayOrder = 4, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
+-- 30 Oct (phone patch): the card sits in a holder that shrinks on phones (the
+-- card's own UIScale is its pop animation); positions stay relative to it.
+local holder = make("Frame", { Name = "StepCardHolder", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 0),
+	Size = UDim2.fromOffset(CARD_W, CARD_H + 68), BackgroundTransparency = 1 }, gui)
+Style.phoneFit(holder, { scale = 0.6, width = 0.6, position = UDim2.new(0.5, 60, 0, 80 - 68 * 0.6) }) -- right of the cash column
 local card = make("Frame", { Name = "StepCard", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 68),
-	Size = UDim2.fromOffset(CARD_W, CARD_H), BackgroundColor3 = Color3.fromRGB(30, 36, 62), Visible = false, ZIndex = 2 }, gui)
+	Size = UDim2.fromOffset(CARD_W, CARD_H), BackgroundColor3 = Color3.fromRGB(30, 36, 62), Visible = false, ZIndex = 2 }, holder)
 make("UICorner", { CornerRadius = UDim.new(0, 14) }, card)
 local cardStroke = make("UIStroke", { Thickness = 4, Color = INK }, card)
 make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(70, 82, 130), Color3.fromRGB(30, 36, 62)) }, card)
@@ -173,7 +178,7 @@ local function finishStep(step: number, nextStep: number)
 		local sub = label(banner, "Bonus +" .. Format.cash(C.TutorialBonus) .. "  ·  keep rolling for rarer crushers!", UDim2.fromOffset(20, 88), UDim2.new(1, -40, 0, 36), 3)
 		sub.ZIndex = 22
 		local scale = make("UIScale", { Scale = 0.3 }, banner)
-		TweenService:Create(scale, TweenInfo.new(0.45, Enum.EasingStyle.Back), { Scale = 1 }):Play()
+		TweenService:Create(scale, TweenInfo.new(0.45, Enum.EasingStyle.Back), { Scale = Style.popScale() }):Play()
 		Style.wobble(banner, 2, 3)
 		cashBurst(centre(banner), C.TutorialBonus)
 		task.wait(3.5)

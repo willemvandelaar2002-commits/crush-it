@@ -265,7 +265,7 @@ local function pop(text: string, good: boolean)
 	l.ZIndex = 40
 	l.TextColor3 = if good then Color3.new(1, 1, 1) else C(255, 220, 140)
 	local s = make("UIScale", { Scale = 0.4 }, l)
-	TweenService:Create(s, TweenInfo.new(0.3, Enum.EasingStyle.Back), { Scale = 1 }):Play()
+	TweenService:Create(s, TweenInfo.new(0.3, Enum.EasingStyle.Back), { Scale = Style.popScale() }):Play()
 	TweenService:Create(l, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 1.4), { TextTransparency = 1 }):Play()
 	task.delay(2, function() l:Destroy() end)
 end

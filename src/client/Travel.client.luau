@@ -21,6 +21,8 @@ row.Name = "Row"
 row.AnchorPoint = Vector2.new(0.5, 0)
 row.Position = UDim2.new(0.5, 0, 0, 6)
 row.Size = UDim2.fromOffset(600, 54)
+-- 30 Oct (phone patch): top right on phones, clear of the INDEX/SHOP/REWARDS icons
+Style.phoneFit(row, { scale = 0.75, margin = 230, anchor = Vector2.new(1, 0), position = UDim2.new(1, -8, 0, 6) })
 row.BackgroundTransparency = 1
 row.Parent = gui
 local list = Instance.new("UIListLayout")

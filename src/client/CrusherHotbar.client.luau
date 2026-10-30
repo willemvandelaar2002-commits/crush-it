@@ -56,6 +56,9 @@ make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = 
 make("UIPadding", { PaddingLeft = UDim.new(0, 2), PaddingRight = UDim.new(0, 2) }, list)
 local hint = text(gui, "", UDim2.new(.5, -200, 1, -TILE - 82), UDim2.fromOffset(400, 26), 22, 4)
 hint.AnchorPoint = Vector2.new(0, 0)
+-- 30 Oct (phone patch): 48 px tiles on phones, still easy to tap
+Style.phoneFit(bar, { scale = 0.65 })
+Style.phoneFit(hint, { scale = 0.65, anchor = Vector2.new(0.5, 0), position = UDim2.new(0.5, 0, 1, -TILE * 0.65 - 46) })
 
 local state: any = nil
 local tiles: { [string]: any } = {}

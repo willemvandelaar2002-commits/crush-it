@@ -115,6 +115,9 @@ Run.Heartbeat:Connect(function(dt)
 		subLabel.Text=currentDiscovery.rarity.." · ADDED TO YOUR INDEX" banner.Visible=true
 	end
 	if currentDiscovery then local t=math.clamp((now-discoveryAt)/.3,0,1)
-		scale.Scale=1-.16*(1-t)^2+.035*math.sin(t*math.pi)
+		-- 30 Oct (phone patch): smaller and lower on phones
+		local base=if Style.compact() then .6 else 1
+		banner.Position=if Style.compact() then UDim2.new(.5,0,1,-96) else UDim2.new(.5,0,1,-135)
+		scale.Scale=base*(1-.16*(1-t)^2+.035*math.sin(t*math.pi))
 	end
 end)

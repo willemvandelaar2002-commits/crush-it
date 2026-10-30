@@ -359,7 +359,14 @@ end
 function Style.compact(): boolean
 	local input = game:GetService("UserInputService")
 	local camera = workspace.CurrentCamera
-	return (input.TouchEnabled and not input.KeyboardEnabled) or (camera ~= nil and camera.ViewportSize.X < 1000)
+	-- (right at start-up the camera can still report a 1x1 viewport: ignore that)
+	return (input.TouchEnabled and not input.KeyboardEnabled) or (camera ~= nil and camera.ViewportSize.X > 10 and camera.ViewportSize.X < 1000)
+end
+
+-- 30 Oct (phone patch): full-screen celebration pop-ups (banners, "+30
+-- tokens!", purchase text) end their grow animation at this scale.
+function Style.popScale(): number
+	return if Style.compact() then 0.6 else 1
 end
 
 function Style.placeHudButton(btn: TextButton, slot: number)
@@ -408,11 +415,91 @@ end
 
 -- Fixed-size panels can set attributes FitWidth/FitHeight (pixels, incl. bits
 -- that poke out); they then shrink to fit small screens when opened.
+-- 30 Oct (phone patch): panels without FitWidth/FitHeight fit by what they
+-- really show: the panel plus anything hanging outside it (side tabs, bottom
+-- bars; scrolling lists don't count), so every menu fits a phone screen. When a
+-- menu has to shrink, it is also moved so what it shows sits in the middle.
+local basePositions: { [GuiObject]: UDim2 } = setmetatable({}, { __mode = "k" }) :: any
+local function shownIn(d: GuiObject, panel: GuiObject): boolean
+	local node: Instance? = d
+	while node and node ~= panel do
+		if node:IsA("ScrollingFrame") and node ~= d then return false end -- inside a list
+		if node:IsA("GuiObject") and not node.Visible then return false end
+		node = node.Parent
+	end
+	return true
+end
+local function designBounds(panel: GuiObject, current: number)
+	local p0, s0 = panel.AbsolutePosition, panel.AbsoluteSize
+	local x1, y1, x2, y2 = p0.X, p0.Y, p0.X + s0.X, p0.Y + s0.Y
+	for _, d in panel:GetDescendants() do
+		if d:IsA("GuiObject") and shownIn(d, panel) then
+			local p, sz = d.AbsolutePosition, d.AbsoluteSize
+			x1 = math.min(x1, p.X) y1 = math.min(y1, p.Y) x2 = math.max(x2, p.X + sz.X) y2 = math.max(y2, p.Y + sz.Y)
+		end
+	end
+	current = math.max(current, 0.01)
+	local centre = (Vector2.new(x1 + x2, y1 + y2) / 2 - (p0 + s0 / 2)) / current
+	return (x2 - x1) / current, (y2 - y1) / current, centre
+end
 function Style.fitScale(panel: Frame): number
 	local w, h = panel:GetAttribute("FitWidth"), panel:GetAttribute("FitHeight")
-	if type(w) ~= "number" or type(h) ~= "number" then return 1 end
 	local v = workspace.CurrentCamera.ViewportSize
-	return math.clamp(math.min((v.X - 24) / w, (v.Y - 70) / h), 0.4, 1)
+	local centre = Vector2.zero
+	if type(w) ~= "number" or type(h) ~= "number" then
+		local scale = panel:FindFirstChild("ModalScale") :: UIScale?
+		if panel.Visible and panel.AbsoluteSize.X > 0 then
+			w, h, centre = designBounds(panel, if scale then scale.Scale else 1)
+		else
+			w = panel.Size.X.Offset + panel.Size.X.Scale * v.X
+			h = panel.Size.Y.Offset + panel.Size.Y.Scale * v.Y
+		end
+	end
+	if w <= 0 or h <= 0 then return 1 end
+	-- the area under Roblox's top bar (ScreenGuis keep its inset); phones use nearly all of it
+	local inset = game:GetService("GuiService"):GetGuiInset().Y
+	local spare = if Style.compact() then 12 else 70
+	local fit = math.clamp(math.min((v.X - 24) / w, (v.Y - inset - spare) / h), 0.3, 1)
+	-- recentre what the menu shows (only when it has to shrink; desktop stays put)
+	if not basePositions[panel] then basePositions[panel] = panel.Position end
+	local base = basePositions[panel]
+	if fit >= 1 then panel.Position = base
+	elseif panel.AnchorPoint == Vector2.new(0.5, 0.5) then
+		-- dead centre of the screen (desktop nudges in the offsets are dropped)
+		panel.Position = UDim2.new(0.5, -centre.X * fit, 0.5, -centre.Y * fit)
+	else panel.Position = base - UDim2.fromOffset(centre.X * fit, centre.Y * fit) end
+	return fit
+end
+
+-- Phone HUD fit (30 Oct): on compact screens shrink a fixed-pixel HUD piece
+-- (UIScale "PhoneFit") to at most `scale`, and also so it takes no more than
+-- `width`/`height` of the screen; optional phone-only anchor/position.
+-- Desktop is untouched (scale 1, original placement). Tap targets: keep
+-- `scale` so buttons stay >= ~40 px.
+function Style.phoneFit(obj: GuiObject, opts: { scale: number?, width: number?, height: number?, margin: number?, anchor: Vector2?, position: UDim2? })
+	local fit = obj:FindFirstChild("PhoneFit") :: UIScale? or Instance.new("UIScale")
+	fit.Name = "PhoneFit" fit.Parent = obj
+	local desk = { anchor = obj.AnchorPoint, position = obj.Position }
+	local function apply()
+		local camera = workspace.CurrentCamera
+		if not Style.compact() then
+			fit.Scale = 1 obj.AnchorPoint = desk.anchor obj.Position = desk.position
+			return
+		end
+		local v = camera.ViewportSize
+		local w = obj.Size.X.Offset local h = obj.Size.Y.Offset
+		local s = opts.scale or 1
+		if opts.width and w > 0 then s = math.min(s, v.X * opts.width / w) end
+		if opts.height and h > 0 then s = math.min(s, v.Y * opts.height / h) end
+		if opts.margin and w > 0 then s = math.min(s, (v.X - opts.margin) / w) end -- leave `margin` px of screen width free
+		fit.Scale = math.max(0.3, s)
+		if opts.anchor then obj.AnchorPoint = opts.anchor end
+		if opts.position then obj.Position = opts.position end
+	end
+	apply()
+	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(apply)
+	obj:GetPropertyChangedSignal("Size"):Connect(apply)
+	return fit
 end
 
 function Style.setOpen(panel: Frame, open: boolean)
@@ -445,7 +532,15 @@ function Style.modal(panel: Frame)
 	local gui = panel:FindFirstAncestorOfClass("ScreenGui") :: ScreenGui
 	local order = gui.DisplayOrder
 	panel.Active = true
+	-- one UIScale per panel (a second one is ignored by Roblox): fold older
+	-- fit scales into FitWidth/FitHeight-style fitting
+	for _, other in panel:GetChildren() do
+		if other:IsA("UIScale") and other.Name ~= "ModalScale" then other:Destroy() end
+	end
 	local scale = child("UIScale", { Name = "ModalScale", Scale = 1 }, panel)
+	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+		if panel.Visible then scale.Scale = Style.fitScale(panel) end
+	end)
 	local shade = child("TextButton", { Name = panel.Name .. "Backdrop", Size = UDim2.fromScale(1, 1),
 		BackgroundColor3 = INK, BackgroundTransparency = 0.35, BorderSizePixel = 0, Text = "",
 		AutoButtonColor = false, Visible = false, ZIndex = panel.ZIndex - 1, Modal = true }, gui)
@@ -458,6 +553,8 @@ function Style.modal(panel: Frame)
 			gui.DisplayOrder = 30
 			scale.Scale = 0.92 * Style.fitScale(panel)
 			Style.setOpen(panel, true)
+			-- children's screen positions are only known after a frame: measure again
+			task.delay(0.06, function() if panel.Visible then Style.setOpen(panel, true) end end)
 		else
 			if activePanel == panel then activePanel = nil end
 			gui.DisplayOrder = order

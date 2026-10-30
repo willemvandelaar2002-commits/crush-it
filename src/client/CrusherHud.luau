@@ -30,6 +30,7 @@ function H.start()
  end
  fitDesktopHeader() workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitDesktopHeader)
  local toast=text(gui,"Notice","",UDim2.new(.5,0,1,-150),UDim2.fromOffset(640,40)) toast.AnchorPoint=Vector2.new(.5,0) toast.TextColor3=Color3.fromRGB(255,225,136)
+ Style.phoneFit(toast,{scale=.6,width=.9,position=UDim2.new(.5,0,1,-112)}) -- 30 Oct phone patch
  local noticeUntil=0
  local favoriteGoal=require(script.Parent.FavoriteGoal).new({
   service=game:GetService("AvatarEditorService"),placeId=game.PlaceId,itemType=Enum.AvatarItemType.Asset,

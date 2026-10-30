@@ -114,6 +114,9 @@ local function paintBoard(packet)
 	end
 end
 local reels=Reels.new(gui)
+-- 30 Oct (phone patch): boss bar and reward reels fit a phone screen
+Style.phoneFit(panel,{scale=.58,width=.9,position=UDim2.new(.5,0,0,84)})
+Style.phoneFit(reels.root,{scale=.55,width=.9,position=UDim2.new(.5,0,0,80)})
 local primary=Instance.new("TextButton") primary.Name="GoToFactory" primary.Text="MY FACTORY"
 primary.AnchorPoint=Vector2.new(.5,0) primary.Position=UDim2.new(.5,0,1,4) primary.Size=UDim2.fromOffset(200,40)
 primary.TextScaled=true primary.ZIndex=3 primary.Visible=false primary.Parent=panel Style.button(primary,Color3.fromRGB(65,230,80))

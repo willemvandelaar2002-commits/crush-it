@@ -138,3 +138,11 @@ a static scrap car. Build.lighting also exposes YardDay, selected by World
 for the existing Day setting, with warmer ambient light and restrained haze.
 
 Reusable static environment builders: bales, container, vehicle, cluster, workLight, crane and entrance. Parts are anchored with collision/touch/query disabled; models carry EnvironmentProp. Parent plot clusters under Decor to retain press-clearance parking. See [[Scrapyard environment]]. Build.path and Build.bridge now use concrete finishes while retaining walking geometry and signatures.
+
+## Phone patch (30 Oct)
+Tested in Studio's device emulator (Galaxy S22 772x360, iPhone 16 Pro Max 956x440) and on desktop.
+- **One phone flag:** `Style.compact()` (touch without keyboard, or a window under 1000 px wide; a 1x1 start-up viewport is ignored). CashHud uses it instead of its own TOUCH check (the emulator reports a keyboard, so the old check never fired there).
+- **Menus fit any screen:** `Style.fitScale` measures what a menu really shows (panel plus parts hanging outside it, scrolling lists excluded), fits it under Roblox's top bar, and when it has to shrink, centres it. Measured again a moment after opening (positions need a frame). Refits when the window size changes. One UIScale per panel: Style.modal removes older fit scales (LabUi `Fit`, ShopPanel `FitScale` now use FitWidth/FitHeight).
+- **HUD on phones:** `Style.phoneFit(obj, {scale, width, height, margin, anchor, position})` adds a `PhoneFit` UIScale and a phone-only position; desktop untouched. Used for: travel buttons (top right, 0.75, leaves 230 px for the icons), cash + friend boost (left column under INDEX/SHOP/REWARDS), active boosts (0.65 under them), tutorial step card (0.6, right of the cash column, in a holder so its pop animation keeps its own scale), notices (0.6), crusher toolbar (0.65 = 48 px tiles) and its hint, event boss bar (0.58) and reward reels (0.55) at y 80-84, discovery banner (0.6, lower).
+- **Pop-ups:** `Style.popScale()` (0.6 on phones) for the tutorial-complete banner, purchase text and quest token pop.
+- Index rarity filters scroll inside the panel height (they ran off short screens).

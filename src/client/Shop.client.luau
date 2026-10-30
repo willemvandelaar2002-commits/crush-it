@@ -374,7 +374,7 @@ Net.event("Purchased").OnClientEvent:Connect(function(msg)
 		BackgroundTransparency = 1, Font = FONT, TextScaled = true, TextColor3 = GOLD, Text = msg.text, Parent = gui,
 	}, { stroke(4) })
 	local scale = make("UIScale", { Scale = 0.2, Parent = label })
-	TweenService:Create(scale, TweenInfo.new(0.4, Enum.EasingStyle.Back), { Scale = 1 }):Play()
+	TweenService:Create(scale, TweenInfo.new(0.4, Enum.EasingStyle.Back), { Scale = Style.popScale() }):Play()
 	local s = Instance.new("Sound")
 	s.SoundId = "rbxassetid://" .. Config.Sounds.LevelUp
 	s.Volume = 0.7

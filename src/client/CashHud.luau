@@ -14,8 +14,12 @@ local CashHud = {}
 
 function CashHud.start(gui: ScreenGui)
 	local player = Players.LocalPlayer
-	local TOUCH = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
-	local height = if TOUCH then 40 else 64
+	-- 30 Oct (phone patch): Style.compact() is the one phone flag; cash sits in
+	-- the left column under the INDEX/SHOP/REWARDS icons (the thumbstick is bottom-left)
+	local camera = workspace.CurrentCamera
+	for _ = 1, 40 do if camera.ViewportSize.X > 10 then break end task.wait(0.05) end -- real size first
+	local TOUCH = Style.compact()
+	local height = if TOUCH then 32 else 64
 	local function make(class: string, props: { [string]: any }, parent: Instance?): any
 		local v = Instance.new(class)
 		for k, x in props do (v :: any)[k] = x end
@@ -23,10 +27,10 @@ function CashHud.start(gui: ScreenGui)
 		return v
 	end
 	local cashLabel = make("TextLabel", {
-		Name = "Cash", AnchorPoint = if TOUCH then Vector2.new(0.5, 0) else Vector2.new(0, 1),
-		Position = if TOUCH then UDim2.new(0.5, 0, 0, 74) else UDim2.new(0, 84, 1, -42),
-		Size = UDim2.fromOffset(if TOUCH then 180 else 320, height), BackgroundTransparency = 1, Font = Enum.Font.FredokaOne,
-		TextScaled = true, TextXAlignment = if TOUCH then Enum.TextXAlignment.Center else Enum.TextXAlignment.Left,
+		Name = "Cash", AnchorPoint = if TOUCH then Vector2.new(0, 0) else Vector2.new(0, 1),
+		Position = if TOUCH then UDim2.new(0, 12, 0, 80) else UDim2.new(0, 84, 1, -42),
+		Size = UDim2.fromOffset(if TOUCH then 150 else 320, height), BackgroundTransparency = 1, Font = Enum.Font.FredokaOne,
+		TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left,
 		TextColor3 = Color3.fromRGB(110, 255, 90), Text = "$0",
 	}, gui)
 	make("UIStroke", { Thickness = 4, Color = Color3.fromRGB(20, 40, 15) }, cashLabel)
@@ -38,13 +42,13 @@ function CashHud.start(gui: ScreenGui)
 
 	-- Friend boost line; the + opens Roblox's invite dialog.
 	local row = make("Frame", { Name = "FriendBoost", AnchorPoint = Vector2.new(0, 1),
-		Position = if TOUCH then UDim2.new(0.5, -96, 0, 145) else UDim2.new(0, 14, 1, -10),
-		Size = UDim2.fromOffset(if TOUCH then 192 else 260, if TOUCH then 26 else 30), BackgroundTransparency = 1 }, gui)
+		Position = if TOUCH then UDim2.new(0, 12, 0, 136) else UDim2.new(0, 14, 1, -10),
+		Size = UDim2.fromOffset(if TOUCH then 170 else 260, if TOUCH then 22 else 30), BackgroundTransparency = 1 }, gui)
 	local label = make("TextLabel", { Size = UDim2.new(1, -40, 1, 0), BackgroundTransparency = 1, TextScaled = true,
 		TextXAlignment = Enum.TextXAlignment.Left, Text = "Friend Boost: 0%" }, row)
 	Style.text(label, 2.5)
 	local invite = make("TextButton", { AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(1, 0, 0.5, 0),
-		Size = UDim2.fromOffset(if TOUCH then 24 else 30, if TOUCH then 24 else 30), Text = "+", TextScaled = true }, row)
+		Size = UDim2.fromOffset(if TOUCH then 30 else 30, if TOUCH then 30 else 30), Text = "+", TextScaled = true }, row)
 	Style.button(invite)
 	local function refreshFriends()
 		local boost = (player:GetAttribute("FriendBoost") :: number?) or 0
@@ -65,7 +69,7 @@ function CashHud.start(gui: ScreenGui)
 	local shown = make("NumberValue", { Value = (player:GetAttribute("Cash") :: number?) or 0 }, gui)
 	shown.Changed:Connect(function(v) cashLabel.Text = Format.cash(math.floor(v + 0.5)) end)
 	cashLabel.Text = Format.cash(shown.Value)
-	local pop = make("TextLabel", { Name = "CashGain", AnchorPoint = if TOUCH then Vector2.new(1, 0.5) else Vector2.new(0, 0.5),
+	local pop = make("TextLabel", { Name = "CashGain", AnchorPoint = Vector2.new(0, 0.5),
 		Position = UDim2.new(0, -8, 0.5, 0), Size = UDim2.fromOffset(if TOUCH then 72 else 160, if TOUCH then 22 else 28),
 		BackgroundTransparency = 1, TextScaled = true, Text = "", Visible = false, ZIndex = 3 }, cashLabel)
 	Style.text(pop, 2)
@@ -83,7 +87,7 @@ function CashHud.start(gui: ScreenGui)
 			token += 1
 			local mine = token
 			pop.Text = "+" .. Format.cash(cash - last)
-			if not TOUCH then pop.Position = UDim2.new(0, Format.cash(cash):len() * height * 0.5 + 12, 0.5, 0) end
+			pop.Position = UDim2.new(0, Format.cash(cash):len() * height * 0.5 + 12, 0.5, 0)
 			pop.Visible = true
 			task.delay(0.9, function() if mine == token then pop.Visible = false end end)
 		else
