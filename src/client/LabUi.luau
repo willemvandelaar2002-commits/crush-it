@@ -71,6 +71,7 @@ function L.window(gui: ScreenGui, opts: any): (Frame, TextButton)
 	header.ZIndex = 6
 	L.art(header, opts.icon, opts.glyph, UDim2.fromOffset(-34, -30), UDim2.fromOffset(150, 150), 12)
 	local title = L.text(header, "Title", opts.title, UDim2.fromOffset(128, 4), UDim2.new(1, -240, 0, 76), 70, 6)
+	Style.bold(title, 5)
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	local sub = L.text(header, "Subtitle", opts.subtitle, UDim2.fromOffset(130, 76), UDim2.new(1, -240, 0, 34), 27, 3)
 	sub.TextXAlignment = Enum.TextXAlignment.Left

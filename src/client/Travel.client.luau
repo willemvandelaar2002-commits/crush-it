@@ -42,8 +42,9 @@ local function travelButton(name: string, label: string, color: Color3, where: s
 	Style.button(b, color)
 	local outline = b:FindFirstChild("Outline") :: UIStroke?
 	if outline then outline.Thickness = 4 end
-	local studs = Style.studsImage(b, 18, 0.82)
-	studs.ZIndex = 2
+	-- 30 Oct: studs tinted with the button colour, clearly visible, drifting
+	local studs = Style.flowingStuds(b, 20, 0.15)
+	studs.ZIndex = 2 studs.ImageColor3 = color
 	-- the label is a child so it draws above the stud texture
 	local t = Instance.new("TextLabel")
 	t.Name = "Label"
@@ -56,15 +57,16 @@ local function travelButton(name: string, label: string, color: Color3, where: s
 	t.ZIndex = 3
 	t.Parent = b
 	Style.text(t, 3)
+	Style.bold(t, 3.5)
 	if where then b.Activated:Connect(function() Net.event("Travel"):FireServer(where) end) end
 	return b
 end
-travelButton("ToHub", "Mega Crusher", Color3.fromRGB(150, 70, 225), "Hub", 2)
-travelButton("ToPlot", "My Factory", Color3.fromRGB(255, 150, 30), "Plot", 3)
+travelButton("ToHub", "Mega Crusher", Color3.fromRGB(170, 80, 255), "Hub", 2)
+travelButton("ToPlot", "My Factory", Color3.fromRGB(255, 160, 20), "Plot", 3)
 
 -- EQUIP BEST (reference: "Equip Best" next to "Market"): the server puts your
 -- highest-output crushers in your bays. A red "!" shows when it would help.
-local equipBest = travelButton("EquipBest", "Equip Best", Color3.fromRGB(60, 200, 80), nil, 1)
+local equipBest = travelButton("EquipBest", "Equip Best", Color3.fromRGB(50, 225, 70), nil, 1)
 equipBest.Activated:Connect(function() Net.event("CrusherAction"):FireServer("EquipBest") end)
 local mark = Instance.new("Frame")
 mark.Name = "Better"

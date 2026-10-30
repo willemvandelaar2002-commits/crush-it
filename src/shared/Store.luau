@@ -36,8 +36,8 @@ Store.Products = {
 	{ id = "BoostSuper", productId = 3723658049, price = 29, title = "Super Boost", desc = "15 minutes of 2x cash and 2x luck", color = Color3.fromRGB(160, 80, 235), hidden = true },
 	-- 30 Oct: welcome-back card multipliers (the card shows these Robux prices until
 	-- the productIds are filled in from the Creator Dashboard; 0 = "SOON")
-	{ id = "OfflineX2", productId = 0, price = 25, title = "2x Offline Cash", desc = "Double what you earned while away", color = Color3.fromRGB(70, 150, 255), hidden = true },
-	{ id = "OfflineX5", productId = 0, price = 59, title = "5x Offline Cash", desc = "Five times what you earned while away", color = Color3.fromRGB(255, 190, 40), hidden = true },
+	{ id = "OfflineX2", productId = 3724354876, price = 32, title = "2x Offline Cash", desc = "Double what you earned while away", color = Color3.fromRGB(70, 150, 255), hidden = true },
+	{ id = "OfflineX5", productId = 3724355041, price = 49, title = "5x Offline Cash", desc = "Five times what you earned while away", color = Color3.fromRGB(255, 190, 40), hidden = true },
 	{ id = "SkipRewards", productId = 3723658147, price = 99, title = "Skip All", desc = "Unlock every playtime gift now", color = Color3.fromRGB(255, 200, 40), hidden = true },
 	-- Shop offers (Shared/OfferConfig, server/Offers). price = 0: not approved
 	-- yet; once a productId is set the shop shows Roblox's own price.

@@ -146,3 +146,13 @@ Tested in Studio's device emulator (Galaxy S22 772x360, iPhone 16 Pro Max 956x44
 - **HUD on phones:** `Style.phoneFit(obj, {scale, width, height, margin, anchor, position})` adds a `PhoneFit` UIScale and a phone-only position; desktop untouched. Used for: travel buttons (top right, 0.75, leaves 230 px for the icons), cash + friend boost (left column under INDEX/SHOP/REWARDS), active boosts (0.65 under them), tutorial step card (0.6, right of the cash column, in a holder so its pop animation keeps its own scale), notices (0.6), crusher toolbar (0.65 = 48 px tiles) and its hint, event boss bar (0.58, y 48, shifted right of the icons) and reward reels (0.55, y 80), discovery banner (0.6, lower).
 - **Pop-ups:** `Style.popScale()` (0.6 on phones) for the tutorial-complete banner, purchase text and quest token pop.
 - Index rarity filters scroll inside the panel height (they ran off short screens).
+
+## Drop text and brighter HUD (30 Oct, after Destroy a Vault)
+`Style.bold(label, thickness)`: the label goes invisible and a dark Drop copy
+(offset ~1.4x thickness down, stroke +1) plus a Face copy draw it, so the
+outline is extra heavy along the bottom. Follows Text/TextColor3/alignment;
+UIGradients move to the Face. Used on: travel buttons, INDEX/SHOP/REWARDS
+labels, cash + friend boost, the offline card, Index/Coating/Fusion titles,
+tutorial step title, event shield %. (Not on world SurfaceGuis: two extra
+labels each.) Travel buttons: brighter colours, flowing studs tinted with the
+button colour (0.15). Icon tiles: studs at 0.2.

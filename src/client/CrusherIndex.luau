@@ -75,9 +75,9 @@ function I.new(gui, act)
 		Size=UDim2.fromOffset(140,140), Rotation=-12, ZIndex=9})
 	Style.wobble(book,3,1.5)
 	local title = label(header,"Title","Index",UDim2.fromOffset(122,6),UDim2.new(1,-480,1,-12),60)
-	title.TextXAlignment = Enum.TextXAlignment.Left title.TextScaled=true title.ZIndex=8
+	title.TextXAlignment = Enum.TextXAlignment.Left title.TextScaled=true title.ZIndex=8 Style.bold(title,5)
 	local count = label(header,"Count","0 / "..#C.Types,UDim2.new(1,-316,0,10),UDim2.fromOffset(220,64),44)
-	count.TextScaled=true count.TextXAlignment=Enum.TextXAlignment.Right count.ZIndex=8
+	count.TextScaled=true count.TextXAlignment=Enum.TextXAlignment.Right count.ZIndex=8 Style.bold(count,5)
 	local closeButton,closeText=textButton(header,"Close","X",UDim2.new(1,-80,0,9),UDim2.fromOffset(66,66),Style.Colors.Red,46,function() Style.setOpen(panel,false) end)
 	closeButton.ZIndex=8 closeText.ZIndex=9
 	local nav = make("Frame", {Name="Tabs", Visible=false, Position=UDim2.fromOffset(-157,103),

@@ -70,6 +70,7 @@ stepTag.TextXAlignment = Enum.TextXAlignment.Left
 stepTag.TextColor3 = GOLD
 local title = label(card, "", UDim2.fromOffset(98, 28), UDim2.fromOffset(CARD_W - 230, 36), 3)
 title.TextXAlignment = Enum.TextXAlignment.Left
+Style.bold(title, 3)
 local hint = label(card, "", UDim2.fromOffset(98, 64), UDim2.fromOffset(CARD_W - 120, 22), 2)
 hint.TextXAlignment = Enum.TextXAlignment.Left
 hint.TextColor3 = Color3.fromRGB(220, 228, 255)

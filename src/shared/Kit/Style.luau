@@ -144,6 +144,41 @@ function Style.text(label: TextLabel | TextButton, strokeThickness: number?)
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual, LineJoinMode = Enum.LineJoinMode.Round })
 end
 
+-- Chunky "drop" text (30 Oct, after Destroy a Vault): a thick dark outline and
+-- a second dark copy a few pixels lower, so the outline looks extra heavy along
+-- the bottom. The label itself goes invisible; a Drop and a Face child draw it
+-- and follow its Text / TextColor3 / alignment. UIGradients move to the Face.
+function Style.bold(label: TextLabel, thickness: number?): TextLabel
+	if label:FindFirstChild("Face") then return label:FindFirstChild("Face") :: TextLabel end
+	local t = thickness or 3
+	local own = label:FindFirstChild("TextOutline") :: UIStroke?
+	if own then own.Enabled = false end
+	for _, s in label:GetChildren() do if s:IsA("UIStroke") then s.Enabled = false end end
+	local function copy(name: string, offset: number, z: number, color: Color3): TextLabel
+		local c = Instance.new("TextLabel")
+		c.Name = name c.BackgroundTransparency = 1 c.Size = UDim2.fromScale(1, 1)
+		c.Position = UDim2.fromOffset(0, offset) c.ZIndex = z
+		c.Font = label.Font c.TextScaled = label.TextScaled c.TextSize = label.TextSize c.TextWrapped = label.TextWrapped
+		c.TextXAlignment = label.TextXAlignment c.TextYAlignment = label.TextYAlignment
+		c.Text = label.Text c.TextColor3 = color
+		local s = Instance.new("UIStroke") s.Thickness = t s.Color = INK s.LineJoinMode = Enum.LineJoinMode.Round s.Parent = c
+		c.Parent = label
+		return c
+	end
+	local drop = copy("Drop", math.max(3, math.floor(t * 1.4 + 0.5)), label.ZIndex, INK)
+	local ds = drop:FindFirstChildOfClass("UIStroke") if ds then ds.Thickness = t + 1 end
+	local face = copy("Face", 0, label.ZIndex + 1, label.TextColor3)
+	for _, g in label:GetChildren() do if g:IsA("UIGradient") then g.Parent = face end end
+	label.TextTransparency = 1
+	label:GetPropertyChangedSignal("Text"):Connect(function() drop.Text = label.Text face.Text = label.Text end)
+	label:GetPropertyChangedSignal("TextColor3"):Connect(function() face.TextColor3 = label.TextColor3 end)
+	label:GetPropertyChangedSignal("TextXAlignment"):Connect(function() drop.TextXAlignment = label.TextXAlignment face.TextXAlignment = label.TextXAlignment end)
+	label:GetPropertyChangedSignal("TextTransparency"):Connect(function()
+		if label.TextTransparency ~= 1 then label.TextTransparency = 1 end
+	end)
+	return face
+end
+
 -- A chunky panel: top-to-bottom gradient between two colours, dark outline,
 -- thin white inner border and visible, colour-matched studs. Tinting the grey
 -- imported colour map keeps its flat areas from washing bright paint pastel.
@@ -603,6 +638,9 @@ function Style.iconButton(parent: Instance, opts: { [string]: any }): (TextButto
 		BackgroundTransparency = 1, TextScaled = true, Text = opts.label, ZIndex = 4,
 	}, btn)
 	Style.text(label, 3)
+	Style.bold(label, 3)
+	local studs = tile:FindFirstChild("Studs") :: ImageLabel?
+	if studs then studs.ImageTransparency = 0.2 end -- 30 Oct: studs clearly visible
 	local badge = child("Frame", {
 		Name = "Badge", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -6, 0, 6), Size = UDim2.fromOffset(size * 0.36, size * 0.36),
 		BackgroundColor3 = C(235, 40, 40), Visible = false, ZIndex = 5,

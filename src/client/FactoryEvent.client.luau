@@ -42,7 +42,7 @@ local stripes=Style.studsImage(fill,26,.5) stripes.ZIndex=3 stripes.ImageColor3=
 local shine=Instance.new("Frame") shine.Name="Shine" shine.Position=UDim2.new(0,6,0,5) shine.Size=UDim2.new(1,-12,0,5) shine.BackgroundColor3=Color3.new(1,1,1)
 shine.BackgroundTransparency=.55 shine.BorderSizePixel=0 shine.ZIndex=4 shine.Parent=fill round(shine,3)
 local markers={} -- (28 Oct: no 25/50/75 circles)
-local percent=label(panel,"Percent","100%",UDim2.fromOffset(676,14),UDim2.fromOffset(100,52)) Style.text(percent,4)
+local percent=label(panel,"Percent","100%",UDim2.fromOffset(676,14),UDim2.fromOffset(100,52)) Style.text(percent,4) Style.bold(percent,4)
 local timer=label(panel,"Timer","",UDim2.fromOffset(686,72),UDim2.fromOffset(80,30)) timer.TextColor3=Color3.fromRGB(255,218,65)
 timer.BackgroundColor3=INK timer.BackgroundTransparency=.3 round(timer,10)
 do local pad=Instance.new("UIPadding") pad.PaddingTop=UDim.new(0,3) pad.PaddingBottom=UDim.new(0,3) pad.Parent=timer end

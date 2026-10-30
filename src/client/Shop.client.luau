@@ -318,6 +318,7 @@ do local st = Style.studsImage(offlineCard, 34, 0.55) st.ZIndex = 8 st.ImageColo
 local function olabel(parent: Instance, text: string, pos: UDim2, size: UDim2, color: Color3?, thick: number?): TextLabel
 	local l = make("TextLabel", { Text = text, Position = pos, Size = size, BackgroundTransparency = 1, TextScaled = true, ZIndex = 10, Parent = parent })
 	Style.text(l, thick or 3) if color then l.TextColor3 = color end
+	Style.bold(l, (thick or 3) + 0.5)
 	return l
 end
 -- gold header with the studs and a tilted icon poking out
@@ -356,7 +357,7 @@ local _, x5Amount, x5Button, x5Cap = column(3, "Five Times")
 takeAmount.TextColor3 = Color3.fromRGB(140, 255, 40)
 x2Amount.TextColor3 = Color3.fromRGB(80, 210, 255)
 x5Amount.TextColor3 = Color3.new(1, 1, 1)
-local x5TextGradient = make("UIGradient", { Color = RAINBOW, Parent = x5Amount })
+local x5TextGradient = make("UIGradient", { Color = RAINBOW, Parent = x5Amount:FindFirstChild("Face") or x5Amount })
 Style.setButtonColor(takeButton, Color3.fromRGB(255, 40, 55)) takeCap.Text = "Take It"
 Style.setButtonColor(x2Button, Color3.fromRGB(40, 150, 255))
 -- studs tinted with each button's own colour (white studs wash the colour out)

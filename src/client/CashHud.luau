@@ -34,6 +34,7 @@ function CashHud.start(gui: ScreenGui)
 		TextColor3 = Color3.fromRGB(110, 255, 90), Text = "$0",
 	}, gui)
 	make("UIStroke", { Thickness = 4, Color = Color3.fromRGB(20, 40, 15) }, cashLabel)
+	Style.bold(cashLabel, 4) -- 30 Oct: heavy drop outline like the reference
 	if not TOUCH then
 		local icon = make("Frame", { Name = "CashIcon", AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 12, 1, -40),
 			Size = UDim2.fromOffset(66, 66), BackgroundTransparency = 1, Rotation = -10 }, gui)
@@ -47,6 +48,7 @@ function CashHud.start(gui: ScreenGui)
 	local label = make("TextLabel", { Size = UDim2.new(1, -40, 1, 0), BackgroundTransparency = 1, TextScaled = true,
 		TextXAlignment = Enum.TextXAlignment.Left, Text = "Friend Boost: 0%" }, row)
 	Style.text(label, 2.5)
+	Style.bold(label, 2.5)
 	local invite = make("TextButton", { AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(1, 0, 0.5, 0),
 		Size = UDim2.fromOffset(if TOUCH then 30 else 30, if TOUCH then 30 else 30), Text = "+", TextScaled = true }, row)
 	Style.button(invite)
