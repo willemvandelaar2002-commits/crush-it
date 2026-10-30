@@ -22,27 +22,27 @@ Store.Passes = {
 } :: { Pass }
 
 Store.Products = {
-	{ id = "CashSmall", productId = 0, price = 29, title = "Cash Pile", desc = "25% of your next press", color = Color3.fromRGB(80, 200, 110) },
-	{ id = "CashMedium", productId = 0, price = 79, title = "Cash Stack", desc = "A whole next press", color = Color3.fromRGB(60, 180, 90) },
-	{ id = "CashLarge", productId = 0, price = 199, title = "Cash Vault", desc = "4x your next press", color = Color3.fromRGB(40, 160, 80) },
+	{ id = "CashSmall", productId = 3723657331, price = 19, title = "Cash Pile", desc = "25% of your next press", color = Color3.fromRGB(80, 200, 110) },
+	{ id = "CashMedium", productId = 3723657452, price = 59, title = "Cash Stack", desc = "A whole next press", color = Color3.fromRGB(60, 180, 90) },
+	{ id = "CashLarge", productId = 3723657672, price = 129, title = "Cash Vault", desc = "4x your next press", color = Color3.fromRGB(40, 160, 80) },
 	{ id = "FinishSmelt", productId = 0, price = 19, title = "Finish Now", desc = "Your smelter finishes all its scrap at once", color = Color3.fromRGB(255, 140, 40) },
 	{ id = "GoldenRush", productId = 0, price = 49, title = "Golden Rush", desc = "Your next 10 objects are Golden", color = Color3.fromRGB(255, 200, 50) },
 	-- Rewards panel "Skip All": every playtime gift unlocks now (not in the shop list)
 	-- Hub Boosts station (Shared/BoostConfig); hidden from the shop list
-	{ id = "BoostCash", productId = 0, price = 49, title = "2x Cash Boost", desc = "15 minutes of double cash", color = Color3.fromRGB(230, 70, 60), hidden = true },
-	{ id = "BoostLuck", productId = 0, price = 49, title = "2x Luck Boost", desc = "15 minutes of double luck", color = Color3.fromRGB(60, 190, 90), hidden = true },
-	{ id = "BoostSuper", productId = 0, price = 79, title = "Super Boost", desc = "15 minutes of 2x cash and 2x luck", color = Color3.fromRGB(160, 80, 235), hidden = true },
-	{ id = "SkipRewards", productId = 0, price = 99, title = "Skip All", desc = "Unlock every playtime gift now", color = Color3.fromRGB(255, 200, 40), hidden = true },
+	{ id = "BoostCash", productId = 3723657898, price = 19, title = "2x Cash Boost", desc = "15 minutes of double cash", color = Color3.fromRGB(230, 70, 60), hidden = true },
+	{ id = "BoostLuck", productId = 3723657981, price = 19, title = "2x Luck Boost", desc = "15 minutes of double luck", color = Color3.fromRGB(60, 190, 90), hidden = true },
+	{ id = "BoostSuper", productId = 3723658049, price = 29, title = "Super Boost", desc = "15 minutes of 2x cash and 2x luck", color = Color3.fromRGB(160, 80, 235), hidden = true },
+	{ id = "SkipRewards", productId = 3723658147, price = 99, title = "Skip All", desc = "Unlock every playtime gift now", color = Color3.fromRGB(255, 200, 40), hidden = true },
 	-- Shop offers (Shared/OfferConfig, server/Offers). price = 0: not approved
 	-- yet; once a productId is set the shop shows Roblox's own price.
-	{ id = "StarterPack", productId = 0, price = 0, title = "Starter Pack", desc = "Candy Colossus + cash + 2x Cash boost (once)", color = Color3.fromRGB(255, 80, 170), hidden = true },
-	{ id = "FactoryCrate1", productId = 0, price = 0, title = "Factory Crate", desc = "One random crate crusher (Epic, Legendary or Mythic)", color = Color3.fromRGB(150, 70, 230), hidden = true },
+	{ id = "StarterPack", productId = 3723658249, price = 69, title = "Starter Pack", desc = "Candy Colossus + cash + 2x Cash boost (once)", color = Color3.fromRGB(255, 80, 170), hidden = true },
+	{ id = "FactoryCrate1", productId = 3723658442, price = 39, title = "Factory Crate", desc = "One random crate crusher (Epic, Legendary or Mythic)", color = Color3.fromRGB(150, 70, 230), hidden = true },
 	-- Mythic crushers (exclusive: never rolled). productId 0 shows SOON.
 	-- Hidden: the Factory Crate and the Prism Mech showroom sell these now; the
 	-- entries stay so receipts for their product ids keep being honoured.
 	{ id = "Mythic_JackpotPress", productId = 0, price = 499, title = "Jackpot Press", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "JackpotPress", hidden = true },
 	{ id = "Mythic_SeraphPress", productId = 0, price = 499, title = "Seraph Press", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "SeraphPress", hidden = true },
-	{ id = "Mythic_PrismMech", productId = 0, price = 499, title = "Prism Mech", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "PrismMech", hidden = true },
+	{ id = "Mythic_PrismMech", productId = 3723658620, price = 399, title = "Prism Mech", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "PrismMech", hidden = true },
 	{ id = "Mythic_PhantomPirate", productId = 0, price = 499, title = "Phantom Pirate", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "PhantomPirate", hidden = true },
 	{ id = "Mythic_CandyColossus", productId = 0, price = 499, title = "Candy Colossus", desc = "MYTHIC crusher · 3x Legendary output", color = Color3.fromRGB(255, 70, 190), mythic = "CandyColossus", hidden = true },
 } :: { Product }
