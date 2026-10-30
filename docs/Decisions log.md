@@ -288,3 +288,4 @@
 - 2026-10-30: Offline earnings free for everyone; the Offline Earnings pass is dropped. New welcome-back card like Destroy a Vault's: Take It (1x) / 2X IT! (R$ 25) / 5X IT! (R$ 59). Products still need ids. Willem's request.
 - 2026-10-30: Offline card restyled closer to Destroy a Vault: clearly visible studs tinted per colour (drifting), brighter buttons, a 5X IT! button whose rainbow keeps flowing, glows and pulses. Willem's feedback.
 - 2026-10-30: Offline 2x/5x product ids filled in (R$ 32 / R$ 49). Heavy drop-outline text (Style.bold) on the HUD and menu titles, brighter travel buttons with clear flowing studs, clearer studs on the icon tiles. Willem's reference.
+- 2026-10-30: Studs stand still again on the top buttons, the offline header and Take It; only the 2X IT! / 5X IT! buttons keep drifting studs. Willem.

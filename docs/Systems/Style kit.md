@@ -154,5 +154,5 @@ outline is extra heavy along the bottom. Follows Text/TextColor3/alignment;
 UIGradients move to the Face. Used on: travel buttons, INDEX/SHOP/REWARDS
 labels, cash + friend boost, the offline card, Index/Coating/Fusion titles,
 tutorial step title, event shield %. (Not on world SurfaceGuis: two extra
-labels each.) Travel buttons: brighter colours, flowing studs tinted with the
-button colour (0.15). Icon tiles: studs at 0.2.
+labels each.) Travel buttons: brighter colours, still studs tinted with the
+button colour (0.15). Drifting studs only on the offline card's 2X / 5X buttons (Willem: moving studs elsewhere look weird). Icon tiles: studs at 0.2.

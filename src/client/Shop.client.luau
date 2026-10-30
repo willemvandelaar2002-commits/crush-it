@@ -326,7 +326,7 @@ local header = make("Frame", { Name = "Header", Position = UDim2.fromOffset(-4, 
 	BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 9, Parent = offlineCard }, { corner(10), make("UIStroke", { Thickness = 4, Color = Style.Colors.Ink }),
 	make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(255, 226, 90), Color3.fromRGB(255, 170, 20)) }) })
 -- 30 Oct: studs clearly visible (like the reference), drifting slowly
-do local st = Style.flowingStuds(header, 34, 0.2, offlineCard) st.ZIndex = 9 st.ImageColor3 = Color3.fromRGB(255, 175, 20) end -- tinted like the header: studs read as raised bumps
+do local st = Style.studsImage(header, 34, 0.2) st.ZIndex = 9 st.ImageColor3 = Color3.fromRGB(255, 175, 20) end -- tinted like the header: studs read as raised bumps
 olabel(header, "Offline Earnings", UDim2.fromOffset(150, 10), UDim2.new(1, -170, 0, 76), nil, 4).TextXAlignment = Enum.TextXAlignment.Left
 local icon = Style.image(offlineCard, Icons.Offline, { Name = "Icon", Position = UDim2.fromOffset(-50, -46), Size = UDim2.fromOffset(170, 170), Rotation = -14, ZIndex = 12 })
 Style.wobble(icon, 3, 1.4)
@@ -348,7 +348,8 @@ local function column(i: number, title: string): (TextLabel, TextLabel, TextButt
 	btn.TextTransparency = 1
 	local cap = olabel(btn, "", UDim2.fromScale(0.04, 0.08), UDim2.fromScale(0.92, 0.84), nil, 3)
 	cap.ZIndex = 12
-	local st = Style.flowingStuds(btn, 26, 0.25, offlineCard) st.ZIndex = 11 btn:SetAttribute("StudsLabel", true)
+	-- still studs; only the paid 2x / 5x buttons get drifting ones (below)
+	if i == 1 then Style.studsImage(btn, 26, 0.25).ZIndex = 11 else Style.flowingStuds(btn, 26, 0.25, offlineCard).ZIndex = 11 end
 	return t, amount, btn, cap
 end
 local _, takeAmount, takeButton, takeCap = column(1, "CURRENT")
@@ -362,7 +363,7 @@ Style.setButtonColor(takeButton, Color3.fromRGB(255, 40, 55)) takeCap.Text = "Ta
 Style.setButtonColor(x2Button, Color3.fromRGB(40, 150, 255))
 -- studs tinted with each button's own colour (white studs wash the colour out)
 local function tintStuds(btn: GuiObject, c: Color3, transparency: number)
-	local flow = btn:FindFirstChild("StudsFlow") local img = flow and flow:FindFirstChild("Studs") :: ImageLabel?
+	local flow = btn:FindFirstChild("StudsFlow") local img = (flow and flow:FindFirstChild("Studs") or btn:FindFirstChild("Studs")) :: ImageLabel?
 	if img then img.ImageColor3 = c img.ImageTransparency = transparency end
 end
 tintStuds(takeButton, Color3.fromRGB(255, 50, 60), 0.15)

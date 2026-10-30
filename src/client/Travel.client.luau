@@ -42,8 +42,8 @@ local function travelButton(name: string, label: string, color: Color3, where: s
 	Style.button(b, color)
 	local outline = b:FindFirstChild("Outline") :: UIStroke?
 	if outline then outline.Thickness = 4 end
-	-- 30 Oct: studs tinted with the button colour, clearly visible, drifting
-	local studs = Style.flowingStuds(b, 20, 0.15)
+	-- 30 Oct: studs tinted with the button colour, clearly visible (still)
+	local studs = Style.studsImage(b, 20, 0.15)
 	studs.ZIndex = 2 studs.ImageColor3 = color
 	-- the label is a child so it draws above the stud texture
 	local t = Instance.new("TextLabel")
