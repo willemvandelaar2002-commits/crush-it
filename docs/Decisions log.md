@@ -290,3 +290,4 @@
 - 2026-10-30: Offline 2x/5x product ids filled in (R$ 32 / R$ 49). Heavy drop-outline text (Style.bold) on the HUD and menu titles, brighter travel buttons with clear flowing studs, clearer studs on the icon tiles. Willem's reference.
 - 2026-10-30: Studs stand still again on the top buttons, the offline header and Take It; only the 2X IT! / 5X IT! buttons keep drifting studs. Willem.
 - 2026-10-30: Trial: studded walkway road (Style.studs on WalkTop; one line in W.walkway to revert). Willem wants to compare.
+- 2026-10-30: Studded walkway road kept. Willem.

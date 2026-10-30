@@ -271,7 +271,7 @@ function W.walkway(parent,cf,width,z0,z1)
 	local len=z1-z0
 	local top=W.part(m,"WalkTop",V(width,.14,len),cf*CFrame.new(0,.07,(z0+z1)/2),Color3.fromRGB(52,58,72))
 	top.Material=Enum.Material.SmoothPlastic
-	Style.studs(top) -- 30 Oct trial: studded road like the floors (revert this line to go back)
+	Style.studs(top) -- 30 Oct: studded road like the floors (Willem: keep)
 	local function paint(name,size,pcf,color)
 		local p=W.part(m,name,size,cf*pcf,color) p.CastShadow=false
 	end
