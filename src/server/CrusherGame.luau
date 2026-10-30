@@ -69,18 +69,7 @@ local function bayLook(bay,state)
 	bay.locked.Transparency=if state=="busy" then 1 else 0
 	bay.locked.Color=if state=="open" then Color3.fromRGB(88,124,178) else Color3.fromRGB(150,176,212)
 	bay.locked.WorkshopControls.Enabled=state=="next" or state=="open"
-	-- 30 Oct (less busy plot): only the next bay keeps its padlock; locked bays
-	-- beyond it show no padlock and no plaque, just the plain bay
-	for _,v in bay.padlock:GetDescendants() do if v:IsA("BasePart") then v.Transparency=if state=="next" then 0 else 1 end end
-	for _,v in bay.model:GetChildren() do
-		if v:IsA("BasePart") and (v.Name=="Panel" or v.Name=="PanelCasing" or v.Name=="Bolt") then
-			if v:GetAttribute("PlaqueT")==nil then v:SetAttribute("PlaqueT",v.Transparency) end
-			v.Transparency=if state=="locked" then 1 else v:GetAttribute("PlaqueT")
-			v.CanQuery=state~="locked"
-		end
-	end
-	local plaqueGui=bay.part:FindFirstChild("WorkshopControls")
-	if plaqueGui then plaqueGui:SetAttribute("Quiet",state=="locked") end
+	for _,v in bay.padlock:GetDescendants() do if v:IsA("BasePart") then v.Transparency=if state=="locked" or state=="next" then 0 else 1 end end
 	bay.strip.Transparency=if state=="locked" then .85 else 0
 	bay.strip.Color=if state=="next" then Color3.fromRGB(80,235,110) elseif state=="busy" then Color3.fromRGB(255,244,214) else Color3.fromRGB(120,180,255)
 end
@@ -259,8 +248,7 @@ local function send(p,message,result)
 			Workshop.purchase(bay.max,UpgradeView.crusherMax(d,item))
 		else
 			card.scope.Text="BAY "..i
-			card.name.Text=if state=="open" then "EMPTY BAY" elseif state=="next" then "NEXT BAY" else ""
-			card.scope.Text=if state=="locked" then "" else card.scope.Text
+			card.name.Text=if state=="open" then "EMPTY BAY" elseif state=="next" then "NEXT BAY" else "LOCKED"
 			card.rarity.Text=if state=="open" then "Equip a crusher here" elseif state=="next" then "Unlock for more output" else ""
 			card.rarity.TextColor3=Color3.new(1,1,1)
 			card.stats.Text=""

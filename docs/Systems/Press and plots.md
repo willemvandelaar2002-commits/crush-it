@@ -230,6 +230,7 @@ random per input. Visual only. Toys fill up to 90% of the clearance and ~90% of
 the bed width.
 
 ## Less busy plot (30 Oct, trial — revert the commit if it looks worse)
-- Locked bays beyond the next one: no padlock, no plaque, no text (CrusherGame bayLook). The next bay keeps its padlock and UNLOCK button.
+- (Reverted the same day: locked bays keep their padlock/plaque; upper floors only appear after a plot upgrade anyway.)
 - LOCKED pedestal hints and the EMPTY / price words on bay walls only show within `CrusherConfig.QuietLabelDistance` (30 studs).
 - Trims: gold caps/feet and corner braces only on the outer columns of each bank (PlotStages `outerColumns`); trim road posts every `TrimPostSpacing` (24, was 12).
+- Scrap counter over the bin (client/ScrapCounter) is sized in studs (`CrusherConfig.ScrapCounter`, 11 x 2.6 studs, 12 above the bin) so it shrinks with distance, and hides beyond 80 studs (was a fixed 320x70 px up to 260 studs).

@@ -7,6 +7,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local RS = game:GetService("ReplicatedStorage")
 local Style = require(RS.Shared.Kit.Style)
+local CrusherConfig = require(RS.Shared.CrusherConfig)
 
 local player = Players.LocalPlayer
 -- exact digits so it visibly ticks ("$651,940"); from a billion on, 3 decimals + suffix
@@ -44,8 +45,11 @@ local function ensure()
 	if board and board.Adornee == floor and board.Parent then return end
 	if board then board:Destroy() end
 	local b = Instance.new("BillboardGui")
-	b.Name = "ScrapCounter" b.Adornee = floor b.Size = UDim2.fromOffset(320, 70)
-	b.StudsOffsetWorldSpace = Vector3.new(0, 17, 0) b.LightInfluence = 0 b.MaxDistance = 260
+	-- 30 Oct: sized in studs (shrinks with distance like a real sign, was a fixed
+	-- 320x70 px that looked huge from afar) and only shown within MaxDistance
+	local S = CrusherConfig.ScrapCounter
+	b.Name = "ScrapCounter" b.Adornee = floor b.Size = UDim2.fromScale(S.Width, S.Height)
+	b.StudsOffsetWorldSpace = Vector3.new(0, S.Above, 0) b.LightInfluence = 0 b.MaxDistance = S.MaxDistance
 	b.AlwaysOnTop = false b.ResetOnSpawn = false
 	local t = Instance.new("TextLabel")
 	t.Size = UDim2.fromScale(1, 1) t.BackgroundTransparency = 1 t.TextScaled = true t.Text = ""

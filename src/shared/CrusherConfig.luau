@@ -14,6 +14,7 @@ local C = {
 	CameraMaxZoom = 75, ControlsMaxDistance = 170, -- zoom-out limit; how far board/plaque text shows
 	QuietLabelDistance = 30, -- 30 Oct: LOCKED pedestal hints and EMPTY bay words only show within this many studs
 	TrimPostSpacing = 24, -- 30 Oct: studs between the trim kit's road posts (was 12)
+	ScrapCounter = { Width = 11, Height = 2.6, Above = 12, MaxDistance = 80 }, -- 30 Oct: ticking number over your bin, in studs
 	PlaqueDetailDistance = 16, -- 30 Oct: bay plaques show full detail (rarity, LV a > b, MAX, REMOVE) within this many studs
 	TravelCooldown = 1.5, HubTravelZ = 62, -- top travel buttons; hub arrival in front of the Mega Crusher
 	CashPacks = { CashSmall = 60, CashMedium = 300, CashLarge = 1200 },
