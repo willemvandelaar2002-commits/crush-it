@@ -68,16 +68,36 @@ local function offlineAmount(player: Player, data: any): (number, number)
 	return seconds, math.floor(api.cashPerSecond(player) * seconds * Store.Offline.Share)
 end
 
-local pendingOffline: { [Player]: { seconds: number, cash: number } } = {}
+-- 30 Oct: offline cash is free; the record is saved (data.offline) so a 2x/5x
+-- receipt that arrives late (or after a rejoin) still knows what to multiply.
+--   data.offline = { cash, seconds, paid } -- paid: multiplier already paid out (0 = nothing yet)
+local function sendOffline(player: Player, data: any)
+	local rec = data.offline
+	if type(rec) ~= "table" then return end
+	ShopNotice:FireClient(player, { kind = "offline", seconds = rec.seconds, cash = rec.cash, paid = rec.paid })
+end
 
-local function payOffline(player: Player)
-	local pending = pendingOffline[player]
-	if not pending then
-		return
+local function collectOffline(player: Player)
+	local data = api.getData(player)
+	local rec = data and data.offline
+	if type(rec) ~= "table" or rec.paid ~= 0 then return end
+	rec.paid = 1 -- no yield between the check and the payout
+	api.addCash(player, rec.cash)
+	Purchased:FireClient(player, { id = "OfflineCollect", text = "+" .. Format.cash(rec.cash) })
+end
+
+-- multiplier receipt: pays up to mult x the away cash (minus what was already paid)
+local function multiplyOffline(player: Player, data: any, mult: number): string
+	local rec = data.offline
+	if type(rec) ~= "table" or type(rec.cash) ~= "number" then
+		local amount = math.floor(api.cashPerSecond(player) * Store.Offline.FallbackMinutes * 60 * mult)
+		api.addCash(player, amount)
+		return "+" .. Format.cash(amount)
 	end
-	pendingOffline[player] = nil
-	api.addCash(player, pending.cash)
-	ShopNotice:FireClient(player, { kind = "offline", owned = true, seconds = pending.seconds, cash = pending.cash })
+	local amount = math.max(rec.cash, rec.cash * mult - rec.cash * (rec.paid or 0))
+	rec.paid = math.max(rec.paid or 0, mult)
+	api.addCash(player, amount)
+	return "+" .. Format.cash(amount) .. " (" .. mult .. "x offline cash)!"
 end
 
 local function onLoaded(player: Player)
@@ -85,22 +105,18 @@ local function onLoaded(player: Player)
 	if not data then
 		return
 	end
+	-- last time's card was never answered: that cash still arrives (1x)
+	local old = data.offline
+	if type(old) == "table" and old.paid == 0 and type(old.cash) == "number" then
+		old.paid = 1 api.addCash(player, old.cash)
+	end
 	local seconds, cash = offlineAmount(player, data)
 	data.lastSeen = os.time()
-	local deadline = os.clock() + 15
-	while player.Parent and not passChecked[player] and os.clock() < deadline do
-		task.wait(0.25)
-	end
 	if not player.Parent or cash <= 0 then
 		return
 	end
-	pendingOffline[player] = { seconds = seconds, cash = cash }
-	if Store.hasPass(player, "OfflineEarnings") then
-		payOffline(player)
-	else
-		-- Show what they missed; buying the pass now pays it out.
-		ShopNotice:FireClient(player, { kind = "offline", owned = false, seconds = seconds, cash = cash })
-	end
+	data.offline = { cash = cash, seconds = seconds, paid = 0 }
+	sendOffline(player, data)
 end
 
 -- Products -------------------------------------------------------------------
@@ -113,6 +129,11 @@ local function grant(player: Player, productId: string, purchaseId: string)
 	if Offers.handles(productId) then
 		local text = Offers.grant(player, data, productId, purchaseId)
 		Purchased:FireClient(player, { id = productId, text = text })
+		return
+	end
+	local offlineMult = Store.Offline.Multipliers[productId]
+	if offlineMult then
+		Purchased:FireClient(player, { id = productId, text = multiplyOffline(player, data, offlineMult) })
 		return
 	end
 	if product and product.mythic then
@@ -199,11 +220,11 @@ function Shop.start(gameApi: Api)
 				setPass(player, pass.perk, true)
 				Analytics.custom(player, "PassPurchase", 1, pass.perk)
 				Purchased:FireClient(player, { id = pass.perk, text = pass.title .. " unlocked!" })
-				if pass.perk == "OfflineEarnings" then
-					payOffline(player)
-				end
 			end
 		end
+	end)
+	Net.event("OfflineAction").OnServerEvent:Connect(function(player, action)
+		if action == "Collect" then collectOffline(player) end
 	end)
 	Net.event("ShopOpened").OnServerEvent:Connect(function(player, tab)
 		Analytics.custom(player, "ShopOpened", 1, if typeof(tab) == "string" then tab:sub(1, 30) else nil)
@@ -218,7 +239,6 @@ function Shop.start(gameApi: Api)
 	end
 	Players.PlayerRemoving:Connect(function(player)
 		passChecked[player] = nil
-		pendingOffline[player] = nil
 	end)
 	-- lastSeen for offline earnings (saved with the next autosave / leave).
 	task.spawn(function()
@@ -240,9 +260,6 @@ function Shop.start(gameApi: Api)
 		devPass.Name = "DevPass"
 		devPass.OnInvoke = function(player: Player, perk: string, owned: boolean)
 			setPass(player, perk, owned)
-			if owned and perk == "OfflineEarnings" then
-				payOffline(player)
-			end
 			return true
 		end
 		devPass.Parent = game:GetService("ServerStorage")
@@ -267,12 +284,8 @@ function Shop.start(gameApi: Api)
 			local data = api.getData(player)
 			data.lastSeen = os.time() - hours * 3600
 			local seconds, cash = offlineAmount(player, data)
-			pendingOffline[player] = { seconds = seconds, cash = cash }
-			if Store.hasPass(player, "OfflineEarnings") then
-				payOffline(player)
-			else
-				ShopNotice:FireClient(player, { kind = "offline", owned = false, seconds = seconds, cash = cash })
-			end
+			data.offline = { cash = cash, seconds = seconds, paid = 0 }
+			sendOffline(player, data)
 			return cash
 		end
 		devOffline.Parent = game:GetService("ServerStorage")

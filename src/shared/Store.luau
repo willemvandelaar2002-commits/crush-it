@@ -18,7 +18,8 @@ Store.Passes = {
 	{ perk = "DoubleCash", gamePassId = 0, price = 249, title = "2x Cash", desc = "Double cash from every crush, forever", color = Color3.fromRGB(80, 200, 110) },
 	{ perk = "Lucky", gamePassId = 0, price = 149, title = "Lucky", desc = "2x chance of Golden and Diamond objects", color = Color3.fromRGB(255, 200, 50) },
 	{ perk = "AutoCollect", gamePassId = 0, price = 99, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
-	{ perk = "OfflineEarnings", gamePassId = 0, price = 149, title = "Offline Earnings", desc = "Earn cash while you're offline (up to 8h)", color = Color3.fromRGB(110, 140, 230) },
+	-- (30 Oct: the Offline Earnings pass is gone: offline cash is free for everyone,
+	-- with paid 2x / 5x boosts on the welcome-back card, see Store.Offline)
 } :: { Pass }
 
 Store.Products = {
@@ -33,6 +34,10 @@ Store.Products = {
 	{ id = "BoostCash", productId = 3723657898, price = 19, title = "2x Cash Boost", desc = "15 minutes of double cash", color = Color3.fromRGB(230, 70, 60), hidden = true },
 	{ id = "BoostLuck", productId = 3723657981, price = 19, title = "2x Luck Boost", desc = "15 minutes of double luck", color = Color3.fromRGB(60, 190, 90), hidden = true },
 	{ id = "BoostSuper", productId = 3723658049, price = 29, title = "Super Boost", desc = "15 minutes of 2x cash and 2x luck", color = Color3.fromRGB(160, 80, 235), hidden = true },
+	-- 30 Oct: welcome-back card multipliers (the card shows these Robux prices until
+	-- the productIds are filled in from the Creator Dashboard; 0 = "SOON")
+	{ id = "OfflineX2", productId = 0, price = 25, title = "2x Offline Cash", desc = "Double what you earned while away", color = Color3.fromRGB(70, 150, 255), hidden = true },
+	{ id = "OfflineX5", productId = 0, price = 59, title = "5x Offline Cash", desc = "Five times what you earned while away", color = Color3.fromRGB(255, 190, 40), hidden = true },
 	{ id = "SkipRewards", productId = 3723658147, price = 99, title = "Skip All", desc = "Unlock every playtime gift now", color = Color3.fromRGB(255, 200, 40), hidden = true },
 	-- Shop offers (Shared/OfferConfig, server/Offers). price = 0: not approved
 	-- yet; once a productId is set the shop shows Roblox's own price.
@@ -67,8 +72,13 @@ function Store.cashPackAmount(productId: string, tier: number, cps: number?): nu
 	return math.floor(Config.SizeCost(math.min(tier, Config.MaxTier - 1)) * share)
 end
 
--- Offline earnings: owners get this share of their normal rate for up to MaxHours.
-Store.Offline = { Share = 0.5, MaxHours = 8, MinAwayMinutes = 5 }
+-- Offline earnings (30 Oct: free for everyone): this share of the normal rate
+-- for up to MaxHours. On the welcome-back card the player collects it, or pays
+-- for a multiplier (product id -> multiplier) that pays that many times it.
+Store.Offline = { Share = 0.5, MaxHours = 8, MinAwayMinutes = 5,
+	Multipliers = { OfflineX2 = 2, OfflineX5 = 5 },
+	FallbackMinutes = 30, -- a multiplier receipt with no away amount on record pays this many minutes of earnings x the multiplier
+}
 
 function Store.passAttr(perk: string): string
 	return "Pass_" .. perk

@@ -109,3 +109,16 @@ when the press grows): Auto Crush and 2x Cash with icon, description and a green
 price button. Click (ClickDetector, 60 studs) -> server prompts the pass ("coming
 soon" notice while the id is 0, analytics "SignClicked"). On the owner's plot a
 pass they have shows OWNED. Which passes: `RobuxSigns.Signs`.
+
+## Offline earnings card (30 Oct, after Destroy a Vault)
+The Offline Earnings game pass is gone: everyone gets offline cash (Store.Offline:
+50% of the normal rate, up to 8 h, from 5 min away). The welcome-back card has a
+gold studded header with the moon icon, "While OFFLINE you earned...", and three
+columns: **Take It** (free, 1x, red), **2X IT!** (blue) and a rainbow **5X IT!**,
+each with its amount. Products OfflineX2 (R$ 25) and OfflineX5 (R$ 59) are in
+Store.Products with productId 0 (the card shows SOON) until Willem creates them.
+Server (Shop.luau): the record is saved as `data.offline = {cash, seconds, paid}`.
+Take It pays 1x; a multiplier receipt pays up to mult x the cash minus what was
+already paid (so Take It then 2x pays the extra 1x). A receipt with no record pays
+30 min of earnings x mult. An unanswered card pays 1x on the next join.
+OfflineAction remote: "Collect".

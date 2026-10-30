@@ -294,78 +294,127 @@ panel:GetPropertyChangedSignal("Visible"):Connect(function()
 	offers.Visible = offers:GetAttribute("FitsScreen") == true and not panel.Visible and not (bookPanel and bookPanel.Visible)
 end)
 
--- Offline earnings card ---------------------------------------------------------
+-- Offline earnings card (30 Oct, after Destroy a Vault's): gold studded header,
+-- "While OFFLINE you earned...", then three columns: TAKE IT (free, 1x),
+-- DOUBLE IT (2x, Robux) and the rainbow 5X IT! (5x, Robux). The server keeps
+-- the record and pays; this card only asks.
 local function duration(seconds: number): string
 	local h = math.floor(seconds / 3600)
 	local m = math.floor((seconds % 3600) / 60)
 	return if h > 0 then string.format("%dh %dm", h, m) else string.format("%dm", m)
 end
-
+local RAINBOW = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 70, 50)), ColorSequenceKeypoint.new(0.2, Color3.fromRGB(255, 170, 30)),
+	ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 240, 60)), ColorSequenceKeypoint.new(0.6, Color3.fromRGB(70, 230, 90)),
+	ColorSequenceKeypoint.new(0.8, Color3.fromRGB(60, 200, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(220, 70, 255)),
+})
+local CW, CH = 900, 470
 local offlineCard = make("Frame", {
-	Name = "OfflineCard", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0.9, 0, 0, 230),
-	BackgroundColor3 = DARK, Visible = false, ZIndex = 8, Parent = gui,
-}, { make("UISizeConstraint", { MaxSize = Vector2.new(380, 230) }) })
-Style.panel(offlineCard, Color3.fromRGB(94, 153, 247), Color3.fromRGB(72, 61, 161))
+	Name = "OfflineCard", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(CW, CH),
+	BackgroundColor3 = Color3.fromRGB(34, 36, 48), BackgroundTransparency = 0.12, Visible = false, ZIndex = 8, Parent = gui,
+}, { corner(10), make("UIStroke", { Thickness = 4, Color = Style.Colors.Ink }) })
 Style.modal(offlineCard)
-local offlineTitle = make("TextLabel", {
-	Position = UDim2.fromOffset(16, 12), Size = UDim2.new(1, -32, 0, 34), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
-	TextColor3 = Color3.new(1, 1, 1), Text = "Welcome back!", Parent = offlineCard,
-})
-Style.text(offlineTitle, 2.5)
-local offlineAway = make("TextLabel", {
-	Position = UDim2.fromOffset(16, 50), Size = UDim2.new(1, -32, 0, 22), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, TextScaled = true,
-	TextColor3 = Color3.fromRGB(200, 200, 210), Text = "", Parent = offlineCard,
-})
-local offlineCash = make("TextLabel", {
-	Position = UDim2.fromOffset(16, 78), Size = UDim2.new(1, -32, 0, 44), BackgroundTransparency = 1, Font = FONT, TextScaled = true,
-	TextColor3 = GREEN, Text = "", Parent = offlineCard,
-}, { stroke(2) })
-local offlineMain = make("TextButton", {
-	Position = UDim2.fromOffset(16, 132), Size = UDim2.new(1, -32, 0, 44), BackgroundColor3 = GREEN, Font = FONT, TextScaled = true,
-	TextColor3 = Color3.new(1, 1, 1), Text = "", Parent = offlineCard,
-}, { pad(7) })
-Style.button(offlineMain)
-local offlineSkip = make("TextButton", {
-	Position = UDim2.fromOffset(16, 184), Size = UDim2.new(1, -32, 0, 30), BackgroundTransparency = 1, Font = Enum.Font.GothamMedium, TextScaled = true,
-	TextColor3 = Color3.fromRGB(170, 170, 180), Text = "No thanks", Parent = offlineCard,
-})
-Style.text(offlineSkip, 1.5)
-Style.feedback(offlineSkip)
-local offlineOwned = false
-offlineMain.Activated:Connect(function()
-	if offlineOwned then
-		Style.setOpen(offlineCard, false)
-	else
-		Net.event("ShopOpened"):FireServer("OfflineCard")
-		buyPass("OfflineEarnings")
+local function olabel(parent: Instance, text: string, pos: UDim2, size: UDim2, color: Color3?, thick: number?): TextLabel
+	local l = make("TextLabel", { Text = text, Position = pos, Size = size, BackgroundTransparency = 1, TextScaled = true, ZIndex = 10, Parent = parent })
+	Style.text(l, thick or 3) if color then l.TextColor3 = color end
+	return l
+end
+-- gold header with the studs and a tilted icon poking out
+local header = make("Frame", { Name = "Header", Position = UDim2.fromOffset(-4, -4), Size = UDim2.new(1, 8, 0, 96),
+	BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 9, Parent = offlineCard }, { corner(10), make("UIStroke", { Thickness = 4, Color = Style.Colors.Ink }),
+	make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(255, 205, 70), Color3.fromRGB(245, 150, 20)) }) })
+Style.studsImage(header, 30, 0.75).ZIndex = 9
+olabel(header, "Offline Earnings", UDim2.fromOffset(150, 10), UDim2.new(1, -170, 0, 76), nil, 4).TextXAlignment = Enum.TextXAlignment.Left
+local icon = Style.image(offlineCard, Icons.Offline, { Name = "Icon", Position = UDim2.fromOffset(-50, -46), Size = UDim2.fromOffset(170, 170), Rotation = -14, ZIndex = 12 })
+Style.wobble(icon, 3, 1.4)
+olabel(offlineCard, "While OFFLINE you earned...", UDim2.fromOffset(40, 108), UDim2.new(1, -80, 0, 56), nil, 3.5)
+local offlineAway = olabel(offlineCard, "", UDim2.fromOffset(40, 162), UDim2.new(1, -80, 0, 26), Color3.fromRGB(200, 205, 225), 2)
+-- three columns
+local COL = (CW - 80) / 3
+local function column(i: number, title: string): (TextLabel, TextLabel, TextButton, TextLabel)
+	local x = 40 + (i - 1) * COL
+	if i > 1 then
+		make("Frame", { Name = "Divider", Position = UDim2.fromOffset(x - 2, 200), Size = UDim2.fromOffset(4, 240), BorderSizePixel = 0,
+			BackgroundColor3 = Color3.fromRGB(210, 215, 230), BackgroundTransparency = 0.35, ZIndex = 9, Parent = offlineCard })
+	end
+	local t = olabel(offlineCard, title, UDim2.fromOffset(x + 14, 204), UDim2.fromOffset(COL - 28, 32), nil, 2.5)
+	local amount = olabel(offlineCard, "", UDim2.fromOffset(x + 10, 240), UDim2.fromOffset(COL - 20, 70), nil, 4)
+	local btn = make("TextButton", { Name = "Option" .. i, Position = UDim2.fromOffset(x + 18, 336), Size = UDim2.fromOffset(COL - 36, 82),
+		Text = "", ZIndex = 10, Parent = offlineCard })
+	Style.button(btn, GREEN)
+	btn.TextTransparency = 1
+	local cap = olabel(btn, "", UDim2.fromScale(0.04, 0.08), UDim2.fromScale(0.92, 0.84), nil, 3)
+	cap.ZIndex = 12
+	Style.studsImage(btn, 22, 0.8).ZIndex = 11
+	return t, amount, btn, cap
+end
+local _, takeAmount, takeButton, takeCap = column(1, "CURRENT")
+local _, x2Amount, x2Button, x2Cap = column(2, "Double")
+local _, x5Amount, x5Button, x5Cap = column(3, "Five Times")
+takeAmount.TextColor3 = Color3.fromRGB(150, 255, 60)
+x2Amount.TextColor3 = Color3.fromRGB(110, 200, 255)
+x5Amount.TextColor3 = Color3.new(1, 1, 1)
+make("UIGradient", { Color = RAINBOW, Parent = x5Amount })
+Style.setButtonColor(takeButton, Color3.fromRGB(235, 50, 60)) takeCap.Text = "Take It"
+Style.setButtonColor(x2Button, Color3.fromRGB(60, 140, 255))
+-- the rainbow 5X IT! button, with a glow pulse and a little "x5" tag
+local fill = x5Button:FindFirstChild("Fill") :: UIGradient?
+if fill then fill.Color = RAINBOW fill.Rotation = 0 end
+local tag = olabel(x5Button, "x5", UDim2.new(0.5, -30, 0, -24), UDim2.fromOffset(60, 32), nil, 3)
+tag.ZIndex = 13
+task.spawn(function()
+	while true do
+		if offlineCard.Visible and fill then fill.Offset = Vector2.new(math.sin(os.clock() * 2) * 0.15, 0) end
+		task.wait(0.05)
 	end
 end)
-offlineSkip.Activated:Connect(function()
+-- price shown under the multiplier buttons (Roblox's price once a product id is set)
+local function priceText(id: string): string
+	local product = Store.productById(id)
+	if not product then return "" end
+	if product.productId == 0 then return "SOON" end
+	local ok, info = pcall(function() return MarketplaceService:GetProductInfo(product.productId, Enum.InfoType.Product) end)
+	return "R$ " .. tostring(if ok and info and info.PriceInRobux then info.PriceInRobux else product.price)
+end
+local x2Price = olabel(offlineCard, "", UDim2.fromOffset(40 + COL + 18, 422), UDim2.fromOffset(COL - 36, 30), Color3.fromRGB(150, 255, 120), 2.5)
+local x5Price = olabel(offlineCard, "", UDim2.fromOffset(40 + 2 * COL + 18, 422), UDim2.fromOffset(COL - 36, 30), Color3.fromRGB(150, 255, 120), 2.5)
+task.spawn(function() x2Price.Text = priceText("OfflineX2") x5Price.Text = priceText("OfflineX5") end)
+
+local function setOption(btn: TextButton, cap: TextLabel, priceLabel: TextLabel?, available: boolean, text: string)
+	cap.Text = text
+	btn.Active = available btn.AutoButtonColor = false
+	btn.Visible = available
+	if priceLabel then priceLabel.Visible = available end
+end
+takeButton.Activated:Connect(function()
+	Net.event("OfflineAction"):FireServer("Collect")
 	Style.setOpen(offlineCard, false)
 end)
+x2Button.Activated:Connect(function() Net.event("ShopOpened"):FireServer("OfflineX2") buyProduct("OfflineX2") end)
+x5Button.Activated:Connect(function() Net.event("ShopOpened"):FireServer("OfflineX5") buyProduct("OfflineX5") end)
 
 Net.event("ShopNotice").OnClientEvent:Connect(function(msg)
 	if msg.kind ~= "offline" then
 		return
 	end
-	offlineOwned = msg.owned
-	offlineAway.Text = "You were away for " .. duration(msg.seconds)
-	if msg.owned then
-		offlineCash.Text = "+" .. Format.cash(msg.cash) .. " earned!"
-		offlineMain.Text = "COLLECT"
-		offlineSkip.Visible = false
-	else
-		offlineCash.Text = "You could have earned " .. Format.cash(msg.cash)
-		local pass = Store.passByPerk("OfflineEarnings")
-		offlineMain.Text = "Offline Earnings  R$ " .. (if pass then pass.price else 0)
-		offlineSkip.Visible = true
-	end
-	offlineCard.Visible = true
+	local cash = tonumber(msg.cash) or 0
+	local paid = tonumber(msg.paid) or 0
+	offlineAway.Text = "You were away for " .. duration(tonumber(msg.seconds) or 0)
+	takeAmount.Text = Format.cash(cash)
+	x2Amount.Text = Format.cash(cash * 2)
+	x5Amount.Text = Format.cash(cash * 5)
+	setOption(takeButton, takeCap, nil, paid == 0, "Take It")
+	setOption(x2Button, x2Cap, x2Price, paid < 2, "2X IT!")
+	setOption(x5Button, x5Cap, x5Price, paid < 5, "5X IT!")
+	offlineCard.Visible = paid < 5
 end)
 
 -- Purchase celebration ----------------------------------------------------------
 Net.event("Purchased").OnClientEvent:Connect(function(msg)
 	panel.Visible = false
+	if string.sub(tostring(msg.id), 1, 7) == "Offline" then
+		Style.setOpen(offlineCard, false) -- the welcome-back card was answered
+	end
 	if msg.id == "OfflineEarnings" or string.sub(tostring(msg.id), 1, 12) == "FactoryCrate" then
 		return -- the offline card shows the payout; crates get their own reveal
 	end
