@@ -1,5 +1,7 @@
 # Factory events — Bear Breakdown
 
+30 Oct: boss bar higher, right under the travel buttons (desktop y 62, was 122; phones y 48, right of the INDEX/SHOP/REWARDS icons).
+
 28 Oct: Studio `/event win` (DevFactoryEvent Win) now counts everyone taking part
 as qualified (active/hits topped up to the minimums), so the reward reels show
 in a quick test. In real rounds the 30 s on your plot + 10 strikes rule stays.

@@ -25,7 +25,8 @@ gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling gui.DisplayOrder=4 gui.Parent=me:
 -- percentage, under it the top damage dealers + YOU, and one instruction line.
 local PURPLE=Color3.fromRGB(150,60,240) local INK=Style.Colors.Ink
 local panel=Instance.new("Frame") panel.Name="EventPanel" panel.AnchorPoint=Vector2.new(.5,0)
-panel.Position=UDim2.new(.5,0,0,122) panel.Size=UDim2.fromOffset(780,150) panel.BackgroundTransparency=1 panel.Visible=false panel.Parent=gui
+panel.Position=UDim2.new(.5,0,0,62) -- 30 Oct: right under the travel buttons (was 122)
+panel.Size=UDim2.fromOffset(780,150) panel.BackgroundTransparency=1 panel.Visible=false panel.Parent=gui
 local function label(parent,name,text,pos,size)
 	local t=Instance.new("TextLabel") t.Name=name t.Text=text t.BackgroundTransparency=1
 	t.Position=pos t.Size=size t.TextScaled=true t.ZIndex=4 t.Parent=parent Style.text(t,2.5) return t
@@ -115,7 +116,7 @@ local function paintBoard(packet)
 end
 local reels=Reels.new(gui)
 -- 30 Oct (phone patch): boss bar and reward reels fit a phone screen
-Style.phoneFit(panel,{scale=.58,width=.9,position=UDim2.new(.5,0,0,84)})
+Style.phoneFit(panel,{scale=.58,width=.9,position=UDim2.new(.5,70,0,48)}) -- under the travel buttons, right of the icons
 Style.phoneFit(reels.root,{scale=.55,width=.9,position=UDim2.new(.5,0,0,80)})
 local primary=Instance.new("TextButton") primary.Name="GoToFactory" primary.Text="MY FACTORY"
 primary.AnchorPoint=Vector2.new(.5,0) primary.Position=UDim2.new(.5,0,1,4) primary.Size=UDim2.fromOffset(200,40)
