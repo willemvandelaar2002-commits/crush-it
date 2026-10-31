@@ -204,7 +204,7 @@ function R.stats(d,item,perks,rows)
 	value*=1+overkill
 	local multiplier=if rows==false then 1 else Rows.multiplier(rows or Rows.snapshot(d),item.id)
 	value*=multiplier
-	return {damage=damage,cycle=cycle,hp=t.hp,value=C.money(value),cps=value/(math.ceil(t.hp/damage)*cycle+C.InputDelay),rowBonus=multiplier-1,overkill=overkill}
+	return {damage=damage,cycle=cycle,hp=t.hp,value=C.money(value),cps=value/(math.ceil(t.hp/damage)*cycle+C.inputDelay(s.upgrades.Speed)),rowBonus=multiplier-1,overkill=overkill,delay=C.inputDelay(s.upgrades.Speed)}
 end
 -- bonus: permanent Index-milestone luck (0.1 = +10% weight on every non-Common rarity)
 function R.weights(luck,lucky,bonus)
@@ -415,13 +415,13 @@ function R.step(d,session,now,perks)
 		local r=session.bays[i]
 		if not item then session.bays[i]=nil continue end
 		local stats=R.stats(d,item,perks,rows)
-		if not r or r.id~=id then r={id=id,hp=stats.hp,nextStrike=now+C.InputDelay} session.bays[i]=r table.insert(events,{bay=i,kind="Input",hp=r.hp}) end
+		if not r or r.id~=id then r={id=id,hp=stats.hp,nextStrike=now+stats.delay} session.bays[i]=r table.insert(events,{bay=i,kind="Input",hp=r.hp}) end
 		if now>=r.nextStrike then
 			-- 31 Oct: time the next strike from when this one was due, not from the
 			-- (slightly late) server tick, so real output matches the shown $/min;
 			-- after a long stall it simply restarts from now (no burst of strikes).
 			local due=r.nextStrike local function after(sec) local t=due+sec return if t<now then now else t end
-			if r.hp<=0 then r.hp=stats.hp r.nextStrike=after(C.InputDelay) table.insert(events,{bay=i,kind="Input",hp=r.hp})
+			if r.hp<=0 then r.hp=stats.hp r.nextStrike=after(stats.delay) table.insert(events,{bay=i,kind="Input",hp=r.hp})
 			else
 				r.hp=math.max(0,r.hp-stats.damage) r.nextStrike=after(stats.cycle)
 				local completed=r.hp<=0

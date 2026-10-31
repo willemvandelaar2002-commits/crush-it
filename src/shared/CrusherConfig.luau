@@ -5,14 +5,15 @@ local C = {
 	MaxGlobal = 20, MaxMoney = 1e300, StartCash = 20,
 	BayCosts = { 0, 100, 900 },
 	InputDelay = 0.8, Tick = 0.05, RequestInterval = 0.08,
-	CrushedLinger = 0.6, -- 31 Oct: seconds a flattened toy stays on the bed under the next one (visual only)
+	PlacingFloor = 0.6, -- 31 Oct: Strike Speed also shortens toy placing (InputDelay x SpeedFactor^level), down to 60%
+	CrushedLinger = 0.45, -- 31 Oct: seconds a flattened toy stays on the bed under the next one (visual only)
 	-- Rolling is free: it fills your unlocked pedestals with offers you can buy.
 	RollSeconds = 3, StartPedestals = 1, MaxPedestals = 5,
 	MaxPressEmitters = 1, PressParticleRate = 2,
 	LevelDamage = 1.12, LevelYield = 1.10, DamageFactor = 1.35, SpeedFactor = 0.94,
-	YieldPerLevel = 0.2, LuckPerLevel = 0.12, AutoCrushDamage = 1.25,
+	YieldPerLevel = 0.3, LuckPerLevel = 0.12, AutoCrushDamage = 1.25, -- 31 Oct: Yield 0.2 -> 0.3 per level
 	LuckGrowth = 1.01, -- 31 Oct: on top of LuckPerLevel, each Luck level also multiplies rare weights by 1.01^rank, so late levels still count
-	OverkillBonus = 0.05, -- 31 Oct: +5% scrap per doubling of damage beyond a one-hit crush (Damage keeps paying late game)
+	OverkillBonus = 0.08, -- 31 Oct: +8% scrap per doubling (was 5%) of damage beyond a one-hit crush (Damage keeps paying late game)
 	GoldenYield = 10, AutoCollectInterval = 2,
 	CameraMaxZoom = 75, ControlsMaxDistance = 170, -- zoom-out limit; how far board/plaque text shows
 	QuietLabelDistance = 30, -- 30 Oct: LOCKED pedestal hints and EMPTY bay words only show within this many studs
@@ -347,6 +348,8 @@ function C.modifier(name)
 end
 -- Luck multiplier on a rarity's roll weight (rank 0 = Common stays 1)
 function C.luckFactor(luck, rank) return (1 + C.LuckPerLevel * luck * rank) * C.LuckGrowth ^ (luck * rank) end
+-- seconds to place the next toy in a bay (Strike Speed shortens it, to PlacingFloor)
+function C.inputDelay(speedLevel) return C.InputDelay * math.max(C.PlacingFloor, C.SpeedFactor ^ (speedLevel or 0)) end
 function C.money(n) return math.clamp(math.floor(n * 100 + 0.5) / 100, 0, C.MaxMoney) end
 function C.globalCost(id, level) local u = C.Upgrades[id] return math.floor(u.base * u.growth ^ level) end
 function C.individualCost(item) return math.floor(C.IndividualBase * C.IndividualGrowth ^ (item.level - 1) * C.rarity(item.rarity).mult) end
