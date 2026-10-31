@@ -189,3 +189,5 @@ in RollReveal (Rare sparkle, Epic power-up, Legendary+ fanfare), Equip (clunk on
 new crusher / bay change). client/GameSounds reads CrusherState changes; Auto Collect's small
 2-second collects stay silent (needs a drop > 4 s of output and you near the bin).
 31 Oct: the collect coins and the bin counter tick were removed (Willem: annoying); selling still ka-chings.
+
+- 31 Oct: a flattened toy is kept as CrushedInput for C.CrushedLinger (0.6 s) under the next toy, so fast crushers no longer look like they flicker. Output unchanged.

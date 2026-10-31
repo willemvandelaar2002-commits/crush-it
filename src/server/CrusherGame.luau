@@ -611,7 +611,12 @@ end
 local function visualEvent(p,event)
 	local v=sessions[p].visuals[event.bay] if not v then return end
 	if event.kind=="Input" then
-		if v.input then v.input:Destroy() end
+		-- 31 Oct: the flattened toy stays on the bed a moment under the new one
+		-- (fast crushers swapped them in ~0.1 s and it read as flickering)
+		if v.input then
+			local old=v.input old.Name="CrushedInput"
+			if (old:GetAttribute("SquashFraction") or 1)<1 then task.delay(C.CrushedLinger,function() if old.Parent then old:Destroy() end end) else old:Destroy() end
+		end
 		v.objectIndex=objectFor(v.rarity)
 		v.input=Objects.build(v.objectIndex,v.base,"Normal") v.input.Name="ProductionInput" v.input.Parent=v.model
 		local _,size=v.input:GetBoundingBox()
