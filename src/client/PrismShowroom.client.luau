@@ -67,7 +67,8 @@ local function setup(model: Instance)
 	Style.text(text, 2)
 	chips[text] = chip
 	paintChips()
-	local prompt = anchor:FindFirstChildOfClass("ProximityPrompt")
+	local promptAnchor = model:WaitForChild("PromptAnchor", 10) -- 31 Oct: the prompt sits low on the pad
+	local prompt = promptAnchor and promptAnchor:WaitForChild("ProximityPrompt", 10)
 	if prompt then
 		prompt.Triggered:Connect(function()
 			local hud = me:FindFirstChild("PlayerGui") and me.PlayerGui:FindFirstChild("ShopHud")

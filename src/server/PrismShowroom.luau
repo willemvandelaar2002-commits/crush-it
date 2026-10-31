@@ -68,14 +68,26 @@ local function build(plot: any): any
 	tag.Anchored = true
 	tag.CFrame = base * CFrame.new(0, 3, s / 2 - 1)
 	tag.Parent = folder
+	-- 31 Oct fix: the prompt sits low on the pad, not on the name tag. The tag
+	-- went up with the bigger machine and its prompt was out of reach.
+	local promptAnchor = Instance.new("Part")
+	promptAnchor.Name = "PromptAnchor"
+	promptAnchor.Size = Vector3.new(1, 1, 1)
+	promptAnchor.Transparency = 1
+	promptAnchor.CanCollide = false
+	promptAnchor.CanQuery = false
+	promptAnchor.CanTouch = false
+	promptAnchor.Anchored = true
+	promptAnchor.CFrame = base * CFrame.new(0, 3, 0)
+	promptAnchor.Parent = folder
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.ActionText = "View offer"
 	prompt.ObjectText = O.Showroom.title
 	prompt.KeyboardKeyCode = Enum.KeyCode.E
-	prompt.MaxActivationDistance = 12
+	prompt.MaxActivationDistance = s / 2 + 8 -- from anywhere around the pad's edge
 	prompt.RequiresLineOfSight = false
 	prompt.HoldDuration = 0
-	prompt.Parent = tag
+	prompt.Parent = promptAnchor
 	CollectionService:AddTag(prompt, "PrismShowroomPrompt")
 	folder:SetAttribute("Offer", O.Showroom.id)
 	folder:SetAttribute("PlotIndex", plot.index)

@@ -78,7 +78,12 @@ unchanged everywhere else (HUD, rewards, Starter Pack, AutoCollect pass).
 
 ## 31 Oct Prism Mech pad
 The showroom machine is built 1.5x a bay's size (`OfferConfig.Showroom.pad.scale`,
-passed to SpecialCrushers.build as an optional scale) on a 14-stud pad.
+passed to SpecialCrushers.build as an optional scale) on a 14-stud pad. The E prompt
+is on `PromptAnchor` 3 studs above the pad centre (reach = pad radius + 8), not on
+the raised name tag.
+
+Robux signs: their SurfaceGui and drawn price button are inactive (Active and
+Interactable off), otherwise the button eats the click and the ClickDetector never fires.
 
 ## 31 Oct crate reward shine
 Legendary and Mythic crate rewards (the three tiles on the card and the rows in

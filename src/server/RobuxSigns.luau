@@ -101,6 +101,11 @@ function RobuxSigns.build(parent: Instance, frameColor: Color3, perks: { string 
 		price.ZIndex = 3
 		price.Parent = bg
 		Style.button(price, Style.GREEN)
+		-- 31 Oct fix: a SurfaceGui's active button swallows the mouse click, so the
+		-- sign's ClickDetector never fired. The drawn button is only a picture.
+		gui.Active = false
+		price.Active = false
+		price.Interactable = false
 		local pad = Instance.new("UIPadding")
 		pad.PaddingTop = UDim.new(0.12, 0)
 		pad.PaddingBottom = UDim.new(0.12, 0)
