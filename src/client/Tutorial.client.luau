@@ -294,7 +294,8 @@ end
 local cached: { target: Instance?, text: string?, override: string? } = {}
 local nextLook = 0
 RunService.RenderStepped:Connect(function()
-	local active = state and STEPS[state.tutorial] and not busy
+	-- 31 Oct: during a factory event the event's own core path takes over
+	local active = state and STEPS[state.tutorial] and not busy and me:GetAttribute("FactoryEventRunning") ~= true
 	local root = me.Character and me.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
 	if not active or not root then
 		path:update(Vector3.zero, nil)

@@ -318,3 +318,4 @@
 - 2026-10-31: Rolls only give Standard (85) or Rusty (15); Polished and Charged come only from the Coating Lab now (weight 0, already-rolled ones stay). Willem.
 - 2026-10-31: Fix: the dark bar on the top floor was the trim kit's frame around a hidden NEW FLOOR sign; board frames now hide and show with their board. Willem.
 - 2026-10-31: Number check in Studio (MockData): crusher $/min formula matches a hand calculation; collect, sell, upgrade/level/bay prices, cash packs, Starter Pack cash and boost time all exact; 2x Cash pass doubles, pass + 2x boost stack to x4. Real output was ~2% under the shown $/min (each strike timed from the late server tick); strikes are now timed from when they were due: 99.9% over 120 s. Willem.
+- 2026-10-31: Factory event: the tutorial's chevron path now guides you during a round: to your nearest core/candy, and to your super crusher's port while carrying one. The tutorial path hides while an event runs. Willem.

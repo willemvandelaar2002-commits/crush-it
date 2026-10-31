@@ -258,3 +258,5 @@ cancel cleans up. A full Halloween win (rewards) was not run on the real save.
 with an orange horizon glow and a big moon) and 18 little ghost candies floating round
 your view during the round. Reward reels: Spin 3.2 s, Stagger .4 s, and they close
 2.5 s after the last reel lands (Victory 11 -> 8 s).
+
+- 31 Oct: chevron guide path (Kit/GuidePath, gold) during Active: to the nearest own EventCorePickup when empty-handed ("CORE"/"CANDY"), to the own EventCorePort while carrying ("LOAD CORE"). The tutorial path is off while FactoryEventRunning.

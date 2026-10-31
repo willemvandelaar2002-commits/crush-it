@@ -17,6 +17,7 @@ local Rules=require(RS.Shared.FactoryEventRules)
 local Visuals=require(script.Parent.FactoryEventVisuals)
 local Reels=require(script.Parent.FactoryEventReels)
 local Format=require(RS.Shared.Format)
+local GuidePath=require(RS.Shared.Kit.GuidePath)
 local me=Players.LocalPlayer
 local gui=Instance.new("ScreenGui") gui.Name="FactoryEventHud" gui.ResetOnSpawn=false
 gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling gui.DisplayOrder=4 gui.Parent=me:WaitForChild("PlayerGui")
@@ -403,8 +404,33 @@ local function renderHud(now)
 	end
 end
 primary.Activated:Connect(function() Net.event("Travel"):FireServer("Plot") end)
+-- 31 Oct: the tutorial's chevron path during the round: to your nearest core
+-- (candy) when your hands are empty, to your super crusher's port while carrying one.
+local corePath=GuidePath.new({color=Color3.fromRGB(255,214,70),spacing=3.5,speed=7,stopDistance=6})
+local function mine(model) return model:GetAttribute("OwnerUserId")==me.UserId end
+local function guideStep()
+	local you=packet and packet.you
+	local root=me.Character and me.Character:FindFirstChild("HumanoidRootPart")
+	local world=workspace:FindFirstChild("FactoryEventWorld")
+	if not (packet and packet.phase=="Active" and you and you.present and root and world) then corePath:update(Vector3.zero,nil) return end
+	local look=E.variant(packet.variant) local word=if look.pickup then "CANDY" else "CORE"
+	local target,label=nil,nil
+	if you.carrying then
+		for _,port in world:GetChildren() do
+			if port.Name=="EventCorePort" and port:IsA("BasePart") and mine(port) then target=port.Position label="LOAD "..word end
+		end
+	else
+		local best=math.huge
+		for _,m in world:GetChildren() do
+			local grab=m.Name=="EventCorePickup" and mine(m) and m:FindFirstChild("Grab")
+			if grab then local d=(grab.Position-root.Position).Magnitude if d<best then best=d target=grab.Position label=word end end
+		end
+	end
+	corePath:update(root.Position,target,label)
+end
 local function cleanup()
 	if stopped then return end stopped=true
+	corePath:destroy()
 	stopCamera() visuals:destroy() impact:Destroy() gui:Destroy()
 	for _,connection in connections do connection:Disconnect() end
 end
@@ -433,7 +459,7 @@ table.insert(connections,Run.RenderStepped:Connect(function()
 	if stopped or not packet then return end
 	local now=workspace:GetServerTimeNow()
 	local ok,err=xpcall(function()
-		visuals:step(now) renderHud(now) soundStep(now)
+		visuals:step(now) renderHud(now) soundStep(now) guideStep()
 		if cameraState and cameraState.mode=="intro" then
 			local hum=me.Character and me.Character:FindFirstChildOfClass("Humanoid")
 			if not hum or hum.Health<=0 or workspace.CurrentCamera~=cameraState.camera then stopCamera() else introStep(now) end
