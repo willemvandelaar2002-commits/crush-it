@@ -308,3 +308,6 @@
 - 2026-10-31: Starter Pack card rebuilt on the candy art (background 85230684065313): Candy Colossus floating left, three guaranteed-reward tiles (Mythic crusher, live cash amount, 2x Cash boost) and VIEW PACK on the right; all open the existing details. Willem.
 - 2026-10-31: Prism Mech card rebuilt on the crystal art (background 102747752191257): Prism Mech floating left, MYTHIC badge, GUARANTEED CRUSHER tag, FIND ON PLOT + DETAILS keep their old actions. Completes the three-card shop art pass. Willem.
 - 2026-10-31: Cash packs get their own icons (Cash Pile / Cash Stack / Cash Vault) in a bigger art slot; the amount and earnings time get their own rows. Prices, amounts and buying unchanged. Willem.
+- 2026-10-31: Prism Mech on the showroom pad 1.5x bigger (OfferConfig.Showroom.pad.scale), pad 11 -> 14. Willem.
+- 2026-10-31: Analytics funnels for the crusher game: onboarding (Joined, the 8 tutorial steps, first plot upgrade) and a Shop funnel (Opened, Prompted, Purchased). Willem.
+- 2026-10-31: Crate rewards (card tiles and details rows) get the Index's turning rays/shimmer for Legendary and up. Willem.

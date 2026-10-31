@@ -16,7 +16,7 @@ local function component(root,name)
 	if root.Name==name and #parts(root)>0 then return root end
 	for _,v in root:GetChildren() do local found=component(v,name) if found then return found end end
 end
-function B.build(origin,id,source: Model?)
+function B.build(origin,id,source: Model?,scale: number?)
 	local metadata=Assets[id] local folder=Storage:FindFirstChild("SpecialCrusherMeshes")
 	local template=source or (folder and folder:FindFirstChild(id))
 	if not metadata or not template or not template:IsA("Model") then return nil end
@@ -32,7 +32,7 @@ function B.build(origin,id,source: Model?)
 	local _,imported=model:GetBoundingBox() local size=metadata.size local l=C.Layout
 	-- Recover the importer's uniform unit factor without editing the stored asset.
 	local unitScale=math.max(imported.X/size.X,imported.Y/size.Y,imported.Z/size.Z)
-	local fit=math.min(if metadata.grow then math.huge else 1,l.MachineWidth/size.X,l.MachineHeight/size.Y,l.MachineDepth/size.Z)
+	local fit=math.min(if metadata.grow then math.huge else 1,l.MachineWidth/size.X,l.MachineHeight/size.Y,l.MachineDepth/size.Z)*(scale or 1) -- scale: optional extra size (the Prism showroom pad)
 	-- These FBX imports face -Z in Studio (verified against Toyzilla's eyes).
 	-- Turn the whole clone, preserving every component's imported local transform.
 	local yaw=template:GetAttribute("BayFrontYaw")

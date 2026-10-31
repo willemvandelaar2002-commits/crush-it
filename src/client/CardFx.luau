@@ -4,7 +4,8 @@
 -- shimmering inner border (gold Legendary, silver Secret, white-gold Divine,
 -- rainbow Mythic), twinkling sparkles and, for Divine and Mythic, a halo
 -- that breathes behind the card. Looks per rarity in LOOKS.
---   CardFx.special(card, rarityName, gate) -> boolean   true when it added anything
+--   CardFx.special(card, rarityName, gate, opts?) -> boolean   true when it added anything
+--   opts.center: where the rays turn (default the card's upper middle)
 -- One shared loop animates every card; it skips cards whose `gate` (the panel)
 -- is hidden and forgets cards that were destroyed.
 
@@ -137,7 +138,7 @@ local function mythicFill(shift: number): ColorSequence
 	return ColorSequence.new(keys)
 end
 
-function CardFx.special(card: GuiObject, rarity: string, gate: GuiObject?): boolean
+function CardFx.special(card: GuiObject, rarity: string, gate: GuiObject?, opts: { center: UDim2? }?): boolean
 	local look = LOOKS[rarity]
 	if not look then return false end
 	local mythic = look.rainbow == true
@@ -157,7 +158,7 @@ function CardFx.special(card: GuiObject, rarity: string, gate: GuiObject?): bool
 			for i = 1, r.count do colors[i] = Color3.fromHSV((i - 1) / r.count, 0.45, 1) end
 		end
 		Style.sunburst(card, { fullBleed = true, count = r.count, width = r.width, alpha = r.alpha, glow = 0.75, colors = colors,
-			spin = r.spin, gate = gate, zIndex = z, center = UDim2.fromScale(0.5, 0.42), name = name })
+			spin = r.spin, gate = gate, zIndex = z, center = (opts and opts.center) or UDim2.fromScale(0.5, 0.42), name = name })
 	end
 	layer(look.rays)
 	if look.second then layer(look.second, "SunburstClip2") end

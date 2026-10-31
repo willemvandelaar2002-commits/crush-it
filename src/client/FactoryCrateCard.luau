@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ContentProvider = game:GetService("ContentProvider")
 local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Art = require(ReplicatedStorage.Shared.ShopArt).FactoryCrate
+local CardFx = require(script.Parent.CardFx)
 local Card = {}
 local C = Color3.fromRGB
 local INK = Style.Colors.Ink
@@ -113,6 +114,8 @@ function Card.build(parent: Instance, o: any): Frame
 			Position = UDim2.fromOffset(318 + (i - 1) * (TILE_W + GAP), 88), Size = UDim2.fromOffset(TILE_W, TILE_H), ZIndex = 12 }, body)
 		tile:SetAttribute("CrusherType", item.type) tile:SetAttribute("Chance", item.text)
 		Style.rewardCard(tile, rarity.name, rarity.color)
+		-- 31 Oct: Legendary and up get the Index's turning rays, shimmer rim and sparkles
+		CardFx.special(tile, rarity.name, o.gate)
 		-- separate vertical bands so nothing overlaps: rarity / icon / name / chance
 		local tag = text(tile, "Rarity", string.upper(rarity.name), UDim2.fromOffset(6, 7), UDim2.new(1, -12, 0, 22), 15, 20)
 		Style.bold(tag, 2)

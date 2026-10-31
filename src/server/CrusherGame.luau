@@ -1,6 +1,7 @@
 --!strict
 -- Collectible crusher runtime. All mutations are non-yielding Rules transactions.
 local Players=game:GetService("Players")
+local Analytics=require(script.Parent.Kit.Analytics)
 local RS=game:GetService("ReplicatedStorage")
 local RunService=game:GetService("RunService")
 local Tween=game:GetService("TweenService")
@@ -168,6 +169,10 @@ local function send(p,message,result)
 		end
 	end
 	Rules.tutorialCatchUp(d)
+	-- onboarding funnel (new saves only): steps 2..9 = tutorial steps done, in order
+	if d.onboarding and d.onboarding.funnel then
+		for k=1,math.min(#C.TutorialSteps,(s.tutorial or 1)-1) do Analytics.funnelStep(p,d.onboarding,k+1,C.TutorialSteps[k].id) end
+	end
 	Rules.markSeen(s) -- Index: remember every type this save has owned
 	Tools.sync(p,d) -- unequipped crushers live in the Roblox backpack
 	p:SetAttribute("Cash",d.cash) p:SetAttribute("Scrap",d.scrap) p:SetAttribute("AvailableScrap",s.available)
@@ -585,6 +590,10 @@ local function action(p,name,args)
 		task.delay(1.5,function() if ped.card.name.Text=="BOUGHT!" then card(ped,"","","","","") end end)
 	end
 	if ok then reconcile(p) end
+	-- onboarding funnel: the first plot upgrade comes after the tutorial steps
+	if ok and d.onboarding and name=="UpgradePlot" and Progression.level(d)>levelBefore then
+		Analytics.funnelStep(p,d.onboarding,#C.TutorialSteps+2,"PlotUpgrade")
+	end
 	-- plot upgrade cutscene: only the buyer, only after the server confirmed it
 	if ok and name=="UpgradePlot" and Progression.level(d)>levelBefore then
 		Net.event("PlotUpgraded"):FireClient(p,upgradeSummary(levelBefore,Progression.level(d)))
@@ -644,6 +653,9 @@ function G.start()
 	end
 	local function join(p)
 		local d=Data.whenLoaded(p) if not d then return end
+		-- onboarding funnel: only saves that start here fresh (tutorial step 1); step 1 = Joined
+		if d.onboarding==nil then d.onboarding={funnel=d.crushers.tutorial==1,funnelStep=0} end
+		Analytics.funnelStep(p,d.onboarding,1,"Joined")
 		local plot for _,v in Plots.all() do if not v.owner then plot=v break end end
 		if not plot then p:Kick("All factory plots are occupied. Please join another server.") return end
 		plot.owner=p plot.sign.Text=p.DisplayName.."'s Factory"

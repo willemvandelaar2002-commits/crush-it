@@ -54,7 +54,7 @@ O.Showroom = {
 	-- in the yard added by Plots.Front 112: left of the Sell counter's
 	-- customer side (x -36..-16), 6 studs inside the left and front rims.
 	-- yaw pi/4: the machine faces the entrance and the walkway at once.
-	pad = { x = -59, z = 99, size = 11, yaw = math.pi / 4 },
+	pad = { x = -59, z = 99, size = 14, yaw = math.pi / 4, scale = 1.5 }, -- 31 Oct: machine 1.5x a bay's size, pad 11 -> 14
 	demoEvery = 4, -- seconds between showroom press strokes (visual only)
 }
 

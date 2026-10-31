@@ -28,6 +28,7 @@ local FactoryCrateCard = require(script.Parent.FactoryCrateCard)
 local StarterPackCard = require(script.Parent.StarterPackCard)
 local PrismMechCard = require(script.Parent.PrismMechCard)
 local ShopArt = require(ReplicatedStorage.Shared.ShopArt)
+local CardFx = require(script.Parent.CardFx)
 
 local player = Players.LocalPlayer
 local C = Color3.fromRGB
@@ -359,6 +360,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 			row.Position = UDim2.new()
 			row.Size = UDim2.new(1, -10, 0, 70)
 			row.LayoutOrder = i
+			CardFx.special(row, r.name, detail, { center = UDim2.new(0, 41, 0.5, 0) }) -- 31 Oct: Legendary and up turn and shine, like the Index
 		end
 		local notes = {}
 		if rounded then table.insert(notes, O.RoundingNote) end

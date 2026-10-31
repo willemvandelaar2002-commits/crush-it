@@ -16,6 +16,22 @@ local Store = require(ReplicatedStorage.Shared.Store)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Format = require(ReplicatedStorage.Shared.Format)
 local Analytics = require(script.Parent.Kit.Analytics)
+local HttpService = game:GetService("HttpService")
+
+-- Shop funnel (31 Oct, recurring): 1 Opened -> 2 Prompted (a Robux prompt was
+-- shown) -> 3 Purchased. One session per shop visit; a prompt or purchase
+-- without an open visit (signs, offer buttons) starts its own session.
+local SHOP_SESSION = 600 -- seconds a shop visit stays the same funnel session
+local shopFunnel: { [Player]: { id: string, at: number } } = {}
+local function shopStep(player: Player, step: number, name: string, fresh: boolean?)
+	local s = shopFunnel[player]
+	if fresh or not s or os.clock() - s.at > SHOP_SESSION then
+		s = { id = HttpService:GenerateGUID(false), at = os.clock() }
+		shopFunnel[player] = s
+	end
+	s.at = os.clock()
+	Analytics.funnel(player, "Shop", s.id, step, name)
+end
 
 export type Api = {
 	getData: (Player) -> any, -- nil until loaded
@@ -200,6 +216,7 @@ local function processFor(player: Player?, id: string?, purchaseId: string): Enu
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
 	Analytics.custom(player, "RobuxPurchase", 1, id)
+	shopStep(player, 3, "Purchased")
 	return Enum.ProductPurchaseDecision.PurchaseGranted
 end
 
@@ -212,9 +229,11 @@ function Shop.start(gameApi: Api)
 	MarketplaceService.ProcessReceipt = processReceipt
 	require(script.Parent.Offers).start(gameApi)
 	MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player: Player, passId: number, purchased: boolean)
+		shopStep(player, 2, "Prompted")
 		if not purchased then
 			return
 		end
+		shopStep(player, 3, "Purchased")
 		for _, pass in Store.Passes do
 			if pass.gamePassId == passId then
 				setPass(player, pass.perk, true)
@@ -228,6 +247,13 @@ function Shop.start(gameApi: Api)
 	end)
 	Net.event("ShopOpened").OnServerEvent:Connect(function(player, tab)
 		Analytics.custom(player, "ShopOpened", 1, if typeof(tab) == "string" then tab:sub(1, 30) else nil)
+		-- tab switches ("Tab...") are the same visit
+		if not (typeof(tab) == "string" and tab:sub(1, 3) == "Tab") then shopStep(player, 1, "Opened", true) end
+	end)
+	-- every developer-product prompt that was shown (client or server prompted)
+	MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId: number)
+		local player = Players:GetPlayerByUserId(userId)
+		if player then shopStep(player, 2, "Prompted") end
 	end)
 	local function onPlayer(player: Player)
 		task.spawn(checkPasses, player)
@@ -239,6 +265,7 @@ function Shop.start(gameApi: Api)
 	end
 	Players.PlayerRemoving:Connect(function(player)
 		passChecked[player] = nil
+		shopFunnel[player] = nil
 	end)
 	-- lastSeen for offline earnings (saved with the next autosave / leave).
 	task.spawn(function()

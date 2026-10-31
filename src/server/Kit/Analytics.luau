@@ -5,6 +5,7 @@
 --   Analytics.funnelStep(player, data, step, name)  -- onboarding funnel, once per step,
 --                                                   -- only for saves with data.funnel = true
 --   Analytics.custom(player, name, value?, extra?)  -- custom event (CustomField01 = extra)
+--   Analytics.funnel(player, funnel, sessionId, step, name) -- recurring funnel (e.g. the shop)
 
 local AnalyticsService = game:GetService("AnalyticsService")
 local RunService = game:GetService("RunService")
@@ -33,6 +34,15 @@ function Analytics.funnelStep(player: Player, data: any, step: number, name: str
 	end)
 	if DEBUG then
 		print(`[Analytics] {player.Name} funnel {step} {name}`)
+	end
+end
+
+function Analytics.funnel(player: Player, funnel: string, sessionId: string, step: number, name: string)
+	safe("funnel", function()
+		AnalyticsService:LogFunnelStepEvent(player, funnel, sessionId, step, name)
+	end)
+	if DEBUG then
+		print(`[Analytics] {player.Name} {funnel} funnel {step} {name}`)
 	end
 end
 

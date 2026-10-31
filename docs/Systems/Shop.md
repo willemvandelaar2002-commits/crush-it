@@ -76,6 +76,16 @@ unchanged everywhere else (HUD, rewards, Starter Pack, AutoCollect pass).
   (no purchase). No new Output errors (one Roblox 500 permission hiccup on the
   Arcade Claw icon, unrelated). Desktop only; phone not checked.
 
+## 31 Oct Prism Mech pad
+The showroom machine is built 1.5x a bay's size (`OfferConfig.Showroom.pad.scale`,
+passed to SpecialCrushers.build as an optional scale) on a 14-stud pad.
+
+## 31 Oct crate reward shine
+Legendary and Mythic crate rewards (the three tiles on the card and the rows in
+the crate details) get the Index's CardFx: turning rays, shimmering rim and
+sparkles (Epic stays plain, like the Index). Rows turn the rays behind the icon
+(CardFx.special opts.center).
+
 ## 31 Oct Factory Crate card (illustrated, approved compact layout)
 
 `client/FactoryCrateCard.luau` builds the same card in Featured and Crates. It
@@ -224,7 +234,16 @@ Pulsing ring + hint: Hold CRUSH → buy first upgrade (when affordable) →
 get a bigger press (when affordable). Gone once the press is bigger.
 
 ## Analytics (`src/server/Kit/Analytics.luau`)
-Funnel (new saves only): 1 Joined, 2 FirstCrush, 3 FirstUpgrade,
+31 Oct, crusher game (the old press funnel below only ran in the retired game):
+- Onboarding funnel (LogOnboardingFunnelStepEvent), saves that start fresh
+  (tutorial step 1 on first join; `data.onboarding` = {funnel, funnelStep}):
+  1 Joined, 2 Collect, 3 Sell, 4 Roll, 5 Buy, 6 Unlock, 7 Equip, 8 Upgrade,
+  9 Level (= C.TutorialSteps, logged in order when the tutorial moves on, also
+  when it skips ahead), 10 PlotUpgrade.
+- Shop funnel (LogFunnelStepEvent "Shop", one session per shop visit, 10 min):
+  1 Opened (not tab switches), 2 Prompted (a product or pass prompt closed),
+  3 Purchased (receipt granted / pass bought).
+Old press-game funnel: 1 Joined, 2 FirstCrush, 3 FirstUpgrade,
 4 SecondPress, 5 RebirthPress (Car), 6 FirstRebirth.
 Custom events: ShopOpened (where from), PassPurchase, RobuxPurchase, Rebirth.
 

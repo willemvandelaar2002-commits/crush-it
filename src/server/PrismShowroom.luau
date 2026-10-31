@@ -80,7 +80,7 @@ local function build(plot: any): any
 	folder:SetAttribute("Offer", O.Showroom.id)
 	folder:SetAttribute("PlotIndex", plot.index)
 	-- the real model, the same fit as a bay (turned to face the walkway, pad.yaw)
-	local v = Special.build(base * CFrame.new(0, 0.7, 0), O.Showroom.crusher)
+	local v = Special.build(base * CFrame.new(0, 0.7, 0), O.Showroom.crusher, nil, cfg.scale)
 	if v then
 		v.model.Name = "ShowroomPrismMech"
 		v.model.Parent = folder
