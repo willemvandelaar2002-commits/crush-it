@@ -237,3 +237,4 @@ the bed width.
 
 - Floor colour per plot level: CrusherConfig.FloorColors (31 Oct: Factory V = bright red, PlotStages.sync).
 - Floor studs: CrusherConfig.FloorStudTile (Factory V = 2: studs twice as big, a runtime copy of the Studs MaterialVariant named StudsX2) so the stud pattern reads from a distance. (The random lighter patches tried first were dropped.)
+- Floor checkerboard: CrusherConfig.FloorCheckerColors / FloorCheckerCell (31 Oct: Factory V, 10-stud squares in a lighter red on a plot-aligned grid, road kept plain; ~180 thin parts), like the reference games.

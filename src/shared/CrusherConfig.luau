@@ -26,6 +26,8 @@ local C = {
 		{ x = 13, z = 74, yaw = -math.pi / 2, perks = { "Lucky" } },
 	},
 	FloorColors = { [4] = Color3.fromRGB(200, 38, 38) }, -- 31 Oct: plot floor colour per plot level (4 = Factory V: red; a bit deeper so the studs show)
+	FloorCheckerColors = { [4] = Color3.fromRGB(222, 52, 48) }, -- 31 Oct: lighter checker squares over the floor (Factory V)
+	FloorCheckerCell = 10, -- studs per checker square
 	FloorStudTile = { [4] = 2 }, -- 31 Oct: floor studs twice as big on Factory V so the pattern shows from afar
 	PlaqueDetailDistance = 16, -- 30 Oct: bay plaques show full detail (rarity, LV a > b, MAX, REMOVE) within this many studs
 	TravelCooldown = 1.5, HubTravelZ = 62, -- top travel buttons; hub arrival in front of the Mega Crusher

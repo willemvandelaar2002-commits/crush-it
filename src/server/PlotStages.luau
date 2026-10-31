@@ -552,5 +552,36 @@ function V.sync(plot,level)
 		if p:GetAttribute("FloorVariant")==nil then p:SetAttribute("FloorVariant",p.MaterialVariant) end
 		p.MaterialVariant=if variant then variant.Name else p:GetAttribute("FloorVariant")
 	end
+	-- Checkerboard (31 Oct, like the reference's floors): big squares in a
+	-- lighter shade on top of the floor, on a plot-aligned grid so squares
+	-- line up across floor pieces; the road stays plain.
+	local old=plot.model:FindFirstChild("FloorChecker") if old then old:Destroy() end
+	local light=C.FloorCheckerColors[level]
+	if light then
+		local folder=Instance.new("Model") folder.Name="FloorChecker"
+		local CELL=C.FloorCheckerCell local o=plot.origin
+		for _,top in floors do
+			local cf,size=top.CFrame,top.Size
+			-- the floor's corners in plot space (floors are axis-aligned with the plot)
+			local c=o:PointToObjectSpace(cf.Position)
+			local x0,x1=c.X-size.X/2,c.X+size.X/2 local z0,z1=c.Z-size.Z/2,c.Z+size.Z/2
+			local y=c.Y+size.Y/2+.06
+			for gx=math.floor(x0/CELL),math.ceil(x1/CELL)-1 do
+				for gz=math.floor(z0/CELL),math.ceil(z1/CELL)-1 do
+					if (gx+gz)%2==0 then
+						local ax,bx=math.max(x0,gx*CELL),math.min(x1,(gx+1)*CELL)
+						local az,bz=math.max(z0,gz*CELL),math.min(z1,(gz+1)*CELL)
+						local mid=(ax+bx)/2
+						if bx-ax>.5 and bz-az>.5 and math.abs(mid)>C.Layout.RoadHalf+CELL/2 then
+							local p=Instance.new("Part") p.Name="Check" p.Anchored=true p.CanCollide=false p.CanQuery=false p.CanTouch=false p.CastShadow=false
+							p.Size=Vector3.new(bx-ax,.12,bz-az) p.CFrame=o*CFrame.new(mid,y,(az+bz)/2)
+							p.Color=light p.Material=top.Material p.MaterialVariant=top.MaterialVariant p.Parent=folder
+						end
+					end
+				end
+			end
+		end
+		folder.Parent=plot.model
+	end
 end
 return V
