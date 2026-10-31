@@ -27,6 +27,7 @@ local CrusherIcons = require(ReplicatedStorage.Shared.CrusherIcons)
 local FactoryCrateCard = require(script.Parent.FactoryCrateCard)
 local StarterPackCard = require(script.Parent.StarterPackCard)
 local PrismMechCard = require(script.Parent.PrismMechCard)
+local ShopArt = require(ReplicatedStorage.Shared.ShopArt)
 
 local player = Players.LocalPlayer
 local C = Color3.fromRGB
@@ -514,6 +515,43 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 			table.insert(refreshers, update)
 		end
 	end
+	-- Cash pack card (31 Oct): its own icon per pack (ShopArt.CashPacks) in a
+	-- 122 px slot on the left; title, live amount and earnings time in their own
+	-- rows on the right; the buy button bottom-right, clear of the art.
+	local function cashCard(parent: Frame, order: number, id: string, product: any, onBuy: (TextButton) -> ()): (TextButton, TextLabel)
+		local f = make("Frame", { Name = "Cash_" .. id, LayoutOrder = order, BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 8 }, parent)
+		corner(f, 12)
+		outline(f, 4)
+		gradient(f, { Style.lighten(product.color, 0.12), Style.darken(product.color, 0.3) }, 25)
+		local st = Style.studsImage(f, 26, 0.75) st.ZIndex = 8 st.ImageColor3 = product.color
+		-- art slot: still at rest, grows/tilts a little on hover (text never moves)
+		local slot = make("TextButton", { Name = "ArtSlot", Text = "", BackgroundTransparency = 1, AutoButtonColor = false,
+			Position = UDim2.fromOffset(4, 6), Size = UDim2.fromOffset(122, 122), ZIndex = 9 }, f)
+		local fallback = icon(slot, Icons.Cash, UDim2.fromOffset(20, 20), UDim2.fromOffset(82, 82), 9)
+		fallback.Name = "Fallback"
+		local art = icon(slot, ShopArt.CashPacks[id] or Icons.Cash, UDim2.new(), UDim2.fromScale(1, 1), 10)
+		art.Name = "Art"
+		task.spawn(function()
+			while art.Parent and not art.IsLoaded do task.wait(0.25) end
+			if art.IsLoaded then fallback.Visible = false end
+		end)
+		Style.hoverLift(slot, { art = art, scale = 1.06, artScale = 1.04, lift = 2, tilt = 3, press = 0.97 })
+		local t = label(f, product.title, UDim2.fromOffset(128, 8), UDim2.new(1, -136, 0, 30), 3, 9)
+		t.TextXAlignment = Enum.TextXAlignment.Right
+		local amount = label(f, "", UDim2.fromOffset(128, 40), UDim2.new(1, -136, 0, 32), 3, 9)
+		amount.Name = "Amount"
+		amount.TextXAlignment = Enum.TextXAlignment.Right
+		amount.TextColor3 = C(255, 240, 120)
+		local minutes = Store.CashPackMinutes[id] or 0
+		local span = if minutes >= 60 and minutes % 60 == 0 then (minutes // 60) .. (if minutes == 60 then " hour" else " hours") else minutes .. " min"
+		local note = label(f, span .. " of earnings", UDim2.fromOffset(128, 74), UDim2.new(1, -136, 0, 20), 1.5, 9)
+		note.TextScaled = true
+		note.TextWrapped = true
+		note.TextXAlignment = Enum.TextXAlignment.Right
+		local b = bigButton(f, "", UDim2.new(1, -128, 1, -52), UDim2.fromOffset(120, 44), nil, 10)
+		b.Activated:Connect(function() onBuy(b) end)
+		return b, amount
+	end
 	local function productCards(page: ScrollingFrame, order: number, ids: { string })
 		local g = grid(page, order)
 		for i, id in ids do
@@ -521,12 +559,15 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 			if not product then continue end
 			local image = if Store.CashPackShare[id] then Icons.Cash elseif id == "GoldenRush" then Icons.Golden elseif id == "BoostLuck" then Icons.Lucky
 				elseif id == "BoostSuper" then Icons.Golden elseif id == "BoostCash" then Icons.DoubleCash else Icons.Press
-			local b, d = card(g, i, product.title, product.desc, product.color, image, function(button)
+			local function buy(button: TextButton)
 				if product.productId == 0 then shake(button) end
 				deps.buyProduct(id)
-			end)
+			end
+			local b, d
+			if Store.CashPackShare[id] then b, d = cashCard(g, i, id, product, buy)
+			else b, d = card(g, i, product.title, product.desc, product.color, image, buy) end
 			local function update()
-				if Store.CashPackShare[id] then d.Text = "+" .. Format.cash(Store.cashPackAmount(id, 1, (player:GetAttribute("CashRate") :: number?) or 0)) .. " · " .. product.desc end
+				if Store.CashPackShare[id] then d.Text = "+" .. Format.cash(Store.cashPackAmount(id, 1, (player:GetAttribute("CashRate") :: number?) or 0)) end
 				if product.productId == 0 then setCaption(b, "SOON", GREY)
 				else
 					local price = priceOf("product", product.productId)

@@ -1,6 +1,6 @@
 --!strict
 -- Uploaded shop card artwork (31 Oct). IDs are the ones Roblox returned for
--- Willem's uploads (Crate Art Comparison, Candy Starter Card and Prism Mech Card packs).
+-- Willem's uploads (Crate Art Comparison, Candy Starter Card, Prism Mech Card and Cash Pack Icons packs).
 -- Presentation only: every card keeps a working fallback while these load.
 local function id(n: string): string return "rbxassetid://" .. n end
 return {
@@ -19,5 +19,12 @@ return {
 	PrismMech = {
 		Backplate = id("102747752191257"), -- PrismMech-Background.png: violet + gold frame, corner crystals, ~2.48:1
 		Aspect = 1974 / 797,
+	},
+	-- 31 Oct: one icon per cash pack, by Store product id (sources: assets/shop-card/cash/).
+	-- Only the cash-pack cards use these; Icons.Cash stays everywhere else.
+	CashPacks = {
+		CashSmall = id("91590888539709"), -- CashPile.png: low pile
+		CashMedium = id("140435524782279"), -- CashStack.png: tall pyramid of bundles
+		CashLarge = id("72188129858951"), -- CashVault.png: open gold/emerald vault
 	},
 }

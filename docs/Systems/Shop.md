@@ -1,5 +1,23 @@
 # Shop, onboarding, analytics
 
+## 31 Oct Cash pack icons
+
+The three cash packs in the Cash tab each have their own illustrated icon,
+`ShopArt.CashPacks` by product id: CashSmall = Cash Pile 91590888539709,
+CashMedium = Cash Stack 140435524782279, CashLarge = Cash Vault 72188129858951
+(sources in `assets/shop-card/cash/`). Only these cards use them; Icons.Cash is
+unchanged everywhere else (HUD, rewards, Starter Pack, AutoCollect pass).
+- `cashCard` in ShopPanel: 122 px art slot on the left (same slot for all three,
+  ScaleType Fit, old cash icon as fallback until loaded); right side in separate
+  rows: title, live amount (+Store.cashPackAmount), "<time> of earnings" from
+  Store.CashPackMinutes, then the buy button bottom-right. Card height unchanged.
+- Art is still at rest; hover grows/tilts the slot a little (Style.hoverLift),
+  the buy button keeps Style.feedback. Prices, amounts, SOON state and buying unchanged.
+- Studio check 31 Oct (MockData): three different correct icons load with clean
+  transparency, full vault visible; amounts +$1.5K / +$9K / +$36K and R$ 19 / 59 /
+  129 live; hover/press/leave back to the exact pose; no new Output errors. No
+  purchase made. Desktop only.
+
 ## 31 Oct Prism Mech showroom card
 
 `client/PrismMechCard.luau` builds the Prism Mech card in Featured and Packs
