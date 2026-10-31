@@ -322,6 +322,14 @@ C.TutorialSteps = {
 	{ id = "Level", title = "Level up a crusher", text = "THIS CRUSHER: press LEVEL UP on its plaque. Only that crusher levels up; its level stays when swapped.", target = "LevelBay", reward = 50 },
 }
 C.TutorialBonus = 100
+-- 31 Oct: onboarding funnel step names as they appear in the Creator Dashboard
+-- (Analytics > Funnels). 1 = join, 2-9 = the tutorial steps above in order,
+-- 10-13 = buying each plot upgrade. Numbered so they sort in order.
+C.FunnelNames = {
+	"01 Joined the game", "02 Collected scrap", "03 Sold scrap", "04 Rolled a crusher", "05 Bought a crusher",
+	"06 Unlocked a 2nd bay", "07 Placed a crusher", "08 Bought a factory upgrade", "09 Leveled up a crusher (tutorial done)",
+	"10 Bought Factory II", "11 Bought Factory III", "12 Bought Factory IV", "13 Bought Factory V",
+}
 -- Goals board on the plot (reference style): like/favorite, join the group, and
 -- a free time skip (SkipMinutes of your current production as cash) that needs
 -- favorite-prompt confirmation + server-checked group membership, then waits SkipCooldownHours.

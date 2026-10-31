@@ -216,7 +216,7 @@ local function processFor(player: Player?, id: string?, purchaseId: string): Enu
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
 	Analytics.custom(player, "RobuxPurchase", 1, id)
-	shopStep(player, 3, "Purchased")
+	shopStep(player, 3, "3 Bought something")
 	return Enum.ProductPurchaseDecision.PurchaseGranted
 end
 
@@ -229,11 +229,11 @@ function Shop.start(gameApi: Api)
 	MarketplaceService.ProcessReceipt = processReceipt
 	require(script.Parent.Offers).start(gameApi)
 	MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player: Player, passId: number, purchased: boolean)
-		shopStep(player, 2, "Prompted")
+		shopStep(player, 2, "2 Saw a Robux price")
 		if not purchased then
 			return
 		end
-		shopStep(player, 3, "Purchased")
+		shopStep(player, 3, "3 Bought something")
 		for _, pass in Store.Passes do
 			if pass.gamePassId == passId then
 				setPass(player, pass.perk, true)
@@ -248,12 +248,12 @@ function Shop.start(gameApi: Api)
 	Net.event("ShopOpened").OnServerEvent:Connect(function(player, tab)
 		Analytics.custom(player, "ShopOpened", 1, if typeof(tab) == "string" then tab:sub(1, 30) else nil)
 		-- tab switches ("Tab...") are the same visit
-		if not (typeof(tab) == "string" and tab:sub(1, 3) == "Tab") then shopStep(player, 1, "Opened", true) end
+		if not (typeof(tab) == "string" and tab:sub(1, 3) == "Tab") then shopStep(player, 1, "1 Opened the shop", true) end
 	end)
 	-- every developer-product prompt that was shown (client or server prompted)
 	MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId: number)
 		local player = Players:GetPlayerByUserId(userId)
-		if player then shopStep(player, 2, "Prompted") end
+		if player then shopStep(player, 2, "2 Saw a Robux price") end
 	end)
 	local function onPlayer(player: Player)
 		task.spawn(checkPasses, player)

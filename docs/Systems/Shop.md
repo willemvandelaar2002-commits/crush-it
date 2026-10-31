@@ -241,13 +241,15 @@ get a bigger press (when affordable). Gone once the press is bigger.
 ## Analytics (`src/server/Kit/Analytics.luau`)
 31 Oct, crusher game (the old press funnel below only ran in the retired game):
 - Onboarding funnel (LogOnboardingFunnelStepEvent), saves that start fresh
-  (tutorial step 1 on first join; `data.onboarding` = {funnel, funnelStep}):
-  1 Joined, 2 Collect, 3 Sell, 4 Roll, 5 Buy, 6 Unlock, 7 Equip, 8 Upgrade,
-  9 Level (= C.TutorialSteps, logged in order when the tutorial moves on, also
-  when it skips ahead), 10 PlotUpgrade.
+  (tutorial step 1 on first join; `data.onboarding` = {funnel, funnelStep}).
+  Step names = `C.FunnelNames`: 01 Joined the game, 02 Collected scrap,
+  03 Sold scrap, 04 Rolled a crusher, 05 Bought a crusher, 06 Unlocked a 2nd bay,
+  07 Placed a crusher, 08 Bought a factory upgrade, 09 Leveled up a crusher
+  (tutorial done), 10-13 Bought Factory II / III / IV / V. Tutorial steps are
+  logged in order when the tutorial moves on (also when it skips ahead).
 - Shop funnel (LogFunnelStepEvent "Shop", one session per shop visit, 10 min):
-  1 Opened (not tab switches), 2 Prompted (a product or pass prompt closed),
-  3 Purchased (receipt granted / pass bought).
+  1 Opened the shop (not tab switches), 2 Saw a Robux price (a product or pass
+  prompt closed), 3 Bought something (receipt granted / pass bought).
 Old press-game funnel: 1 Joined, 2 FirstCrush, 3 FirstUpgrade,
 4 SecondPress, 5 RebirthPress (Car), 6 FirstRebirth.
 Custom events: ShopOpened (where from), PassPurchase, RobuxPurchase, Rebirth.

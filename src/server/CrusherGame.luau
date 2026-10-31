@@ -171,7 +171,7 @@ local function send(p,message,result)
 	Rules.tutorialCatchUp(d)
 	-- onboarding funnel (new saves only): steps 2..9 = tutorial steps done, in order
 	if d.onboarding and d.onboarding.funnel then
-		for k=1,math.min(#C.TutorialSteps,(s.tutorial or 1)-1) do Analytics.funnelStep(p,d.onboarding,k+1,C.TutorialSteps[k].id) end
+		for k=1,math.min(#C.TutorialSteps,(s.tutorial or 1)-1) do Analytics.funnelStep(p,d.onboarding,k+1,C.FunnelNames[k+1]) end
 	end
 	Rules.markSeen(s) -- Index: remember every type this save has owned
 	Tools.sync(p,d) -- unequipped crushers live in the Roblox backpack
@@ -592,7 +592,10 @@ local function action(p,name,args)
 	if ok then reconcile(p) end
 	-- onboarding funnel: the first plot upgrade comes after the tutorial steps
 	if ok and d.onboarding and name=="UpgradePlot" and Progression.level(d)>levelBefore then
-		Analytics.funnelStep(p,d.onboarding,#C.TutorialSteps+2,"PlotUpgrade")
+		-- 31 Oct: one step per plot upgrade (Factory II..V), in order
+		for lv=levelBefore+1,Progression.level(d) do
+			local step=#C.TutorialSteps+1+lv Analytics.funnelStep(p,d.onboarding,step,C.FunnelNames[step])
+		end
 	end
 	-- plot upgrade cutscene: only the buyer, only after the server confirmed it
 	if ok and name=="UpgradePlot" and Progression.level(d)>levelBefore then
@@ -660,7 +663,7 @@ function G.start()
 		local d=Data.whenLoaded(p) if not d then return end
 		-- onboarding funnel: only saves that start here fresh (tutorial step 1); step 1 = Joined
 		if d.onboarding==nil then d.onboarding={funnel=d.crushers.tutorial==1,funnelStep=0} end
-		Analytics.funnelStep(p,d.onboarding,1,"Joined")
+		Analytics.funnelStep(p,d.onboarding,1,C.FunnelNames[1])
 		local plot for _,v in Plots.all() do if not v.owner then plot=v break end end
 		if not plot then p:Kick("All factory plots are occupied. Please join another server.") return end
 		plot.owner=p plot.sign.Text=p.DisplayName.."'s Factory"
