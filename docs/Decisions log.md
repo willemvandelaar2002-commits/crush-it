@@ -311,3 +311,4 @@
 - 2026-10-31: Prism Mech on the showroom pad 1.5x bigger (OfferConfig.Showroom.pad.scale), pad 11 -> 14. Willem.
 - 2026-10-31: Analytics funnels for the crusher game: onboarding (Joined, the 8 tutorial steps, first plot upgrade) and a Shop funnel (Opened, Prompted, Purchased). Willem.
 - 2026-10-31: Crate rewards (card tiles and details rows) get the Index's turning rays/shimmer for Legendary and up. Willem.
+- 2026-10-31: Floor checker subtler (Shade 0.9, transparency 0.6): the dark squares were too dark on the yellow. Willem.
