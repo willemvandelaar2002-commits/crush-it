@@ -8,9 +8,26 @@ function F.new(api)
 	self.connection=api.service.PromptSetFavoriteCompleted:Connect(function(result)
 		if not self.promptToken then return end
 		local token=self.promptToken self.promptToken=nil
-		self:_finish(token,result==api.success)
+		if result==api.success then self:_finish(token,true) return end
+		-- 31 Oct: someone who already favorited the game gets no "success" from the
+		-- favorite prompt. Ask once for the read permission and check for real.
+		self:_checkWithPermission(token)
 	end)
 	return self
+end
+function F:_checkWithPermission(token)
+	local service=self.api.service local generation=self.generation
+	self.api.spawn(function()
+		local done=false local allowed=false
+		local conn=service.PromptAllowInventoryReadAccessCompleted:Connect(function(result) allowed=result==self.api.success done=true end)
+		local prompted=pcall(function() service:PromptAllowInventoryReadAccess() end)
+		local waited=0 while prompted and not done and waited<60 do task.wait(.2) waited+=.2 end
+		conn:Disconnect()
+		if self.destroyed or self.generation~=generation then return end
+		local ok,favorite=false,false
+		if allowed then ok,favorite=pcall(function() return service:GetFavoriteAsync(self.api.placeId,self.api.itemType) end) end
+		self:_finish(token,ok and favorite==true)
+	end)
 end
 function F:_finish(token,success)
 	if self.destroyed then return end

@@ -94,3 +94,11 @@ favorites was performed. Actual prompt success/cancel/error, already-favorited
 accounts, joining mid-session, a successful full claim and live rejoin remain
 manual checks. Favorite confirmation retains the client-report limitation above.
 Studio was returned to Edit mode; nothing was published or committed.
+
+## 31 Oct: already-favorited players
+Reading the favorite needs Roblox's inventory-read permission, so the first check
+usually fails and the normal favorite prompt opens. A player who already favorited
+the game gets no Success from that prompt. On any non-success result the client now
+asks once for the read permission (PromptAllowInventoryReadAccess) and, if allowed,
+confirms only when GetFavoriteAsync really returns true. Declined or not a favorite:
+the goal stays incomplete. Covered in Tests/GoalsReward.spec.

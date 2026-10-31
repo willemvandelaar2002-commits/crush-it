@@ -36,12 +36,18 @@ return function()
 	ctx.inGroup=false
 	check(not G.claim(ctx,d,180000,500,86400,math.floor) and d.cash==1100,"fresh negative membership blocks reward")
 
-	local function fixture(read,promptThrows)
-		local api={calls={},notices={},timers={},success="Success",placeId=123,itemType="Asset",prompts=0}
-		local listener
+	local function fixture(read,promptThrows,permission)
+		local api={calls={},notices={},timers={},success="Success",placeId=123,itemType="Asset",prompts=0,permissionPrompts=0}
+		local listener local permissionListener
 		api.service={PromptSetFavoriteCompleted={Connect=function(_,callback)
 			listener=callback return {Disconnect=function() listener=nil end}
+		end},PromptAllowInventoryReadAccessCompleted={Connect=function(_,callback)
+			permissionListener=callback return {Disconnect=function() permissionListener=nil end}
 		end}}
+		-- 31 Oct: read-permission fallback after a non-success favorite prompt
+		function api.service:PromptAllowInventoryReadAccess()
+			api.permissionPrompts+=1 if permissionListener then permissionListener(permission or "PermissionDenied") end
+		end
 		function api.service:GetFavoriteAsync(place,kind) check(place==123 and kind=="Asset","read targets this place") return read() end
 		function api.service:PromptSetFavorite(place,kind,value)
 			check(place==123 and kind=="Asset" and value==true,"prompt targets favorite, not unfavorite")
@@ -80,6 +86,18 @@ return function()
 	f:request() f:update({favorite=false,favoriteToken="fallback"})
 	check(a.prompts==1 and #a.calls==1,"unavailable favorite read falls back without granting")
 	a.emit("Success") check(#a.calls==2,"fallback still requires actual success")
+	f:Destroy()
+	-- already a favorite but the read needed permission: prompt says no change,
+	-- the player allows the read, the check confirms (31 Oct)
+	local reads=0
+	f,a=fixture(function() reads+=1 if reads==1 then error("read not permitted") end return true end,false,"Success")
+	f:request() f:update({favorite=false,favoriteToken="perm"}) a.emit("Failed")
+	check(a.permissionPrompts==1 and #a.calls==2 and a.calls[2].args.token=="perm","existing favorite confirms after read permission")
+	f:Destroy()
+	reads=0
+	f,a=fixture(function() reads+=1 if reads==1 then error("read not permitted") end return false end,false,"Success")
+	f:request() f:update({favorite=false,favoriteToken="no"}) a.emit("Failed")
+	check(#a.calls==1 and not f.busy,"permission allowed but not a favorite never confirms")
 	f:Destroy()
 	f,a=fixture(function() return false end,true)
 	f:request() f:update({favorite=false,favoriteToken="error"})
