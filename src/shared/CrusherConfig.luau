@@ -11,6 +11,7 @@ local C = {
 	MaxPressEmitters = 1, PressParticleRate = 2,
 	LevelDamage = 1.12, LevelYield = 1.10, DamageFactor = 1.35, SpeedFactor = 0.94,
 	YieldPerLevel = 0.2, LuckPerLevel = 0.12, AutoCrushDamage = 1.25,
+	OverkillBonus = 0.05, -- 31 Oct: +5% scrap per doubling of damage beyond a one-hit crush (Damage keeps paying late game)
 	GoldenYield = 10, AutoCollectInterval = 2,
 	CameraMaxZoom = 75, ControlsMaxDistance = 170, -- zoom-out limit; how far board/plaque text shows
 	QuietLabelDistance = 30, -- 30 Oct: LOCKED pedestal hints and EMPTY bay words only show within this many studs

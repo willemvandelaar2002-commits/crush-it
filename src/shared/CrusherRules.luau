@@ -198,9 +198,13 @@ function R.stats(d,item,perks,rows)
 	local damage=t.damage*C.LevelDamage^(item.level-1)*C.DamageFactor^s.upgrades.Damage*(if perks.autoCrush then C.AutoCrushDamage else 1)
 	local cycle=t.cycle*C.SpeedFactor^s.upgrades.Speed
 	local value=t.value*C.LevelYield^(item.level-1)*(1+C.YieldPerLevel*s.upgrades.Yield)*C.rarity(item.rarity).mult*C.modifier(item.modifier).mult*(perks.mult or 1)*(if item.fused then C.Fusion.Mult else 1)
+	-- 31 Oct: damage past a one-hit crush isn't wasted: every doubling of the
+	-- surplus adds C.OverkillBonus scrap (log scale, so it stays modest)
+	local overkill=if damage>t.hp then C.OverkillBonus*math.log(damage/t.hp,2) else 0
+	value*=1+overkill
 	local multiplier=if rows==false then 1 else Rows.multiplier(rows or Rows.snapshot(d),item.id)
 	value*=multiplier
-	return {damage=damage,cycle=cycle,hp=t.hp,value=C.money(value),cps=value/(math.ceil(t.hp/damage)*cycle+C.InputDelay),rowBonus=multiplier-1}
+	return {damage=damage,cycle=cycle,hp=t.hp,value=C.money(value),cps=value/(math.ceil(t.hp/damage)*cycle+C.InputDelay),rowBonus=multiplier-1,overkill=overkill}
 end
 -- bonus: permanent Index-milestone luck (0.1 = +10% weight on every non-Common rarity)
 function R.weights(luck,lucky,bonus)

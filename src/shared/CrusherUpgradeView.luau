@@ -22,14 +22,31 @@ local function uncommonChance(level,lucky)
 	return special/total*100
 end
 
+-- 31 Oct: what the next level of a factory upgrade does to your real income
+-- (equipped crushers, current passes), so Damage/Speed show their honest worth.
+local function incomeGain(d,id,perks)
+	local function total(level)
+		local copy=table.clone(d.crushers.upgrades) copy[id]=level
+		local saved=d.crushers.upgrades d.crushers.upgrades=copy
+		local sum=0 for _,itemId in d.crushers.equipped do local item=Rules.find(d,itemId) if item then sum+=Rules.stats(d,item,perks,false).cps end end
+		d.crushers.upgrades=saved
+		return sum
+	end
+	local now=total(d.crushers.upgrades[id]) if now<=0 then return nil end
+	return (total(d.crushers.upgrades[id]+1)/now-1)*100
+end
 function V.board(d,id,perks)
 	local u=C.Upgrades[id] local lv=d.crushers.upgrades[id] local max=C.upgradeMax(id,d.crushers.plotLevel)
 	local n=math.min(max,lv+1) local maxed=lv>=max local effect
 	if id=="Damage" then
-		effect=if maxed then string.format("Damage x%.2f",C.DamageFactor^lv) else string.format("x%.2f > x%.2f damage",C.DamageFactor^lv,C.DamageFactor^n)
+		local gain=not maxed and incomeGain(d,id,perks)
+		effect=if maxed then string.format("Damage x%s",Format.cash(C.DamageFactor^lv):gsub("%$","")) elseif gain then string.format("x%s damage · +%.1f%% cash",Format.cash(C.DamageFactor^n):gsub("%$",""),gain)
+			else string.format("x%.2f > x%.2f damage",C.DamageFactor^lv,C.DamageFactor^n)
 	elseif id=="Speed" then
-		-- Cycle duration, not an incorrectly labelled attack-rate percentage.
-		effect=if maxed then string.format("Cycle %.0f%%",C.SpeedFactor^lv*100) else string.format("Cycle %.0f%% > %.0f%%",C.SpeedFactor^lv*100,C.SpeedFactor^n*100)
+		-- 31 Oct: shown as what it adds to your income (the cycle % barely moved late game)
+		local gain=not maxed and incomeGain(d,id,perks)
+		effect=if maxed then string.format("Cycle %.0f%%",C.SpeedFactor^lv*100) elseif gain then string.format("%.0f%% faster · +%.1f%% cash",(1-C.SpeedFactor^n)*100,gain)
+			else string.format("Cycle %.0f%% > %.0f%%",C.SpeedFactor^lv*100,C.SpeedFactor^n*100)
 	elseif id=="Yield" then
 		effect=if maxed then string.format("Scrap x%.1f",1+C.YieldPerLevel*lv) else string.format("x%.1f > x%.1f scrap",1+C.YieldPerLevel*lv,1+C.YieldPerLevel*n)
 	elseif id=="Luck" then
@@ -41,6 +58,7 @@ function V.board(d,id,perks)
 	local hint=if id=="Luck" then "Changes future roll odds; owned crushers keep their rarity."
 		elseif id=="Pedestals" then "More offers per free roll; each crusher still costs cash to buy."
 		elseif id=="Speed" then "Shorter strike cycles for every crusher you own or equip later."
+		elseif id=="Damage" then "Fewer hits per toy; damage past a one-hit crush gives bonus scrap."
 		else "Applies to every crusher you own or equip later."
 	local view=V.purchase(d.cash,C.globalCost(id,lv),maxed,hint,V.Boards[u.group].success)
 	if maxed and not u.max then view.hint=Rules.capMessage(d.crushers.plotLevel) end
