@@ -312,3 +312,4 @@
 - 2026-10-31: Analytics funnels for the crusher game: onboarding (Joined, the 8 tutorial steps, first plot upgrade) and a Shop funnel (Opened, Prompted, Purchased). Willem.
 - 2026-10-31: Crate rewards (card tiles and details rows) get the Index's turning rays/shimmer for Legendary and up. Willem.
 - 2026-10-31: Floor checker subtler (Shade 0.9, transparency 0.6): the dark squares were too dark on the yellow. Willem.
+- 2026-10-31: Floor checker down to about 2 % darker (Shade 0.95). Willem.

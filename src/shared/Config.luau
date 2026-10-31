@@ -444,8 +444,8 @@ Config.World = {
 	Checker = {
 		Image = "rbxassetid://10630078103", -- white/clear 2x2 checker (Creator Store decal 10630078134)
 		StudsPerTile = 8, -- 4-stud squares
-		Shade = 0.9, -- squares are the floor's own colour times this (slightly darker, same hue)
-		Transparency = 0.6, -- how strong the darker squares are (31 Oct: subtler, about 4 % darker)
+		Shade = 0.95, -- squares are the floor's own colour times this (slightly darker, same hue)
+		Transparency = 0.6, -- how strong the darker squares are (31 Oct: subtle, about 2 % darker)
 	},
 }
 
