@@ -1,5 +1,31 @@
 # Shop, onboarding, analytics
 
+## 31 Oct Prism Mech showroom card
+
+`client/PrismMechCard.luau` builds the Prism Mech card in Featured and Packs
+(replaces the old gradient banner). Third card of the shop art pass.
+- Art: `ShopArt.PrismMech.Backplate` = 102747752191257 (PrismMech-Background.png,
+  source in `assets/shop-card/`), 1974 x 797, 816 x 329 design size. A plain violet/
+  gold card shows until it loads. Prism Mech icon = existing CrusherIcons entry.
+- Layout: Prism Mech large on the left over the glow; right side inside the safe
+  area (x 38-80 %, y 16-77 %, clear of the corner crystals): PRISM MECH title
+  (cyan-pink-gold), MYTHIC badge (`Style.RarityGradients.PrismMythic`: #9BDEFF,
+  #57EFFF, #A775FF, #FF5EC8, small #FFE475 accent), GUARANTEED CRUSHER tag
+  (OWNED when owned), "Plot showcase: visit your plot to inspect it", then green
+  FIND ON PLOT and cyan DETAILS side by side (glossy, dark lower edge).
+- Behaviour unchanged: FIND ON PLOT fires the existing Travel "Plot" and closes
+  the shop; DETAILS and the hero open showroomDetail (price/buying stay there).
+  No tiles, odds, timers or scarcity text: one guaranteed crusher.
+- Motion: hero floats (4 px, 3 degrees, 3.6 s) only while visible and uncovered;
+  buttons use Style.feedback (grow/press/restore).
+- Studio check 31 Oct (MockData): Featured and Packs show it; backplate and Prism
+  Mech icon load with clean transparency; hero moves without hover, pauses on the
+  hidden tab, when scrolled out of view and under details; hover/press/leave on
+  both buttons back to scale 1; DETAILS opens details (R$ 399 live price), Back
+  works; FIND ON PLOT closed the shop and moved the player back to the plot; OWNED
+  switch checked with a client-only attribute (no purchase); no new Output errors.
+  Desktop only; phone not checked.
+
 ## 31 Oct Candy Starter Pack card
 
 `client/StarterPackCard.luau` builds the Starter Pack card in Featured and Packs

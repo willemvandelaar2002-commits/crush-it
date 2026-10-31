@@ -26,6 +26,7 @@ local CrusherConfig = require(ReplicatedStorage.Shared.CrusherConfig)
 local CrusherIcons = require(ReplicatedStorage.Shared.CrusherIcons)
 local FactoryCrateCard = require(script.Parent.FactoryCrateCard)
 local StarterPackCard = require(script.Parent.StarterPackCard)
+local PrismMechCard = require(script.Parent.PrismMechCard)
 
 local player = Players.LocalPlayer
 local C = Color3.fromRGB
@@ -449,30 +450,23 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		})
 	end
 	local function showroomBanner(page: ScrollingFrame, order: number)
-		local f = banner(page, order, { C(80, 220, 255), C(120, 150, 255), C(200, 110, 255), C(255, 120, 190) })
-		glow(f, UDim2.fromOffset(96, 88), 150)
-		icon(f, crusherImage(show.crusher), UDim2.fromOffset(4, -4), UDim2.fromOffset(184, 184), 9)
-		local t = label(f, "PRISM MECH", UDim2.fromOffset(196, 6), UDim2.fromOffset(380, 58), 4, 9)
-		t.TextXAlignment = Enum.TextXAlignment.Left
-		gradient(t, { C(255, 120, 200), C(255, 230, 90), C(110, 255, 140), C(90, 220, 255), C(190, 120, 255) }, 0)
-		local sub = label(f, "Visit your plot to inspect it", UDim2.fromOffset(196, 66), UDim2.fromOffset(340, 34), 3, 9)
-		sub.TextXAlignment = Enum.TextXAlignment.Left
-		local chip, chipText = pill(f, "PLOT SHOWCASE", UDim2.fromOffset(196, 112), UDim2.fromOffset(220, 36), C(255, 205, 40), INK, 9)
-		chipText.TextColor3 = INK
-		local stroke = chipText:FindFirstChild("TextOutline") :: UIStroke?
-		if stroke then stroke.Thickness = 0 end
-		local find = bigButton(f, "FIND ON PLOT", UDim2.new(1, -236, 0, 20), UDim2.fromOffset(220, 74), nil, 10)
-		find.Activated:Connect(function()
-			Net.event("Travel"):FireServer("Plot")
-			Style.setOpen(panel, false)
-		end)
-		local details = bigButton(f, "DETAILS", UDim2.new(1, -236, 0, 104), UDim2.fromOffset(220, 52), C(255, 196, 40), 10)
-		details.Activated:Connect(function() openDetail(showroomDetail) end)
-		table.insert(refreshers, function()
-			local owned = owns(show.id)
-			chipText.Text = if owned then "OWNED" else "PLOT SHOWCASE"
-			chip.BackgroundColor3 = if owned then C(80, 220, 110) else C(255, 205, 40)
-		end)
+		-- 31 Oct: crystal card (client/PrismMechCard); same callbacks as before
+		PrismMechCard.build(page, {
+			width = BANNER_W, order = order, gate = panel,
+			enabled = function()
+				local reveal = gui:FindFirstChild("CrateReveal") :: GuiObject?
+				return not detail.Visible and not (reveal and reveal.Visible)
+			end,
+			crusherImage = crusherImage(show.crusher), title = show.title, rarity = show.rarity, tag = show.tag,
+			line = "Plot showcase: visit your plot to inspect it",
+			find = function()
+				Net.event("Travel"):FireServer("Plot")
+				Style.setOpen(panel, false)
+			end,
+			details = function() openDetail(showroomDetail) end,
+			owned = function() return owns(show.id) end,
+			onRefresh = function(f) table.insert(refreshers, f) f() end,
+		})
 	end
 
 	-- Product / pass cards (grid) -------------------------------------------------------

@@ -1,6 +1,6 @@
 --!strict
 -- Uploaded shop card artwork (31 Oct). IDs are the ones Roblox returned for
--- Willem's uploads (Crate Art Comparison pack, Candy Starter Card pack).
+-- Willem's uploads (Crate Art Comparison, Candy Starter Card and Prism Mech Card packs).
 -- Presentation only: every card keeps a working fallback while these load.
 local function id(n: string): string return "rbxassetid://" .. n end
 return {
@@ -13,6 +13,11 @@ return {
 	-- 31 Oct: Candy Starter Pack card (source PNG: assets/shop-card/CandyStarter-Background.png)
 	CandyStarter = {
 		Backplate = id("85230684065313"), -- CandyStarter-Background.png: pink/cream candy frame, ~2.48:1
+		Aspect = 1974 / 797,
+	},
+	-- 31 Oct: Prism Mech showroom card (source PNG: assets/shop-card/PrismMech-Background.png)
+	PrismMech = {
+		Backplate = id("102747752191257"), -- PrismMech-Background.png: violet + gold frame, corner crystals, ~2.48:1
 		Aspect = 1974 / 797,
 	},
 }

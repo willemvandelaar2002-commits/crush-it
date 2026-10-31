@@ -883,6 +883,12 @@ Style.RarityGradients = {
 	CandyMythic = { C(255, 183, 242), C(255, 66, 172), C(181, 42, 255), C(112, 68, 255), C(50, 250, 255) },
 	Cash = { C(255, 244, 163), C(205, 255, 83), C(88, 232, 46), C(20, 185, 109), C(41, 233, 219) },
 	CashBoost = { C(255, 244, 176), C(255, 225, 69), C(255, 179, 21), C(255, 122, 41), C(255, 93, 175) },
+	-- 31 Oct, Prism Mech card: cyan/violet/pink with a small gold accent at the end
+	PrismMythic = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, C(155, 222, 255)), ColorSequenceKeypoint.new(0.25, C(87, 239, 255)),
+		ColorSequenceKeypoint.new(0.5, C(167, 117, 255)), ColorSequenceKeypoint.new(0.82, C(255, 94, 200)),
+		ColorSequenceKeypoint.new(1, C(255, 228, 117)),
+	}),
 }
 -- A palette name from Style.RarityGradients (a list of colours, evenly spaced,
 -- or a ready ColorSequence); unknown names fade from the fallback colour.
