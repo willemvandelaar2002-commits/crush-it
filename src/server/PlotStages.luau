@@ -526,11 +526,45 @@ function V.sync(plot,level)
 	for _,p in v.trimParts do if p:GetAttribute("LeftDoor") and open then p.Transparency=1 end end
 	-- 31 Oct: floor colour per plot level (C.FloorColors; levels without one keep the authored colour)
 	local want=C.FloorColors[level]
+	local floors={}
 	for _,p in plot.model:GetDescendants() do
 		if p:IsA("BasePart") and ((p.Name=="Top" and p.Parent and p.Parent.Name=="Floor") or p.Name=="YardFloor" or p.Name=="FusionFloor") then
 			if p:GetAttribute("FloorColor")==nil then p:SetAttribute("FloorColor",p.Color) end
 			p.Color=want or p:GetAttribute("FloorColor")
+			table.insert(floors,p)
 		end
+	end
+	-- Lighter blocky patches over the floor (like the reference's two-tone
+	-- grass), so the floor still has depth from a distance where the studs fade.
+	-- Cells of C.FloorPatchCell studs picked by smooth noise; runs merged per row.
+	local old=plot.model:FindFirstChild("FloorPatches") if old then old:Destroy() end
+	local patch=C.FloorPatchColors[level]
+	if patch then
+		local folder=Instance.new("Model") folder.Name="FloorPatches"
+		local CELL=C.FloorPatchCell local o=plot.origin
+		for _,top in floors do
+			local cf,size=top.CFrame,top.Size
+			local nx,nz=math.floor(size.X/CELL),math.floor(size.Z/CELL)
+			for iz=0,nz-1 do
+				local runStart=nil
+				for ix=0,nx do
+					local on=false
+					if ix<nx then
+						local l=o:PointToObjectSpace(cf*Vector3.new(-size.X/2+(ix+.5)*CELL,0,-size.Z/2+(iz+.5)*CELL))
+						on=math.abs(l.X)>C.Layout.RoadHalf+3 and math.noise(l.X/38,l.Z/38,7.3)>.08
+					end
+					if on and not runStart then runStart=ix
+					elseif not on and runStart then
+						local x0,x1=-size.X/2+runStart*CELL,-size.X/2+ix*CELL
+						local p=Instance.new("Part") p.Name="FloorPatch" p.Anchored=true p.CanCollide=false p.CanQuery=false p.CanTouch=false p.CastShadow=false
+						p.Size=Vector3.new(x1-x0,.12,CELL) p.CFrame=cf*CFrame.new((x0+x1)/2,size.Y/2+.06,-size.Z/2+(iz+.5)*CELL)
+						p.Color=patch p.Material=top.Material p.MaterialVariant=top.MaterialVariant p.Parent=folder
+						runStart=nil
+					end
+				end
+			end
+		end
+		folder.Parent=plot.model
 	end
 end
 return V
