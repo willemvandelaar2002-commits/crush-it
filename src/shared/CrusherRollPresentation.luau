@@ -21,7 +21,7 @@ function P.odds(id,luck,lucky,first)
 	if first then return if wanted.name=="Common" then #wanted.types else 0 end
 	local total=0 local weight=0
 	for _,r in C.Rarities do
-		local w=r.weight*(1+C.LuckPerLevel*luck*r.rank)*(if lucky and r.rank>0 then 2 else 1)
+		local w=r.weight*C.luckFactor(luck,r.rank)*(if lucky and r.rank>0 then 2 else 1)
 		total+=w if r==wanted then weight=w end
 	end
 	return total/weight*#wanted.types

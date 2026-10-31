@@ -25,3 +25,5 @@ Ship, Statue, Planet.
 - 31 Oct: crusher strikes are timed from when they were due (CrusherRules.step), so real output matches the shown $/min (measured 99.9%; was ~98%). 2x Cash pass and 2x Cash boost multiply (x4 together).
 
 - 31 Oct: overkill: damage above a toy's hp gives scrap x(1 + C.OverkillBonus*log2(damage/hp)), OverkillBonus 0.05 (+5% per doubling; ~+1.2% income per Damage level late game). Board Damage/Speed lines show the next level's real income gain on equipped crushers (CrusherUpgradeView incomeGain).
+
+- 31 Oct: luck factor per rarity = (1 + LuckPerLevel*luck*rank) * LuckGrowth^(luck*rank), LuckGrowth 1.01 (C.luckFactor, used by rolls and roll-odds text). Roll board shows "Legendary+ 1 in N > 1 in N".

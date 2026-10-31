@@ -208,7 +208,7 @@ function R.stats(d,item,perks,rows)
 end
 -- bonus: permanent Index-milestone luck (0.1 = +10% weight on every non-Common rarity)
 function R.weights(luck,lucky,bonus)
-	local out={} for i,v in C.Rarities do out[i]=v.weight*(1+C.LuckPerLevel*luck*v.rank)*(if lucky and v.rank>0 then 2 else 1)*(if v.rank>0 then 1+(bonus or 0) else 1) end return out
+	local out={} for i,v in C.Rarities do out[i]=v.weight*C.luckFactor(luck,v.rank)*(if lucky and v.rank>0 then 2 else 1)*(if v.rank>0 then 1+(bonus or 0) else 1) end return out
 end
 -- Remember every type the save owns now (and the one inside the fuser).
 function R.markSeen(s)

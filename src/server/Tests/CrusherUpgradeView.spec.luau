@@ -43,16 +43,16 @@ return function()
 		end
 	end
 	d=fresh()
-	check(V.board(d,"Speed",{}).effect=="Cycle 100% > 94%","speed shows duration rather than incorrect rate")
+	check(V.board(d,"Speed",{}).effect:match("^6%% faster · %+[%d%.]+%% cash$")~=nil,"speed shows its real cash gain (31 Oct)")
 	check(V.board(d,"Pedestals",{}).effect=="1 > 2 choices / roll","pedestals describe offers, not free ownership")
 	for _,lucky in {false,true} do
 		for _,lv in {0,7,C.MaxGlobal-1} do
 			d.crushers.upgrades.Luck=lv
-			local function chance(level)
-				local weights=R.weights(level,lucky) local all,common=0,weights[1]
-				for _,w in weights do all+=w end return (all-common)/all*100
+			local function odds(level)
+				local weights=R.weights(level,lucky) local all,top=0,0
+				for i,w in weights do all+=w if C.Rarities[i].rank>=4 then top+=w end end return math.max(1,math.floor(all/top+.5))
 			end
-			check(V.board(d,"Luck",{lucky=lucky}).effect==string.format("Uncommon+ %.1f%% > %.1f%%",chance(lv),chance(lv+1)),"luck uses normalised probabilities and pass")
+			check(V.board(d,"Luck",{lucky=lucky}).effect==string.format("Legendary+ 1 in %d > 1 in %d",odds(lv),odds(lv+1)),"luck shows Legendary+ odds with the pass (31 Oct)")
 		end
 	end
 	-- Production upgrades cover owned crushers even when not equipped.

@@ -16,6 +16,12 @@ function V.purchase(cash,cost,maxed,hint,success)
 		"Need "..Format.cash(math.ceil(cost-cash)).." more. Collect and sell scrap. "..hint else hint,success=success}
 end
 
+-- 31 Oct: "1 in N" for Legendary or better (the Uncommon+ % flattens out late)
+local function legendaryOdds(level,lucky)
+	local weights=Rules.weights(level,lucky) local total,top=0,0
+	for i,w in weights do total+=w if C.Rarities[i].rank>=4 then top+=w end end
+	return math.max(1,math.floor(total/top+.5))
+end
 local function uncommonChance(level,lucky)
 	local weights=Rules.weights(level,lucky) local total,special=0,0
 	for i,w in weights do total+=w if C.Rarities[i].rank>0 then special+=w end end
@@ -51,7 +57,7 @@ function V.board(d,id,perks)
 		effect=if maxed then string.format("Scrap x%.1f",1+C.YieldPerLevel*lv) else string.format("x%.1f > x%.1f scrap",1+C.YieldPerLevel*lv,1+C.YieldPerLevel*n)
 	elseif id=="Luck" then
 		local lucky=perks and perks.lucky
-		effect=if maxed then string.format("Uncommon+ %.1f%%",uncommonChance(lv,lucky)) else string.format("Uncommon+ %.1f%% > %.1f%%",uncommonChance(lv,lucky),uncommonChance(n,lucky))
+		effect=if maxed then string.format("Legendary+ 1 in %d",legendaryOdds(lv,lucky)) else string.format("Legendary+ 1 in %d > 1 in %d",legendaryOdds(lv,lucky),legendaryOdds(n,lucky))
 	else
 		effect=if maxed then C.pedestals(lv).." choices / roll" else C.pedestals(lv).." > "..C.pedestals(n).." choices / roll"
 	end

@@ -11,6 +11,7 @@ local C = {
 	MaxPressEmitters = 1, PressParticleRate = 2,
 	LevelDamage = 1.12, LevelYield = 1.10, DamageFactor = 1.35, SpeedFactor = 0.94,
 	YieldPerLevel = 0.2, LuckPerLevel = 0.12, AutoCrushDamage = 1.25,
+	LuckGrowth = 1.01, -- 31 Oct: on top of LuckPerLevel, each Luck level also multiplies rare weights by 1.01^rank, so late levels still count
 	OverkillBonus = 0.05, -- 31 Oct: +5% scrap per doubling of damage beyond a one-hit crush (Damage keeps paying late game)
 	GoldenYield = 10, AutoCollectInterval = 2,
 	CameraMaxZoom = 75, ControlsMaxDistance = 170, -- zoom-out limit; how far board/plaque text shows
@@ -344,6 +345,8 @@ function C.modifier(name)
 	for _,v in C.Modifiers do if v.name==name then return v end end
 	for _,v in C.CraftModifiers do if v.name==name then return v end end
 end
+-- Luck multiplier on a rarity's roll weight (rank 0 = Common stays 1)
+function C.luckFactor(luck, rank) return (1 + C.LuckPerLevel * luck * rank) * C.LuckGrowth ^ (luck * rank) end
 function C.money(n) return math.clamp(math.floor(n * 100 + 0.5) / 100, 0, C.MaxMoney) end
 function C.globalCost(id, level) local u = C.Upgrades[id] return math.floor(u.base * u.growth ^ level) end
 function C.individualCost(item) return math.floor(C.IndividualBase * C.IndividualGrowth ^ (item.level - 1) * C.rarity(item.rarity).mult) end
