@@ -97,6 +97,25 @@ function Store.passByPerk(perk: string): Pass?
 	return nil
 end
 
+-- 31 Oct: the Robux price Roblox has for a product/pass (Creator Dashboard is
+-- the source of truth; the `price` fields above are only a fallback while it
+-- loads or when the id is 0). Client-side cache; onPrice(price) runs at once
+-- with the fallback and again when Roblox answers.
+local livePrices: { [string]: number } = {}
+function Store.livePrice(kind: string, id: number, fallback: number, onPrice: (number) -> ())
+	onPrice(livePrices[kind .. id] or fallback)
+	if id == 0 or livePrices[kind .. id] then return end
+	task.spawn(function()
+		local ok, info = pcall(function()
+			return game:GetService("MarketplaceService"):GetProductInfo(id, if kind == "pass" then Enum.InfoType.GamePass else Enum.InfoType.Product)
+		end)
+		if ok and info and type(info.PriceInRobux) == "number" then
+			livePrices[kind .. id] = info.PriceInRobux
+			onPrice(info.PriceInRobux)
+		end
+	end)
+end
+
 function Store.productById(id: string): Product?
 	for _, p in Store.Products do
 		if p.id == id then

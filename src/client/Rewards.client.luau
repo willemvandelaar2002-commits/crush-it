@@ -157,6 +157,7 @@ Style.feedback(skip)
 label(skip, "Skip All!", UDim2.fromOffset(8, 2), UDim2.new(1, -16, 0, 42), 4).ZIndex = 9
 local skipPrice = label(skip, if skipProduct and skipProduct.productId ~= 0 then "R$ " .. skipProduct.price else "Coming soon", UDim2.fromOffset(8, 42), UDim2.new(1, -16, 0, 20), 2.5)
 skipPrice.ZIndex = 9
+if skipProduct and skipProduct.productId ~= 0 then Store.livePrice("product", skipProduct.productId, skipProduct.price, function(n) skipPrice.Text = "R$ " .. n end) end
 skip.Activated:Connect(function()
 	if skipProduct and skipProduct.productId ~= 0 then
 		game:GetService("MarketplaceService"):PromptProductPurchase(player, skipProduct.productId)

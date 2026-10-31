@@ -293,3 +293,4 @@
 - 2026-10-30: Studded walkway road kept. Willem.
 - 2026-10-31: Factory Crate gets a taller blue/gold showcase with a floating chest, individual reward portraits, a larger rarity/chance-based spotlight, rotating rays and staggered glints. Added reusable visibility-gated Style art-motion helpers and shop-only camera blur/detail entrance. Existing odds, catalogue, products, eligibility, purchases and reveals are preserved. Offline checks cover data/layout/motion lifecycle; Studio Play verification remains.
 - 2026-10-31: Crate card checked in Studio Play: livelier chest tilt/bob, softer rays, header/caption spacing fixed; blur clears on close. Willem's reference.
+- 2026-10-31: Every shop/boost/skip/offer price label now shows Roblox's live price (Store.livePrice); code prices are only a fallback. Game passes still have id 0, so 2x Cash / Production Boost / Lucky / Auto Collect show placeholder prices until their pass ids are filled in.

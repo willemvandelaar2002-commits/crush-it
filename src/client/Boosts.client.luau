@@ -95,7 +95,11 @@ for i, b in B.List do
 	Style.button(buy, C(255, 196, 40))
 	local product = productFor(b)
 	local price = if product and product.productId ~= 0 then b.minutes .. " MIN  R$ " .. product.price else "Coming soon"
-	label(buy, price, UDim2.fromScale(0.06, 0.12), UDim2.fromScale(0.88, 0.76), 2.5).ZIndex = 9
+	local priceLabel = label(buy, price, UDim2.fromScale(0.06, 0.12), UDim2.fromScale(0.88, 0.76), 2.5)
+	priceLabel.ZIndex = 9
+	if product and product.productId ~= 0 then
+		Store.livePrice("product", product.productId, product.price, function(n) priceLabel.Text = b.minutes .. " MIN  R$ " .. n end)
+	end
 	free.Activated:Connect(function() action:FireServer("Free", b.id) end)
 	buy.Activated:Connect(function()
 		if product and product.productId ~= 0 then

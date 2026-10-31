@@ -244,6 +244,7 @@ for _, f in FEATURED do
 		AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 1, -16), Size = UDim2.new(0.8, 0, 0, 36),
 		BackgroundTransparency = 1, TextScaled = true, Text = "R$ " .. pass.price, ZIndex = 3, Parent = p,
 	})
+	Store.livePrice("pass", pass.gamePassId, pass.price, function(n) price.Text = "R$ " .. n end)
 	Style.text(price, 3)
 	price.TextColor3 = Color3.fromRGB(150, 255, 110)
 	local ribbon = make("TextLabel", {
@@ -264,7 +265,8 @@ end)
 local function refreshOffers()
 	doubleHolder.Visible = doublePass ~= nil and not Store.hasPass(player, "DoubleCash")
 	if doublePass then
-		doublePrice.Text = "ONLY R$ " .. doublePass.price
+		local pass = doublePass
+		Store.livePrice("pass", pass.gamePassId, pass.price, function(n) doublePrice.Text = "ONLY R$ " .. n end)
 	end
 	featuredPerk = nil
 	for _, f in FEATURED do
