@@ -437,6 +437,16 @@ Config.Look = {
 Config.World = {
 	SeaY = -3, -- the yard floor under the islands; falling down there puts you back on your plot
 	HubGap = 26, -- gap between a plot island and the loop road (the plot's bridge; 27 Oct: 18 -> 26)
+	-- 31 Oct: checkerboard of lighter squares over big floors (like the reference),
+	-- so the ground has depth from a distance. A 2x2 checker image, so squares
+	-- are StudsPerTile/2 studs. Used on the yellow yard floor and on plot floors
+	-- of the levels in CrusherConfig.FloorChecker.
+	Checker = {
+		Image = "rbxassetid://10630078103", -- white/clear 2x2 checker (Creator Store decal 10630078134)
+		StudsPerTile = 8, -- 4-stud squares
+		Color = Color3.new(1, 1, 1),
+		Transparency = 0.8, -- how strong the lighter squares are
+	},
 }
 
 Config.Loop = {

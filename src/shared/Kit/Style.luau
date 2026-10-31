@@ -103,6 +103,26 @@ function Style.materialStuds(p: BasePart, enabled: boolean?, _faces: { Enum.Norm
 	return p.MaterialVariant == Style.Studs.MaterialVariant
 end
 
+-- Checkerboard of lighter squares on a part's top face (Config.World.Checker).
+-- Updated in place; enabled=false removes it.
+function Style.checker(p: BasePart, enabled: boolean?)
+	local old = p:FindFirstChild("Checker")
+	if enabled == false then
+		if old then old:Destroy() end
+		return
+	end
+	local look = require(script.Parent.Parent.Config).World.Checker
+	local t = (old or Instance.new("Texture")) :: Texture
+	t.Name = "Checker"
+	t.Texture = look.Image
+	t.Face = Enum.NormalId.Top
+	t.StudsPerTileU = look.StudsPerTile
+	t.StudsPerTileV = look.StudsPerTile
+	t.Color3 = look.Color
+	t.Transparency = look.Transparency
+	t.Parent = p
+end
+
 -- UI -----------------------------------------------------------------------------
 
 local function child(class: string, props: { [string]: any }, parent: Instance): any

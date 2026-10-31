@@ -40,6 +40,7 @@ local function floor(parent: Instance)
 	base.CanQuery = false
 	base.CastShadow = false
 	Style.studs(base, { Enum.NormalId.Top }, 4)
+	Style.checker(base) -- 31 Oct: lighter checker squares over the yellow floor
 	-- Large, subtle floor panels give the factory scale without tiny litter.
 	for _, x in { -HALF + 65, HALF - 65 } do
 		local lane = part(parent, "PerimeterServiceLane", V(46, 0.05, HALF * 2 - 50), CFrame.new(x, FLOOR_Y + 0.03, 0), P.Navy)

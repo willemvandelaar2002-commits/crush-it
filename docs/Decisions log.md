@@ -302,3 +302,4 @@
 - 2026-10-31: Factory V floor gets lighter red blocky patches (like the reference's two-tone grass) so it doesn't look flat from a distance. Willem.
 - 2026-10-31: Factory V floor: random lighter patches dropped; floor studs are twice as big instead (StudsX2 variant) so the pattern shows from afar, like the reference. Willem.
 - 2026-10-31: Factory V floor gets a checkerboard of lighter red 10-stud squares (like the reference). Willem.
+- 2026-10-31: Checkerboard squares made smaller (4 studs, like the reference) and now a texture instead of parts; also on the yellow yard floor around the map. Willem.
