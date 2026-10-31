@@ -477,11 +477,17 @@ local function buildKit(plot,level)
 		end
 		return true
 	end
+	-- 31 Oct fix: only on the plot's own floor (behind a small plot they stood out on the sand)
+	local down=RaycastParams.new() down.FilterType=Enum.RaycastFilterType.Include down.FilterDescendantsInstances={plot.model}
+	local function onFloor(cf)
+		local hit=workspace:Raycast(cf.Position+Vector3.new(0,4,0),Vector3.new(0,-8,0),down)
+		return hit~=nil and not hit.Instance:IsDescendantOf(kit)
+	end
 	local L=C.Layout
 	for _,x in {-1,1} do
 		for z=-90,FRONT-8,C.TrimPostSpacing do -- 30 Oct: every 24 studs (was 12)
 			local cf=o*CFrame.new(x*(L.RoadHalf+3.6),0,z)
-			if clear(cf*CFrame.new(0,2.2,0),Vector3.new(1.6,3.6,1.6)) then
+			if onFloor(cf) and clear(cf*CFrame.new(0,2.2,0),Vector3.new(1.6,3.6,1.6)) then
 				local post=Assets.place("SupportBeam"..suffix,kit,cf)
 				-- 29 Oct: the black body's top sat exactly level with the trim's top and
 				-- flickered (z-fighting) as you walked past; sink it a hair into the trim
@@ -511,7 +517,8 @@ V.buildKit=buildKit -- Studio tests call it with {model, origin, stages={}}
 function V.sync(plot,level)
 	local v=plot.stages if not v or v.level==level then return end
 	v.level=level
-	buildKit(plot,level)
+	-- after the caller has shown this level's floors (rear yard etc.): posts only go on visible floor
+	task.defer(function() if v.level==level then buildKit(plot,level) end end)
 	for _,r in v.records do show(r.model,level>=r.level) end
 	for wl,m in v.walls or {} do show(m,wl==level) end
 	show(v.trim,level>=1)

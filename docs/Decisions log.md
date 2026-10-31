@@ -314,3 +314,4 @@
 - 2026-10-31: Floor checker subtler (Shade 0.9, transparency 0.6): the dark squares were too dark on the yellow. Willem.
 - 2026-10-31: Floor checker down to about 2 % darker (Shade 0.95). Willem.
 - 2026-10-31: Fix: Robux signs on the plot did nothing when clicked (the SurfaceGui's active price button swallowed the click before the ClickDetector); the drawn button is now inactive. Fix: Prism Mech E prompt moved to a low anchor on the pad (it sat on the name tag, out of reach since the machine grew). Willem.
+- 2026-10-31: Fix: road posts (trim kit) stood out on the sand behind small plots; they now only go where there is visible plot floor, placed after the level's floors are shown. Willem.
