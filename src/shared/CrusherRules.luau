@@ -413,9 +413,13 @@ function R.step(d,session,now,perks)
 		local stats=R.stats(d,item,perks,rows)
 		if not r or r.id~=id then r={id=id,hp=stats.hp,nextStrike=now+C.InputDelay} session.bays[i]=r table.insert(events,{bay=i,kind="Input",hp=r.hp}) end
 		if now>=r.nextStrike then
-			if r.hp<=0 then r.hp=stats.hp r.nextStrike=now+C.InputDelay table.insert(events,{bay=i,kind="Input",hp=r.hp})
+			-- 31 Oct: time the next strike from when this one was due, not from the
+			-- (slightly late) server tick, so real output matches the shown $/min;
+			-- after a long stall it simply restarts from now (no burst of strikes).
+			local due=r.nextStrike local function after(sec) local t=due+sec return if t<now then now else t end
+			if r.hp<=0 then r.hp=stats.hp r.nextStrike=after(C.InputDelay) table.insert(events,{bay=i,kind="Input",hp=r.hp})
 			else
-				r.hp=math.max(0,r.hp-stats.damage) r.nextStrike=now+stats.cycle
+				r.hp=math.max(0,r.hp-stats.damage) r.nextStrike=after(stats.cycle)
 				local completed=r.hp<=0
 				if completed then
 					local value=stats.value

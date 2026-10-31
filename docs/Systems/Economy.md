@@ -21,3 +21,5 @@ Simulated first run (greedy buyer): tier 2 at ~1.3 min, Car ~12 min, Tank
 
 Tiers: Apple, Teddy Bear, Phone, TV, Fridge, Car, Truck, Tank, House, Plane,
 Ship, Statue, Planet.
+
+- 31 Oct: crusher strikes are timed from when they were due (CrusherRules.step), so real output matches the shown $/min (measured 99.9%; was ~98%). 2x Cash pass and 2x Cash boost multiply (x4 together).
