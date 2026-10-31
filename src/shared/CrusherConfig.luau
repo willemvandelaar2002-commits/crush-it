@@ -5,15 +5,15 @@ local C = {
 	MaxGlobal = 20, MaxMoney = 1e300, StartCash = 20,
 	BayCosts = { 0, 100, 900 },
 	InputDelay = 0.8, Tick = 0.05, RequestInterval = 0.08,
-	PlacingFloor = 0.6, -- 31 Oct: Strike Speed also shortens toy placing (InputDelay x SpeedFactor^level), down to 60%
+	PlacingFloor = 0.7, -- 31 Oct: Strike Speed also shortens toy placing (InputDelay x SpeedFactor^level), down to 70%
 	CrushedLinger = 0.45, -- 31 Oct: seconds a flattened toy stays on the bed under the next one (visual only)
 	-- Rolling is free: it fills your unlocked pedestals with offers you can buy.
 	RollSeconds = 3, StartPedestals = 1, MaxPedestals = 5,
 	MaxPressEmitters = 1, PressParticleRate = 2,
 	LevelDamage = 1.12, LevelYield = 1.10, DamageFactor = 1.35, SpeedFactor = 0.94,
-	YieldPerLevel = 0.3, LuckPerLevel = 0.12, AutoCrushDamage = 1.25, -- 31 Oct: Yield 0.2 -> 0.3 per level
+	YieldPerLevel = 0.25, LuckPerLevel = 0.12, AutoCrushDamage = 1.25, -- 31 Oct: Yield 0.2 -> 0.25 per level
 	LuckGrowth = 1.01, -- 31 Oct: on top of LuckPerLevel, each Luck level also multiplies rare weights by 1.01^rank, so late levels still count
-	OverkillBonus = 0.08, -- 31 Oct: +8% scrap per doubling (was 5%) of damage beyond a one-hit crush (Damage keeps paying late game)
+	OverkillBonus = 0.065, -- 31 Oct: +6.5% scrap per doubling (was 5%) of damage beyond a one-hit crush (Damage keeps paying late game)
 	GoldenYield = 10, AutoCollectInterval = 2,
 	CameraMaxZoom = 75, ControlsMaxDistance = 170, -- zoom-out limit; how far board/plaque text shows
 	QuietLabelDistance = 30, -- 30 Oct: LOCKED pedestal hints and EMPTY bay words only show within this many studs
@@ -76,8 +76,9 @@ for i=4,C.MaxBays do C.BayCosts[i]=math.floor(900*1.45^(i-3)) end
 -- rear upper right). Costs[n] = 10x the price of its first new bay; Cost =
 -- Costs[1] (old name). Caps: +10 factory upgrades, +20 crusher levels each.
 C.PlotUpgrade = {MaxLevel=4,
-	Costs={math.floor(C.BayCosts[C.TopFirst]*10),math.floor(C.BayCosts[C.RearFirst]*10),
-		math.floor(C.BayCosts[C.RearFirst+12]*10),math.floor(C.BayCosts[C.RearFirst+18]*10)},
+	-- 31 Oct: Factory III / IV / V cheaper (x0.8 / x0.7 / x0.6), Factory II unchanged
+	Costs={math.floor(C.BayCosts[C.TopFirst]*10),math.floor(C.BayCosts[C.RearFirst]*10*.8),
+		math.floor(C.BayCosts[C.RearFirst+12]*10*.7),math.floor(C.BayCosts[C.RearFirst+18]*10*.6)},
 	Names={"FACTORY II","FACTORY III","FACTORY IV","FACTORY V"},
 	Titles={"REINFORCED WORKSHOP","FUSION WORKSHOP","ADVANCED FACTORY","MASTER FACTORY"},
 	Adds={12,12,6,6},
