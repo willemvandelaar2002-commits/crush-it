@@ -14,10 +14,12 @@ export type Pass = { perk: string, gamePassId: number, price: number, title: str
 export type Product = { id: string, productId: number, price: number, title: string, desc: string, color: Color3, hidden: boolean?, mythic: string? }
 
 Store.Passes = {
-	{ perk = "AutoCrush", gamePassId = 0, price = 199, title = "Auto Crush", desc = "Crushes for you, even while you're AFK", color = Color3.fromRGB(230, 80, 70) },
-	{ perk = "DoubleCash", gamePassId = 0, price = 249, title = "2x Cash", desc = "Double cash from every crush, forever", color = Color3.fromRGB(80, 200, 110) },
-	{ perk = "Lucky", gamePassId = 0, price = 149, title = "Lucky", desc = "2x chance of Golden and Diamond objects", color = Color3.fromRGB(255, 200, 50) },
-	{ perk = "AutoCollect", gamePassId = 0, price = 99, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
+	-- AutoCrush is sold as "Production Boost" (pass 2060699266); the old Auto Crush
+	-- (2041790315) and Offline Earnings (2039938725) passes are not used.
+	{ perk = "AutoCrush", gamePassId = 2060699266, price = 199, title = "Auto Crush", desc = "Crushes for you, even while you're AFK", color = Color3.fromRGB(230, 80, 70) },
+	{ perk = "DoubleCash", gamePassId = 2039584674, price = 249, title = "2x Cash", desc = "Double cash from every crush, forever", color = Color3.fromRGB(80, 200, 110) },
+	{ perk = "Lucky", gamePassId = 2041580327, price = 149, title = "Lucky", desc = "2x chance of Golden and Diamond objects", color = Color3.fromRGB(255, 200, 50) },
+	{ perk = "AutoCollect", gamePassId = 2057934074, price = 99, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
 	-- (30 Oct: the Offline Earnings pass is gone: offline cash is free for everyone,
 	-- with paid 2x / 5x boosts on the welcome-back card, see Store.Offline)
 } :: { Pass }

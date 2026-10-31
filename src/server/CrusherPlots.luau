@@ -227,6 +227,13 @@ function P.create(root,Plots)
    if not station.rows then station.prompt=P.prompt(station.part,spec.id,spec.id.." station") end
    plot.stations[spec.id]=station
   end
+  -- 31 Oct: small Robux signs where you walk (Destroy a Vault style), facing
+  -- the walkway: Auto Collect by the bin, 2x Cash by Sell, Production Boost +
+  -- Lucky across the road by the roller. Plot-local x, z, yaw, perks (Config).
+  for _,spot in C.RobuxSignSpots do
+   local signs=require(script.Parent.RobuxSigns).build(m,Color3.fromRGB(30,36,62),spot.perks,C.RobuxSignSize)
+   signs.Name="RobuxSigns" signs:PivotTo(o*CFrame.new(spot.x,0,spot.z)*CFrame.Angles(0,spot.yaw,0))
+  end
   -- Conveyor from the outer end of the left bank, climbing into the scrap hopper.
   -- Runs along the plot edge outside the stairs and drops in over the hopper's end wall.
   local bend=(o*CFrame.new(-72.5,7,40)).Position

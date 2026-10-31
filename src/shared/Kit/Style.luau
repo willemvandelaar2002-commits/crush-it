@@ -285,11 +285,29 @@ local function buttonFill(c: Color3): ColorSequence
 end
 
 -- Uses its own scale, never changes layout sizes, and also responds to gamepad focus.
+local clickSound: Sound? = nil
+local lastClick = 0
+function Style.click()
+	if os.clock() - lastClick < 0.05 then return end
+	lastClick = os.clock()
+	if not clickSound then
+		local id = (require(game:GetService("ReplicatedStorage").Shared.Config) :: any).Sounds.Click
+		if not id then return end
+		local s = Instance.new("Sound") s.Name = "UIClick" s.SoundId = "rbxassetid://" .. id s.Volume = 0.4
+		s.Parent = game:GetService("SoundService") clickSound = s
+	end
+	game:GetService("SoundService"):PlayLocalSound(clickSound :: Sound)
+end
+
 function Style.feedback(btn: GuiButton)
 	if btn:FindFirstChild("FeedbackScale") then
 		return
 	end
 	local scale = child("UIScale", { Name = "FeedbackScale", Scale = 1 }, btn)
+	-- 31 Oct: every Style button clicks (one shared sound, client only)
+	if game:GetService("RunService"):IsClient() and btn:IsA("GuiButton") then
+		btn.Activated:Connect(function() Style.click() end)
+	end
 	local hover, down = false, false
 	local tween: Tween? = nil
 	local function update()

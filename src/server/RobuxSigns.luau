@@ -20,6 +20,7 @@ RobuxSigns.Signs = {
 	{ perk = "AutoCrush", icon = Icons.AutoCrush, a = Color3.fromRGB(255, 120, 90), b = Color3.fromRGB(200, 40, 70) },
 	{ perk = "DoubleCash", icon = Icons.DoubleCash, a = Color3.fromRGB(120, 235, 100), b = Color3.fromRGB(40, 150, 60) },
 	{ perk = "AutoCollect", icon = Icons.Cash, a = Color3.fromRGB(255, 185, 70), b = Color3.fromRGB(225, 110, 30) },
+	{ perk = "Lucky", icon = Icons.Lucky, a = Color3.fromRGB(110, 230, 120), b = Color3.fromRGB(30, 150, 70) },
 }
 -- Which signs stand next to the press (the scrap shop island has its own Auto Collect sign).
 RobuxSigns.PressSigns = { "AutoCrush", "DoubleCash" }
@@ -29,7 +30,9 @@ local GAP = 2
 
 -- Builds a row of signs (default: PressSigns) into `parent` as Model "RobuxSigns"
 -- (pivot at its ground centre).
-function RobuxSigns.build(parent: Instance, frameColor: Color3, perks: { string }?): Model
+-- 31 Oct: optional smaller size for the crusher plots (w, h = face studs)
+function RobuxSigns.build(parent: Instance, frameColor: Color3, perks: { string }?, size: Vector2?): Model
+	local W, H = if size then size.X else W, if size then size.Y else H
 	local m = Instance.new("Model")
 	m.Name = "RobuxSigns"
 	local list = {}
@@ -119,6 +122,21 @@ end
 
 type PlotLike = { model: Model, owner: Player? }
 
+-- Roblox's own pass price (cached; the Store price until it answers)
+local livePrice: { [number]: number } = {}
+function RobuxSigns.price(pass: any): number
+	local id = pass.gamePassId
+	if id == 0 then return pass.price end
+	if livePrice[id] == nil then
+		livePrice[id] = pass.price
+		task.spawn(function()
+			local ok, info = pcall(function() return MarketplaceService:GetProductInfo(id, Enum.InfoType.GamePass) end)
+			if ok and info and type(info.PriceInRobux) == "number" then livePrice[id] = info.PriceInRobux end
+		end)
+	end
+	return livePrice[id]
+end
+
 function RobuxSigns.start(getPlots: () -> { PlotLike })
 	local Notice = Net.event("Notice")
 	local function onClick(player: Player, perk: string)
@@ -162,7 +180,7 @@ function RobuxSigns.start(getPlots: () -> { PlotLike })
 					if price and pass then
 						local owner = e.plot.owner
 						local owned = owner ~= nil and Store.hasPass(owner, def.perk)
-						local text = if owned then "OWNED" else "R$ " .. pass.price
+						local text = if owned then "OWNED" else "R$ " .. RobuxSigns.price(pass)
 						if price.Text ~= text then
 							price.Text = text
 							Style.setButtonColor(price, if owned then Color3.fromRGB(110, 112, 120) else Style.GREEN)

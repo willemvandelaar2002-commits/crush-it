@@ -181,3 +181,11 @@ The comparison preview has no audio. Nothing was published.
 
 Audio implementation references: [Roblox sound objects](https://create.roblox.com/docs/sound/objects)
 and [Sound loading/playback API](https://create.roblox.com/docs/reference/engine/classes/Sound).
+
+## Game-feel sounds (31 Oct)
+Config.Sounds: Sell (ka-ching), Collect (coins), Click (every Style button via
+Style.feedback/Style.click), Roll (dice) + RevealTick per pedestal, rarity stings
+in RollReveal (Rare sparkle, Epic power-up, Legendary+ fanfare), Equip (clunk on a
+new crusher / bay change), CounterTick (soft tick while the bin number climbs, near
+the bin only). client/GameSounds reads CrusherState changes; Auto Collect's small
+2-second collects stay silent (needs a drop > 4 s of output and you near the bin).

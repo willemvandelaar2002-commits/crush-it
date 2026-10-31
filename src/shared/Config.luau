@@ -204,6 +204,17 @@ Config.Sounds = {
 	WoodCrush = 9120828958,
 	BoomHit = 140278004623742,
 	BoomCrush = 138533090376585,
+	-- 31 Oct: own sounds per moment (Creator Store, checked to load in Play)
+	Sell = 90531793028786, -- "ka-ching" when you sell scrap
+	Collect = 9113849583, -- coins thrown in when you collect the bin
+	Click = 15675059323, -- every UI button (Roblox's bright click)
+	Roll = 9114073627, -- dice roll when you roll the pedestals
+	RevealTick = 9114215633, -- one click per pedestal as it lands
+	RevealRare = 117011707307950, -- Rare reveal sparkle
+	RevealEpic = 3406813517, -- Epic power-up
+	RevealBig = 9067124098, -- Legendary and up: fanfare
+	Equip = 9125788628, -- a crusher clunks into a bay / is bought
+	CounterTick = 87437544236708, -- the money number over your bin ticking up
 }
 
 -- How each kind of object reacts. Sounds name Config.Sounds keys; the client

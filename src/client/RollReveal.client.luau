@@ -100,8 +100,12 @@ Run.Heartbeat:Connect(function(dt)
 		end
 	end end
 	for key,batch in batches do if now>=batch.at then
-		if batch.profile.rank>=2 and chime.IsLoaded and not chime.IsPlaying then
-			chime.PlaybackSpeed=batch.profile.pitch chime:Play()
+		-- 31 Oct: each rarity tier has its own sting (Config.Sounds)
+		local id=if batch.profile.rank>=4 then Config.Sounds.RevealBig elseif batch.profile.rank>=3 then Config.Sounds.RevealEpic
+			elseif batch.profile.rank>=2 then Config.Sounds.RevealRare else nil
+		if id and not chime.IsPlaying then
+			chime.SoundId="rbxassetid://"..id chime.Volume=if batch.profile.rank>=4 then .45 else .35
+			chime.PlaybackSpeed=1 chime:Play()
 		end
 		batches[key]=nil
 		finishedBatches[key]=now
