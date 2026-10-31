@@ -295,3 +295,4 @@
 - 2026-10-31: Crate card checked in Studio Play: livelier chest tilt/bob, softer rays, header/caption spacing fixed; blur clears on close. Willem's reference.
 - 2026-10-31: Every shop/boost/skip/offer price label now shows Roblox's live price (Store.livePrice); code prices are only a fallback. Game passes still have id 0, so 2x Cash / Production Boost / Lucky / Auto Collect show placeholder prices until their pass ids are filled in.
 - 2026-10-31: Game pass ids filled in (Production Boost, 2x Cash, Lucky, Auto Collect); small clickable Robux signs on every plot; new sounds for selling, collecting, rolling, reveals by rarity, equipping, UI clicks and the bin counter. Willem.
+- 2026-10-31: Robux signs moved right beside the walkway (x ±13) so they don't block the way to the stations. Willem.
