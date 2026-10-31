@@ -548,7 +548,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 
 	heading(pages.CRATES, "Crates", 1)
 	crateBanner(pages.CRATES, 2)
-	local disclose = label(pages.CRATES, "Each crate gives exactly one crusher. Chances are shown on every crusher and in See all rewards & chances.",
+	local disclose = label(pages.CRATES, "Each crate gives exactly one crusher. Tap the crate or a crusher to see all rewards & exact chances.",
 		UDim2.new(), UDim2.fromOffset(BANNER_W, 26), 1.5, 7)
 	disclose.LayoutOrder = 3
 	if rounded then

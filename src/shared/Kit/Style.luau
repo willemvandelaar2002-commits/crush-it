@@ -866,6 +866,111 @@ function Style.focusBlur(panel: Frame, size: number?): () -> ()
 	return require(script.Parent.ShowcaseMotion).focusBlur(panel, size)
 end
 
+-- Multicolour reward card (31 Oct, Factory Crate card): a bright diagonal
+-- gradient per rarity, thick navy outline, bright inner rim and a soft top
+-- highlight. Rarities without an entry get a gradient from their own colour.
+-- New API; existing menus are unchanged until they opt in.
+Style.RarityGradients = {
+	Epic = { C(214, 176, 255), C(150, 82, 255), C(70, 110, 255), C(60, 222, 255) },
+	Legendary = { C(255, 246, 204), C(255, 226, 52), C(255, 160, 32), C(255, 138, 40), C(92, 232, 255) },
+	Mythic = { C(255, 196, 232), C(255, 70, 180), C(150, 60, 232), C(70, 222, 255) },
+}
+function Style.rarityGradient(rarity: string, fallback: Color3?): ColorSequence
+	local list = Style.RarityGradients[rarity]
+	if not list then
+		local c = fallback or C(150, 180, 220)
+		return ColorSequence.new(Style.lighten(c, 0.35), Style.darken(c, 0.35))
+	end
+	local keys = {}
+	for i, c in list do
+		local at = (i - 1) / (#list - 1)
+		if i == #list and #list == 5 then at = 1 end
+		if i == 4 and #list == 5 then at = 0.8 end -- Legendary: the cyan is a narrow accent at the end
+		table.insert(keys, ColorSequenceKeypoint.new(at, c))
+	end
+	return ColorSequence.new(keys)
+end
+function Style.rewardCard(frame: GuiObject, rarity: string, fallback: Color3?)
+	frame.BackgroundColor3 = Color3.new(1, 1, 1)
+	frame.BackgroundTransparency = 0
+	frame.BorderSizePixel = 0
+	decoration(frame, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(0, 12) })
+	decoration(frame, "UIStroke", "Outline", { Name = "Outline", Color = INK, Thickness = 4, ApplyStrokeMode = Enum.ApplyStrokeMode.Border })
+	decoration(frame, "UIGradient", "RarityFill", { Name = "RarityFill", Color = Style.rarityGradient(rarity, fallback), Rotation = 50 })
+	local z = frame.ZIndex
+	local rim = decoration(frame, "Frame", "InnerRim", { Name = "InnerRim", Position = UDim2.fromOffset(3, 3), Size = UDim2.new(1, -6, 1, -6),
+		BackgroundTransparency = 1, ZIndex = z })
+	decoration(rim, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(0, 9) })
+	decoration(rim, "UIStroke", "Rim", { Name = "Rim", Color = Color3.new(1, 1, 1), Thickness = 2, Transparency = 0.25,
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border })
+	local shine = decoration(frame, "Frame", "TopHighlight", { Name = "TopHighlight", Position = UDim2.fromOffset(4, 4), Size = UDim2.new(1, -8, 0.42, 0),
+		BackgroundColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0, ZIndex = z })
+	decoration(shine, "UICorner", "Corner", { Name = "Corner", CornerRadius = UDim.new(0, 9) })
+	decoration(shine, "UIGradient", "Fade", { Name = "Fade", Rotation = 90, Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.62), NumberSequenceKeypoint.new(1, 1) }) })
+end
+
+-- Hover/focus pose for a showcase tile (31 Oct): grows, lifts and tilts a
+-- little; an optional art child grows a bit more; pressing compresses it;
+-- leaving (or clicking, unless resetOnClick = false) restores the original pose. Every change cancels the previous
+-- tweens, so repeated hovering never stacks. Returns a cleanup function.
+function Style.hoverLift(btn: GuiButton, props: { [string]: any }?): () -> ()
+	local o = props or {}
+	local scale = decoration(btn, "UIScale", "HoverScale", { Name = "HoverScale", Scale = 1 }) :: UIScale
+	local art = o.art :: GuiObject?
+	local artScale = if art then decoration(art, "UIScale", "HoverArtScale", { Name = "HoverArtScale", Scale = 1 }) :: UIScale else nil
+	local home, tilt = btn.Position, btn.Rotation
+	local hover, down = false, false
+	local tweens: { Tween } = {}
+	local conns: { RBXScriptConnection } = {}
+	local function play(target: Instance, goal: { [string]: any }, time: number)
+		local t = TweenService:Create(target, TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), goal)
+		table.insert(tweens, t)
+		t:Play()
+	end
+	local function update()
+		for _, t in tweens do t:Cancel() end
+		table.clear(tweens)
+		local up = hover or down
+		local time = if down then 0.08 else 0.16
+		play(scale, { Scale = if down then (o.press or 0.95) else if hover then (o.scale or 1.06) else 1 }, time)
+		play(btn, { Position = if up and not down then home + UDim2.fromOffset(0, -(o.lift or 4)) else home,
+			Rotation = if hover and not down then tilt + (o.tilt or 2) else tilt }, time)
+		if artScale then play(artScale, { Scale = if hover and not down then (o.artScale or 1.1) else 1 }, time) end
+	end
+	local function on(signal: RBXScriptSignal, fn: (...any) -> ()) table.insert(conns, signal:Connect(fn)) end
+	on(btn.MouseEnter, function() hover = true update() end)
+	on(btn.MouseLeave, function() hover = false down = false update() end)
+	on(btn.SelectionGained, function() hover = true update() end)
+	on(btn.SelectionLost, function() hover = false down = false update() end)
+	on(btn.InputBegan, function(input: InputObject)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch
+			or input.KeyCode == Enum.KeyCode.ButtonA then
+			down = true update()
+		end
+	end)
+	on(btn.InputEnded, function(input: InputObject)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch
+			or input.KeyCode == Enum.KeyCode.ButtonA then
+			down = false
+			if input.UserInputType == Enum.UserInputType.Touch then hover = false end
+			update()
+		end
+	end)
+	local function stop()
+		for _, c in conns do c:Disconnect() end
+		table.clear(conns)
+		for _, t in tweens do t:Cancel() end
+		table.clear(tweens)
+	end
+	-- a click usually opens something on top, so MouseLeave never comes: settle back
+	if btn:IsA("GuiButton") and o.resetOnClick ~= false then
+		on(btn.Activated, function() hover = false down = false update() end)
+	end
+	on(btn.Destroying, stop)
+	return stop
+end
+
 Style.GREEN = GREEN
 
 return Style

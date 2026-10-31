@@ -1,6 +1,40 @@
 # Shop, onboarding, analytics
 
-## 30 Oct Factory Crate presentation
+## 31 Oct Factory Crate card (illustrated, approved compact layout)
+
+`client/FactoryCrateCard.luau` builds the same card in Featured and Crates. It
+replaces the 30 Oct showcase layout below (the motion helpers stay).
+- Art: `shared/ShopArt.luau` holds the uploaded IDs (FactoryCrate-512 chest
+  70891364292898, FactoryCrate-Backplate 77076356662252, FactoryCrate-Illustrated
+  117905280807172 hi-res, unused). The backplate keeps its ~2.48:1 ratio (816 x 329
+  design size, scaled to the banner width) and already carries the border, studs,
+  glow, gears and shelf, so the card draws none of those itself. Fallbacks: a plain
+  blue/gold card and the old crate icon (Icons.FactoryCrate) until each image loads.
+- Layout: chest left (on the backplate glow) with the crate title under it;
+  "SOME OF WHAT'S INSIDE" over three reward cards on the right, all inside the
+  safe area (x 6-94 %, y 15-84 %). Each reward card has separate bands for
+  rarity / crusher icon / name (2 lines) / chance pill, so nothing overlaps.
+- Preview: Ducky Dynamo, Arcade Claw, Disco Destroyer (Card.Approved) while they
+  are still in the crate; a missing one is replaced by one crusher per rarity.
+  Icons, names, rarity and each crusher's own chance come from the game data.
+- Reward look: `Style.rewardCard(frame, rarity)` (new, reusable): diagonal
+  multicolour gradient per rarity (`Style.RarityGradients`: Epic lilac-violet-blue-
+  cyan, Legendary cream-yellow-gold with a cyan accent, Mythic pink-hot pink-purple-
+  cyan), #13172A outline, white inner rim, soft top highlight; static rays behind
+  the crusher.
+- Motion: the chest floats all the time the card is visible (4.5 px, 3 degrees,
+  3.4 s; paused when the shop is closed, offscreen or covered by details/reveal).
+  Reward cards are still until hovered/focused: `Style.hoverLift` (new) grows 6 %,
+  lifts 4 px, tilts 2 degrees, crusher art 10 %; press compresses to 95 %; leaving
+  or clicking restores the pose; every change cancels the previous tweens.
+- Clicking the chest or any reward opens the existing crate details (all nine
+  rewards with exact chances). Pricing, purchase, receipts, reveal unchanged.
+- Studio check 31 Oct (MockData): both tabs show the card, both images load with
+  clean transparency, chest moves on its own, hover/press/leave and fast repeated
+  hovering return to the exact pose, click opens details and the chest pauses
+  there, Back works, no new Output errors. Desktop only; phone layout not checked.
+
+## 30 Oct Factory Crate presentation (superseded layout)
 
 `client/FactoryCrateCard.luau` builds the same showcase in Featured and Crates.
 The crate is first in Featured for this presentation pass. The card is taller (338 authored pixels): blue/gold factory theme, large existing
