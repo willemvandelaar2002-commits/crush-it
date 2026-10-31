@@ -139,6 +139,7 @@ return function()
 	check(not P.quote(d,"someone-else","Charged",0,"foreign"),"foreign ownership rejected")
 	check(not P.quote(d,item.id,"Imaginary",0,"unknown"),"unknown finish rejected")
 	local total=0 for _,modifier in C.Modifiers do total+=modifier.weight check(modifier.name~="Frost" and modifier.name~="Fire","craft-only finishes stay out of rolls") end
-	check(total==100,"original modifier roll weights preserved")
+	check(total==100,"modifier roll weights add up to 100")
+	check(C.modifier("Polished").weight==0 and C.modifier("Charged").weight==0,"coatings only come from the Coating Lab (31 Oct)")
 	return {passed=checks}
 end

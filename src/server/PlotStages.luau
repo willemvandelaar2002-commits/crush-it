@@ -466,7 +466,19 @@ local function buildKit(plot,level)
 		if p:IsA("BasePart") and p.Name=="Panel" and p.Parent and BOARDS[p.Parent.Name] then
 			local casing=p.Parent:FindFirstChild("PanelCasing")
 			local w=math.max(p.Size.X,casing and casing.Size.X or 0)+1 local h=math.max(p.Size.Y,casing and casing.Size.Y or 0)+1
-			Assets.placeSized("BoardFrame"..suffix,kit,p.CFrame*CFrame.new(0,0,p.Size.Z/2+.3)*CFrame.Angles(0,math.pi,0),Vector3.new(w,h,.7))
+			local frame=Assets.placeSized("BoardFrame"..suffix,kit,p.CFrame*CFrame.new(0,0,p.Size.Z/2+.3)*CFrame.Angles(0,math.pi,0),Vector3.new(w,h,.7))
+			-- 31 Oct fix: a board can be hidden (the NEW FLOOR signs only show when that
+			-- floor is next to buy); its frame was left standing as a dark bar. Follow the panel.
+			if frame then
+				local parts={} for _,fp in frame:GetDescendants() do if fp:IsA("BasePart") then parts[fp]=fp.Transparency end end
+				local function follow()
+					local hidden=p.Transparency>=1
+					for fp,t in parts do if fp.Parent then fp.Transparency=if hidden then 1 else t end end
+				end
+				follow()
+				local conn=p:GetPropertyChangedSignal("Transparency"):Connect(follow)
+				kit.Destroying:Connect(function() conn:Disconnect() end)
+			end
 		end
 	end
 	-- road posts, only where nothing solid or planned stands

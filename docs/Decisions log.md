@@ -315,3 +315,5 @@
 - 2026-10-31: Floor checker down to about 2 % darker (Shade 0.95). Willem.
 - 2026-10-31: Fix: Robux signs on the plot did nothing when clicked (the SurfaceGui's active price button swallowed the click before the ClickDetector); the drawn button is now inactive. Fix: Prism Mech E prompt moved to a low anchor on the pad (it sat on the name tag, out of reach since the machine grew). Willem.
 - 2026-10-31: Fix: road posts (trim kit) stood out on the sand behind small plots; they now only go where there is visible plot floor, placed after the level's floors are shown. Willem.
+- 2026-10-31: Rolls only give Standard (85) or Rusty (15); Polished and Charged come only from the Coating Lab now (weight 0, already-rolled ones stay). Willem.
+- 2026-10-31: Fix: the dark bar on the top floor was the trim kit's frame around a hidden NEW FLOOR sign; board frames now hide and show with their board. Willem.

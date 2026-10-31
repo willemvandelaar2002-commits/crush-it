@@ -240,3 +240,5 @@ the bed width.
 - Floor checkerboard: a Texture of slightly darker 4-stud squares in the floor's own hue on each floor top (Style.checker tints the checker image with the part colour x Config.World.Checker.Shade 0.95, transparency 0.6 (31 Oct: subtle, ~2 %); StudsPerTile 8). Plot floors get it on the levels in CrusherConfig.FloorChecker (31 Oct: Factory V); the yellow yard floor around the map always has it (World.luau). One texture per part, no extra parts; the road is its own part so stays plain.
 
 - 31 Oct: road posts only where a ray down hits visible plot floor (no posts on the sand behind a small plot); the trim kit is built a moment after the level change (task.defer) so newly shown floors count.
+
+- 31 Oct: board frames follow their board panel (hidden when the panel is Transparency 1, e.g. the NEW FLOOR signs when that floor is not next).

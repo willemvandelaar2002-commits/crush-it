@@ -37,3 +37,5 @@ row headroom, idempotence, additive fusion bounds, small-part budgets, LOD, even
 hiding and cleanup. Imported place-only special crushers are not available in Git
 and require Studio checks. Studio Play/import, actual particle texture rendering,
 current events and full-plot performance remain unverified.
+
+- 31 Oct: rolls only give Standard (85%) or Rusty (15%). Polished and Charged are Coating Lab only (roll weight 0; crushers that already rolled them keep them).

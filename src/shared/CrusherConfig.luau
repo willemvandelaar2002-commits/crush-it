@@ -274,8 +274,10 @@ C.RarityObjects = {
 	Mythic = { "Planet" },
 }
 C.Modifiers = {
-	{ name = "Standard", weight = 80, mult = 1 }, { name = "Rusty", weight = 14, mult = 1.15 },
-	{ name = "Polished", weight = 5, mult = 1.5 }, { name = "Charged", weight = 1, mult = 2 },
+	-- 31 Oct: rolls only give Standard or Rusty; Polished and Charged are coatings
+	-- from the Coating Lab now (weight 0 keeps old rolled ones valid). Was 80/14/5/1.
+	{ name = "Standard", weight = 85, mult = 1 }, { name = "Rusty", weight = 15, mult = 1.15 },
+	{ name = "Polished", weight = 0, mult = 1.5 }, { name = "Charged", weight = 0, mult = 2 },
 }
 -- Applied at the late-game Coating Lab only; original roll weights stay intact.
 C.CraftModifiers = {{name="Frost",mult=1.65},{name="Fire",mult=1.8}}
