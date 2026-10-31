@@ -103,8 +103,8 @@ function Style.materialStuds(p: BasePart, enabled: boolean?, _faces: { Enum.Norm
 	return p.MaterialVariant == Style.Studs.MaterialVariant
 end
 
--- Checkerboard of lighter squares on a part's top face (Config.World.Checker).
--- Updated in place; enabled=false removes it.
+-- Checkerboard of slightly darker squares (same hue) on a part's top face
+-- (Config.World.Checker). Call again after recolouring the part. enabled=false removes it.
 function Style.checker(p: BasePart, enabled: boolean?)
 	local old = p:FindFirstChild("Checker")
 	if enabled == false then
@@ -118,7 +118,8 @@ function Style.checker(p: BasePart, enabled: boolean?)
 	t.Face = Enum.NormalId.Top
 	t.StudsPerTileU = look.StudsPerTile
 	t.StudsPerTileV = look.StudsPerTile
-	t.Color3 = look.Color
+	local c = p.Color
+	t.Color3 = Color3.new(c.R * look.Shade, c.G * look.Shade, c.B * look.Shade)
 	t.Transparency = look.Transparency
 	t.Parent = p
 end
