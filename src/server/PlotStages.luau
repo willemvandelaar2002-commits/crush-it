@@ -524,5 +524,13 @@ function V.sync(plot,level)
 		p.Transparency=if open then 1 else p:GetAttribute("DoorT") p.CanCollide=not open and p:GetAttribute("DoorC") p.CanQuery=not open and p:GetAttribute("DoorQ")
 	end
 	for _,p in v.trimParts do if p:GetAttribute("LeftDoor") and open then p.Transparency=1 end end
+	-- 31 Oct: floor colour per plot level (C.FloorColors; levels without one keep the authored colour)
+	local want=C.FloorColors[level]
+	for _,p in plot.model:GetDescendants() do
+		if p:IsA("BasePart") and ((p.Name=="Top" and p.Parent and p.Parent.Name=="Floor") or p.Name=="YardFloor" or p.Name=="FusionFloor") then
+			if p:GetAttribute("FloorColor")==nil then p:SetAttribute("FloorColor",p.Color) end
+			p.Color=want or p:GetAttribute("FloorColor")
+		end
+	end
 end
 return V

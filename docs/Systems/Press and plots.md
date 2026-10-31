@@ -234,3 +234,5 @@ the bed width.
 - LOCKED pedestal hints and the EMPTY / price words on bay walls only show within `CrusherConfig.QuietLabelDistance` (30 studs).
 - Trims: gold caps/feet and corner braces only on the outer columns of each bank (PlotStages `outerColumns`); trim road posts every `TrimPostSpacing` (24, was 12).
 - Scrap counter over the bin (client/ScrapCounter) is sized in studs (`CrusherConfig.ScrapCounter`, 11 x 2.6 studs, 12 above the bin) so it shrinks with distance, and hides beyond 80 studs (was a fixed 320x70 px up to 260 studs).
+
+- Floor colour per plot level: CrusherConfig.FloorColors (31 Oct: Factory V = bright red, PlotStages.sync).
