@@ -872,22 +872,29 @@ end
 -- New API; existing menus are unchanged until they opt in.
 Style.RarityGradients = {
 	Epic = { C(214, 176, 255), C(150, 82, 255), C(70, 110, 255), C(60, 222, 255) },
-	Legendary = { C(255, 246, 204), C(255, 226, 52), C(255, 160, 32), C(255, 138, 40), C(92, 232, 255) },
+	-- Legendary: the cyan is only a narrow accent at the end
+	Legendary = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, C(255, 246, 204)), ColorSequenceKeypoint.new(0.25, C(255, 226, 52)),
+		ColorSequenceKeypoint.new(0.5, C(255, 160, 32)), ColorSequenceKeypoint.new(0.8, C(255, 138, 40)),
+		ColorSequenceKeypoint.new(1, C(92, 232, 255)),
+	}),
 	Mythic = { C(255, 196, 232), C(255, 70, 180), C(150, 60, 232), C(70, 222, 255) },
+	-- 31 Oct, Candy Starter Pack card: candy Mythic, cash and cash-boost tiles
+	CandyMythic = { C(255, 183, 242), C(255, 66, 172), C(181, 42, 255), C(112, 68, 255), C(50, 250, 255) },
+	Cash = { C(255, 244, 163), C(205, 255, 83), C(88, 232, 46), C(20, 185, 109), C(41, 233, 219) },
+	CashBoost = { C(255, 244, 176), C(255, 225, 69), C(255, 179, 21), C(255, 122, 41), C(255, 93, 175) },
 }
+-- A palette name from Style.RarityGradients (a list of colours, evenly spaced,
+-- or a ready ColorSequence); unknown names fade from the fallback colour.
 function Style.rarityGradient(rarity: string, fallback: Color3?): ColorSequence
-	local list = Style.RarityGradients[rarity]
-	if not list then
+	local entry = Style.RarityGradients[rarity]
+	if typeof(entry) == "ColorSequence" then return entry end
+	if not entry then
 		local c = fallback or C(150, 180, 220)
 		return ColorSequence.new(Style.lighten(c, 0.35), Style.darken(c, 0.35))
 	end
 	local keys = {}
-	for i, c in list do
-		local at = (i - 1) / (#list - 1)
-		if i == #list and #list == 5 then at = 1 end
-		if i == 4 and #list == 5 then at = 0.8 end -- Legendary: the cyan is a narrow accent at the end
-		table.insert(keys, ColorSequenceKeypoint.new(at, c))
-	end
+	for i, c in entry do table.insert(keys, ColorSequenceKeypoint.new((i - 1) / (#entry - 1), c)) end
 	return ColorSequence.new(keys)
 end
 function Style.rewardCard(frame: GuiObject, rarity: string, fallback: Color3?)

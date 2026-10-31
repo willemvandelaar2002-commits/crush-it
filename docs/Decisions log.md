@@ -305,3 +305,4 @@
 - 2026-10-31: Checkerboard squares made smaller (4 studs, like the reference) and now a texture instead of parts; also on the yellow yard floor around the map. Willem.
 - 2026-10-31: Checker squares are now a slightly darker shade of the floor's own colour instead of white, so the two tones stay close (light/dark yellow, light/dark red). Willem.
 - 2026-10-31: Factory Crate card rebuilt on the illustrated art (backplate + chest, IDs in shared/ShopArt): chest floats on the left, three multicolour reward cards (Ducky Dynamo, Arcade Claw, Disco Destroyer) under SOME OF WHAT'S INSIDE that react only to hover/press. New reusable Style.rewardCard / Style.hoverLift. Willem.
+- 2026-10-31: Starter Pack card rebuilt on the candy art (background 85230684065313): Candy Colossus floating left, three guaranteed-reward tiles (Mythic crusher, live cash amount, 2x Cash boost) and VIEW PACK on the right; all open the existing details. Willem.

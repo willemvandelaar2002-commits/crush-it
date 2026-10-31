@@ -1,5 +1,37 @@
 # Shop, onboarding, analytics
 
+## 31 Oct Candy Starter Pack card
+
+`client/StarterPackCard.luau` builds the Starter Pack card in Featured and Packs
+(replaces the old gradient banner; ShopPanel passes the live contents in).
+- Art: `ShopArt.CandyStarter.Backplate` = 85230684065313 (CandyStarter-Background.png,
+  source kept in `assets/shop-card/`), native 1974 x 797 (~2.48:1), 816 x 329 design
+  size scaled to the banner width. A plain purple/pink card shows until it loads.
+  Candy Colossus, Icons.Cash and Icons.DoubleCash are the existing icons, unchanged.
+- Layout: Candy Colossus large on the left (on the mint glow); right side: STARTER
+  PACK + ONE-TIME PACK tag, three tiles (MYTHIC Candy Colossus GUARANTEED / CASH live
+  amount + "1H EARNINGS" / BOOST 2x Cash + "15 MIN"), glossy green VIEW PACK with a
+  dark lower edge; all clear of the corner sweets and the lower shelf.
+- Values are live: crusher, rarity, cashMinutes and boost minutes from
+  OfferConfig.StarterPack / BoostConfig; the cash amount = Store.cashFor(CashRate,
+  cashMinutes), same as the details page (falls back to "1H OF CASH" at rate 0).
+  Owned: tag and button switch to OWNED (grey). No odds: everything is guaranteed.
+- Colours: `Style.rewardCard` with the new palettes CandyMythic, Cash and CashBoost
+  in `Style.RarityGradients` (palettes are colour lists, evenly spaced, or a ready
+  ColorSequence; Legendary moved to one, unchanged look).
+- Motion: Candy Colossus floats (4 px, 3 degrees, 3.4 s) only while the card is
+  visible and not covered by details/reveal; tiles use `Style.hoverLift` (6 %, lift
+  4 px, tilt 3 degrees, icon 10 %, press 95 %); VIEW PACK uses Style.feedback.
+- Hero, tiles and VIEW PACK all open the existing Starter Pack details (price,
+  ownership and purchase stay there).
+- Studio check 31 Oct (MockData): Featured and Packs both show it; backplate, Candy
+  Colossus, cash and 2x cash icons load with clean transparency; hero moves on its
+  own and pauses on the hidden tab and under details; hover/press/leave on all
+  three tiles and the button return to the exact pose; VIEW PACK opens details
+  (R$ 69 live price), Back works; OWNED switch checked with a client-only attribute
+  (no purchase). No new Output errors (one Roblox 500 permission hiccup on the
+  Arcade Claw icon, unrelated). Desktop only; phone not checked.
+
 ## 31 Oct Factory Crate card (illustrated, approved compact layout)
 
 `client/FactoryCrateCard.luau` builds the same card in Featured and Crates. It

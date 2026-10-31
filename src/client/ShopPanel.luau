@@ -25,6 +25,7 @@ local BoostConfig = require(ReplicatedStorage.Shared.BoostConfig)
 local CrusherConfig = require(ReplicatedStorage.Shared.CrusherConfig)
 local CrusherIcons = require(ReplicatedStorage.Shared.CrusherIcons)
 local FactoryCrateCard = require(script.Parent.FactoryCrateCard)
+local StarterPackCard = require(script.Parent.StarterPackCard)
 
 local player = Players.LocalPlayer
 local C = Color3.fromRGB
@@ -407,24 +408,26 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 
 	-- Banners --------------------------------------------------------------------------
 	local function starterBanner(page: ScrollingFrame, order: number)
-		local f = banner(page, order, { C(255, 120, 200), C(240, 70, 170), C(130, 120, 255), C(90, 220, 255) })
-		glow(f, UDim2.fromOffset(96, 88), 150)
-		icon(f, crusherImage(starter.crusher), UDim2.fromOffset(4, -4), UDim2.fromOffset(184, 184), 9)
-		twoTone(f, "STARTER", "#FF7AD2", "PACK", "#62E9FF", UDim2.fromOffset(196, 8), UDim2.fromOffset(380, 58), 9)
-		local tag, tagText = pill(f, starter.tag, UDim2.new(1, -196, 0, 14), UDim2.fromOffset(180, 34), NAVY_DARK, C(255, 110, 190), 9)
-		itemChip(f, crusherImage(starter.crusher), typeName(starter.crusher), UDim2.fromOffset(196, 70), 9)
-		plus(f, UDim2.fromOffset(302, 96), 9)
-		itemChip(f, Icons.Cash, (starter.cashMinutes // 60) .. "h cash", UDim2.fromOffset(330, 70), 9)
-		plus(f, UDim2.fromOffset(436, 96), 9)
-		itemChip(f, (Icons :: any)[boost.icon] or Icons.DoubleCash, boost.title .. " " .. starter.boost.minutes .. "m", UDim2.fromOffset(464, 70), 9)
-		local view = bigButton(f, "VIEW PACK", UDim2.new(1, -236, 0, 74), UDim2.fromOffset(220, 82), nil, 10)
-		view.Activated:Connect(function() openDetail(starterDetail) end)
-		table.insert(refreshers, function()
-			local owned = owns(starter.id)
-			tagText.Text = if owned then "OWNED" else starter.tag
-			tag.BackgroundColor3 = if owned then C(40, 140, 70) else NAVY_DARK
-			setCaption(view, if owned then "OWNED" else "VIEW PACK", if owned then GREY else Style.GREEN)
-		end)
+		-- 31 Oct: candy card (client/StarterPackCard); contents from OfferConfig/BoostConfig
+		local function cashText(): (string, string)
+			local m = starter.cashMinutes
+			local span = if m % 60 == 0 then (m // 60) .. "H" else m .. " MIN"
+			local cash = Store.cashFor((player:GetAttribute("CashRate") :: number?) or 0, m * 60)
+			return if cash > 0 then Format.cash(cash) else span .. " OF CASH", span .. " EARNINGS"
+		end
+		StarterPackCard.build(page, {
+			width = BANNER_W, order = order, gate = panel,
+			enabled = function()
+				local reveal = gui:FindFirstChild("CrateReveal") :: GuiObject?
+				return not detail.Visible and not (reveal and reveal.Visible)
+			end,
+			open = function() openDetail(starterDetail) end,
+			crusherImage = crusherImage(starter.crusher), crusherName = typeName(starter.crusher), rarity = starter.rarity,
+			cashIcon = Icons.Cash, cashText = cashText,
+			boostIcon = (Icons :: any)[boost.icon] or Icons.DoubleCash, boostTitle = boost.title, boostMinutes = starter.boost.minutes,
+			owned = function() return owns(starter.id) end,
+			onRefresh = function(f) table.insert(refreshers, f) f() end,
+		})
 	end
 	local function crateArt(parent: Instance, pos: UDim2, size: number, z: number): Frame
 		-- the Factory Crate image (29 Oct; replaces the blue crate drawn in UI)
