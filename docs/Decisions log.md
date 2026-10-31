@@ -298,3 +298,4 @@
 - 2026-10-31: Robux signs moved right beside the walkway (x ±13) so they don't block the way to the stations. Willem.
 - 2026-10-31: Robux signs: Auto Collect beside the bin, 2x Cash beside Sell, Lucky by the road, Production Boost sign removed. Collect coin sound and bin counter tick removed. Willem.
 - 2026-10-31: Factory V plot floor (main floor, rear yard, fusion wing) turns bright red (CrusherConfig.FloorColors[4]); other levels keep the grey-blue. Willem's idea.
+- 2026-10-31: Factory V floor red a bit deeper (200,38,38) so the studs show; a stud texture overlay was tried and looked washed out. Willem.

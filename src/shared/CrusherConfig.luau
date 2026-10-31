@@ -25,7 +25,7 @@ local C = {
 		{ x = -42, z = 96, yaw = math.pi, perks = { "DoubleCash" } },
 		{ x = 13, z = 74, yaw = -math.pi / 2, perks = { "Lucky" } },
 	},
-	FloorColors = { [4] = Color3.fromRGB(235, 55, 50) }, -- 31 Oct: plot floor colour per plot level (4 = Factory V: bright red)
+	FloorColors = { [4] = Color3.fromRGB(200, 38, 38) }, -- 31 Oct: plot floor colour per plot level (4 = Factory V: red; a bit deeper so the studs show)
 	PlaqueDetailDistance = 16, -- 30 Oct: bay plaques show full detail (rarity, LV a > b, MAX, REMOVE) within this many studs
 	TravelCooldown = 1.5, HubTravelZ = 62, -- top travel buttons; hub arrival in front of the Mega Crusher
 	CashPacks = { CashSmall = 60, CashMedium = 300, CashLarge = 1200 },
