@@ -61,9 +61,6 @@ local function ensure()
 	board, label, scale = b, t, s
 end
 
-local lastTick = 0
-local tick = Instance.new("Sound") tick.Name = "CounterTick" tick.Volume = 0.12
-tick.SoundId = "rbxassetid://" .. (require(RS.Shared.Config).Sounds.CounterTick :: number)
 local last = 0
 RunService.RenderStepped:Connect(function(dt)
 	local now = os.clock()
@@ -74,16 +71,6 @@ RunService.RenderStepped:Connect(function(dt)
 	else shown += (target - shown) * math.min(1, dt * 4) end -- roll up smoothly
 	if target - shown < 0.5 then shown = target end
 	label.Text = if shown >= 1 then money(shown) else ""
-	-- 31 Oct: a soft tick while the number climbs (only near the bin, max ~6/s)
-	if target - shown >= 1 and now - lastTick > 0.16 then
-		local char = player.Character local root = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
-		local adornee = board.Adornee :: BasePart?
-		if root and adornee and (root.Position - adornee.Position).Magnitude < 40 then
-			lastTick = now
-			local s = tick:Clone() s.PlaybackSpeed = 1.6 + math.random() * 0.2 s.Parent = game:GetService("SoundService") s:Play()
-			game:GetService("Debris"):AddItem(s, 2)
-		end
-	end
 	-- a little pulse while it climbs
 	scale.Scale = 1 + math.min(.12, (target - shown) / math.max(1, target) * .6)
 end)

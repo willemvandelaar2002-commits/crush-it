@@ -66,12 +66,11 @@ Net.event("CrusherState").OnClientEvent:Connect(function(v)
 	local drop = prev.available - last.available
 	local rate = tonumber(v.rate) or 0
 	if drop > 0 and drop > rate * 4 and nearBin() and (last.carried > prev.carried or last.cash > prev.cash) then
-		play(S.Collect, 0.45, 1.05)
+		-- (31 Oct: no coin sound on collect, Willem found it annoying)
 		if last.cash > prev.cash then task.delay(0.1, function() play(S.Sell, 0.55) end) end
 	end
 	if last.carried < prev.carried and last.cash > prev.cash then
 		play(S.Sell, 0.6)
-		if last.cash - prev.cash > prev.cash * 0.5 then task.delay(0.15, function() play(S.Collect, 0.35, 1.2) end) end
 	end
 	if last.items > prev.items or last.bays ~= prev.bays then
 		play(S.Equip, 0.3, 1.15)

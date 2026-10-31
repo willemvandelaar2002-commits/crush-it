@@ -19,9 +19,11 @@ local C = {
 	RobuxSignSize = Vector2.new(6, 4),
 	RobuxSignSpots = {
 		-- 31 Oct: right beside the walkway (Willem: they blocked the way to the roller)
-		{ x = -13, z = 64, yaw = math.pi / 2, perks = { "AutoCollect" } },
-		{ x = -13, z = 82, yaw = math.pi / 2, perks = { "DoubleCash" } },
-		{ x = 13, z = 74, yaw = -math.pi / 2, perks = { "AutoCrush", "Lucky" } },
+		-- (31 Oct, later: Auto Collect beside the bin, 2x Cash beside Sell, Lucky
+		-- by the road; no Production Boost sign)
+		{ x = -58, z = 78, yaw = math.pi / 2, perks = { "AutoCollect" } },
+		{ x = -42, z = 96, yaw = math.pi, perks = { "DoubleCash" } },
+		{ x = 13, z = 74, yaw = -math.pi / 2, perks = { "Lucky" } },
 	},
 	PlaqueDetailDistance = 16, -- 30 Oct: bay plaques show full detail (rarity, LV a > b, MAX, REMOVE) within this many studs
 	TravelCooldown = 1.5, HubTravelZ = 62, -- top travel buttons; hub arrival in front of the Mega Crusher

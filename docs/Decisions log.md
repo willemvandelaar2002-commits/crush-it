@@ -296,3 +296,4 @@
 - 2026-10-31: Every shop/boost/skip/offer price label now shows Roblox's live price (Store.livePrice); code prices are only a fallback. Game passes still have id 0, so 2x Cash / Production Boost / Lucky / Auto Collect show placeholder prices until their pass ids are filled in.
 - 2026-10-31: Game pass ids filled in (Production Boost, 2x Cash, Lucky, Auto Collect); small clickable Robux signs on every plot; new sounds for selling, collecting, rolling, reveals by rarity, equipping, UI clicks and the bin counter. Willem.
 - 2026-10-31: Robux signs moved right beside the walkway (x ±13) so they don't block the way to the stations. Willem.
+- 2026-10-31: Robux signs: Auto Collect beside the bin, 2x Cash beside Sell, Lucky by the road, Production Boost sign removed. Collect coin sound and bin counter tick removed. Willem.

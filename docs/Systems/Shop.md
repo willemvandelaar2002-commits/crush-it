@@ -154,6 +154,6 @@ Pass ids: Production Boost (perk AutoCrush) 2060699266, 2x Cash 2039584674, Luck
 Earnings (2039938725) passes are not used. Prices everywhere come from Roblox
 (Store.livePrice on the client, RobuxSigns.price on the server).
 Small Robux signs (6x4 studs, CrusherConfig.RobuxSignSize) on every plot, facing
-the walkway (CrusherConfig.RobuxSignSpots): Auto Collect by the bin, 2x Cash by
-Sell, Production Boost + Lucky by the roller. Click = pass prompt; OWNED on the
+the walkway (CrusherConfig.RobuxSignSpots): Auto Collect beside the bin, 2x Cash beside
+Sell, Lucky by the road (no Production Boost sign). Click = pass prompt; OWNED on the
 owner's own signs.
