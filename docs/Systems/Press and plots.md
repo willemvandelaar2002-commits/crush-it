@@ -236,4 +236,4 @@ the bed width.
 - Scrap counter over the bin (client/ScrapCounter) is sized in studs (`CrusherConfig.ScrapCounter`, 11 x 2.6 studs, 12 above the bin) so it shrinks with distance, and hides beyond 80 studs (was a fixed 320x70 px up to 260 studs).
 
 - Floor colour per plot level: CrusherConfig.FloorColors (31 Oct: Factory V = bright red, PlotStages.sync).
-- Floor patches: lighter blocky patches (CrusherConfig.FloorPatchColors / FloorPatchCell, 8-stud cells by noise, runs merged; about 60 parts) give the floor depth from afar. 31 Oct: Factory V only.
+- Floor studs: CrusherConfig.FloorStudTile (Factory V = 2: studs twice as big, a runtime copy of the Studs MaterialVariant named StudsX2) so the stud pattern reads from a distance. (The random lighter patches tried first were dropped.)

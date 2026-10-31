@@ -300,3 +300,4 @@
 - 2026-10-31: Factory V plot floor (main floor, rear yard, fusion wing) turns bright red (CrusherConfig.FloorColors[4]); other levels keep the grey-blue. Willem's idea.
 - 2026-10-31: Factory V floor red a bit deeper (200,38,38) so the studs show; a stud texture overlay was tried and looked washed out. Willem.
 - 2026-10-31: Factory V floor gets lighter red blocky patches (like the reference's two-tone grass) so it doesn't look flat from a distance. Willem.
+- 2026-10-31: Factory V floor: random lighter patches dropped; floor studs are twice as big instead (StudsX2 variant) so the pattern shows from afar, like the reference. Willem.

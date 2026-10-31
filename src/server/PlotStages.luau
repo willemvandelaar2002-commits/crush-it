@@ -534,37 +534,23 @@ function V.sync(plot,level)
 			table.insert(floors,p)
 		end
 	end
-	-- Lighter blocky patches over the floor (like the reference's two-tone
-	-- grass), so the floor still has depth from a distance where the studs fade.
-	-- Cells of C.FloorPatchCell studs picked by smooth noise; runs merged per row.
-	local old=plot.model:FindFirstChild("FloorPatches") if old then old:Destroy() end
-	local patch=C.FloorPatchColors[level]
-	if patch then
-		local folder=Instance.new("Model") folder.Name="FloorPatches"
-		local CELL=C.FloorPatchCell local o=plot.origin
-		for _,top in floors do
-			local cf,size=top.CFrame,top.Size
-			local nx,nz=math.floor(size.X/CELL),math.floor(size.Z/CELL)
-			for iz=0,nz-1 do
-				local runStart=nil
-				for ix=0,nx do
-					local on=false
-					if ix<nx then
-						local l=o:PointToObjectSpace(cf*Vector3.new(-size.X/2+(ix+.5)*CELL,0,-size.Z/2+(iz+.5)*CELL))
-						on=math.abs(l.X)>C.Layout.RoadHalf+3 and math.noise(l.X/38,l.Z/38,7.3)>.08
-					end
-					if on and not runStart then runStart=ix
-					elseif not on and runStart then
-						local x0,x1=-size.X/2+runStart*CELL,-size.X/2+ix*CELL
-						local p=Instance.new("Part") p.Name="FloorPatch" p.Anchored=true p.CanCollide=false p.CanQuery=false p.CanTouch=false p.CastShadow=false
-						p.Size=Vector3.new(x1-x0,.12,CELL) p.CFrame=cf*CFrame.new((x0+x1)/2,size.Y/2+.06,-size.Z/2+(iz+.5)*CELL)
-						p.Color=patch p.Material=top.Material p.MaterialVariant=top.MaterialVariant p.Parent=folder
-						runStart=nil
-					end
-				end
-			end
+	-- Bigger studs on the floor (31 Oct, like the reference's grass): a copy of
+	-- the Studs variant with C.FloorStudTile studs per tile, so the stud
+	-- pattern still reads from a distance. Levels without an entry keep normal studs.
+	local tile=C.FloorStudTile[level]
+	local variant=nil
+	if tile then
+		local name="StudsX"..tile
+		local MS=game:GetService("MaterialService")
+		variant=MS:FindFirstChild(name)
+		if not variant then
+			local base=MS:FindFirstChild(Style.Studs.MaterialVariant,true)
+			if base then variant=base:Clone() variant.Name=name variant.StudsPerTile=tile variant.Parent=MS end
 		end
-		folder.Parent=plot.model
+	end
+	for _,p in floors do
+		if p:GetAttribute("FloorVariant")==nil then p:SetAttribute("FloorVariant",p.MaterialVariant) end
+		p.MaterialVariant=if variant then variant.Name else p:GetAttribute("FloorVariant")
 	end
 end
 return V
