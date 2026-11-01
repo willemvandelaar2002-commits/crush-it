@@ -214,7 +214,7 @@ a 0 id shows "SOON" and can't be bought. Fill the ids in Store.luau only.
 | Auto Crush | 199 | Crushes for you (AUTO switch on the CRUSH button), keeps you from the AFK kick |
 | 2x Cash | 249 | Double cash per crush |
 | Lucky | 149 | 2x Golden and Diamond chance |
-| Offline Earnings | 149 | 50% of your normal rate while offline, up to 8h |
+| Offline Earnings | 149 | (old pass, retired 30 Oct) offline cash is free: 10% of your normal rate, up to 6 h (1 Nov; was 50%, 8 h); 2x / 5x on the welcome-back card |
 
 | Product | Price | What it gives |
 |---|---|---|

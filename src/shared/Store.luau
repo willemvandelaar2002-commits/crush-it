@@ -77,7 +77,8 @@ end
 -- Offline earnings (30 Oct: free for everyone): this share of the normal rate
 -- for up to MaxHours. On the welcome-back card the player collects it, or pays
 -- for a multiplier (product id -> multiplier) that pays that many times it.
-Store.Offline = { Share = 0.5, MaxHours = 8, MinAwayMinutes = 5,
+-- 1 Nov: 10% for up to 6 h (was 50% for 8 h: a night away paid more than hours of play)
+Store.Offline = { Share = 0.1, MaxHours = 6, MinAwayMinutes = 5,
 	Multipliers = { OfflineX2 = 2, OfflineX5 = 5 },
 	FallbackMinutes = 30, -- a multiplier receipt with no away amount on record pays this many minutes of earnings x the multiplier
 }
