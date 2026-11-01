@@ -17,6 +17,11 @@ local text = Instance.new("TextLabel")
 text.Name = "Countdown" text.AnchorPoint = Vector2.new(1, 1) text.Position = UDim2.new(1, -10, 1, -4)
 text.Size = UDim2.fromOffset(300, 20) text.BackgroundTransparency = 1 text.TextSize = 17
 text.TextXAlignment = Enum.TextXAlignment.Right text.Visible = false text.Parent = gui
+-- 1 Nov: on touch screens the jump button sits bottom-right and the hotbar
+-- bottom centre: show it top-right, just under the travel buttons instead
+if game:GetService("UserInputService").TouchEnabled then
+	text.AnchorPoint = Vector2.new(1, 0) text.Position = UDim2.new(1, -10, 0, 50) text.Size = UDim2.fromOffset(220, 18)
+end
 Style.text(text, 1.5)
 text.TextTransparency = .1
 

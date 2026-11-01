@@ -49,3 +49,7 @@ no profile injection or purchase was used. Rojo build and whitespace passed.
 - `RowOutline` Highlights (outline only, Occluded) on the crushers of the 2 nearest active rows (`HIGHLIGHT_ROWS`), 12 in total, staying under Roblox's 31 limit.
 - Server aura (`CrusherRowVisuals`): pillars 0.7 thick, plus a new Top bar, both at 0.05 base transparency.
 - Avoid the `forcefield_glow_main` texture for the haze: it reads as grey shards.
+
+## Phones and low graphics (1 Nov)
+
+When `Style.lite()` is true: no rarity outlines (Highlights), no rising haze, half the sparkle rate and half the activation burst. The light curtain and glint stay.

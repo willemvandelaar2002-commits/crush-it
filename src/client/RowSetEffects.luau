@@ -4,7 +4,10 @@
 -- whole bay width and (for the two nearest rows, own plot first) a rarity
 -- outline on every crusher. Highlights are capped at 12 for the 31 limit.
 local E={}
-local HIGHLIGHT_ROWS=2
+-- 1 Nov: phones/tablets and low graphics (Style.lite) get no outlines, no haze
+-- and half the sparkles: Highlights and big translucent smoke are the costly part
+local LITE=require(game:GetService("ReplicatedStorage").Shared.Kit.Style).lite()
+local HIGHLIGHT_ROWS=if LITE then 0 else 2
 local CURTAIN=9 -- studs the light curtain rises above the rail
 local V,F=Vector3.new,CFrame.new
 -- sparkles for every full rarity set (Common/Uncommon/Rare softer)
@@ -104,7 +107,7 @@ function E.new(world)
 			if slot.rarity~=rarity then
 				slot.rarity=rarity slot.glint.Color=color:Lerp(white,.65)
 				for _,e in slot.emitters do e:Clear() e.Color=ColorSequence.new(color:Lerp(white,.5),color)
-					e.Rate=if TOP[rarity] then 16 elseif rarity=="Epic" then 12 else 8
+					e.Rate=(if TOP[rarity] then 16 elseif rarity=="Epic" then 12 else 8)*(if LITE then .5 else 1)
 				end
 				for _,b in slot.beams do b.Color=ColorSequence.new(color:Lerp(white,.25),color) end
 				for _,h in slot.hazes do h:Clear() h.Color=ColorSequence.new(color) end
@@ -115,14 +118,14 @@ function E.new(world)
 				and (not previous or now-previous.lastBurst>=2.5)
 			if #rails>0 and at~=nil then history[model]={activation=at,lastBurst=if burst then now else if previous then previous.lastBurst else -math.huge} end
 			for i,e in slot.emitters do local rail=rails[i] e.Enabled=rail~=nil
-				slot.beams[i].Enabled=rail~=nil slot.hazes[i].Enabled=rail~=nil
+				slot.beams[i].Enabled=rail~=nil slot.hazes[i].Enabled=rail~=nil and not LITE
 				local hl=slot.outlines[i] local target=if rail and candidate.outline then crusherAt(model,rail) else nil
 				if hl.Adornee~=target then hl.Adornee=target end hl.Enabled=target~=nil
 				if rail then
 					local host=slot.hosts[i] host.Size=V(math.max(1,rail.Size.X),.1,1.2)
 					host.CFrame=rail.CFrame*F(0,.2,0)
 					slot.beams[i].Width0=rail.Size.X slot.beams[i].Width1=rail.Size.X
-					if burst then e:Emit(if TOP[rarity] then 30 else 22) end
+					if burst then e:Emit((if TOP[rarity] then 30 else 22)//(if LITE then 2 else 1)) end
 				else e:Clear() end
 			end
 		end

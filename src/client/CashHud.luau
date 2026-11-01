@@ -19,7 +19,10 @@ function CashHud.start(gui: ScreenGui)
 	local camera = workspace.CurrentCamera
 	for _ = 1, 40 do if camera.ViewportSize.X > 10 then break end task.wait(0.05) end -- real size first
 	local TOUCH = Style.compact()
-	local height = if TOUCH then 32 else 64
+	-- 1 Nov: tablets get the big layout, but cash moves to the top-left column
+	-- (bottom-left is the thumbstick on any touch screen)
+	local TABLET = not TOUCH and game:GetService("UserInputService").TouchEnabled
+	local height = if TOUCH then 32 elseif TABLET then 48 else 64
 	local function make(class: string, props: { [string]: any }, parent: Instance?): any
 		local v = Instance.new(class)
 		for k, x in props do (v :: any)[k] = x end
@@ -27,15 +30,15 @@ function CashHud.start(gui: ScreenGui)
 		return v
 	end
 	local cashLabel = make("TextLabel", {
-		Name = "Cash", AnchorPoint = if TOUCH then Vector2.new(0, 0) else Vector2.new(0, 1),
-		Position = if TOUCH then UDim2.new(0, 12, 0, 80) else UDim2.new(0, 84, 1, -42),
-		Size = UDim2.fromOffset(if TOUCH then 150 else 320, height), BackgroundTransparency = 1, Font = Enum.Font.FredokaOne,
+		Name = "Cash", AnchorPoint = if TOUCH or TABLET then Vector2.new(0, 0) else Vector2.new(0, 1),
+		Position = if TOUCH then UDim2.new(0, 12, 0, 80) elseif TABLET then UDim2.new(0, 14, 0, 118) else UDim2.new(0, 84, 1, -42),
+		Size = UDim2.fromOffset(if TOUCH then 150 elseif TABLET then 260 else 320, height), BackgroundTransparency = 1, Font = Enum.Font.FredokaOne,
 		TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left,
 		TextColor3 = Color3.fromRGB(110, 255, 90), Text = "$0",
 	}, gui)
 	make("UIStroke", { Thickness = 4, Color = Color3.fromRGB(20, 40, 15) }, cashLabel)
 	Style.bold(cashLabel, 4) -- 30 Oct: heavy drop outline like the reference
-	if not TOUCH then
+	if not TOUCH and not TABLET then
 		local icon = make("Frame", { Name = "CashIcon", AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 12, 1, -40),
 			Size = UDim2.fromOffset(66, 66), BackgroundTransparency = 1, Rotation = -10 }, gui)
 		Style.image(icon, Icons.Cash)
@@ -43,7 +46,7 @@ function CashHud.start(gui: ScreenGui)
 
 	-- Friend boost line; the + opens Roblox's invite dialog.
 	local row = make("Frame", { Name = "FriendBoost", AnchorPoint = Vector2.new(0, 1),
-		Position = if TOUCH then UDim2.new(0, 12, 0, 136) else UDim2.new(0, 14, 1, -10),
+		Position = if TOUCH then UDim2.new(0, 12, 0, 136) elseif TABLET then UDim2.new(0, 14, 0, 196) else UDim2.new(0, 14, 1, -10),
 		Size = UDim2.fromOffset(if TOUCH then 170 else 260, if TOUCH then 22 else 30), BackgroundTransparency = 1 }, gui)
 	local label = make("TextLabel", { Size = UDim2.new(1, -40, 1, 0), BackgroundTransparency = 1, TextScaled = true,
 		TextXAlignment = Enum.TextXAlignment.Left, Text = "Friend Boost: 0%" }, row)
@@ -52,6 +55,12 @@ function CashHud.start(gui: ScreenGui)
 	local invite = make("TextButton", { AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(1, 0, 0.5, 0),
 		Size = UDim2.fromOffset(if TOUCH then 30 else 30, if TOUCH then 30 else 30), Text = "+", TextScaled = true }, row)
 	Style.button(invite)
+	-- 1 Nov: a 44 px invisible touch area around the small + (phones)
+	if TOUCH or TABLET then
+		local hit = make("TextButton", { Name = "TouchArea", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromOffset(46, 46), BackgroundTransparency = 1, Text = "", ZIndex = invite.ZIndex + 1 }, invite)
+		hit.Activated:Connect(function() invite:SetAttribute("Tapped", os.clock()) end)
+	end
 	local function refreshFriends()
 		local boost = (player:GetAttribute("FriendBoost") :: number?) or 0
 		label.Text = string.format("Friend Boost: %d%%", math.floor(boost * 100 + 0.5))
@@ -61,11 +70,13 @@ function CashHud.start(gui: ScreenGui)
 	player:GetAttributeChangedSignal("FriendBoost"):Connect(refreshFriends)
 	label:GetPropertyChangedSignal("TextBounds"):Connect(refreshFriends)
 	refreshFriends()
-	invite.Activated:Connect(function()
+	local function promptInvite()
 		local social = game:GetService("SocialService")
 		local ok, can = pcall(function() return social:CanSendGameInviteAsync(player) end)
 		if ok and can then pcall(function() social:PromptGameInvite(player) end) end
-	end)
+	end
+	invite.Activated:Connect(promptInvite)
+	invite:GetAttributeChangedSignal("Tapped"):Connect(promptInvite)
 
 	-- Smooth count-up on gains, instant on spends, plus a short "+$X" pop.
 	local shown = make("NumberValue", { Value = (player:GetAttribute("Cash") :: number?) or 0 }, gui)

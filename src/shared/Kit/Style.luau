@@ -434,7 +434,21 @@ function Style.compact(): boolean
 	local input = game:GetService("UserInputService")
 	local camera = workspace.CurrentCamera
 	-- (right at start-up the camera can still report a 1x1 viewport: ignore that)
-	return (input.TouchEnabled and not input.KeyboardEnabled) or (camera ~= nil and camera.ViewportSize.X > 10 and camera.ViewportSize.X < 1000)
+	-- 1 Nov: decided by screen size, not by touch: tablets (iPad ~1180x820) have room
+	-- for the full layout; phones in landscape are under ~520 px tall
+	if camera == nil or camera.ViewportSize.X <= 10 then return input.TouchEnabled and not input.KeyboardEnabled end
+	local v = camera.ViewportSize
+	return v.X < 1000 or math.min(v.X, v.Y) < 520
+end
+
+-- 1 Nov (phone performance): true on phones and tablets (touch, no keyboard)
+-- and when the player turned graphics quality down by hand (1-3 of 10).
+-- Client effects use it to skip outlines and thin out particles.
+function Style.lite(): boolean
+	local input = game:GetService("UserInputService")
+	if input.TouchEnabled and not input.KeyboardEnabled then return true end
+	local ok, level = pcall(function() return UserSettings().GameSettings.SavedQualityLevel end)
+	return ok and level ~= Enum.SavedQualitySetting.Automatic and level.Value <= 3
 end
 
 -- 30 Oct (phone patch): full-screen celebration pop-ups (banners, "+30

@@ -48,7 +48,7 @@ local gui = make("ScreenGui", { Name = "TutorialHud", ResetOnSpawn = false, Disp
 -- card's own UIScale is its pop animation); positions stay relative to it.
 local holder = make("Frame", { Name = "StepCardHolder", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 0),
 	Size = UDim2.fromOffset(CARD_W, CARD_H + 68), BackgroundTransparency = 1 }, gui)
-Style.phoneFit(holder, { scale = 0.6, width = 0.6, position = UDim2.new(0.5, 60, 0, 80 - 68 * 0.6) }) -- right of the cash column
+Style.phoneFit(holder, { scale = 0.5, width = 0.5, position = UDim2.new(0.5, 60, 0, 52 - 68 * 0.5) }) -- right of the cash column (1 Nov: smaller, tucked under the top buttons)
 local card = make("Frame", { Name = "StepCard", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 68),
 	Size = UDim2.fromOffset(CARD_W, CARD_H), BackgroundColor3 = Color3.fromRGB(30, 36, 62), Visible = false, ZIndex = 2 }, holder)
 make("UICorner", { CornerRadius = UDim.new(0, 14) }, card)
