@@ -172,6 +172,10 @@ local function send(p,message,result)
 	-- onboarding funnel (new saves only): steps 2..9 = tutorial steps done, in order
 	if d.onboarding and d.onboarding.funnel then
 		for k=1,math.min(#C.TutorialSteps,(s.tutorial or 1)-1) do Analytics.funnelStep(p,d.onboarding,k+1,C.FunnelNames[k+1]) end
+		-- 1 Nov: bays unlocked after the tutorial (steps 10-13), only once it is done so steps stay in order
+		if (s.tutorial or 1)>#C.TutorialSteps then
+			for k,n in C.FunnelBays do if s.bays>=n then local step=#C.TutorialSteps+1+k Analytics.funnelStep(p,d.onboarding,step,C.FunnelNames[step]) end end
+		end
 	end
 	Rules.markSeen(s) -- Index: remember every type this save has owned
 	Tools.sync(p,d) -- unequipped crushers live in the Roblox backpack
@@ -594,7 +598,7 @@ local function action(p,name,args)
 	if ok and d.onboarding and name=="UpgradePlot" and Progression.level(d)>levelBefore then
 		-- 31 Oct: one step per plot upgrade (Factory II..V), in order
 		for lv=levelBefore+1,Progression.level(d) do
-			local step=#C.TutorialSteps+1+lv Analytics.funnelStep(p,d.onboarding,step,C.FunnelNames[step])
+			local step=#C.TutorialSteps+1+#C.FunnelBays+lv Analytics.funnelStep(p,d.onboarding,step,C.FunnelNames[step])
 		end
 	end
 	-- plot upgrade cutscene: only the buyer, only after the server confirmed it

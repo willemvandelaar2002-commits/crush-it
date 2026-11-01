@@ -3,7 +3,7 @@
 local C = {
 	Enabled = true, Schema = 2, MaxInventory = 80, MaxLevel = 40,
 	MaxGlobal = 20, MaxMoney = 1e300, StartCash = 20,
-	BayCosts = { 0, 100, 900 },
+	BayCosts = { 0, 100 }, -- bay 3+ below (1 Nov)
 	InputDelay = 0.8, Tick = 0.05, RequestInterval = 0.08,
 	PlacingFloor = 0.7, -- 31 Oct: Strike Speed also shortens toy placing (InputDelay x SpeedFactor^level), down to 70%
 	CrushedLinger = 0.45, -- 31 Oct: seconds a flattened toy stays on the bed under the next one (visual only)
@@ -68,7 +68,15 @@ C.MaxBays = C.RearFirst-1+2*C.Layout.Wings*C.Layout.PerWing
 C.Layout.RearShift = -78 -- rear yard banks: ground bays at BayZ+RearShift
 C.Layout.RoadHalf = 6 -- central road half-width (rear yard banks keep clear of it)
 C.LegacyTypes={"Bumper","Steel","Cobalt","Mega","Titan","Quantum"}
-for i=4,C.MaxBays do C.BayCosts[i]=math.floor(900*1.45^(i-3)) end
+-- 1 Nov: the first 24 bays are much cheaper (funnel: only 5.5% reached Factory II),
+-- bay 3 = $250, x1.36 each (bay 24 ~$159K, was $2.2M). Factory II's 12 bays blend
+-- back to the old curve (900 x 1.45^(i-3)) by bay 36, so later plots are unchanged.
+C.EarlyBayStart, C.EarlyBayGrowth = 250, 1.36
+for i=3,C.MaxBays do
+	local old=900*1.45^(i-3) local early=C.EarlyBayStart*C.EarlyBayGrowth^(i-3)
+	local w=math.clamp((i-C.BaseMaxBays)/12,0,1) -- 0 up to bay 24, 1 from bay 36
+	C.BayCosts[i]=math.floor(early^(1-w)*old^w)
+end
 -- Caps[n] = upgrade caps from plot level n on: factory/roll upgrades (global)
 -- and each crusher's level. Below plot level 1 the base MaxGlobal/MaxLevel apply.
 -- Level 1 = Factory II (+12 third floor, Coating Lab), 2 = Factory III (+12
@@ -77,7 +85,8 @@ for i=4,C.MaxBays do C.BayCosts[i]=math.floor(900*1.45^(i-3)) end
 -- Costs[1] (old name). Caps: +10 factory upgrades, +20 crusher levels each.
 C.PlotUpgrade = {MaxLevel=4,
 	-- 31 Oct: Factory III / IV / V cheaper (x0.8 / x0.7 / x0.6), Factory II unchanged
-	Costs={math.floor(C.BayCosts[C.TopFirst]*10),math.floor(C.BayCosts[C.RearFirst]*10*.8),
+	-- 1 Nov: Factory II $5M (was $31.9M) to match the cheaper first 24 bays
+	Costs={5000000,math.floor(C.BayCosts[C.RearFirst]*10*.8),
 		math.floor(C.BayCosts[C.RearFirst+12]*10*.7),math.floor(C.BayCosts[C.RearFirst+18]*10*.6)},
 	Names={"FACTORY II","FACTORY III","FACTORY IV","FACTORY V"},
 	Titles={"REINFORCED WORKSHOP","FUSION WORKSHOP","ADVANCED FACTORY","MASTER FACTORY"},
@@ -322,14 +331,17 @@ C.TutorialSteps = {
 	{ id = "Level", title = "Level up a crusher", text = "THIS CRUSHER: press LEVEL UP on its plaque. Only that crusher levels up; its level stays when swapped.", target = "LevelBay", reward = 50 },
 }
 C.TutorialBonus = 100
--- 31 Oct: onboarding funnel step names as they appear in the Creator Dashboard
+-- Onboarding funnel step names as they appear in the Creator Dashboard
 -- (Analytics > Funnels). 1 = join, 2-9 = the tutorial steps above in order,
--- 10-13 = buying each plot upgrade. Numbered so they sort in order.
+-- 10-13 = bays unlocked after the tutorial (1 Nov), 14-17 = each plot upgrade.
+-- Numbered so they sort in order.
 C.FunnelNames = {
 	"01 Joined the game", "02 Collected scrap", "03 Sold scrap", "04 Rolled a crusher", "05 Bought a crusher",
 	"06 Unlocked a 2nd bay", "07 Placed a crusher", "08 Bought a factory upgrade", "09 Leveled up a crusher (tutorial done)",
-	"10 Bought Factory II", "11 Bought Factory III", "12 Bought Factory IV", "13 Bought Factory V",
+	"10 Has 6 bays", "11 Has 12 bays", "12 Has 18 bays", "13 Has all 24 bays",
+	"14 Bought Factory II", "15 Bought Factory III", "16 Bought Factory IV", "17 Bought Factory V",
 }
+C.FunnelBays = { 6, 12, 18, 24 } -- funnel steps 10-13
 -- Goals board on the plot (reference style): like/favorite, join the group, and
 -- a free time skip (SkipMinutes of your current production as cash) that needs
 -- favorite-prompt confirmation + server-checked group membership, then waits SkipCooldownHours.

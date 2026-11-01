@@ -95,6 +95,28 @@ for i = 1, #STEPS do
 	segments[i] = seg
 end
 
+-- 1 Nov: after the tutorial the same card shows the NEXT GOAL (unlock every
+-- bay, fill them, save for the next plot upgrade) with one fill bar.
+local goalBar = make("Frame", { Name = "GoalBar", Position = UDim2.fromOffset(98, 90), Size = UDim2.fromOffset(CARD_W - 112, 14),
+	BackgroundColor3 = Color3.fromRGB(20, 24, 40), Visible = false, ZIndex = 3 }, card)
+make("UICorner", { CornerRadius = UDim.new(1, 0) }, goalBar)
+make("UIStroke", { Thickness = 1.5, Color = INK }, goalBar)
+local goalFill = make("Frame", { Name = "Fill", Size = UDim2.fromScale(0, 1), BackgroundColor3 = GOLD, ZIndex = 4 }, goalBar)
+make("UICorner", { CornerRadius = UDim.new(1, 0) }, goalFill)
+make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(255, 236, 140), Color3.fromRGB(240, 160, 30)) }, goalFill)
+local slideIn: () -> ()
+local goalMode = false
+local function setGoalMode(on: boolean)
+	if goalMode == on then return end
+	goalMode = on
+	bar.Visible = not on goalBar.Visible = on chip.Visible = not on
+	stepTag.Size = if on then UDim2.fromOffset(CARD_W - 230, 20) else UDim2.fromOffset(160, 20)
+	if on then
+		badgeText.Text = "★" badge.BackgroundColor3 = GOLD
+		slideIn()
+	else card.Visible = false end
+end
+
 -- Effects -----------------------------------------------------------------------
 local coin = make("Sound", { SoundId = "rbxassetid://" .. Config.Sounds.Coin, Volume = 0.6 }, SoundService)
 local levelUp = make("Sound", { SoundId = "rbxassetid://" .. Config.Sounds.LevelUp, Volume = 0.5 }, SoundService)
@@ -141,7 +163,7 @@ local function paint(step: number)
 		seg.BackgroundColor3 = if i < step then GREEN elseif i == step then GOLD else Color3.fromRGB(20, 24, 40)
 	end
 end
-local function slideIn()
+slideIn = function()
 	card.Position = UDim2.new(0.5, 0, 0, -CARD_H - 10)
 	card.Visible = true
 	TweenService:Create(card, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Position = UDim2.new(0.5, 0, 0, 68) }):Play()
@@ -281,6 +303,33 @@ local function goal(): (Instance?, string?, string?)
 	return nil
 end
 
+-- Next goal after the tutorial: (target, label over it, tag, title, hint, progress 0-1)
+local function nextGoal(): (Instance?, string?, string, string, string, number)
+	local plot = plotModel()
+	local level = state.plotLevel or 0
+	local name = C.PlotUpgrade.Names[level + 1] or "NEXT PLOT"
+	local cap = C.bayCapacity(level)
+	local cash = state.cash
+	local tag = "NEXT GOAL · " .. name
+	if state.unlocked < cap then
+		local n = state.unlocked + 1 local price = C.BayCosts[n] or 0
+		local first = if level == 0 then 1 else C.bayCapacity(level - 1) + 1
+		local progress = (state.unlocked - first + 1) / (cap - first + 1)
+		local title = "Unlock all bays: " .. state.unlocked .. " / " .. cap
+		if cash >= price and plot then return bayModel(plot, n), "UNLOCK", tag, title, "Unlock bay " .. n .. " for " .. Format.cash(price) .. "!", progress end
+		return nil, nil, tag, title, "Bay " .. n .. " costs " .. Format.cash(price) .. ". Collect and sell scrap, level up your crushers!", progress
+	end
+	for i = 1, state.unlocked do
+		if not state.bays[tostring(i)] then
+			return plot and bayModel(plot, i), "PLACE", tag, "Fill every bay", "Roll, buy and place a crusher in every empty bay.", 0.95
+		end
+	end
+	local cost = C.plotCost(level + 1) or 0
+	local title = "Save for " .. name .. ": " .. Format.cash(cash) .. " / " .. Format.cash(cost)
+	if cash >= cost and plot then return find(plot, "PlotUpgradeStation"), "UPGRADE!", tag, "Buy " .. name .. "!", "You can afford it: press UPGRADE on the green board.", 1 end
+	return nil, nil, tag, title, "More bays, higher caps and new machines. Level up your crushers to get there faster!", math.clamp(cash / math.max(1, cost), 0, 1)
+end
+
 local function topOf(target: Instance): Vector3?
 	if target:IsA("BasePart") then return target.Position + Vector3.new(0, target.Size.Y / 2, 0) end
 	if target:IsA("Model") then
@@ -295,8 +344,32 @@ local cached: { target: Instance?, text: string?, override: string? } = {}
 local nextLook = 0
 RunService.RenderStepped:Connect(function()
 	-- 31 Oct: during a factory event the event's own core path takes over
-	local active = state and STEPS[state.tutorial] and not busy and me:GetAttribute("FactoryEventRunning") ~= true
+	local eventOn = me:GetAttribute("FactoryEventRunning") == true
+	local active = state and STEPS[state.tutorial] and not busy and not eventOn
 	local root = me.Character and me.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	-- 1 Nov: after the tutorial, the NEXT GOAL card and arrows until the last plot upgrade
+	local goalOn = state ~= nil and not STEPS[state.tutorial] and not busy and not eventOn
+		and (state.plotLevel or 0) < C.PlotUpgrade.MaxLevel and root ~= nil
+	setGoalMode(goalOn)
+	if goalOn then
+		if os.clock() >= nextLook then
+			nextLook = os.clock() + 0.25
+			local t, l, tg, ti, h, pr = nextGoal()
+			cached = { target = t, text = l } stepTag.Text = tg title.Text = ti hint.Text = h
+			TweenService:Create(goalFill, TweenInfo.new(0.3), { Size = UDim2.fromScale(math.clamp(pr, 0, 1), 1) }):Play()
+		end
+		local target = cached.target
+		if target and not target:IsDescendantOf(Workspace) then target = nil end
+		local top = target and topOf(target)
+		path:update(root.Position, top, cached.text)
+		if top then
+			if outline.Parent ~= target then outline.Parent = target end
+			outline.Enabled = true
+			outline.OutlineTransparency = 0.15 + 0.35 * (0.5 + 0.5 * math.sin(os.clock() * 5))
+		else outline.Enabled = false end
+		badgeScale.Scale = 1 + 0.04 * math.sin(os.clock() * 4)
+		return
+	end
 	if not active or not root then
 		path:update(Vector3.zero, nil)
 		outline.Enabled = false

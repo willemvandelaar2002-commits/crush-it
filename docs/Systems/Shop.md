@@ -245,7 +245,8 @@ get a bigger press (when affordable). Gone once the press is bigger.
   Step names = `C.FunnelNames`: 01 Joined the game, 02 Collected scrap,
   03 Sold scrap, 04 Rolled a crusher, 05 Bought a crusher, 06 Unlocked a 2nd bay,
   07 Placed a crusher, 08 Bought a factory upgrade, 09 Leveled up a crusher
-  (tutorial done), 10-13 Bought Factory II / III / IV / V. Tutorial steps are
+  (tutorial done), 10-13 Has 6 / 12 / 18 / all 24 bays (only logged once the tutorial
+  is done), 14-17 Bought Factory II / III / IV / V (1 Nov; were 10-13 for one day). Tutorial steps are
   logged in order when the tutorial moves on (also when it skips ahead).
 - Shop funnel (LogFunnelStepEvent "Shop", one session per shop visit, 10 min):
   1 Opened the shop (not tab switches), 2 Saw a Robux price (a product or pass

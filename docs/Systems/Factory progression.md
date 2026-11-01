@@ -335,3 +335,7 @@ were discarded, storage sources restored, and nothing was published.
 ## Bank wall studs (27 Oct)
 
 CrusherPlots applies Style.studs to the blue bank back walls, parapets and solid steps beneath upper floors, including third-floor and rear-yard banks. Uses the existing imported Studs MaterialVariant. Verified 120 matching parts in the running Studio preview; size, CFrame, colour and collision stayed unchanged.
+
+## 1 Nov: cheaper start, NEXT GOAL card
+- Bays 3-24: $250 x 1.36^(bay-3) (bay 24 ~$159K); bays 25-36 blend geometrically back to 900 x 1.45^(bay-3) (bay 36 = old curve); Factory II $5M. Factory III-V costs unchanged (they use bays 37+).
+- After the tutorial, Tutorial.client turns its card into NEXT GOAL: unlock all bays of the current level (arrow to the next bay once affordable), then fill every bay, then save for the next plot upgrade (arrow to PlotUpgradeStation once affordable); fill bar = progress. Hidden during factory events and after Factory V.
