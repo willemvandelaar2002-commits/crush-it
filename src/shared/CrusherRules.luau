@@ -105,7 +105,10 @@ function R.migrate(d, guid)
 		local equipped={ ["1"]=item.id }
 		local bays=math.min(C.MaxBays,#owned)
 		for i=2,bays do equipped[tostring(i)]=owned[i].id end
-		d.crushers={ owned=owned, equipped=equipped, bays=bays, available=0, tutorial=1, upgrades={
+		-- 1 Nov: a brand-new player (no old save) finds scrap already in the bin,
+		-- so tutorial step 1 needs no waiting (funnel: 16% left before collecting)
+		local fresh=d.tier==nil and d.levels==nil and #owned==1
+		d.crushers={ owned=owned, equipped=equipped, bays=bays, available=if fresh then C.StarterScrap else 0, tutorial=1, upgrades={
 			Damage=integer(number(levels.Power,0,50)/2,0,C.MaxGlobal), Speed=integer(levels.Speed,0,C.MaxGlobal),
 			Yield=integer(number(levels.Value,0,50)+number(d.rebirths,0,100),0,C.MaxGlobal), Luck=integer(d.rebirths,0,C.MaxGlobal), Pedestals=0 } }
 		d.scrap=C.money(d.scrap+number(d.smeltQueue,0)+number(d.smeltReady,0))

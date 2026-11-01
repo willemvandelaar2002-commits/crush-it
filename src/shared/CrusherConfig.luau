@@ -341,6 +341,7 @@ C.TutorialSteps = {
 	{ id = "Level", title = "Level up a crusher", text = "THIS CRUSHER: press LEVEL UP on its plaque. Only that crusher levels up; its level stays when swapped.", target = "LevelBay", reward = 50 },
 }
 C.TutorialBonus = 300 -- 2 Nov: was 100; enough for bay 3 right away
+C.StarterScrap = 24 -- 1 Nov: scrap waiting in a new player's bin (three toys' worth), so step 1 is instant
 -- 2 Nov: after the 8 tutorial steps the guide keeps going with GOALS up to
 -- Factory II (funnel: most players left right after the tutorial). Each goal is
 -- checked on the server from the save (server/CrusherGame goalTick) and pays once.
