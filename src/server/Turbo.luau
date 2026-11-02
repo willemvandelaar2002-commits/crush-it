@@ -13,11 +13,12 @@ local Analytics = require(script.Parent.Kit.Analytics)
 local M = {}
 M.active = T.active
 
--- income without the turbo itself (the price must not rise because a turbo runs);
--- the highest seen this session, so unequipping crushers can't make it cheap
+-- income without the turbo itself and without other short boosts (2x Cash boost
+-- from a golden toy or goal, frenzy): the price must not jump because one runs.
+-- The highest seen this session, so unequipping crushers can't make it cheap.
 local peak: { [Player]: number } = {}
 local function baseIncome(api: any, p: Player): number
-	local cps = api.cashPerSecond(p) / T.active(p, workspace:GetServerTimeNow()) / require(script.Parent.Frenzy).speed(p)
+	local cps = api.cashPerSecond(p) / T.active(p, workspace:GetServerTimeNow()) / require(script.Parent.Frenzy).speed(p) / api.shortBoost(p)
 	peak[p] = math.max(peak[p] or 0, cps)
 	return peak[p]
 end
