@@ -4,15 +4,16 @@
 -- A turbo multiplies all your cash for a while; only the strongest running turbo
 -- counts (they don't multiply each other), buying the same one again adds time.
 -- Price = `cost` seconds of your income (without turbo), so it is worth buying at
--- every stage and always costs a real share: x2 for 5 min pays back 2x its price.
+-- every stage and always costs a real share. 2 Nov evening (Willem: way too long a
+-- wait): 40% cheaper, x2 for 5 min now pays back over 3x its price.
 -- Stronger turbos unlock with the factory level (`plot`).
 local M = {}
 
 M.List = {
-	{ id = "Turbo", title = "TURBO", mult = 2, minutes = 5, cost = 150, plot = 0, color = Color3.fromRGB(255, 160, 40) },
-	{ id = "MegaTurbo", title = "MEGA TURBO", mult = 3, minutes = 10, cost = 600, plot = 1, color = Color3.fromRGB(255, 90, 60) },
-	{ id = "HyperTurbo", title = "HYPER TURBO", mult = 5, minutes = 15, cost = 1800, plot = 2, color = Color3.fromRGB(230, 60, 200) },
-	{ id = "UltraTurbo", title = "ULTRA TURBO", mult = 8, minutes = 15, cost = 3600, plot = 3, color = Color3.fromRGB(80, 200, 255) },
+	{ id = "Turbo", title = "TURBO", mult = 2, minutes = 5, cost = 90, plot = 0, color = Color3.fromRGB(255, 160, 40) },
+	{ id = "MegaTurbo", title = "MEGA TURBO", mult = 3, minutes = 10, cost = 360, plot = 1, color = Color3.fromRGB(255, 90, 60) },
+	{ id = "HyperTurbo", title = "HYPER TURBO", mult = 5, minutes = 15, cost = 1080, plot = 2, color = Color3.fromRGB(230, 60, 200) },
+	{ id = "UltraTurbo", title = "ULTRA TURBO", mult = 8, minutes = 15, cost = 2160, plot = 3, color = Color3.fromRGB(80, 200, 255) },
 }
 M.MaxMinutes = 60 -- one turbo can't be stacked past this
 M.MinCost = 50 -- never cheaper than this

@@ -912,6 +912,8 @@ function G.start()
 		-- sku / tx: the reason for the economy dashboard (Kit/Analytics.cash)
 		addCash=function(p,n,sku,tx) local d=Data.get(p) if d then local before=d.cash d.cash=C.money(d.cash+n) if sku then Analytics.cash(p,sku,tx or "Gameplay",before,d.cash) end send(p) end end,
 		cashPerSecond=function(p) local d=Data.get(p) return if d then cps(p,d) else 0 end,
+		-- the short-lived part of the cash multiplier (2x Cash boost), for Turbo prices
+		shortBoost=function(p) return if Boost.active(p,"Cash",workspace:GetServerTimeNow()) then 2 else 1 end,
 		eventPlot=function(p) local ctx=sessions[p] return if ctx then ctx.plot else nil end,
 		eventFleet=function(p)
 			local d=Data.get(p) if not d then return nil end
