@@ -93,15 +93,17 @@ local function ghosts(plot: Model, folder: Folder): { BasePart }
 	return list
 end
 
-local function text(gui: ScreenGui, y: number): (TextLabel, UIScale)
+-- Style.bold keeps the label itself invisible, so the title fades as a CanvasGroup
+local function text(gui: ScreenGui, y: number): (TextLabel, CanvasGroup, UIScale)
+	local group = Instance.new("CanvasGroup")
+	group.AnchorPoint = Vector2.new(0.5, 0.5) group.Position = UDim2.fromScale(0.5, y) group.Size = UDim2.fromScale(0.72, 0.12)
+	group.BackgroundTransparency = 1 group.GroupTransparency = 1 group.ZIndex = 4 group.Parent = gui
 	local l = Instance.new("TextLabel")
-	l.AnchorPoint = Vector2.new(0.5, 0.5) l.Position = UDim2.fromScale(0.5, y) l.Size = UDim2.fromScale(0.7, 0.1)
-	l.BackgroundTransparency = 1 l.TextScaled = true l.Text = "" l.TextTransparency = 1 l.ZIndex = 4
+	l.Size = UDim2.fromScale(1, 0.85) l.BackgroundTransparency = 1 l.TextScaled = true l.Text = "" l.ZIndex = 4
+	l.Parent = group
 	Style.bold(l, 5)
-	l.TextColor3 = GOLD
-	l.Parent = gui
-	local sc = Instance.new("UIScale") sc.Scale = 0.5 sc.Parent = l
-	return l, sc
+	local sc = Instance.new("UIScale") sc.Scale = 0.5 sc.Parent = group
+	return l, group, sc
 end
 
 local function play()
@@ -145,11 +147,10 @@ local function play()
 	Style.button(skip, Color3.fromRGB(255, 222, 24))
 	skip.Parent = gui
 	skip.Activated:Connect(finish)
-	local title, titleScale = text(gui, 0.2)
+	local title, titleGroup, titleScale = text(gui, 0.2)
 	local function say(words: string, color: Color3)
-		title.Text = words title.TextColor3 = color title.TextTransparency = 1 titleScale.Scale = 0.5
-		tw(title, 0.25, { TextTransparency = 0 }) tw(titleScale, 0.4, { Scale = Style.popScale() }, Enum.EasingStyle.Back)
-		local s2 = title:FindFirstChildOfClass("UIStroke") if s2 then s2.Transparency = 1 tw(s2, 0.25, { Transparency = 0 }) end
+		title.Text = words title.TextColor3 = color titleGroup.GroupTransparency = 1 titleScale.Scale = 0.5
+		tw(titleGroup, 0.25, { GroupTransparency = 0 }) tw(titleScale, 0.4, { Scale = Style.popScale() }, Enum.EasingStyle.Back)
 	end
 
 	-- camera shots
@@ -200,7 +201,7 @@ local function play()
 		end
 		if said == 2 and t >= 3.7 then
 			said = 3
-			tw(title, 0.25, { TextTransparency = 1 })
+			tw(titleGroup, 0.25, { GroupTransparency = 1 })
 			for _, bar in bars do tw(bar, 0.3, { Size = UDim2.fromScale(1, 0) }) end
 		end
 		if t >= LENGTH then finish() end
