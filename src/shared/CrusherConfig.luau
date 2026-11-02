@@ -76,6 +76,7 @@ C.LegacyTypes={"Bumper","Steel","Cobalt","Mega","Titan","Quantum"}
 -- bays (by bay 48, was by 36), so Factory III comes much sooner. Factory IV/V and
 -- their bays are unchanged.
 C.EarlyBayStart, C.EarlyBayGrowth = 250, 1.36
+C.FlatBayCurve = true
 C.StarterBays = { [3]=50, [4]=80, [5]=120, [6]=180 }
 for i=3,C.MaxBays do
 	local old=900*1.45^(i-3)
@@ -84,7 +85,10 @@ for i=3,C.MaxBays do
 		local w=math.clamp((i-6)/12,0,1) -- 0 at bay 6, 1 from bay 18
 		return (180*1.45^(i-6))^(1-w)*curve^w
 	end)()
-	local w=math.clamp((i-C.BaseMaxBays)/24,0,1) -- 0 up to bay 24, 1 from bay 48
+	-- 2 Nov evening (Willem's "making the game faster" doc: the price walls): no
+	-- blend back to the old x1.45 curve any more; x1.36 per bay all the way
+	-- (bay 36 ~$6.4M was $35M, bay 60 ~$10B was $1.4T)
+	local w=if C.FlatBayCurve then 0 else math.clamp((i-C.BaseMaxBays)/24,0,1)
 	C.BayCosts[i]=math.floor(early^(1-w)*old^w)
 end
 -- Caps[n] = upgrade caps from plot level n on: factory/roll upgrades (global)
@@ -98,8 +102,10 @@ end
 -- x0.7 / x0.6). Old saves moved up one level (CrusherRules.migrate, plotsV).
 C.StartBays = C.Layout.Wings*C.Layout.PerWing -- ground floor: 12 bays
 C.PlotUpgrade = {MaxLevel=5,
-	Costs={math.floor(C.BayCosts[C.StartBays+1]*10),5000000,math.floor(C.BayCosts[C.RearFirst]*10*.8),
-		math.floor(C.BayCosts[C.RearFirst+12]*10*.7),math.floor(C.BayCosts[C.RearFirst+18]*10*.6)},
+	-- 2 Nov evening: every factory = 10x its first new bay (no hand-set exceptions):
+	-- ~$39K, $2.2M, $87M, $3.5B, $22B (was $39K, $5M, $452M, $167B, $1.33T)
+	Costs={math.floor(C.BayCosts[C.StartBays+1]*10),math.floor(C.BayCosts[C.TopFirst]*10),math.floor(C.BayCosts[C.RearFirst]*10),
+		math.floor(C.BayCosts[C.RearFirst+12]*10),math.floor(C.BayCosts[C.RearFirst+18]*10)},
 	Names={"FACTORY II","FACTORY III","FACTORY IV","FACTORY V","FACTORY VI"},
 	Titles={"UPPER FLOOR","REINFORCED WORKSHOP","FUSION WORKSHOP","ADVANCED FACTORY","MASTER FACTORY"},
 	Adds={12,12,12,6,6},
@@ -107,7 +113,9 @@ C.PlotUpgrade = {MaxLevel=5,
 	Sections={"UPPER FLOOR","3RD FLOOR","REAR YARD","REAR UPPER LEFT","REAR UPPER RIGHT"},
 	Unlocks={nil,"COATING LAB","FUSION MACHINE",nil,"MASTER FACTORY LOOK"},
 	Accents={Color3.fromRGB(80,190,255),Color3.fromRGB(255,222,24),Color3.fromRGB(255,140,40),Color3.fromRGB(205,215,228),Color3.fromRGB(255,210,68)},
-	Caps={{global=25,level=50},{global=30,level=60},{global=40,level=80},{global=50,level=100},{global=60,level=120}}}
+	-- 2 Nov evening (doc: a capped-out player had nothing to buy for hours): much
+	-- higher caps; prices keep rising (x1.65 / x1.38 per level), so it stays a choice
+	Caps={{global=30,level=60},{global=40,level=80},{global=55,level=110},{global=70,level=140},{global=90,level=180}}}
 -- plot levels where things unlock (2 Nov: each one level later than before)
 C.CoatingPlotLevel = 2
 -- the old structure levels (third floor = 1, rear yard = 2, ...) for the plot
@@ -452,8 +460,12 @@ function C.globalCost(id, level) local u = C.Upgrades[id] return math.floor(u.ba
 function C.individualCost(item) return math.floor(C.IndividualBase * C.IndividualGrowth ^ (item.level - 1) * C.rarity(item.rarity).mult) end
 function C.rollSeconds() return C.RollSeconds end
 -- Caps grow with the plot upgrade (PlotUpgrade.Caps). Pedestals keep their own max.
+-- Luck keeps the older, lower caps (start, Factory II..VI): its effect grows
+-- with the rank of the tier, so the 2 Nov cap raise is for the cash upgrades only
+C.LuckCaps={20,25,30,40,50,60}
 function C.upgradeMax(id,plotLevel)
 	local u=C.Upgrades[id] if u.max then return u.max end
+	if id=="Luck" then return C.LuckCaps[math.clamp(math.floor(plotLevel or 0),0,#C.LuckCaps-1)+1] end
 	local caps=C.PlotUpgrade.Caps[math.min(plotLevel or 0,#C.PlotUpgrade.Caps)]
 	return if caps then caps.global else C.MaxGlobal
 end

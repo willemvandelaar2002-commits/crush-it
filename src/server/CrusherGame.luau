@@ -514,7 +514,7 @@ local function rollShow(p,offers)
 	local rollLuck=rollData.crushers.upgrades.Luck local first=rollData.crushers.rolls==1
 	-- 2 Nov: a Legendary or better roll is announced to the whole server once revealed
 	local best=nil
-	for _,item in offers do local r=item and C.rarity(item.rarity) if r and r.rank>=4 and (not best or r.rank>best.rank) then best=r best.item=nil best=table.clone(r) best.item=item end end
+	for _,item in offers do local r=item and C.rarity(item.rarity) if r and r.rank>=4 and (not best or r.rank>best.rank) then best=table.clone(r) best.item=item end end
 	if best then
 		local def=C.typeById(best.item.type)
 		task.delay(seconds+0.4,function()
