@@ -705,10 +705,12 @@ Scrap.start({
 require(script.Parent.Rewards).start({
 	getData = DataService.get,
 	whenLoaded = DataService.whenLoaded,
-	addCash = function(player: Player, amount: number)
+	addCash = function(player: Player, amount: number, sku: string?, tx: string?)
 		local data = DataService.get(player)
 		if data then
+			local before = data.cash
 			data.cash += amount
+			if sku then Analytics.cash(player, sku, tx or "Gameplay", before, data.cash) end
 			syncAttributes(player, data)
 		end
 	end,
@@ -723,12 +725,15 @@ require(script.Parent.Rewards).start({
 
 Shop.start({
 	getData = DataService.get,
+	canSave = DataService.canSave,
 	whenLoaded = DataService.whenLoaded,
 	save = DataService.saveNow,
-	addCash = function(player: Player, amount: number)
+	addCash = function(player: Player, amount: number, sku: string?, tx: string?)
 		local data = DataService.get(player)
 		if data then
+			local before = data.cash
 			data.cash += amount
+			if sku then Analytics.cash(player, sku, tx or "Gameplay", before, data.cash) end
 			syncAttributes(player, data)
 		end
 	end,

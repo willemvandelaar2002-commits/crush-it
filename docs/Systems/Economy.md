@@ -31,3 +31,6 @@ Ship, Statue, Planet.
 - 31 Oct: YieldPerLevel 0.3 (was 0.2), OverkillBonus 0.08 (was 0.05), toy placing time = C.inputDelay(speed) = 0.8 x max(0.6, 0.94^speed) (Strike Speed now shortens it too).
 
 - 31 Oct (rebalance): YieldPerLevel 0.25, OverkillBonus 0.065, PlacingFloor 0.7; plot costs Factory II/III/IV/V = $31.9M / $2.21B / $167B / $1.33T (III-V x0.8/x0.7/x0.6 of the bay-cost formula).
+
+## 2 Nov: economy events (Creator Dashboard > Analytics > Economy)
+Kit/Analytics `cash(player, sku, tx, before, after)` logs every cash change with its reason, summed per player and sent once a minute (and on leave); `cashBalance` (every second) logs whatever no call explained as `Passive` (gain) or `Other` (loss). Currency "Cash". Sources: SellScrap, AutoSell, GoalReward (Onboarding), Gift / GiftBonus / DailySpin / OfflineCash / TimeSkip / Code (TimedReward), IndexReward, FactoryEvent, QuestShop, cash packs and OfflineMultiplier / OfferPack (IAP), Passive. Sinks: UnlockBay, BuyCrusher (Shop), FactoryUpgrade, LevelUp, PlotUpgrade, Coating, Fusion, RollUpgrade.

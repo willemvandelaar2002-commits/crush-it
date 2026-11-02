@@ -90,6 +90,10 @@ local function buyProduct(id: string)
 		notice("Coming soon!")
 		return
 	end
+	if player:GetAttribute("SaveOff") then
+		notice("Saving is off right now. Rejoin before buying!")
+		return
+	end
 	MarketplaceService:PromptProductPurchase(player, product.productId)
 end
 

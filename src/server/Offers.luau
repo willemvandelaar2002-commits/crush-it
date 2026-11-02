@@ -58,7 +58,7 @@ end
 function Offers.grant(p: Player, d: any, product: string, purchaseId: string): string
 	local ok, result = R.fulfil(d, product, purchaseId, {
 		giveCrusher = function(rarity: string, typeId: string) return api.giveCrusher(p, rarity, typeId, true) end,
-		addCash = function(n: number) api.addCash(p, n) end,
+		addCash = function(n: number) api.addCash(p, n, "OfferPack", "IAP") end,
 		cashFor = function(seconds: number) return Store.cashFor(api.cashPerSecond(p), seconds) end,
 		addBoost = function(id: string, minutes: number) require(script.Parent.Boosts).add(p, id, minutes) end,
 		random = function() return rng:NextNumber() end,
@@ -102,6 +102,7 @@ local function prompt(p: Player, key: any)
 		return
 	end
 	if prompting[p] and os.clock() - prompting[p] < PROMPT_LOCK then return end
+	if p:GetAttribute("SaveOff") then return end -- 2 Nov: this session can't save a purchase
 	prompting[p] = os.clock()
 	MarketplaceService:PromptProductPurchase(p, product.productId)
 end

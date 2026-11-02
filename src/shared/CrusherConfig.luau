@@ -387,6 +387,24 @@ C.FunnelBays = {} -- 2 Nov: replaced by the goals
 -- favorite-prompt confirmation + server-checked group membership, then waits SkipCooldownHours.
 C.Goals = { GroupId = 264438399, SkipMinutes = 5, SkipCooldownHours = 24, MinSkipReward = 100 }
 -- "1 in N" odds of rolling a type with base weights (no luck).
+-- 2 Nov: THE roll weights (server roll, roll pedestal odds, Index and upgrade
+-- board all use this). luck = Luck upgrade level; lucky = luck multiplier on
+-- every non-Common rarity (true = 2: Lucky pass OR 2x Luck boost; 4 = both);
+-- bonus = permanent Index luck (0.1 = +10%).
+function C.rollWeights(luck,lucky,bonus)
+	local mult=if type(lucky)=="number" then lucky elseif lucky then 2 else 1
+	local out={} for i,v in C.Rarities do out[i]=v.weight*C.luckFactor(luck or 0,v.rank)*(if v.rank>0 then mult*(1+(bonus or 0)) else 1) end
+	return out
+end
+-- "1 in N" for one crusher type with your luck (nil luck = base odds)
+function C.effectiveOdds(typeId,luck,lucky,bonus)
+	local w=C.rollWeights(luck,lucky,bonus) local total=0 for _,x in w do total+=x end
+	for i,r in C.Rarities do for _,t in r.types do if t==typeId then
+		if w[i]<=0 then return math.huge end
+		return math.max(1,math.floor(total/w[i]*#r.types+.5))
+	end end end
+	return 1
+end
 function C.oddsFor(typeId)
 	local total=0 for _,r in C.Rarities do total+=r.weight end
 	for _,r in C.Rarities do for _,t in r.types do if t==typeId then

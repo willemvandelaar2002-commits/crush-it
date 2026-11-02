@@ -47,6 +47,12 @@ saving, live ops, anti-exploit. The vault is advice, not law; items are judged f
 10. **Purchase log for support:** saves keep the last 50 purchase ids only; a short log (product, time) helps with
     "I bought X and didn't get it". *Small.*
 
+## Done (2 Nov, same day)
+1 economy events · 2 Studio test save by default · 3 Lucky text · 4 your odds in the Index (+ pass and boost now stack) ·
+5 saving-off warning, purchases blocked, receipts wait · 7 codes · 8 What's New · 9 pop-up gate (only the offline card
+and What's New pop up on their own; What's New waits for the others) · 10 purchase log.
+Open: 6 notifications (needs an Open Cloud sender outside Roblox; for now use Creator Hub update announcements).
+
 ## Not relevant now
 Combat / movement anti-cheat, trading, battle pass, subscriptions, season resets, commerce.
 

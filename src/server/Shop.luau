@@ -35,9 +35,10 @@ end
 
 export type Api = {
 	getData: (Player) -> any, -- nil until loaded
+	canSave: (Player) -> boolean, -- false when this session can't persist (SaveOff)
 	whenLoaded: (Player) -> any,
 	save: (Player) -> boolean,
-	addCash: (Player, number) -> (),
+	addCash: (Player, number, string?, string?) -> (), -- amount, economy sku, transaction type
 	sync: (Player) -> (),
 	cashPerSecond: (Player) -> number, -- normal earning rate (for offline earnings)
 	finishLegacyProduct: ((Player) -> ())?,
@@ -98,7 +99,7 @@ local function collectOffline(player: Player)
 	local rec = data and data.offline
 	if type(rec) ~= "table" or rec.paid ~= 0 then return end
 	rec.paid = 1 -- no yield between the check and the payout
-	api.addCash(player, rec.cash)
+	api.addCash(player, rec.cash, "OfflineCash", "TimedReward")
 	Purchased:FireClient(player, { id = "OfflineCollect", text = "+" .. Format.cash(rec.cash) })
 end
 
@@ -107,12 +108,12 @@ local function multiplyOffline(player: Player, data: any, mult: number): string
 	local rec = data.offline
 	if type(rec) ~= "table" or type(rec.cash) ~= "number" then
 		local amount = math.floor(api.cashPerSecond(player) * Store.Offline.FallbackMinutes * 60 * mult)
-		api.addCash(player, amount)
+		api.addCash(player, amount, "OfflineMultiplier", "IAP")
 		return "+" .. Format.cash(amount)
 	end
 	local amount = math.max(rec.cash, rec.cash * mult - rec.cash * (rec.paid or 0))
 	rec.paid = math.max(rec.paid or 0, mult)
-	api.addCash(player, amount)
+	api.addCash(player, amount, "OfflineMultiplier", "IAP")
 	return "+" .. Format.cash(amount) .. " (" .. mult .. "x offline cash)!"
 end
 
@@ -124,7 +125,7 @@ local function onLoaded(player: Player)
 	-- last time's card was never answered: that cash still arrives (1x)
 	local old = data.offline
 	if type(old) == "table" and old.paid == 0 and type(old.cash) == "number" then
-		old.paid = 1 api.addCash(player, old.cash)
+		old.paid = 1 api.addCash(player, old.cash, "OfflineCash", "TimedReward")
 	end
 	local seconds, cash = offlineAmount(player, data)
 	data.lastSeen = os.time()
@@ -176,7 +177,7 @@ local function grant(player: Player, productId: string, purchaseId: string)
 		Purchased:FireClient(player, { id = productId, text = Store.GoldenRushCount .. " Golden production bonuses!" })
 	else
 		local amount = Store.cashPackAmount(productId, data.tier, api.cashPerSecond(player))
-		api.addCash(player, amount)
+		api.addCash(player, amount, productId, "IAP")
 		Purchased:FireClient(player, { id = productId, text = "+" .. Format.cash(amount) })
 	end
 end
@@ -196,9 +197,16 @@ local function processFor(player: Player?, id: string?, purchaseId: string): Enu
 	if not player or not id or not data then
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
+	-- 2 Nov: a session that can't save never grants (the receipt waits for a
+	-- session that can, so the purchase is never lost)
+	if not api.canSave(player) then
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
 	data.purchases = data.purchases or {}
 	if table.find(data.purchases, purchaseId) then
-		return Enum.ProductPurchaseDecision.PurchaseGranted -- already granted earlier
+		-- granted in memory already (earlier in this session or saved before):
+		-- answer Granted only once that is safely saved
+		return if api.save(player) then Enum.ProductPurchaseDecision.PurchaseGranted else Enum.ProductPurchaseDecision.NotProcessedYet
 	end
 	local ok, err = pcall(grant, player, id, purchaseId)
 	if not ok then
@@ -209,10 +217,15 @@ local function processFor(player: Player?, id: string?, purchaseId: string): Enu
 	while #data.purchases > 50 do
 		table.remove(data.purchases, 1)
 	end
+	-- 2 Nov: a short purchase log for support ("I bought X and got nothing")
+	data.purchaseLog = data.purchaseLog or {}
+	table.insert(data.purchaseLog, { k = id, t = os.time(), p = purchaseId })
+	while #data.purchaseLog > 30 do
+		table.remove(data.purchaseLog, 1)
+	end
 	if not api.save(player) then
-		-- Not saved: Roblox retries; the grant stays in memory for this session
-		-- and the id isn't persisted, so a retry may grant again after a rejoin.
-		-- That's the safe side for the player.
+		-- Not saved yet: Roblox re-sends the receipt; the id is in memory with
+		-- the grant, so the retry only needs the save (no double grant).
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
 	Analytics.custom(player, "RobuxPurchase", 1, id)

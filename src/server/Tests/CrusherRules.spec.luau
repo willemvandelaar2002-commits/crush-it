@@ -7,7 +7,8 @@ return function()
 	local function id() n+=1 return "fixture-"..n end
 	local function random() return .1 end
 	local function check(v,message) assert(v,message) checks+=1 end
-	local function fresh() return R.migrate({cash=10000},id) end
+	-- (fresh saves start with C.StarterScrap in the bin; the ledger checks below start from an empty bin)
+	local function fresh() local d=R.migrate({cash=10000},id) d.crushers.available=0 return d end
 	local function act(d,s,name,args,now) return R.act(d,s,name,args or {},now or 0,random,id,{}) end
 	local d=fresh() local s={} local starter=d.crushers.owned[1]
 	check(#d.crushers.owned==1 and d.crushers.equipped["1"]==starter.id,"starter must be equipped")
@@ -78,7 +79,7 @@ return function()
 	check(t.crushers.tutorial==#C.TutorialSteps+1 and t.cash==cash0+total,"finishing pays every step and the bonus once")
 	local old=fresh() old.crushers.bays=3 old.crushers.rolls=4 table.insert(old.crushers.owned,{id=id(),type="Steel",rarity="Common",modifier="Standard",level=1})
 	R.tutorialCatchUp(old) check(old.crushers.tutorial==6 and C.TutorialSteps[6].id=="Equip","catch-up skips steps already done, stops at the first open one")
-	d=R.migrate({cash=0},id) s={} d.crushers.tutorial=#C.TutorialSteps+1 -- ledger checks below without tutorial rewards
+	d=R.migrate({cash=0},id) s={} d.crushers.tutorial=#C.TutorialSteps+1 d.crushers.available=0 -- ledger checks below without tutorial rewards (fresh saves start with C.StarterScrap)
 	local events=R.step(d,s,0,{}) check(d.crushers.available==0 and events[1].kind=="Input","input spawn never awards scrap")
 	for time=1,7 do R.step(d,s,time,{}) end
 	check(d.crushers.available==8 and d.crushed==1,"scrap only on completed object")
@@ -87,7 +88,7 @@ return function()
 	act(d,s,"Collect") check(d.scrap==8 and d.crushers.available==0,"collect moves ready ledger")
 	act(d,s,"Sell") check(d.cash==8 and d.scrap==0,"sell moves carried ledger directly")
 	act(d,s,"Sell") check(d.cash==8,"repeated sell cannot duplicate")
-	local other=fresh() R.step(d,s,10,{}) check(other.crushers.available==0,"profile production isolation")
+	local other=fresh() local otherStart=other.crushers.available R.step(d,s,10,{}) check(other.crushers.available==otherStart,"profile production isolation")
 	local large=R.migrate({cash=1e20},id) check(large.cash==1e20,"large legacy cash is preserved")
 	local ownedCount=#large.crushers.owned act(large,{},"Unequip",{id=large.crushers.owned[1].id})
 	check(#large.crushers.owned==ownedCount,"unequipping never removes the permanent earning asset")
@@ -99,7 +100,7 @@ return function()
 	for i=1,8 do profiles[i]=fresh() contexts[i]={} R.step(profiles[i],contexts[i],0,{}) end
 	for time=1,7 do for i=1,8 do R.step(profiles[i],contexts[i],time,{}) end end
 	for i=1,8 do check(profiles[i].crushers.available==8,"independent simultaneous factory production") end
-	local boosted=R.migrate({cash=0,goldenRush=1},id) local boostedSession={}
+	local boosted=R.migrate({cash=0,goldenRush=1},id) boosted.crushers.available=0 local boostedSession={}
 	for time=0,7 do R.step(boosted,boostedSession,time,{mult=2}) end
 	check(boosted.crushers.available==8*2*C.GoldenYield and boosted.goldenRush==0,"paid double/golden benefits apply once at completion")
 	-- Expanded plot: old schema-2 IDs and slots remain unchanged, without a wipe.

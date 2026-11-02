@@ -53,7 +53,7 @@ function Quests.start(api: any)
 			if not ok then send(p, item) return end
 			if item.kind == "cash" then
 				local amount = math.max(Q.MinCash, math.floor(api.cashPerSecond(p) * item.seconds))
-				api.addCash(p, amount)
+				api.addCash(p, amount, "QuestShop", "Shop")
 				send(p, item.title .. ": +" .. Format.cash(amount) .. "!")
 			else
 				local name = api.giveCrusher and api.giveCrusher(p, item.rarity)

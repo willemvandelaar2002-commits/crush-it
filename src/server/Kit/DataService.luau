@@ -11,7 +11,12 @@
 --   * Autosave every AUTOSAVE seconds (also refreshes the lock), save on
 --     leave, and save everyone on shutdown (BindToClose).
 --   * Studio without API access: an in-memory mock store, so Play just works.
---   * Studio with ServerStorage attribute MockData = true: the same mock store (tests).
+--   * 2 Nov: Studio uses the mock store BY DEFAULT, even with API access, so a
+--     test can never change a live save. ServerStorage attribute RealData = true
+--     opts in to the real DataStore (MockData = true still forces the mock).
+--   * A session that cannot save (load failed, or another server took the
+--     profile) sets the player attribute SaveOff = true: the HUD warns and Robux
+--     product prompts are refused until the player rejoins.
 --
 -- API:
 --   DataService.start(storeName, defaults, sanitize?)
@@ -82,11 +87,12 @@ local function mockStore(): Store
 end
 
 local function resolveStore(name: string): Store
-	-- Studio test switch: ServerStorage attribute MockData = true keeps Play off
-	-- the real DataStore even with API access on (purchase/rejoin tests).
-	if RunService:IsStudio() and game:GetService("ServerStorage"):GetAttribute("MockData") == true then
+	-- Studio: the mock store unless ServerStorage.RealData = true (2 Nov: a test
+	-- once changed the owner's live save). MockData = true always forces the mock.
+	local ss = game:GetService("ServerStorage")
+	if RunService:IsStudio() and (ss:GetAttribute("MockData") == true or ss:GetAttribute("RealData") ~= true) then
 		mockActive = true
-		warn("[DataService] ServerStorage.MockData is on: in-memory store, nothing is saved.")
+		warn("[DataService] Studio test save (in-memory, nothing is saved). Set ServerStorage attribute RealData = true to play on the real save.")
 		return mockStore()
 	end
 	local real
@@ -168,6 +174,7 @@ local function load(player: Player)
 	end
 	profile.data = data
 	profile.loaded = true
+	player:SetAttribute("SaveOff", not profile.canSave)
 	loadedEvent:Fire(player, data)
 end
 
@@ -197,6 +204,7 @@ local function save(player: Player, release: boolean): boolean
 	end)
 	if stolen then
 		profile.canSave = false
+		if player.Parent then player:SetAttribute("SaveOff", true) end
 		warn(`[DataService] {player.Name}'s profile is owned by another server; stopped saving here`)
 	end
 	profile.saving = false

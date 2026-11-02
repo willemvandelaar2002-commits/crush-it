@@ -34,7 +34,7 @@ Store.Products = {
 	-- Rewards panel "Skip All": every playtime gift unlocks now (not in the shop list)
 	-- Hub Boosts station (Shared/BoostConfig); hidden from the shop list
 	{ id = "BoostCash", productId = 3723657898, price = 19, title = "2x Cash Boost", desc = "15 minutes of double cash", color = Color3.fromRGB(230, 70, 60), hidden = true },
-	{ id = "BoostLuck", productId = 3723657981, price = 19, title = "2x Luck Boost", desc = "15 minutes of double luck", color = Color3.fromRGB(60, 190, 90), hidden = true },
+	{ id = "BoostLuck", productId = 3723657981, price = 19, title = "2x Luck Boost", desc = "15 minutes of 2x luck on crusher rolls (stacks with the Lucky pass)", color = Color3.fromRGB(60, 190, 90), hidden = true },
 	{ id = "BoostSuper", productId = 3723658049, price = 29, title = "Super Boost", desc = "15 minutes of 2x cash and 2x luck", color = Color3.fromRGB(160, 80, 235), hidden = true },
 	-- 30 Oct: welcome-back card multipliers (the card shows these Robux prices until
 	-- the productIds are filled in from the Creator Dashboard; 0 = "SOON")

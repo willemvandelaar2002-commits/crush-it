@@ -159,7 +159,7 @@ local skipPrice = label(skip, if skipProduct and skipProduct.productId ~= 0 then
 skipPrice.ZIndex = 9
 if skipProduct and skipProduct.productId ~= 0 then Store.livePrice("product", skipProduct.productId, skipProduct.price, function(n) skipPrice.Text = "R$ " .. n end) end
 skip.Activated:Connect(function()
-	if skipProduct and skipProduct.productId ~= 0 then
+	if skipProduct and skipProduct.productId ~= 0 and not player:GetAttribute("SaveOff") then
 		game:GetService("MarketplaceService"):PromptProductPurchase(player, skipProduct.productId)
 		return
 	end
@@ -184,6 +184,7 @@ local function tab(name: string, y: number, color: Color3)
 end
 tab("Playtime", GRID_Y, HEADER)
 tab("Daily", GRID_Y + 72, C(40, 150, 255))
+tab("Codes", GRID_Y + 144, C(255, 150, 30)) -- 2 Nov: redeem codes (Shared/CodesConfig, server/Codes)
 
 -- Cards ----------------------------------------------------------------------------
 type Tile = { button: TextButton, title: TextLabel, sub: TextLabel, icon: ImageLabel, iconSize: UDim2, bar: Frame, barText: TextLabel,
@@ -317,13 +318,49 @@ local dailyTiles, dailyGrid, dailyGrand = build("Daily", Config.Rewards.Daily, f
 local footer = label(panel, "", UDim2.fromOffset(PAD, H - 40), UDim2.new(1, -PAD * 2, 0, 32), 3)
 footer.ZIndex = 7
 
+-- Codes page ---------------------------------------------------------------------------
+local codesPage = make("Frame", { Name = "CodesPage", Position = UDim2.fromOffset(PAD, GRID_Y), Size = UDim2.new(1, -PAD * 2, 0, 300),
+	BackgroundTransparency = 1, Visible = false, ZIndex = 6 }, panel)
+local codesTitle = label(codesPage, "Enter a code", UDim2.fromOffset(0, 10), UDim2.new(1, 0, 0, 52), 4)
+codesTitle.ZIndex = 7
+local box = make("TextBox", { Name = "CodeBox", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 86), Size = UDim2.new(0.8, 0, 0, 70),
+	BackgroundColor3 = C(250, 250, 255), PlaceholderText = "CODE", Text = "", ClearTextOnFocus = false, TextScaled = true,
+	Font = Style.Font, TextColor3 = C(30, 34, 50), PlaceholderColor3 = C(150, 155, 170), ZIndex = 7 }, codesPage)
+corner(box, 4)
+stroke(box, 4)
+make("UIPadding", { PaddingLeft = UDim.new(0, 14), PaddingRight = UDim.new(0, 14), PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 8) }, box)
+local redeem = make("TextButton", { Name = "Redeem", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 176), Size = UDim2.fromOffset(260, 66),
+	Text = "", AutoButtonColor = false, ZIndex = 7 }, codesPage)
+corner(redeem, 4)
+stroke(redeem, 4)
+paintBar(redeem, C(60, 200, 80))
+Style.feedback(redeem)
+label(redeem, "REDEEM", UDim2.fromScale(0.08, 0.12), UDim2.fromScale(0.84, 0.76), 4).ZIndex = 8
+local codeResult = label(codesPage, "", UDim2.fromOffset(0, 254), UDim2.new(1, 0, 0, 34), 3)
+codeResult.ZIndex = 7
+redeem.Activated:Connect(function()
+	local text = box.Text
+	if #text == 0 or #text > 20 then shake(redeem) return end
+	codeResult.Text = "..." codeResult.TextColor3 = Color3.new(1, 1, 1)
+	Net.event("RedeemCode"):FireServer(text)
+end)
+Net.event("CodeResult").OnClientEvent:Connect(function(r: any)
+	if type(r) ~= "table" then return end
+	codeResult.Text = tostring(r.text or "")
+	codeResult.TextColor3 = if r.ok then C(140, 255, 120) else C(255, 120, 110)
+	if r.ok then box.Text = "" else task.spawn(shake, redeem) end
+end)
+
 local function showTab(name: string)
 	playGrid.Visible = name == "Playtime"
 	playGrand.button.Visible = name == "Playtime"
 	dailyGrid.Visible = name == "Daily"
 	dailyGrand.button.Visible = name == "Daily"
+	codesPage.Visible = name == "Codes"
 	skip.Visible = name == "Playtime"
-	footer.Text = if name == "Playtime" then "Leaving the game resets your playtime gifts!" else "Come back every day! Missing a day starts over."
+	footer.Text = if name == "Playtime" then "Leaving the game resets your playtime gifts!"
+		elseif name == "Codes" then "New codes with every update: check the game page and our group!"
+		else "Come back every day! Missing a day starts over."
 	for n, t in tabs do
 		paintBar(t, if n == name then t:GetAttribute("Color") :: Color3 else GREY)
 	end
@@ -473,7 +510,7 @@ local function refresh()
 	end
 	-- a "!" on a tab that has something to claim
 	for n, t in tabs do
-		local has = if n == "Playtime" then anyPlay else anyDaily
+		local has = if n == "Playtime" then anyPlay elseif n == "Daily" then anyDaily else false
 		local mark = t:FindFirstChild("Ready") :: Frame?
 		if not mark then
 			mark = make("Frame", { Name = "Ready", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0, 4, 0, 4), Size = UDim2.fromOffset(26, 26), BackgroundColor3 = RED, ZIndex = 9 }, t)

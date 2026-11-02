@@ -294,3 +294,11 @@ Small Robux signs (6x4 studs, CrusherConfig.RobuxSignSize) on every plot, facing
 the walkway (CrusherConfig.RobuxSignSpots): Auto Collect beside the bin, 2x Cash beside
 Sell, Lucky by the road (no Production Boost sign). Click = pass prompt; OWNED on the
 owner's own signs.
+
+## 2 Nov: safer receipts, luck stacking, codes (vault audit)
+- **Saving off = no purchases.** DataService sets the player attribute `SaveOff` when a session can't save (load failed, or another server took the profile). A red bar says so (client/SaveWarning), every Robux product prompt is refused, and `ProcessReceipt` answers `NotProcessedYet` without granting, so the receipt waits for a session that can save.
+- **Retry without double grant.** A receipt whose purchase id is already in memory (granted, save failed) only retries the save, then answers `PurchaseGranted`.
+- **Purchase log:** `data.purchaseLog`, last 30 `{ k = product, t = time, p = purchase id }`, for support.
+- **Luck:** the Lucky pass and the 2x Luck boost now stack (x2 each, x4 with both; before, a pass owner who bought the boost got nothing). One weights function `C.rollWeights` feeds the server roll, the roll pedestal odds, the Index and the upgrade board; the Index shows YOUR odds (Luck upgrade, pass / boost, Index luck). Lucky pass text: "2x luck on crusher rolls: Uncommon or better about 30% -> 46% of rolls" (update the Creator Dashboard description too).
+- **Codes** (Shared/CodesConfig, server/Codes, CODES tab in Rewards): once per player (`data.codesUsed`), optional expiry date, rewards cash seconds / boosts / crushers. Live codes: CRUSHIT (10 min of earnings), GOALS (2x Luck 15 min + 5 min of earnings, until 23 Nov 2026).
+- **What's New** (Shared/NewsConfig, server/WhatsNew, client/WhatsNew): once per `Version`, never for players still in the tutorial, waits until no menu is open and no factory event runs. Bump `Version` and rewrite the lines with every update.

@@ -56,7 +56,9 @@ end
 local Boost=require(RS.Shared.BoostConfig)
 local function perks(p)
 	local now=workspace:GetServerTimeNow() -- hub Boosts (server/Boosts) stack with the passes
-	return {autoCrush=Store.hasPass(p,"AutoCrush"),lucky=Store.hasPass(p,"Lucky") or Boost.active(p,"Luck",now),
+	-- 2 Nov: the Lucky pass and the 2x Luck boost stack (x4 with both; before,
+	-- a pass owner who bought the boost got nothing for it)
+	return {autoCrush=Store.hasPass(p,"AutoCrush"),lucky=(if Store.hasPass(p,"Lucky") then 2 else 1)*(if Boost.active(p,"Luck",now) then 2 else 1),
 		mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p),
 		indexLuck=(function() local d=Data.get(p) return if d then IndexRewards.luck(d.crushers) else 0 end)()}
 end
@@ -217,7 +219,9 @@ local function send(p,message,result)
 		end
 	end
 	Rules.tutorialCatchUp(d)
+	local goalCash=d.cash
 	goalTick(p,d)
+	if d.cash~=goalCash then Analytics.cash(p,"GoalReward","Onboarding",goalCash,d.cash) end
 	-- onboarding funnel (new saves only): steps 2..9 = tutorial steps done, in order
 	if d.onboarding and d.onboarding.funnel then
 		for k=1,math.min(#C.TutorialSteps,(s.tutorial or 1)-1) do Analytics.funnelStep(p,d.onboarding,k+1,C.FunnelNames[k+1]) end
@@ -239,7 +243,7 @@ local function send(p,message,result)
 	end
 	Net.event("CrusherState"):FireClient(p,{cash=d.cash,carried=d.scrap,available=s.available,items=items,
 		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,plotLevel=s.plotLevel,
-		goal=s.goal,goalHave=goalHave,goalNeed=goalNeed,fusion=if s.fusion then {item=Rules.copy(s.fusion.item),readyAt=s.fusion.readyAt,now=os.time()} else nil,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
+		goal=s.goal,goalHave=goalHave,goalNeed=goalNeed,rollLucky=perks(p).lucky,fusion=if s.fusion then {item=Rules.copy(s.fusion.item),readyAt=s.fusion.readyAt,now=os.time()} else nil,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
 		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered,coating=ctx.coatingQuote,
 		goals=Goals.view(ctx,d,workspace:GetServerTimeNow()),
@@ -573,7 +577,7 @@ local function rollShow(p,offers)
 					if ctx.rollToken~=token or sessions[p]~=ctx or not item then return end
 					if not ctx.offers or ctx.offers[slot]~=item then return end -- already bought/replaced during the stagger
 					local ped=st.pedestals[slot] local r=C.rarity(item.rarity)
-					local odds=RollLook.odds(item.type,rollLuck,rollPerks.lucky,first)
+					local odds=RollLook.odds(item.type,rollLuck,rollPerks.lucky,first,rollPerks.indexLuck)
 					local unowned=d and not RollLook.owns(d.crushers.owned,item.type)
 					local model=displayModel(item.type,ped.top,item) model.Name="OfferCrusher"
 					model:SetAttribute("RevealOwner",p.UserId) model:SetAttribute("RevealRoll",rollId)
@@ -615,8 +619,12 @@ local function upgradeSummary(levelBefore,level)
 		first=baysBefore+1,last=C.bayCapacity(level),
 		caps={global={if before then before.global else C.MaxGlobal,after.global},level={if before then before.level else C.MaxLevel,after.level}}}
 end
+-- 2 Nov: what each action's cash change is called in the economy dashboard
+local ACTION_SKU={Sell="SellScrap",Buy="BuyCrusher",Unlock="UnlockBay",Upgrade="FactoryUpgrade",Level="LevelUp",LevelMax="LevelUp",
+	UpgradePlot="PlotUpgrade",ApplyCoating="Coating",Fuse="Fusion",RollUpgrade="RollUpgrade"}
 local function action(p,name,args)
 	local ctx=sessions[p] local d=Data.get(p) if not ctx or not d then return false,"Profile is loading." end
+	local cashBefore=d.cash
 	local offer=if name=="Buy" and type(args)=="table" and type(args.slot)=="number" then ctx.offers and ctx.offers[args.slot] else nil
 	local newType=offer and not RollLook.owns(d.crushers.owned,offer.type)
 	local ok,message,result
@@ -645,6 +653,7 @@ local function action(p,name,args)
 		task.delay(1.5,function() if ped.card.name.Text=="BOUGHT!" then card(ped,"","","","","") end end)
 	end
 	if ok then reconcile(p) end
+	if d.cash~=cashBefore then Analytics.cash(p,ACTION_SKU[name] or name,if name=="Buy" then "Shop" else "Gameplay",cashBefore,d.cash) end
 	-- onboarding funnel: the first plot upgrade comes after the tutorial steps
 	if ok and d.onboarding and name=="UpgradePlot" and Progression.level(d)>levelBefore then
 		-- one step per plot upgrade from Factory III on (Factory II is the last goal), in order
@@ -812,7 +821,9 @@ function G.start()
 				local member=checkGroup(p,true)
 				if sessions[p]~=ctx or Data.get(p)~=d then return end
 				ctx.inGroup=member
+				local skipCash=d.cash
 				local granted,reason=Goals.claim(ctx,d,workspace:GetServerTimeNow(),skipReward(p,d),C.Goals.SkipCooldownHours*3600,C.money)
+				if d.cash~=skipCash then Analytics.cash(p,"TimeSkip","TimedReward",skipCash,d.cash) end
 				send(p,if granted then "Done!" else reason)
 			end)
 			ctx.goalClaimBusy=false
@@ -828,14 +839,14 @@ function G.start()
 			for _,event in Rules.step(d,ctx,now,perks(p)) do visualEvent(p,event) end
 			if now-lastAuto>=C.AutoCollectInterval and Store.hasPass(p,"AutoCollect") then
 				if d.crushers.available>0 then Rules.act(d,ctx,"Collect",{},now,random,guid,perks(p)) end
-				if d.scrap>0 then Rules.act(d,ctx,"Sell",{},now,random,guid,perks(p)) end
+				if d.scrap>0 then local before=d.cash Rules.act(d,ctx,"Sell",{},now,random,guid,perks(p)) Analytics.cash(p,"AutoSell","Gameplay",before,d.cash) end
 			end
-			if now-lastSend>=1 then send(p) end
+			if now-lastSend>=1 then send(p) Analytics.cashBalance(p,d.cash) end
 		end end
 		Feel.flush(now)
 		if now-lastSend>=1 then lastSend=now end if now-lastAuto>=C.AutoCollectInterval then lastAuto=now end
 	end)
-	local api={getData=Data.get,whenLoaded=Data.whenLoaded,save=Data.saveNow,sync=function(p) send(p) end,
+	local api={getData=Data.get,whenLoaded=Data.whenLoaded,save=Data.saveNow,canSave=Data.canSave,sync=function(p) send(p) end,
 		-- reward crusher: random type of that rarity, Standard, level 1; nil when full
 		-- typeId: a specific type of that rarity (shop Mythics); force: ignore the
 		-- inventory limit (paid items must always arrive)
@@ -848,7 +859,8 @@ function G.start()
 			table.insert(d.crushers.owned,item) send(p)
 			return C.typeById(item.type).name
 		end,
-		addCash=function(p,n) local d=Data.get(p) if d then d.cash=C.money(d.cash+n) send(p) end end,
+		-- sku / tx: the reason for the economy dashboard (Kit/Analytics.cash)
+		addCash=function(p,n,sku,tx) local d=Data.get(p) if d then local before=d.cash d.cash=C.money(d.cash+n) if sku then Analytics.cash(p,sku,tx or "Gameplay",before,d.cash) end send(p) end end,
 		cashPerSecond=function(p) local d=Data.get(p) return if d then cps(p,d) else 0 end,
 		eventPlot=function(p) local ctx=sessions[p] return if ctx then ctx.plot else nil end,
 		eventFleet=function(p)
@@ -865,6 +877,8 @@ function G.start()
 	require(script.Parent.Boosts).start(api)
 	require(script.Parent.FactoryEvents).start(api)
 	require(script.Parent.IndexRewards).start(api)
+	require(script.Parent.Codes).start(api)
+	require(script.Parent.WhatsNew).start(api)
 	-- /credits <amount> (or /cash): test cash, e.g. "/credits 5m". Studio, or the
 	-- place owner in live servers. No amount gives 1M.
 	local SUFFIX={k=1e3,m=1e6,b=1e9,t=1e12,qa=1e15}

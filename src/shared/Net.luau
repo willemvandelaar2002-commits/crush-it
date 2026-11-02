@@ -33,7 +33,9 @@ local Net = {}
 --   QuestState  server -> client : quest lists, tokens, shop; QuestAction client -> server : ("State") | ("Claim", period, id) | ("Buy", itemId)
 --   OfflineAction client -> server : "Collect" — take the free offline cash (30 Oct)
 --   PlotUpgraded server -> buyer : upgrade summary for the cutscene (only after a confirmed plot upgrade)
-for _, name in { "CrusherAction", "CrusherState", "CrusherOpen", "Travel", "DailySpin", "QuestState", "QuestAction", "BoostAction", "PlotUpgraded", "OfferState", "OfferAction", "FactoryEventAction", "FactoryEventState", "ClaimIndexReward", "OfflineAction" } do table.insert(NAMES, name) end
+--   RedeemCode  client -> server : code text; CodeResult server -> client : { ok, text } (2 Nov)
+--   WhatsNew    server -> client : the news (NewsConfig) once per version; NewsSeen client -> server : closed it
+for _, name in { "CrusherAction", "CrusherState", "CrusherOpen", "Travel", "DailySpin", "QuestState", "QuestAction", "BoostAction", "PlotUpgraded", "OfferState", "OfferAction", "FactoryEventAction", "FactoryEventState", "ClaimIndexReward", "OfflineAction", "RedeemCode", "CodeResult", "WhatsNew", "NewsSeen" } do table.insert(NAMES, name) end
 
 local folder: Instance
 if RunService:IsServer() then
