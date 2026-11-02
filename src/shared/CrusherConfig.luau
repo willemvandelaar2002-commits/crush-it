@@ -76,6 +76,7 @@ C.LegacyTypes={"Bumper","Steel","Cobalt","Mega","Titan","Quantum"}
 -- bays (by bay 48, was by 36), so Factory III comes much sooner. Factory IV/V and
 -- their bays are unchanged.
 C.EarlyBayStart, C.EarlyBayGrowth = 250, 1.36
+C.FlatBayCurve = true
 C.StarterBays = { [3]=50, [4]=80, [5]=120, [6]=180 }
 for i=3,C.MaxBays do
 	local old=900*1.45^(i-3)
@@ -84,7 +85,10 @@ for i=3,C.MaxBays do
 		local w=math.clamp((i-6)/12,0,1) -- 0 at bay 6, 1 from bay 18
 		return (180*1.45^(i-6))^(1-w)*curve^w
 	end)()
-	local w=math.clamp((i-C.BaseMaxBays)/24,0,1) -- 0 up to bay 24, 1 from bay 48
+	-- 2 Nov evening (Willem's "making the game faster" doc: the price walls): no
+	-- blend back to the old x1.45 curve any more; x1.36 per bay all the way
+	-- (bay 36 ~$6.4M was $35M, bay 60 ~$10B was $1.4T)
+	local w=if C.FlatBayCurve then 0 else math.clamp((i-C.BaseMaxBays)/24,0,1)
 	C.BayCosts[i]=math.floor(early^(1-w)*old^w)
 end
 -- Caps[n] = upgrade caps from plot level n on: factory/roll upgrades (global)
@@ -98,8 +102,10 @@ end
 -- x0.7 / x0.6). Old saves moved up one level (CrusherRules.migrate, plotsV).
 C.StartBays = C.Layout.Wings*C.Layout.PerWing -- ground floor: 12 bays
 C.PlotUpgrade = {MaxLevel=5,
-	Costs={math.floor(C.BayCosts[C.StartBays+1]*10),5000000,math.floor(C.BayCosts[C.RearFirst]*10*.8),
-		math.floor(C.BayCosts[C.RearFirst+12]*10*.7),math.floor(C.BayCosts[C.RearFirst+18]*10*.6)},
+	-- 2 Nov evening: every factory = 10x its first new bay (no hand-set exceptions):
+	-- ~$39K, $2.2M, $87M, $3.5B, $22B (was $39K, $5M, $452M, $167B, $1.33T)
+	Costs={math.floor(C.BayCosts[C.StartBays+1]*10),math.floor(C.BayCosts[C.TopFirst]*10),math.floor(C.BayCosts[C.RearFirst]*10),
+		math.floor(C.BayCosts[C.RearFirst+12]*10),math.floor(C.BayCosts[C.RearFirst+18]*10)},
 	Names={"FACTORY II","FACTORY III","FACTORY IV","FACTORY V","FACTORY VI"},
 	Titles={"UPPER FLOOR","REINFORCED WORKSHOP","FUSION WORKSHOP","ADVANCED FACTORY","MASTER FACTORY"},
 	Adds={12,12,12,6,6},
@@ -107,9 +113,21 @@ C.PlotUpgrade = {MaxLevel=5,
 	Sections={"UPPER FLOOR","3RD FLOOR","REAR YARD","REAR UPPER LEFT","REAR UPPER RIGHT"},
 	Unlocks={nil,"COATING LAB","FUSION MACHINE",nil,"MASTER FACTORY LOOK"},
 	Accents={Color3.fromRGB(80,190,255),Color3.fromRGB(255,222,24),Color3.fromRGB(255,140,40),Color3.fromRGB(205,215,228),Color3.fromRGB(255,210,68)},
-	Caps={{global=25,level=50},{global=30,level=60},{global=40,level=80},{global=50,level=100},{global=60,level=120}}}
+	-- 2 Nov evening (doc: a capped-out player had nothing to buy for hours): much
+	-- higher caps; prices keep rising (x1.65 / x1.38 per level), so it stays a choice
+	Caps={{global=30,level=60},{global=40,level=80},{global=55,level=110},{global=70,level=140},{global=90,level=180}}}
 -- plot levels where things unlock (2 Nov: each one level later than before)
 C.CoatingPlotLevel = 2
+-- 2 Nov: SMASH + FRENZY (the player's own verb; vault: active play should earn
+-- 1.5x-3x idle). Each SMASH tap pays TapPay seconds of your income (at most
+-- MaxTaps counted per second) and fills the meter; a full meter (Meter taps)
+-- starts FRENZY: every crusher works Speed x faster for Seconds. The meter
+-- drains (Drain taps per second) after Idle seconds without tapping.
+C.Frenzy = { Meter = 25, Seconds = 10, Speed = 2, TapPay = 0.25, MaxTaps = 4, Idle = 2, Drain = 4, MinTapCash = 1 }
+-- 2 Nov: golden toys (doc + Grow a Garden's surprise layer): every 25-45 s one
+-- lands at one of your bays for Life seconds; grab it for Seconds of income
+-- (at least MinCash), BoostChance of a short boost instead.
+C.GoldenToys = { Min = 25, Max = 45, Life = 12, Seconds = { 30, 60 }, MinCash = 25, BoostChance = 0.12, BoostMinutes = 2, FirstDelay = 40 }
 -- the old structure levels (third floor = 1, rear yard = 2, ...) for the plot
 -- decor / stages built before the split: structural = plot level - 1
 function C.structureLevel(plotLevel) return math.max(0,(plotLevel or 0)-1) end
@@ -363,15 +381,18 @@ C.StarterScrap = 24 -- 1 Nov: scrap waiting in a new player's bin (three toys' w
 -- between the bay goals (they raise income the most). Since the plot split the
 -- starting factory has 12 bays, so the chain ends with "Fill 12 bays" and
 -- "Buy FACTORY II". "upgrades n" = total factory upgrade levels (Damage + Speed + Yield).
-C.Goals2Version = 3
+C.Goals2Version = 4
 C.Goals2 = {
 	{ id="Bay3", check="bays", n=3, title="Unlock bay 3", text="Bays are cheap now: unlock the next one!", target="NextBay", reward={cash=30,min=60} },
+	{ id="Frenzy", check="frenzy", title="SMASH into a FRENZY", text="Tap SMASH (right side, or F) until the meter is full: your crushers go 2x fast!", target="SmashButton", reward={cash=30,min=60} },
 	{ id="Fill3", check="fill", n=3, title="Fill bay 3", text="Roll and buy a crusher, then place it in the empty bay.", target="EmptyBay", reward={cash=30,min=60} },
 	{ id="Upgrades3", check="upgrades", n=3, title="Upgrade your factory", text="The blue FACTORY UPGRADES board makes ALL crushers better.", target="Production", reward={cash=45,min=100} },
 	{ id="Bay5", check="bays", n=5, title="Unlock 5 bays", text="More bays = more crushers = more cash!", target="NextBay", reward={cash=45,min=100} },
 	{ id="Fill5", check="fill", n=5, title="Fill 5 bays", text="Put a crusher in every bay you own.", target="EmptyBay", reward={cash=45,min=150} },
+	{ id="Golden", check="golden", title="Grab a golden toy", text="Golden toys land at your bays every half minute. Walk into one!", target="GoldenToy", reward={cash=45,min=150} },
 	{ id="Gift", check="gift", title="Claim a free gift", text="Open REWARDS (top left) and claim your playtime gift.", target="RewardsButton", reward={boost="Luck",minutes=5} },
 	{ id="Fill6", check="fill", n=6, title="Fill 6 bays", text="Unlock bay 6 and place a crusher. Prize: a FREE RARE crusher!", target="NextBayOrEmpty", reward={crusher="Rare"} },
+	{ id="Turbo", check="turbo", title="Fill up on TURBO", text="The orange TURBO pump doubles ALL your cash for 5 minutes.", target="TurboStation", reward={boost="Cash",minutes=5} },
 	{ id="Level5", check="level", n=5, title="Level a crusher to Lv 5", text="Press LEVEL UP on a crusher's plaque. Higher level = more scrap.", target="LevelBay", reward={cash=60,min=250} },
 	{ id="Rolls10", check="rolls", n=10, title="Roll 10 times", text="Rolling is free! Rarer crushers make way more cash.", target="Roll", reward={boost="Luck",minutes=10} },
 	{ id="Upgrades8", check="upgrades", n=8, title="Upgrade your factory", text="Factory upgrades make every crusher earn more.", target="Production", reward={cash=60,min=300} },
@@ -387,6 +408,7 @@ C.Goals2 = {
 C.Goals2History = {
 	{ "Bay3","Fill3","Bay5","Fill5","Gift","Fill6","Level5","Upgrades3","Rolls10","Bay9","Index","Row","Fill12","Bay18","Fill24","Factory2" },
 	{ "Bay3","Fill3","Upgrades3","Bay5","Fill5","Gift","Fill6","Level5","Rolls10","Upgrades8","Bay9","Index","Level10","Fill12","Upgrades15","Row","Bay15","Level15","Upgrades24","Bay18","Fill18","Upgrades33","Level20","Bay21","Fill24","Factory2" },
+	{ "Bay3","Fill3","Upgrades3","Bay5","Fill5","Gift","Fill6","Level5","Rolls10","Upgrades8","Bay9","Index","Level10","Upgrades12","Fill12","Level15","Factory2" },
 }
 -- Onboarding funnel step names as they appear in the Creator Dashboard
 -- (Analytics > Funnels). 1 = join, 2-9 = the tutorial steps above in order,
@@ -452,8 +474,12 @@ function C.globalCost(id, level) local u = C.Upgrades[id] return math.floor(u.ba
 function C.individualCost(item) return math.floor(C.IndividualBase * C.IndividualGrowth ^ (item.level - 1) * C.rarity(item.rarity).mult) end
 function C.rollSeconds() return C.RollSeconds end
 -- Caps grow with the plot upgrade (PlotUpgrade.Caps). Pedestals keep their own max.
+-- Luck keeps the older, lower caps (start, Factory II..VI): its effect grows
+-- with the rank of the tier, so the 2 Nov cap raise is for the cash upgrades only
+C.LuckCaps={20,25,30,40,50,60}
 function C.upgradeMax(id,plotLevel)
 	local u=C.Upgrades[id] if u.max then return u.max end
+	if id=="Luck" then return C.LuckCaps[math.clamp(math.floor(plotLevel or 0),0,#C.LuckCaps-1)+1] end
 	local caps=C.PlotUpgrade.Caps[math.min(plotLevel or 0,#C.PlotUpgrade.Caps)]
 	return if caps then caps.global else C.MaxGlobal
 end

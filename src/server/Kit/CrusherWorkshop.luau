@@ -375,6 +375,20 @@ function W.station(parent,cf,kind)
 		W.text(gui,"SignText","SELL SCRAP",UDim2.fromScale(.2,.08),UDim2.fromScale(.76,.84))
 		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.2,5.9),W.Green,"SELL SCRAP","SELL",16)
 		station={part=face,label=label,button=button}
+	elseif kind=="Turbo" then
+		-- 2 Nov: TURBO fuel pump (Sell Ores' gear shop idea): an orange tank with a
+		-- glowing gauge stripe and a hose, panel on the front. Opens the Turbo menu.
+		local orange=Color3.fromRGB(255,140,30)
+		studs(W.part(m,"MachineFoot",V(12,1,10),cf*CFrame.new(0,.5,0),W.Navy,true))
+		studs(W.part(m,"FuelTank",V(9,8,7),cf*CFrame.new(0,5,-.5),orange,true))
+		studs(W.part(m,"TankCap",V(9.6,.8,7.6),cf*CFrame.new(0,9.4,-.5),W.Navy))
+		local gauge=W.part(m,"FuelGauge",V(1.2,6,.3),cf*CFrame.new(-3.2,5,3.1),Color3.fromRGB(255,220,60))
+		gauge.Material=Enum.Material.Neon gauge.CastShadow=false
+		W.part(m,"Nozzle",V(1.2,1.2,3),cf*CFrame.new(4.9,6.5,1),W.Navy)
+		W.part(m,"Hose",V(.7,4.5,.7),cf*CFrame.new(5.4,4.2,2.2),Color3.fromRGB(40,40,48))
+		W.hazard(m,cf*CFrame.new(0,1.3,4.6),11,.5,.4)
+		local face,label,button=stationPanel(m,cf*CFrame.new(0,5.2,3.2),orange,"TURBO FUEL","TURBO",9)
+		station={part=face,label=label,button=button}
 	elseif kind=="Trash" then
 		-- Toy trash can (29 Oct): a studded bin with its lid flipped open, scrap
 		-- bricks peeking out, a red TRASH sign and the panel on the front.

@@ -54,12 +54,14 @@ local function restoredCooldown(d)
 	return os.clock()+math.clamp((d.crushers.rollReadyAt or 0)-workspace:GetServerTimeNow(),0,C.RollSeconds)
 end
 local Boost=require(RS.Shared.BoostConfig)
+local Turbo=require(script.Parent.Turbo)
+local Frenzy=require(script.Parent.Frenzy)
 local function perks(p)
 	local now=workspace:GetServerTimeNow() -- hub Boosts (server/Boosts) stack with the passes
 	-- 2 Nov: the Lucky pass and the 2x Luck boost stack (x4 with both; before,
 	-- a pass owner who bought the boost got nothing for it)
-	return {autoCrush=Store.hasPass(p,"AutoCrush"),lucky=(if Store.hasPass(p,"Lucky") then 2 else 1)*(if Boost.active(p,"Luck",now) then 2 else 1),
-		mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p),
+	return {speed=Frenzy.speed(p),autoCrush=Store.hasPass(p,"AutoCrush"),lucky=(if Store.hasPass(p,"Lucky") then 2 else 1)*(if Boost.active(p,"Luck",now) then 2 else 1),
+		mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now)),
 		indexLuck=(function() local d=Data.get(p) return if d then IndexRewards.luck(d.crushers) else 0 end)()}
 end
 local function cps(p,d)
@@ -175,6 +177,10 @@ local function goalCount(d,g)
 	if g.check=="index" then return math.min(1,#(s.indexClaimed or {})),1 end
 	if g.check=="row" then for _,row in Rows.snapshot(d).rows do if row.active then return 1,1 end end return 0,1 end
 	if g.check=="plot" then return s.plotLevel or 0,g.n end
+	local stats=d.stats or {}
+	if g.check=="frenzy" then return math.min(1,stats.frenzies or 0),1 end
+	if g.check=="golden" then return math.min(1,stats.goldenToys or 0),1 end
+	if g.check=="turbo" then return math.min(1,stats.turbos or 0),1 end
 	return 0,1
 end
 local function goalDone(d,g) local have,need=goalCount(d,g) return have>=need end
@@ -215,7 +221,7 @@ local function goalTick(p,d)
 	if s.goal==nil then s.goal=1 silent=(s.bays or 0)>2 or (s.plotLevel or 0)>0 end -- older saves
 	-- older saves also skip the one-off habit goals (gift, index, row, rolls)
 	-- they would otherwise be stuck on, but stop at the first real progress goal
-	local habit={gift=true,index=true,row=true,rolls=true}
+	local habit={gift=true,index=true,row=true,rolls=true,frenzy=true,golden=true,turbo=true}
 	local done=0
 	while C.Goals2[s.goal] and (goalDone(d,C.Goals2[s.goal]) or (silent and habit[C.Goals2[s.goal].check])) and done<#C.Goals2 do
 		if not silent then goalReward(p,d,C.Goals2[s.goal]) end
@@ -279,6 +285,10 @@ local function send(p,message,result)
 		for i,v in pieces do v.Transparency=if i<=shown then 0 else 1 end
 	end
 	st.Sell.label.Text=Format.cash(d.scrap).." carried"
+	if st.Turbo then
+		local tm,left=Turbo.active(p,workspace:GetServerTimeNow())
+		st.Turbo.label.Text=if tm>1 then string.format("x%d cash · %d:%02d left",tm,left//60,left%60) else "Boost your crushers!"
+	end
 	local rolling=os.clock()<(ctx.nextRoll or 0)
 	st.Roll.label.Text=if rolling then "Rolling..." else "Free  ·  "..C.pedestals(s.upgrades.Pedestals).." pedestal"..(if C.pedestals(s.upgrades.Pedestals)>1 then "s" else "")
 	st.Roll.button.Text=if rolling then "ROLLING..." else "ROLL"
@@ -512,6 +522,16 @@ local function rollShow(p,offers)
 	local seconds=math.max(1.2,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
 	local rollId=guid() local rollData=Data.get(p) local rollPerks=perks(p)
 	local rollLuck=rollData.crushers.upgrades.Luck local first=rollData.crushers.rolls==1
+	-- 2 Nov: a Legendary or better roll is announced to the whole server once revealed
+	local best=nil
+	for _,item in offers do local r=item and C.rarity(item.rarity) if r and r.rank>=4 and (not best or r.rank>best.rank) then best=table.clone(r) best.item=item end end
+	if best then
+		local def=C.typeById(best.item.type)
+		task.delay(seconds+0.4,function()
+			if ctx.rollToken~=token then return end
+			Net.event("RarePull"):FireAllClients({player=p.DisplayName,rarity=best.name,name=def and def.name or best.item.type,color=best.color,userId=p.UserId})
+		end)
+	end
 	for i in st.pedestals do clearOffer(plot,i) end
 	plot.offerModels={}
 	-- silhouettes are built lazily per pedestal and type, then reused
@@ -760,7 +780,7 @@ function G.start()
 	for _,plot in Plots.all() do
 		for name,station in plot.stations do if station.prompt then station.prompt.Triggered:Connect(function(p)
 			if plot.owner~=p then Net.event("Notice"):FireClient(p,{text="Use your own factory."}) return end
-			if name=="Production" or name=="Rolling" or name=="Trash" then Net.event("CrusherOpen"):FireClient(p,name) else action(p,name) end
+			if name=="Production" or name=="Rolling" or name=="Trash" or name=="Turbo" then Net.event("CrusherOpen"):FireClient(p,name) else action(p,name) end
 		end) end end
 		for slot,ped in plot.stations.Roll.pedestals do ped.prompt.Triggered:Connect(function(p)
 			if plot.owner~=p then Net.event("Notice"):FireClient(p,{text="Use your own factory."}) return end
@@ -824,6 +844,7 @@ function G.start()
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end
 		if name=="Trash" then Net.event("CrusherOpen"):FireClient(p,"Trash") return end -- the trash can's own button opens the picker
+		if name=="Turbo" then Net.event("CrusherOpen"):FireClient(p,"Turbo") return end -- the pump's button opens the Turbo menu
 		if name=="FavoriteStart" then
 			Goals.beginFavorite(ctx,guid(),workspace:GetServerTimeNow()) send(p) return
 		elseif name=="FavoriteConfirmed" then
@@ -895,6 +916,9 @@ function G.start()
 	require(script.Parent.FactoryEvents).start(api)
 	require(script.Parent.IndexRewards).start(api)
 	require(script.Parent.Codes).start(api)
+	Turbo.start(api)
+	Frenzy.start(api)
+	require(script.Parent.GoldenToys).start(api)
 	require(script.Parent.WhatsNew).start(api)
 	-- /credits <amount> (or /cash): test cash, e.g. "/credits 5m". Studio, or the
 	-- place owner in live servers. No amount gives 1M.

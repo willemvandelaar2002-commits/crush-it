@@ -35,7 +35,7 @@ local Net = {}
 --   PlotUpgraded server -> buyer : upgrade summary for the cutscene (only after a confirmed plot upgrade)
 --   RedeemCode  client -> server : code text; CodeResult server -> client : { ok, text } (2 Nov)
 --   WhatsNew    server -> client : the news (NewsConfig) once per version; NewsSeen client -> server : closed it
-for _, name in { "CrusherAction", "CrusherState", "CrusherOpen", "Travel", "DailySpin", "QuestState", "QuestAction", "BoostAction", "PlotUpgraded", "OfferState", "OfferAction", "FactoryEventAction", "FactoryEventState", "ClaimIndexReward", "OfflineAction", "RedeemCode", "CodeResult", "WhatsNew", "NewsSeen" } do table.insert(NAMES, name) end
+for _, name in { "CrusherAction", "CrusherState", "CrusherOpen", "Travel", "DailySpin", "QuestState", "QuestAction", "BoostAction", "PlotUpgraded", "OfferState", "OfferAction", "FactoryEventAction", "FactoryEventState", "ClaimIndexReward", "OfflineAction", "RedeemCode", "CodeResult", "WhatsNew", "NewsSeen", "RarePull", "TurboAction", "TurboState", "Smash", "FrenzyState", "GoldenToy" } do table.insert(NAMES, name) end
 
 local folder: Instance
 if RunService:IsServer() then

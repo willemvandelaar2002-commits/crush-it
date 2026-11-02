@@ -107,7 +107,25 @@ local button, badge = Style.iconButton(gui, {
 	name = "RewardsButton", icon = "🎁", image = Icons.Rewards, label = "REWARDS", a = C(200, 120, 255), b = C(120, 50, 220),
 })
 Style.placeHudButton(button, 2)
-Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() Style.placeHudButton(button, 2) end)
+-- 2 Nov (doc "making the game faster"): the next playtime gift counts down on
+-- the HUD, so a close prize is always visible ("FREE RARE CRUSHER 4:12")
+local giftChip = make("TextButton", { Name = "GiftCountdown", AnchorPoint = Vector2.new(0.5, 0), Size = UDim2.fromOffset(150, 40),
+	BackgroundColor3 = C(150, 60, 230), Text = "", AutoButtonColor = false, Visible = false, ZIndex = 3 }, gui)
+make("UICorner", { CornerRadius = UDim.new(0, 10) }, giftChip)
+make("UIStroke", { Thickness = 2.5, Color = Style.Colors.Ink, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, giftChip)
+local giftTop = make("TextLabel", { Size = UDim2.new(1, -8, 0.5, 0), Position = UDim2.fromOffset(4, 2), BackgroundTransparency = 1, TextScaled = true, Text = "", ZIndex = 4 }, giftChip)
+Style.text(giftTop, 2)
+local giftTime = make("TextLabel", { Size = UDim2.new(1, -8, 0.5, -2), Position = UDim2.new(0, 4, 0.5, 0), BackgroundTransparency = 1, TextScaled = true, Text = "", ZIndex = 4 }, giftChip)
+Style.text(giftTime, 2)
+giftTime.TextColor3 = C(255, 230, 90)
+local function placeGiftChip()
+	Style.placeHudButton(button, 2)
+	local compact = Style.compact()
+	giftChip.Size = if compact then UDim2.fromOffset(110, 30) else UDim2.fromOffset(150, 40)
+	giftChip.Position = UDim2.fromOffset(button.Position.X.Offset + button.Size.X.Offset / 2, button.Position.Y.Offset + button.Size.Y.Offset + 4)
+end
+placeGiftChip()
+Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(placeGiftChip)
 
 -- Panel ----------------------------------------------------------------------------
 local panel = make("Frame", {
@@ -482,6 +500,18 @@ local function refresh()
 		claimed[i] = true
 	end
 	local anyPlay, anyDaily = false, false
+	-- the countdown chip: the first gift not claimed yet
+	local nextGift, nextLeft = nil, 0
+	for i, r in Config.Rewards.Playtime do
+		if not claimed[i] then nextGift, nextLeft = r, r.minutes * 60 - played break end
+	end
+	giftChip.Visible = nextGift ~= nil and not panel.Visible
+	if nextGift then
+		giftTop.Text = if nextGift.kind == "crusher" then "FREE " .. string.upper(nextGift.rarity) .. " CRUSHER" else "FREE CASH GIFT"
+		giftTop.TextColor3 = if nextGift.kind == "crusher" then colorFor(nextGift) else CASH
+		giftTime.Text = if nextLeft <= 0 then "READY! TAP" else clock(nextLeft)
+		giftChip.BackgroundColor3 = if nextLeft <= 0 then C(60, 190, 70) else C(70, 40, 120)
+	end
 	for i, r in Config.Rewards.Playtime do
 		local left = r.minutes * 60 - played
 		local title, sub = amountText(r), subFor(r)
@@ -549,6 +579,10 @@ end)
 
 button.Activated:Connect(function()
 	Style.setOpen(panel, not panel.Visible)
+	refresh()
+end)
+giftChip.Activated:Connect(function()
+	Style.setOpen(panel, true)
 	refresh()
 end)
 close.Activated:Connect(function()
