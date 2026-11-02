@@ -457,6 +457,14 @@ local function goalTarget(g: any): (Instance?, string?, string?, GuiObject?)
 		return find(plot, "PlotUpgradeStation"), "UPGRADE!"
 	elseif t == "RewardsButton" or t == "BookButton" then
 		return nil, nil, nil, hudButton(t)
+	elseif t == "SmashButton" then
+		return nil, nil, nil, hudButton("Smash")
+	elseif t == "TurboStation" then
+		return find(plot, "TurboStation"), "TURBO"
+	elseif t == "GoldenToy" then
+		local toy = plot:FindFirstChild("GoldenToy")
+		if toy then return toy, "GRAB!" end
+		return nil, nil, "Stay at your factory: the next golden toy lands soon!"
 	end
 	return nil
 end

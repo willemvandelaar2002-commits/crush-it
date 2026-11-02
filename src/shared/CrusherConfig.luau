@@ -118,6 +118,16 @@ C.PlotUpgrade = {MaxLevel=5,
 	Caps={{global=30,level=60},{global=40,level=80},{global=55,level=110},{global=70,level=140},{global=90,level=180}}}
 -- plot levels where things unlock (2 Nov: each one level later than before)
 C.CoatingPlotLevel = 2
+-- 2 Nov: SMASH + FRENZY (the player's own verb; vault: active play should earn
+-- 1.5x-3x idle). Each SMASH tap pays TapPay seconds of your income (at most
+-- MaxTaps counted per second) and fills the meter; a full meter (Meter taps)
+-- starts FRENZY: every crusher works Speed x faster for Seconds. The meter
+-- drains (Drain taps per second) after Idle seconds without tapping.
+C.Frenzy = { Meter = 25, Seconds = 10, Speed = 2, TapPay = 0.25, MaxTaps = 4, Idle = 2, Drain = 4, MinTapCash = 1 }
+-- 2 Nov: golden toys (doc + Grow a Garden's surprise layer): every 25-45 s one
+-- lands at one of your bays for Life seconds; grab it for Seconds of income
+-- (at least MinCash), BoostChance of a short boost instead.
+C.GoldenToys = { Min = 25, Max = 45, Life = 12, Seconds = { 30, 60 }, MinCash = 25, BoostChance = 0.12, BoostMinutes = 2, FirstDelay = 40 }
 -- the old structure levels (third floor = 1, rear yard = 2, ...) for the plot
 -- decor / stages built before the split: structural = plot level - 1
 function C.structureLevel(plotLevel) return math.max(0,(plotLevel or 0)-1) end
@@ -371,15 +381,18 @@ C.StarterScrap = 24 -- 1 Nov: scrap waiting in a new player's bin (three toys' w
 -- between the bay goals (they raise income the most). Since the plot split the
 -- starting factory has 12 bays, so the chain ends with "Fill 12 bays" and
 -- "Buy FACTORY II". "upgrades n" = total factory upgrade levels (Damage + Speed + Yield).
-C.Goals2Version = 3
+C.Goals2Version = 4
 C.Goals2 = {
 	{ id="Bay3", check="bays", n=3, title="Unlock bay 3", text="Bays are cheap now: unlock the next one!", target="NextBay", reward={cash=30,min=60} },
+	{ id="Frenzy", check="frenzy", title="SMASH into a FRENZY", text="Tap SMASH (right side, or F) until the meter is full: your crushers go 2x fast!", target="SmashButton", reward={cash=30,min=60} },
 	{ id="Fill3", check="fill", n=3, title="Fill bay 3", text="Roll and buy a crusher, then place it in the empty bay.", target="EmptyBay", reward={cash=30,min=60} },
 	{ id="Upgrades3", check="upgrades", n=3, title="Upgrade your factory", text="The blue FACTORY UPGRADES board makes ALL crushers better.", target="Production", reward={cash=45,min=100} },
 	{ id="Bay5", check="bays", n=5, title="Unlock 5 bays", text="More bays = more crushers = more cash!", target="NextBay", reward={cash=45,min=100} },
 	{ id="Fill5", check="fill", n=5, title="Fill 5 bays", text="Put a crusher in every bay you own.", target="EmptyBay", reward={cash=45,min=150} },
+	{ id="Golden", check="golden", title="Grab a golden toy", text="Golden toys land at your bays every half minute. Walk into one!", target="GoldenToy", reward={cash=45,min=150} },
 	{ id="Gift", check="gift", title="Claim a free gift", text="Open REWARDS (top left) and claim your playtime gift.", target="RewardsButton", reward={boost="Luck",minutes=5} },
 	{ id="Fill6", check="fill", n=6, title="Fill 6 bays", text="Unlock bay 6 and place a crusher. Prize: a FREE RARE crusher!", target="NextBayOrEmpty", reward={crusher="Rare"} },
+	{ id="Turbo", check="turbo", title="Fill up on TURBO", text="The orange TURBO pump doubles ALL your cash for 5 minutes.", target="TurboStation", reward={boost="Cash",minutes=5} },
 	{ id="Level5", check="level", n=5, title="Level a crusher to Lv 5", text="Press LEVEL UP on a crusher's plaque. Higher level = more scrap.", target="LevelBay", reward={cash=60,min=250} },
 	{ id="Rolls10", check="rolls", n=10, title="Roll 10 times", text="Rolling is free! Rarer crushers make way more cash.", target="Roll", reward={boost="Luck",minutes=10} },
 	{ id="Upgrades8", check="upgrades", n=8, title="Upgrade your factory", text="Factory upgrades make every crusher earn more.", target="Production", reward={cash=60,min=300} },
@@ -395,6 +408,7 @@ C.Goals2 = {
 C.Goals2History = {
 	{ "Bay3","Fill3","Bay5","Fill5","Gift","Fill6","Level5","Upgrades3","Rolls10","Bay9","Index","Row","Fill12","Bay18","Fill24","Factory2" },
 	{ "Bay3","Fill3","Upgrades3","Bay5","Fill5","Gift","Fill6","Level5","Rolls10","Upgrades8","Bay9","Index","Level10","Fill12","Upgrades15","Row","Bay15","Level15","Upgrades24","Bay18","Fill18","Upgrades33","Level20","Bay21","Fill24","Factory2" },
+	{ "Bay3","Fill3","Upgrades3","Bay5","Fill5","Gift","Fill6","Level5","Rolls10","Upgrades8","Bay9","Index","Level10","Upgrades12","Fill12","Level15","Factory2" },
 }
 -- Onboarding funnel step names as they appear in the Creator Dashboard
 -- (Analytics > Funnels). 1 = join, 2-9 = the tutorial steps above in order,
