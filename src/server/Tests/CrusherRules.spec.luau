@@ -100,7 +100,7 @@ return function()
 	for i=1,8 do profiles[i]=fresh() contexts[i]={} R.step(profiles[i],contexts[i],0,{}) end
 	for time=1,7 do for i=1,8 do R.step(profiles[i],contexts[i],time,{}) end end
 	for i=1,8 do check(profiles[i].crushers.available==8,"independent simultaneous factory production") end
-	local boosted=R.migrate({cash=0,goldenRush=1},id) local boostedSession={}
+	local boosted=R.migrate({cash=0,goldenRush=1},id) boosted.crushers.available=0 local boostedSession={}
 	for time=0,7 do R.step(boosted,boostedSession,time,{mult=2}) end
 	check(boosted.crushers.available==8*2*C.GoldenYield and boosted.goldenRush==0,"paid double/golden benefits apply once at completion")
 	-- Expanded plot: old schema-2 IDs and slots remain unchanged, without a wipe.
