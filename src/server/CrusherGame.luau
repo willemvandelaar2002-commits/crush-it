@@ -60,7 +60,8 @@ local function perks(p)
 	local now=workspace:GetServerTimeNow() -- hub Boosts (server/Boosts) stack with the passes
 	-- 2 Nov: the Lucky pass and the 2x Luck boost stack (x4 with both; before,
 	-- a pass owner who bought the boost got nothing for it)
-	return {speed=Frenzy.speed(p),autoCrush=Store.hasPass(p,"AutoCrush"),lucky=(if Store.hasPass(p,"Lucky") then 2 else 1)*(if Boost.active(p,"Luck",now) then 2 else 1),
+	return {speed=Frenzy.speed(p),autoCrush=Store.hasPass(p,"AutoCrush"),lucky=(if Store.hasPass(p,"Lucky") then 2 else 1)*(if Boost.active(p,"Luck",now) then 2 else 1)
+			*(function() local d=Data.get(p) return C.rebirthLuck(d and d.crushers.rebirths or 0) end)(),
 		mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now))
 			*(function() local d=Data.get(p) return C.rebirthMult(d and d.crushers.rebirths or 0) end)(), -- 2 Nov evening: rebirth bonus
 		indexLuck=(function() local d=Data.get(p) return if d then IndexRewards.luck(d.crushers) else 0 end)()}
@@ -708,8 +709,8 @@ local function action(p,name,args)
 		-- everyone sees it; the factory goes back to the ground floor (bay models rebuilt)
 		Turbo.resetPeak(p)
 		Analytics.custom(p,"CrusherRebirth",d.crushers.rebirths)
-		Net.event("RarePull"):FireAllClients({text=p.DisplayName.." REBIRTHED! (x"..C.rebirthMult(d.crushers.rebirths).." income)",userId=p.UserId,color=Color3.fromRGB(255,170,60)})
-		Net.event("RebirthDone"):FireClient(p,{rebirths=d.crushers.rebirths,mult=C.rebirthMult(d.crushers.rebirths)})
+		Net.event("RarePull"):FireAllClients({text=p.DisplayName.." REBIRTHED! (x"..C.rebirthMult(d.crushers.rebirths).." income, x"..C.rebirthLuck(d.crushers.rebirths).." luck)",userId=p.UserId,color=Color3.fromRGB(255,170,60)})
+		Net.event("RebirthDone"):FireClient(p,{rebirths=d.crushers.rebirths,mult=C.rebirthMult(d.crushers.rebirths),luck=C.rebirthLuck(d.crushers.rebirths)})
 	end
 	if ok and name=="UpgradePlot" and Progression.level(d)>levelBefore then
 		Net.event("PlotUpgraded"):FireClient(p,upgradeSummary(levelBefore,Progression.level(d)))

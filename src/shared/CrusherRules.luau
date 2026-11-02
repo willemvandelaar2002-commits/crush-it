@@ -331,7 +331,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		for _,item in s.owned do item.level=1 end
 		if s.fusion and s.fusion.item then s.fusion.item.level=1 end
 		s.rebirths=n+1
-		return true,"REBIRTH "..s.rebirths.."! Income x"..C.rebirthMult(s.rebirths).." forever.",s.rebirths
+		return true,"REBIRTH "..s.rebirths.."! Income x"..C.rebirthMult(s.rebirths)..", luck x"..C.rebirthLuck(s.rebirths).." forever.",s.rebirths
 	elseif action=="Recycle" then
 		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
 		for _,id in s.equipped do if id==item.id then return false,"Unequip this crusher before recycling it." end end
