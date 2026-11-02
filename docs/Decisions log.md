@@ -347,3 +347,4 @@
 - 2026-11-02: Fix: when the guide finished (last goal, or a save jumping past the goals) the gold trail and arrow stayed on the old target, because finishGoal/finishStep set mode = nil and switch(nil) then returned early. Willem.
 - 2026-11-02: Intro cutscene for new players (Willem's idea): crusher close-up, then a hologram "vision" of the full factory, ~4.6 s, skippable. Watch funnel step 2. Willem.
 - 2026-11-02: Turbo 40% cheaper (90/360/1080/2160 s of income; Willem: too long a wait) and its price ignores the 2x Cash boost (a golden toy boost doubled the price and it stayed doubled). Willem.
+- 2026-11-02: Rebirth also gives +25% luck per rebirth (multiplies rare-or-better odds like the Lucky pass). Willem.

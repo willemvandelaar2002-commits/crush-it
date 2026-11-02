@@ -97,8 +97,8 @@ local function paint()
 	local n = state.rebirths or 0
 	button.Visible = (state.plotLevel or 0) >= C.Rebirth.MinPlot - 1 or n > 0
 	badge.Visible = ready()
-	multLine.Text = string.format('x%s  >  <font color="#7CFF6E">x%s</font>', tostring(C.rebirthMult(n)), tostring(C.rebirthMult(n + 1)))
-	sub.Text = if n > 0 then "INCOME FOREVER · REBIRTHS: " .. n else "INCOME FOREVER"
+	multLine.Text = string.format('x%s CASH  >  <font color="#7CFF6E">x%s CASH</font>', tostring(C.rebirthMult(n)), tostring(C.rebirthMult(n + 1)))
+	sub.Text = string.format("LUCK x%s > x%s · FOREVER", tostring(C.rebirthLuck(n)), tostring(C.rebirthLuck(n + 1))) .. (if n > 0 then " · REBIRTHS: " .. n else "")
 	local cost = state.rebirthCost or C.rebirthCost(n)
 	if (state.plotLevel or 0) < C.Rebirth.MinPlot then
 		progressFill.Size = UDim2.fromScale(math.clamp((state.plotLevel or 0) / C.Rebirth.MinPlot, 0, 1), 1)
@@ -137,7 +137,7 @@ Net.event("RebirthDone").OnClientEvent:Connect(function(r: any)
 	local s = make("Sound", { SoundId = "rbxassetid://" .. Config.Sounds.LevelUp, Volume = 0.7 }, SoundService)
 	s:Play() task.delay(3, function() s:Destroy() end)
 	local pop = make("TextLabel", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.4), Size = UDim2.fromOffset(620, 90),
-		BackgroundTransparency = 1, TextScaled = true, Text = "REBIRTH " .. tostring(r.rebirths) .. "!  x" .. tostring(r.mult) .. " INCOME", ZIndex = 9 }, gui)
+		BackgroundTransparency = 1, TextScaled = true, Text = "REBIRTH " .. tostring(r.rebirths) .. "!  x" .. tostring(r.mult) .. " CASH · x" .. tostring(r.luck or 1) .. " LUCK", ZIndex = 9 }, gui)
 	Style.bold(pop, 4)
 	pop.TextColor3 = RGB(255, 190, 60)
 	local sc = make("UIScale", { Scale = 0.3 }, pop)
