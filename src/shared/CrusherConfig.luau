@@ -124,10 +124,13 @@ C.CoatingPlotLevel = 1 -- 2 Nov evening: the Coating Lab comes with Factory II (
 C.Merge = { MaxStars = 3, Mult = 1.5 }
 -- 2 Nov evening: REBIRTH (long loop; vault: Rebirth and Prestige, doc wave 3).
 -- From Factory IV (MinPlot) with Cost x Growth^rebirths cash. Each rebirth adds
--- MultPer to a permanent income multiplier (1 + MultPer x rebirths).
-C.Rebirth = { MinPlot = 3, Cost = 150e6, Growth = 8, MultPer = 0.5, LuckPer = 0.25, StartCash = 1000 }
+-- to a permanent income multiplier (Mult ^ rebirths).
+-- 3 Nov (vault: Progression and Pacing, "linear multiplier against exponential cost
+-- is the most common mistake"): cash x2 per rebirth (x2, x4, x8...), cost x4, so
+-- each run takes about twice as long as the one before (was ~5x with +0.5 / x8).
+C.Rebirth = { MinPlot = 3, Cost = 150e6, Growth = 4, Mult = 2, LuckPer = 0.25, StartCash = 1000 }
 function C.rebirthCost(n) return math.floor(C.Rebirth.Cost*C.Rebirth.Growth^(n or 0)) end
-function C.rebirthMult(n) return 1+C.Rebirth.MultPer*(n or 0) end
+function C.rebirthMult(n) return C.Rebirth.Mult^(n or 0) end
 -- 2 Nov evening (Willem): each rebirth also +25% luck (multiplies the rare-or-better odds, like the Lucky pass)
 function C.rebirthLuck(n) return 1+C.Rebirth.LuckPer*(n or 0) end
 -- 2 Nov: SMASH + FRENZY (the player's own verb; vault: active play should earn

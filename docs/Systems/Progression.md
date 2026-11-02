@@ -89,3 +89,12 @@ cyan hologram (local copies of the hidden floor parts, one Highlight outline, ma
 "BUILD THE BIGGEST FACTORY!". Shot 3: back behind the player, HUD and controls return, tutorial step 1 shows.
 The game runs underneath. Studio: player attributes IntroTest (replay) and IntroFreeze = seconds (hold a moment).
 Goal: fewer players leaving before the first collect (funnel step 2, 12.5% churn on 2 Nov).
+
+## 3 Nov: rebirth pacing, REBUILD, equip by rarity
+- Rebirth numbers (vault "Progression and Pacing Design": a linear multiplier against an exponential cost makes every
+  run ~5x longer): now cash x2 per rebirth (x2, x4, x8...) and cost x4 ($150M, $600M, $2.4B...), so each run takes
+  about twice as long as the one before. Luck stays +25% per rebirth.
+- REBUILD (top row, only after your first rebirth and while bays are left to buy): buys every bay you can afford,
+  cheapest first, then Equip Best. A player's idea; the first run stays hands-on.
+- Equip by rarity: the arrow next to EQUIP BEST opens a picker (BEST + every rarity you own, with counts). Picking a
+  rarity equips that rarity first from bay 1, so it fills whole rows (rarity row bonus); the rest is filled best-first.

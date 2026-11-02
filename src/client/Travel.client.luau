@@ -20,7 +20,7 @@ local row = Instance.new("Frame")
 row.Name = "Row"
 row.AnchorPoint = Vector2.new(0.5, 0)
 row.Position = UDim2.new(0.5, 0, 0, 6)
-row.Size = UDim2.fromOffset(600, 54)
+row.Size = UDim2.fromOffset(800, 54)
 -- 30 Oct (phone patch): top right on phones, clear of the INDEX/SHOP/REWARDS icons
 Style.phoneFit(row, { scale = 0.75, margin = 230, anchor = Vector2.new(1, 0), position = UDim2.new(1, -8, 0, 6) })
 row.BackgroundTransparency = 1
@@ -99,4 +99,75 @@ Net.event("CrusherState").OnClientEvent:Connect(function(v)
 		if not inBay[list[i].id] then better = true break end
 	end
 	mark.Visible = better
+end)
+
+-- 3 Nov (a player's idea): the small arrow next to EQUIP BEST opens a rarity
+-- picker. Picking one equips that rarity first, from bay 1, so it fills whole
+-- matching rows (row bonus). "BEST" is the normal Equip Best.
+local C = Config.Crushers
+local pick = Instance.new("TextButton")
+pick.Name = "EquipPick" pick.Text = "" pick.Size = UDim2.fromOffset(54, 54) pick.LayoutOrder = 1 pick.Parent = row
+Style.button(pick, Color3.fromRGB(40, 180, 60))
+local pickArrow = Instance.new("TextLabel")
+pickArrow.Text = "▼" pickArrow.BackgroundTransparency = 1 pickArrow.TextScaled = true pickArrow.ZIndex = 3
+pickArrow.AnchorPoint = Vector2.new(0.5, 0.5) pickArrow.Position = UDim2.fromScale(0.5, 0.5) pickArrow.Size = UDim2.fromScale(0.6, 0.6)
+pickArrow.Parent = pick
+Style.text(pickArrow, 2.5)
+equipBest.LayoutOrder = 0
+local menu = Instance.new("Frame")
+menu.Name = "RarityPicker" menu.BackgroundColor3 = Color3.fromRGB(30, 34, 52) menu.Visible = false menu.ZIndex = 10
+menu.AutomaticSize = Enum.AutomaticSize.Y menu.Size = UDim2.fromOffset(250, 0) menu.Parent = gui
+local mc = Instance.new("UICorner") mc.CornerRadius = UDim.new(0, 12) mc.Parent = menu
+local ms = Instance.new("UIStroke") ms.Thickness = 4 ms.Color = Style.Colors.Ink ms.Parent = menu
+local mp = Instance.new("UIPadding") mp.PaddingTop = UDim.new(0, 8) mp.PaddingBottom = UDim.new(0, 8) mp.PaddingLeft = UDim.new(0, 8) mp.PaddingRight = UDim.new(0, 8) mp.Parent = menu
+local ml = Instance.new("UIListLayout") ml.Padding = UDim.new(0, 6) ml.SortOrder = Enum.SortOrder.LayoutOrder ml.Parent = menu
+local menuTitle = Instance.new("TextLabel")
+menuTitle.Text = "EQUIP A RARITY FIRST" menuTitle.BackgroundTransparency = 1 menuTitle.TextScaled = true menuTitle.Size = UDim2.new(1, 0, 0, 26)
+menuTitle.ZIndex = 11 menuTitle.LayoutOrder = 0 menuTitle.Parent = menu
+Style.text(menuTitle, 2)
+local scale = Instance.new("UIScale") scale.Parent = menu
+local last: any = nil
+local function choice(order: number, label: string, color: Color3, rarity: string?)
+	local b = Instance.new("TextButton")
+	b.Text = "" b.Size = UDim2.new(1, 0, 0, 40) b.LayoutOrder = order b.ZIndex = 11 b.Parent = menu
+	Style.button(b, color)
+	local t = Instance.new("TextLabel")
+	t.Text = label t.BackgroundTransparency = 1 t.TextScaled = true t.ZIndex = 12
+	t.AnchorPoint = Vector2.new(0.5, 0.5) t.Position = UDim2.fromScale(0.5, 0.5) t.Size = UDim2.new(1, -14, 1, -12) t.Parent = b
+	Style.text(t, 2.5)
+	b.Activated:Connect(function()
+		menu.Visible = false
+		Net.event("CrusherAction"):FireServer("EquipBest", if rarity then { rarity = rarity } else nil)
+	end)
+end
+local function buildMenu()
+	for _, c in menu:GetChildren() do if c:IsA("TextButton") then c:Destroy() end end
+	choice(1, "BEST", Color3.fromRGB(50, 225, 70), nil)
+	local counts: { [string]: number } = {}
+	for _, item in (last and last.items) or {} do counts[item.rarity] = (counts[item.rarity] or 0) + 1 end
+	for i, r in C.Rarities do
+		local n = counts[r.name]
+		if n and n > 0 then choice(i + 1, string.upper(r.name) .. "  x" .. n, r.color, r.name) end
+	end
+end
+pick.Activated:Connect(function()
+	if menu.Visible then menu.Visible = false return end
+	buildMenu()
+	scale.Scale = if Style.compact() then 0.75 else 1
+	local at = pick.AbsolutePosition
+	local w = 250 * scale.Scale
+	menu.Position = UDim2.fromOffset(math.max(8, at.X + pick.AbsoluteSize.X - w), at.Y + pick.AbsoluteSize.Y + 8) -- same ScreenGui, so no inset maths
+	menu.Visible = true
+end)
+
+-- 3 Nov (a player's idea + vault: a run after a rebirth must feel faster):
+-- REBUILD, only after your first rebirth and while you have bays left to buy
+local rebuild = travelButton("Rebuild", "REBUILD", Color3.fromRGB(255, 120, 40), nil, 4)
+rebuild.Visible = false
+rebuild.Activated:Connect(function() Net.event("CrusherAction"):FireServer("Rebuild") end)
+Net.event("CrusherState").OnClientEvent:Connect(function(v)
+	if type(v) ~= "table" then return end
+	last = v
+	local capacity = C.bayCapacity(v.plotLevel or 0)
+	rebuild.Visible = (v.rebirths or 0) >= 1 and (v.unlocked or 0) < capacity
 end)

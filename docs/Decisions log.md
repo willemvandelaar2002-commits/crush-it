@@ -348,3 +348,4 @@
 - 2026-11-02: Intro cutscene for new players (Willem's idea): crusher close-up, then a hologram "vision" of the full factory, ~4.6 s, skippable. Watch funnel step 2. Willem.
 - 2026-11-02: Turbo 40% cheaper (90/360/1080/2160 s of income; Willem: too long a wait) and its price ignores the 2x Cash boost (a golden toy boost doubled the price and it stayed doubled). Willem.
 - 2026-11-02: Rebirth also gives +25% luck per rebirth (multiplies rare-or-better odds like the Lucky pass). Willem.
+- 2026-11-03: Rebirth x2 cash / x4 cost per rebirth (was +0.5 / x8; vault pacing note). REBUILD button after the first rebirth and an equip-by-rarity picker next to Equip Best (both from a player). Willem.

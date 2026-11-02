@@ -663,7 +663,7 @@ local function upgradeSummary(levelBefore,level)
 		caps={global={if before then before.global else C.MaxGlobal,after.global},level={if before then before.level else C.MaxLevel,after.level}}}
 end
 -- 2 Nov: what each action's cash change is called in the economy dashboard
-local ACTION_SKU={Sell="SellScrap",Buy="BuyCrusher",Unlock="UnlockBay",Upgrade="FactoryUpgrade",Level="LevelUp",LevelMax="LevelUp",
+local ACTION_SKU={Rebuild="UnlockBay",Sell="SellScrap",Buy="BuyCrusher",Unlock="UnlockBay",Upgrade="FactoryUpgrade",Level="LevelUp",LevelMax="LevelUp",
 	UpgradePlot="PlotUpgrade",ApplyCoating="Coating",Fuse="Fusion",RollUpgrade="RollUpgrade"}
 local function action(p,name,args)
 	local ctx=sessions[p] local d=Data.get(p) if not ctx or not d then return false,"Profile is loading." end
@@ -852,7 +852,7 @@ function G.start()
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
 		elseif name=="TrashMany" then target=ctx.plot.stations.Trash and ctx.plot.stations.Trash.part reach=40
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
-		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" then
+		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" and name~="Rebuild" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end

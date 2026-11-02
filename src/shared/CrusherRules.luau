@@ -287,10 +287,22 @@ local function act(d,session,action,args,now,random,guid,perks)
 		-- Compare raw outputs fairly; current row membership must not bias the
 		-- ranking. Before committing, protect a stronger hand-arranged row set.
 		local out={} for _,item in list do out[item.id]=R.stats(d,item,perks,false).cps end
-		table.sort(list,function(a,b) if out[a.id]==out[b.id] then return a.id<b.id end return out[a.id]>out[b.id] end)
+		-- 3 Nov (a player's idea): args.rarity puts that rarity first, best ones
+		-- first, filling the bays in order so they form full matching rows
+		local want=type(args.rarity)=="string" and C.rarity(args.rarity) and args.rarity or nil
+		if want then
+			local any=false for _,item in list do if item.rarity==want then any=true break end end
+			if not any then return false,"You don't own any "..want.." crushers." end
+		end
+		local function first(item) return if want and item.rarity==want then 1 else 0 end
+		table.sort(list,function(a,b)
+			if first(a)~=first(b) then return first(a)>first(b) end
+			if out[a.id]==out[b.id] then return a.id<b.id end return out[a.id]>out[b.id]
+		end)
 		local best={} for i=1,math.min(s.bays,#list) do best[list[i].id]=true end
 		local equipped,placed={},{}
-		for key,id in s.equipped do if best[id] and tonumber(key) and tonumber(key)<=s.bays then equipped[key]=id placed[id]=true end end
+		-- (by rarity: a fresh layout from bay 1, so the chosen rarity fills whole rows)
+		if not want then for key,id in s.equipped do if best[id] and tonumber(key) and tonumber(key)<=s.bays then equipped[key]=id placed[id]=true end end end
 		local nextBest=1
 		for i=1,s.bays do
 			local key=tostring(i)
@@ -303,15 +315,15 @@ local function act(d,session,action,args,now,random,guid,perks)
 		local same=true
 		for key,id in equipped do if s.equipped[key]~=id then same=false end end
 		for key,id in s.equipped do if equipped[key]~=id then same=false end end
-		if same then return false,"You're already using your best crushers!" end
+		if same then return false,(if want then "Your "..want.." crushers are already in place!" else "You're already using your best crushers!") end
 		local proposed={crushers={owned=s.owned,equipped=equipped,bays=s.bays}}
 		local currentRows,newRows=Rows.snapshot(d),Rows.snapshot(proposed)
 		local before,after=0,0
 		for _,id in s.equipped do before+=(out[id] or 0)*Rows.multiplier(currentRows,id) end
 		for _,id in equipped do after+=(out[id] or 0)*Rows.multiplier(newRows,id) end
-		if after+1e-8<before then return false,"Kept your row bonuses: this setup produces more. Arrange matching rarities manually." end
+		if not want and after+1e-8<before then return false,"Kept your row bonuses: this setup produces more. Arrange matching rarities manually." end
 		s.equipped=equipped
-		return true,"Equipped your best crushers!"
+		return true,(if want then "Equipped your "..want.." crushers first!" else "Equipped your best crushers!")
 	elseif action=="Unequip" then
 		if not R.find(d,args.id) then return false,"You do not own that crusher." end
 		for key,id in s.equipped do if id==args.id then s.equipped[key]=nil end end
@@ -319,7 +331,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		-- 2 Nov evening: "Recycle your factory" (vault: Rebirth and Prestige). Needs
 		-- Factory IV and the rebirth cash. Resets cash, bays, factory level, factory
 		-- upgrades and crusher levels; keeps every crusher (stars, coatings, fusion),
-		-- the Index, Luck, pedestals, passes. Each rebirth: +MultPer income forever.
+		-- the Index, Luck, pedestals, passes. Each rebirth: income x Mult forever.
 		local R2=C.Rebirth local n=s.rebirths or 0
 		if (s.plotLevel or 0)<R2.MinPlot then return false,"Rebirth unlocks with "..C.PlotUpgrade.Names[R2.MinPlot].."." end
 		local cost=C.rebirthCost(n)
@@ -397,6 +409,21 @@ local function act(d,session,action,args,now,random,guid,perks)
 		local lv=s.upgrades[args.id] if lv>=C.upgradeMax(args.id,s.plotLevel) then return false,if u.max then "Upgrade is at maximum level." else R.capMessage(s.plotLevel) end
 		if not pay(C.globalCost(args.id,lv)) then return false,"Not enough cash. Collect and sell scrap." end
 		s.upgrades[args.id]+=1
+	elseif action=="Rebuild" then
+		-- 3 Nov (a player's idea + vault: the run after a rebirth must feel faster):
+		-- after your first rebirth, one button buys every bay you can afford
+		-- (cheapest first, up to this factory's capacity) and then equips your best
+		if (s.rebirths or 0)<1 then return false,"REBUILD unlocks after your first rebirth." end
+		local bought=0
+		while s.bays<C.bayCapacity(s.plotLevel) do
+			local cost=C.BayCosts[s.bays+1]
+			if not cost or not pay(cost) then break end
+			s.bays+=1 bought+=1
+		end
+		local equippedOk=act(d,session,"EquipBest",{},now,random,guid,perks)
+		if bought==0 and not equippedOk then return false,"No bay you can afford yet, and your best crushers are already in." end
+		if bought==0 then return true,"No bay you can afford yet. Your best crushers are in." end
+		return true,"REBUILT! +"..bought.." bays, best crushers in.",bought
 	elseif action=="Unlock" then
 		if s.bays>=C.bayCapacity(s.plotLevel) then return false,"All bays bought. Fill them and use UPGRADE PLOT for a new row." end
 		if not pay(C.BayCosts[s.bays+1]) then return false,"Not enough cash for another bay. Collect and sell." end s.bays+=1
