@@ -7,7 +7,8 @@ return function()
 	local function id() n+=1 return "fixture-"..n end
 	local function random() return .1 end
 	local function check(v,message) assert(v,message) checks+=1 end
-	local function fresh() return R.migrate({cash=10000},id) end
+	-- (fresh saves start with C.StarterScrap in the bin; the ledger checks below start from an empty bin)
+	local function fresh() local d=R.migrate({cash=10000},id) d.crushers.available=0 return d end
 	local function act(d,s,name,args,now) return R.act(d,s,name,args or {},now or 0,random,id,{}) end
 	local d=fresh() local s={} local starter=d.crushers.owned[1]
 	check(#d.crushers.owned==1 and d.crushers.equipped["1"]==starter.id,"starter must be equipped")
