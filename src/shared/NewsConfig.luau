@@ -5,10 +5,9 @@
 -- the lines with every update; numbers stated plainly.
 local M = {}
 
-M.Version = 2
+M.Version = 3
 M.Title = "What's New"
 M.Lines = {
-	"MERGE: 3 of the same crusher make a ★ version (x1.5 cash per star). Open the Index!",
 	"REBIRTH from Factory IV: start over with all your crushers and earn +50% income forever.",
 	"The Coating Lab now opens with Factory II.",
 	"SMASH! Tap the red button (or F): FRENZY makes all your crushers 2x fast.",

@@ -332,25 +332,6 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if s.fusion and s.fusion.item then s.fusion.item.level=1 end
 		s.rebirths=n+1
 		return true,"REBIRTH "..s.rebirths.."! Income x"..C.rebirthMult(s.rebirths).." forever.",s.rebirths
-	elseif action=="Merge" then
-		-- 2 Nov evening: two spare copies (same type and stars, not in a bay, not
-		-- fused; the lowest levels go first) merge into this crusher: +1 star
-		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
-		local stars=tonumber(item.stars) or 0
-		if stars>=C.Merge.MaxStars then return false,"This crusher has the most stars already." end
-		if item.fused then return false,"Fused crushers can't merge." end
-		local equipped={} for _,id in s.equipped do equipped[id]=true end
-		local spare={}
-		for _,other in s.owned do
-			if other.id~=item.id and other.type==item.type and (tonumber(other.stars) or 0)==stars and not other.fused and not equipped[other.id] then table.insert(spare,other) end
-		end
-		if #spare<C.Merge.Copies then return false,"Merging needs "..C.Merge.Copies.." spare copies of this crusher with the same stars." end
-		table.sort(spare,function(a,b) return a.level<b.level end)
-		local gone={} for i=1,C.Merge.Copies do gone[spare[i].id]=true end
-		for i=#s.owned,1,-1 do if gone[s.owned[i].id] then table.remove(s.owned,i) end end
-		item.stars=stars+1
-		d.stats=d.stats or {} d.stats.merges=(d.stats.merges or 0)+1
-		return true,"MERGED! "..string.rep("★",item.stars).." x"..string.format("%.2g",C.Merge.Mult^item.stars).." cash",item.stars
 	elseif action=="Recycle" then
 		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
 		for _,id in s.equipped do if id==item.id then return false,"Unequip this crusher before recycling it." end end

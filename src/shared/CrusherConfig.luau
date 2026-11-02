@@ -118,10 +118,10 @@ C.PlotUpgrade = {MaxLevel=5,
 	Caps={{global=30,level=60},{global=40,level=80},{global=55,level=110},{global=70,level=140},{global=90,level=180}}}
 -- plot levels where things unlock (2 Nov: each one level later than before)
 C.CoatingPlotLevel = 1 -- 2 Nov evening: the Coating Lab comes with Factory II (was III)
--- 2 Nov evening: MERGE (the chicken game's "Merge your chickens", vault: duplicates
--- need a use). Two spare copies of the same crusher (same type, same stars) merge
--- into it: +1 star, up to MaxStars; every star multiplies its cash by Mult.
-C.Merge = { Copies = 2, MaxStars = 3, Mult = 1.5 }
+-- 2 Nov evening: MERGE was live for a short while and is removed again (Willem:
+-- the fuser already does this). Crushers merged in that time keep their stars
+-- (item.stars, x Mult cash each); nothing can add stars any more.
+C.Merge = { MaxStars = 3, Mult = 1.5 }
 -- 2 Nov evening: REBIRTH (long loop; vault: Rebirth and Prestige, doc wave 3).
 -- From Factory IV (MinPlot) with Cost x Growth^rebirths cash. Each rebirth adds
 -- MultPer to a permanent income multiplier (1 + MultPer x rebirths).
@@ -391,7 +391,7 @@ C.StarterScrap = 24 -- 1 Nov: scrap waiting in a new player's bin (three toys' w
 -- between the bay goals (they raise income the most). Since the plot split the
 -- starting factory has 12 bays, so the chain ends with "Fill 12 bays" and
 -- "Buy FACTORY II". "upgrades n" = total factory upgrade levels (Damage + Speed + Yield).
-C.Goals2Version = 5
+C.Goals2Version = 6
 C.Goals2 = {
 	{ id="Bay3", check="bays", n=3, title="Unlock bay 3", text="Bays are cheap now: unlock the next one!", target="NextBay", reward={cash=30,min=60} },
 	{ id="Frenzy", check="frenzy", title="SMASH into a FRENZY", text="Tap SMASH (right side, or F) until the meter is full: your crushers go 2x fast!", target="SmashButton", reward={cash=30,min=60} },
@@ -405,7 +405,6 @@ C.Goals2 = {
 	{ id="Turbo", check="turbo", title="Fill up on TURBO", text="The orange TURBO pump doubles ALL your cash for 5 minutes.", target="TurboStation", reward={boost="Cash",minutes=5} },
 	{ id="Level5", check="level", n=5, title="Level a crusher to Lv 5", text="Press LEVEL UP on a crusher's plaque. Higher level = more scrap.", target="LevelBay", reward={cash=60,min=250} },
 	{ id="Rolls10", check="rolls", n=10, title="Roll 10 times", text="Rolling is free! Rarer crushers make way more cash.", target="Roll", reward={boost="Luck",minutes=10} },
-	{ id="Merge", check="merge", title="MERGE a crusher", text="3 of the same crusher = 1 with a star (x1.5 cash). INDEX > OWNED > MERGE.", target="Merge", reward={cash=60,min=300} },
 	{ id="Upgrades8", check="upgrades", n=8, title="Upgrade your factory", text="Factory upgrades make every crusher earn more.", target="Production", reward={cash=60,min=300} },
 	{ id="Bay9", check="bays", n=9, title="Unlock 9 bays", text="Keep growing your factory!", target="NextBay", reward={cash=90,min=600} },
 	{ id="Index", check="index", title="Claim an Index reward", text="Open INDEX and claim the reward at the bottom.", target="BookButton", reward={cash=90,min=800} },
@@ -421,6 +420,7 @@ C.Goals2History = {
 	{ "Bay3","Fill3","Upgrades3","Bay5","Fill5","Gift","Fill6","Level5","Rolls10","Upgrades8","Bay9","Index","Level10","Fill12","Upgrades15","Row","Bay15","Level15","Upgrades24","Bay18","Fill18","Upgrades33","Level20","Bay21","Fill24","Factory2" },
 	{ "Bay3","Fill3","Upgrades3","Bay5","Fill5","Gift","Fill6","Level5","Rolls10","Upgrades8","Bay9","Index","Level10","Upgrades12","Fill12","Level15","Factory2" },
 	{ "Bay3","Frenzy","Fill3","Upgrades3","Bay5","Fill5","Golden","Gift","Fill6","Turbo","Level5","Rolls10","Upgrades8","Bay9","Index","Level10","Upgrades12","Fill12","Level15","Factory2" },
+	{ "Bay3","Frenzy","Fill3","Upgrades3","Bay5","Fill5","Golden","Gift","Fill6","Turbo","Level5","Rolls10","Merge","Upgrades8","Bay9","Index","Level10","Upgrades12","Fill12","Level15","Factory2" },
 }
 -- Onboarding funnel step names as they appear in the Creator Dashboard
 -- (Analytics > Funnels). 1 = join, 2-9 = the tutorial steps above in order,
