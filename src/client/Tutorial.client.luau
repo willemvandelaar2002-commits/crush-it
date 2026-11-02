@@ -285,6 +285,29 @@ local function pedestal(plot: Model): BasePart?
 	return nil
 end
 
+-- 2 Nov (Willem): an empty bay needs a crusher to put in it. With no spare
+-- crusher (every owned one is already in a bay) the arrow goes to rolling first:
+-- (target, label, hint) for "get a crusher", or nil when you have a spare one.
+local function spareCrusher(): boolean
+	local placed = {}
+	for _, id in state.bays do placed[id] = true end
+	for _, item in state.items do if not placed[item.id] then return true end end
+	return false
+end
+local function getCrusher(plot: Model): (Instance?, string?, string?)
+	if spareCrusher() then return nil end
+	local price = C.Rarities[1].price
+	local rolling = state.rollReadyAt - Workspace:GetServerTimeNow() > 0
+	if find(plot, "OfferCrusher") and not rolling then
+		if state.cash < price then
+			if state.carried > 0 then return find(plot, "SellStation"), "SELL", "You need " .. Format.cash(price) .. " for a crusher. Sell your scrap!" end
+			return find(plot, "CollectStation"), "COLLECT", "You need " .. Format.cash(price) .. " for a crusher. Collect scrap!"
+		end
+		return pedestal(plot), "BUY", "Buy a crusher from the pedestal."
+	end
+	return find(plot, "RollStation"), "ROLL", "Roll for a new crusher first!"
+end
+
 -- What to point at now: (instance to outline, label over it, card hint override)
 local function goal(): (Instance?, string?, string?)
 	local plot = plotModel()
@@ -315,6 +338,8 @@ local function goal(): (Instance?, string?, string?)
 		if cash < cost then return earn(cost) end
 		return bayModel(plot, state.unlocked + 1), "UNLOCK"
 	elseif step.target == "EmptyBay" then
+		local gt, gl, gh = getCrusher(plot)
+		if gt then return gt, gl, gh end
 		for i = 1, state.unlocked do
 			if not state.bays[tostring(i)] then
 				return bayModel(plot, i), "PLACE", if holding() then "Press E at the empty bay to place it." else nil
@@ -373,7 +398,11 @@ local function goalTarget(g: any): (Instance?, string?, string?, GuiObject?)
 		return bayModel(plot, state.unlocked + 1), "UNLOCK " .. Format.cash(cost)
 	elseif t == "EmptyBay" then
 		local e = emptyBay()
-		if e then return e, "PLACE", if holding() then "Press E at the empty bay to place it." else nil end
+		if e then
+			local gt, gl, gh = getCrusher(plot)
+			if gt then return gt, gl, gh end
+			return e, "PLACE", if holding() then "Press E at the empty bay to place it." else "Pick your crusher in the hotbar, then press E at the empty bay."
+		end
 		-- no empty bay: unlock one if you can, else roll for a crusher
 		local cost = C.BayCosts[state.unlocked + 1]
 		if cost and cash >= cost and state.unlocked < C.bayCapacity(state.plotLevel or 0) then return bayModel(plot, state.unlocked + 1), "UNLOCK" end
@@ -398,7 +427,11 @@ local function goalTarget(g: any): (Instance?, string?, string?, GuiObject?)
 	elseif t == "PlotUpgrade" then
 		local cost = C.plotCost((state.plotLevel or 0) + 1) or 0
 		local e = emptyBay()
-		if e then return e, "PLACE", "Fill every bay first." end
+		if e then
+			local gt, gl, gh = getCrusher(plot)
+			if gt then return gt, gl, gh end
+			return e, "PLACE", "Fill every bay first."
+		end
 		if cash < cost then return nil, nil, "Save up: " .. Format.cash(cash) .. " / " .. Format.cash(cost) .. ". Level up your crushers to earn faster!" end
 		return find(plot, "PlotUpgradeStation"), "UPGRADE!"
 	elseif t == "RewardsButton" or t == "BookButton" then
@@ -426,6 +459,9 @@ local function nextGoal(): (Instance?, string?, string, string, string, string)
 	if filled < state.unlocked then
 		for i = 1, state.unlocked do
 			if not state.bays[tostring(i)] then
+				local gt, gl, gh
+				if plot then gt, gl, gh = getCrusher(plot) end
+				if gt then return gt, gl, tag, "Fill every bay", filled .. " / " .. state.unlocked, gh or "" end
 				return plot and bayModel(plot, i), "PLACE", tag, "Fill every bay", filled .. " / " .. state.unlocked, "Roll, buy and place a crusher in every empty bay."
 			end
 		end
