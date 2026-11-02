@@ -69,12 +69,22 @@ C.Layout.RearShift = -78 -- rear yard banks: ground bays at BayZ+RearShift
 C.Layout.RoadHalf = 6 -- central road half-width (rear yard banks keep clear of it)
 C.LegacyTypes={"Bumper","Steel","Cobalt","Mega","Titan","Quantum"}
 -- 1 Nov: the first 24 bays are much cheaper (funnel: only 5.5% reached Factory II),
--- bay 3 = $250, x1.36 each (bay 24 ~$159K, was $2.2M). Factory II's 12 bays blend
--- back to the old curve (900 x 1.45^(i-3)) by bay 36, so later plots are unchanged.
+-- bay 3 = $250, x1.36 each (bay 24 ~$159K, was $2.2M).
+-- 2 Nov (funnel: 71% left between the tutorial and 6 bays): bays 3-6 almost free
+-- ($50/$80/$120/$180), then x1.45 blending into the 1 Nov curve by bay 18; and
+-- Factory II/III's bays blend back to the old curve (900 x 1.45^(i-3)) over 24
+-- bays (by bay 48, was by 36), so Factory III comes much sooner. Factory IV/V and
+-- their bays are unchanged.
 C.EarlyBayStart, C.EarlyBayGrowth = 250, 1.36
+C.StarterBays = { [3]=50, [4]=80, [5]=120, [6]=180 }
 for i=3,C.MaxBays do
-	local old=900*1.45^(i-3) local early=C.EarlyBayStart*C.EarlyBayGrowth^(i-3)
-	local w=math.clamp((i-C.BaseMaxBays)/12,0,1) -- 0 up to bay 24, 1 from bay 36
+	local old=900*1.45^(i-3)
+	local curve=C.EarlyBayStart*C.EarlyBayGrowth^(i-3)
+	local early=C.StarterBays[i] or (function()
+		local w=math.clamp((i-6)/12,0,1) -- 0 at bay 6, 1 from bay 18
+		return (180*1.45^(i-6))^(1-w)*curve^w
+	end)()
+	local w=math.clamp((i-C.BaseMaxBays)/24,0,1) -- 0 up to bay 24, 1 from bay 48
 	C.BayCosts[i]=math.floor(early^(1-w)*old^w)
 end
 -- Caps[n] = upgrade caps from plot level n on: factory/roll upgrades (global)
@@ -330,18 +340,47 @@ C.TutorialSteps = {
 	{ id = "Upgrade", title = "Upgrade production", text = "FACTORY UPGRADES boosts all your crushers. Buy an upgrade on the blue board.", target = "Production", reward = 25 },
 	{ id = "Level", title = "Level up a crusher", text = "THIS CRUSHER: press LEVEL UP on its plaque. Only that crusher levels up; its level stays when swapped.", target = "LevelBay", reward = 50 },
 }
-C.TutorialBonus = 100
+C.TutorialBonus = 300 -- 2 Nov: was 100; enough for bay 3 right away
+-- 2 Nov: after the 8 tutorial steps the guide keeps going with GOALS up to
+-- Factory II (funnel: most players left right after the tutorial). Each goal is
+-- checked on the server from the save (server/CrusherGame goalTick) and pays once.
+--   check: bays n (unlocked), fill n (crushers in bays), level n (any crusher),
+--          upgrades n (factory upgrades bought), rolls n, gift (a playtime gift
+--          claimed), index (an Index milestone claimed), row (a rarity row
+--          matched), plot n (plot level)
+--   reward: { cash = seconds of earnings, min = at least } | { boost = id, minutes }
+--           | { crusher = rarity }
+--   target: what the arrow points at (client/Tutorial)
+C.Goals2 = {
+	{ id="Bay3", check="bays", n=3, title="Unlock bay 3", text="Bays are cheap now: unlock the next one!", target="NextBay", reward={cash=30,min=60} },
+	{ id="Fill3", check="fill", n=3, title="Fill bay 3", text="Roll and buy a crusher, then place it in the empty bay.", target="EmptyBay", reward={cash=30,min=60} },
+	{ id="Bay5", check="bays", n=5, title="Unlock 5 bays", text="More bays = more crushers = more cash!", target="NextBay", reward={cash=45,min=100} },
+	{ id="Fill5", check="fill", n=5, title="Fill 5 bays", text="Put a crusher in every bay you own.", target="EmptyBay", reward={cash=45,min=150} },
+	{ id="Gift", check="gift", title="Claim a free gift", text="Open REWARDS (top left) and claim your playtime gift.", target="RewardsButton", reward={boost="Luck",minutes=5} },
+	{ id="Fill6", check="fill", n=6, title="Fill 6 bays", text="Unlock bay 6 and place a crusher. Prize: a FREE RARE crusher!", target="NextBayOrEmpty", reward={crusher="Rare"} },
+	{ id="Level5", check="level", n=5, title="Level a crusher to Lv 5", text="Press LEVEL UP on a crusher's plaque. Higher level = more scrap.", target="LevelBay", reward={cash=60,min=250} },
+	{ id="Upgrades3", check="upgrades", n=3, title="Buy 3 factory upgrades", text="The blue FACTORY UPGRADES board makes ALL crushers better.", target="Production", reward={cash=60,min=300} },
+	{ id="Rolls10", check="rolls", n=10, title="Roll 10 times", text="Rolling is free! Rarer crushers make way more cash.", target="Roll", reward={boost="Luck",minutes=10} },
+	{ id="Bay9", check="bays", n=9, title="Unlock 9 bays", text="Keep growing your factory!", target="NextBay", reward={cash=90,min=600} },
+	{ id="Index", check="index", title="Claim an Index reward", text="Open INDEX and claim the reward at the bottom.", target="BookButton", reward={cash=90,min=800} },
+	{ id="Row", check="row", title="Complete a rarity row", text="Fill a whole row with crushers of ONE rarity for bonus scrap.", target="EmptyBay", reward={boost="Cash",minutes=10} },
+	{ id="Fill12", check="fill", n=12, title="Fill 12 bays", text="Halfway to your next factory!", target="NextBayOrEmpty", reward={crusher="Epic"} },
+	{ id="Bay18", check="bays", n=18, title="Unlock 18 bays", text="Level up your best crushers to earn faster.", target="NextBay", reward={cash=120,min=5000} },
+	{ id="Fill24", check="fill", n=24, title="Fill all 24 bays", text="Every bay full unlocks the FACTORY II upgrade.", target="NextBayOrEmpty", reward={boost="Cash",minutes=15} },
+	{ id="Factory2", check="plot", n=1, title="Buy FACTORY II", text="Save up and press UPGRADE on the green board. Big prize!", target="PlotUpgrade", reward={crusher="Legendary"} },
+}
 -- Onboarding funnel step names as they appear in the Creator Dashboard
 -- (Analytics > Funnels). 1 = join, 2-9 = the tutorial steps above in order,
 -- 10-13 = bays unlocked after the tutorial (1 Nov), 14-17 = each plot upgrade.
 -- Numbered so they sort in order.
+-- 2 Nov: steps 10-25 are the goals (C.Goals2; 25 = Factory II), then Factory III-V
 C.FunnelNames = {
 	"01 Joined the game", "02 Collected scrap", "03 Sold scrap", "04 Rolled a crusher", "05 Bought a crusher",
 	"06 Unlocked a 2nd bay", "07 Placed a crusher", "08 Bought a factory upgrade", "09 Leveled up a crusher (tutorial done)",
-	"10 Has 6 bays", "11 Has 12 bays", "12 Has 18 bays", "13 Has all 24 bays",
-	"14 Bought Factory II", "15 Bought Factory III", "16 Bought Factory IV", "17 Bought Factory V",
 }
-C.FunnelBays = { 6, 12, 18, 24 } -- funnel steps 10-13
+for i,g in C.Goals2 do table.insert(C.FunnelNames,string.format("%02d Goal: %s",9+i,g.title)) end
+for _,name in {"Factory III","Factory IV","Factory V"} do table.insert(C.FunnelNames,string.format("%02d Bought %s",#C.FunnelNames+1,name)) end
+C.FunnelBays = {} -- 2 Nov: replaced by the goals
 -- Goals board on the plot (reference style): like/favorite, join the group, and
 -- a free time skip (SkipMinutes of your current production as cash) that needs
 -- favorite-prompt confirmation + server-checked group membership, then waits SkipCooldownHours.

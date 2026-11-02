@@ -123,6 +123,7 @@ local function claim(player: Player, kind: any, index: any)
 	else
 		return
 	end
+	data.stats = data.stats or {} data.stats.gifts = (data.stats.gifts or 0) + 1 -- goals: "claim a free gift"
 	Purchased:FireClient(player, { id = "Reward", text = text })
 	send(player)
 end

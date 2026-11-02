@@ -142,6 +142,7 @@ function R.migrate(d, guid)
 	-- Saves from before the 27 Oct change got the whole new row with the plot
 	-- upgrade; layout-v1 saves keep that. New rows are now bought bay by bay.
 	if oldLayout and s.plotLevel>=1 then s.bays=C.bayCapacity(s.plotLevel) end
+	if s.goal~=nil then s.goal=math.clamp(integer(s.goal,1,#C.Goals2+1),1,#C.Goals2+1) end -- 2 Nov goals (nil = not started)
 	s.available=C.money(number(s.available,0)) s.tutorial=math.clamp(integer(s.tutorial,1,#C.TutorialSteps+1),1,#C.TutorialSteps+1) -- #steps+1 = finished
 	s.rollReadyAt=number(s.rollReadyAt,0,1e12)
 	s.rolls=integer(s.rolls,0,1e9) -- rolls made (the first one is always cheap)

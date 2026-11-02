@@ -106,6 +106,13 @@ make("UICorner", { CornerRadius = UDim.new(1, 0) }, goalFill)
 make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(255, 236, 140), Color3.fromRGB(240, 160, 30)) }, goalFill)
 local slideIn: () -> ()
 local goalMode = false
+local state: any = nil
+-- 2 Nov: GOALS after the tutorial (C.Goals2, up to Factory II): the same card
+-- with "GOAL 3 / 16", the reward chip and the fill bar; each goal finished
+-- celebrates like a step. (NEXT GOAL mode only runs after the goals.)
+local GOALS = C.Goals2
+local goalsMode = false
+local goalShown = 0
 local function setGoalMode(on: boolean)
 	if goalMode == on then return end
 	goalMode = on
@@ -162,6 +169,35 @@ local function paint(step: number)
 	for i, seg in segments do
 		seg.BackgroundColor3 = if i < step then GREEN elseif i == step then GOLD else Color3.fromRGB(20, 24, 40)
 	end
+end
+-- reward chip text for a goal (cash: seconds of your earnings, at least `min`)
+local chipIcon = chip:FindFirstChildOfClass("ImageLabel") :: ImageLabel
+local function goalCash(r: any): number
+	return math.max(r.min or 0, math.floor(((state and state.rate) or 0) * r.cash))
+end
+local function goalRewardText(g: any): (string, string, Color3)
+	local r = g.reward
+	if r.cash then
+		return "+" .. Format.cash(goalCash(r)), Icons.Cash, GREEN
+	elseif r.boost then
+		return "2x " .. r.boost .. " " .. r.minutes .. "m", if r.boost == "Luck" then Icons.Lucky else Icons.DoubleCash, Color3.fromRGB(80, 200, 255)
+	end
+	local rarity = C.rarity(r.crusher)
+	return string.upper(r.crusher), Icons.Press, if rarity then rarity.color else GOLD
+end
+local function paintGoal(i: number)
+	local g = GOALS[i]
+	if not g then return end
+	stepTag.Text = "GOAL " .. i .. " / " .. #GOALS
+	stepTag.Size = UDim2.fromOffset(160, 20)
+	badgeText.Text = tostring(i)
+	title.Text = g.title
+	hint.Text = g.text
+	local text, icon, color = goalRewardText(g)
+	chipText.Text = text chipIcon.Image = icon chip.BackgroundColor3 = color
+	local grad = chip:FindFirstChildOfClass("UIGradient")
+	if grad then grad.Color = ColorSequence.new(Style.lighten(color, 0.35), Style.darken(color, 0.25)) end
+	goalFill.Size = UDim2.fromScale((i - 1) / #GOALS, 1)
 end
 slideIn = function()
 	card.Position = UDim2.new(0.5, 0, 0, -CARD_H - 10)
@@ -220,13 +256,49 @@ local function finishStep(step: number, nextStep: number)
 	busy = false
 end
 
+local function finishGoal(i: number, nextGoal: number)
+	busy = true
+	local g = GOALS[i]
+	coin:Play()
+	cardStroke.Color = GREEN badgeText.Text = "✓" badge.BackgroundColor3 = GREEN
+	badgeScale.Scale = 1.5
+	TweenService:Create(badgeScale, TweenInfo.new(0.35, Enum.EasingStyle.Back), { Scale = 1 }):Play()
+	cardScale.Scale = 1.06
+	TweenService:Create(cardScale, TweenInfo.new(0.3, Enum.EasingStyle.Back), { Scale = 1 }):Play()
+	TweenService:Create(goalFill, TweenInfo.new(0.4), { Size = UDim2.fromScale(i / #GOALS, 1) }):Play()
+	if g and g.reward.cash then
+		cashBurst(centre(chip), goalCash(g.reward))
+	elseif g then
+		-- crusher / boost prize: a big pop under the card
+		levelUp:Play()
+		local text, _, color = goalRewardText(g)
+		local pop = label(gui, if g.reward.crusher then "FREE " .. text .. " CRUSHER!" else text .. " BOOST!", UDim2.new(0.5, -240, 0, 200), UDim2.fromOffset(480, 56), 4)
+		pop.ZIndex = 30 pop.TextColor3 = color
+		local sc = make("UIScale", { Scale = 0.3 }, pop)
+		TweenService:Create(sc, TweenInfo.new(0.4, Enum.EasingStyle.Back), { Scale = 1 }):Play()
+		TweenService:Create(pop, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 1.8), { TextTransparency = 1 }):Play()
+		task.delay(2.4, function() pop:Destroy() end)
+	end
+	task.wait(1.1)
+	cardStroke.Color = INK badge.BackgroundColor3 = GOLD
+	TweenService:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Position = UDim2.new(0.5, 0, 0, -CARD_H - 10) }):Play()
+	task.wait(0.28)
+	goalShown = nextGoal
+	if GOALS[nextGoal] then paintGoal(nextGoal) slideIn()
+	else
+		-- all goals done: hand over to the NEXT GOAL card (Factory III+)
+		goalsMode = false card.Visible = false goalMode = false
+		chipIcon.Image = Icons.Cash chip.BackgroundColor3 = GREEN
+	end
+	busy = false
+end
+
 -- World guidance ------------------------------------------------------------------
 local path = GuidePath.new({ color = GOLD, spacing = 3.5, speed = 7, stopDistance = 9 })
 -- (a Highlight only draws when parented to what it outlines)
 local outline = make("Highlight", { Name = "TutorialOutline", FillTransparency = 1, OutlineColor = GOLD, OutlineTransparency = 0,
 	DepthMode = Enum.HighlightDepthMode.AlwaysOnTop, Enabled = false }, nil)
 
-local state: any = nil
 local function plotModel(): Model?
 	local plots = Workspace:FindFirstChild("Plots")
 	return plots and plots:FindFirstChild("Plot" .. tostring(me:GetAttribute("Plot"))) :: Model?
@@ -303,6 +375,73 @@ local function goal(): (Instance?, string?, string?)
 	return nil
 end
 
+-- HUD buttons (Rewards, Index) get a bobbing arrow instead of a floor path
+local uiArrow = make("TextLabel", { Name = "GoalArrow", Text = "▲", Size = UDim2.fromOffset(44, 44), BackgroundTransparency = 1,
+	TextScaled = true, Visible = false, ZIndex = 40, AnchorPoint = Vector2.new(0.5, 0) }, gui)
+Style.text(uiArrow, 3) uiArrow.TextColor3 = GOLD
+local function hudButton(name: string): GuiObject?
+	for _, d in me.PlayerGui:GetDescendants() do
+		if d.Name == name and d:IsA("GuiButton") and d.Visible and d.AbsoluteSize.X > 0 then return d end
+	end
+	return nil
+end
+-- What a goal points at: (instance, label, hint override, hud button)
+local function goalTarget(g: any): (Instance?, string?, string?, GuiObject?)
+	local plot = plotModel()
+	if not plot then return nil end
+	local cash = state.cash
+	local function earn(need: number): (Instance?, string?, string?)
+		local text = "You need " .. Format.cash(need) .. ". "
+		if state.carried > 0 then return find(plot, "SellStation"), "SELL", text .. "Sell your scrap first!" end
+		return find(plot, "CollectStation"), "COLLECT", text .. "Collect more scrap first!"
+	end
+	local function emptyBay(): Instance?
+		for i = 1, state.unlocked do if not state.bays[tostring(i)] then return bayModel(plot, i) end end
+		return nil
+	end
+	local t = g.target
+	if t == "NextBayOrEmpty" then t = if emptyBay() then "EmptyBay" else "NextBay" end
+	if t == "NextBay" then
+		local cost = C.BayCosts[state.unlocked + 1]
+		if not cost or state.unlocked >= C.bayCapacity(state.plotLevel or 0) then return emptyBay(), "PLACE" end
+		if cash < cost then return earn(cost) end
+		return bayModel(plot, state.unlocked + 1), "UNLOCK", "Unlock bay " .. (state.unlocked + 1) .. " for " .. Format.cash(cost) .. "!"
+	elseif t == "EmptyBay" then
+		local e = emptyBay()
+		if e then return e, "PLACE", if holding() then "Press E at the empty bay to place it." else nil end
+		-- no empty bay: unlock one if you can, else roll for a crusher
+		local cost = C.BayCosts[state.unlocked + 1]
+		if cost and cash >= cost and state.unlocked < C.bayCapacity(state.plotLevel or 0) then return bayModel(plot, state.unlocked + 1), "UNLOCK" end
+		return find(plot, "RollStation"), "ROLL"
+	elseif t == "Roll" then
+		local rolling = state.rollReadyAt - Workspace:GetServerTimeNow() > 0
+		if find(plot, "OfferCrusher") and not rolling and #state.items < C.MaxInventory and cash >= C.Rarities[1].price then return pedestal(plot), "BUY" end
+		return find(plot, "RollStation"), "ROLL"
+	elseif t == "Production" then
+		local cheapest = math.huge
+		for _, id in { "Damage", "Speed", "Yield" } do cheapest = math.min(cheapest, C.globalCost(id, state.upgrades[id])) end
+		if cash < cheapest then return earn(cheapest) end
+		return find(plot, "ProductionStation"), "UPGRADE"
+	elseif t == "LevelBay" then
+		local best, cost = nil, math.huge
+		for key, id in state.bays do
+			for _, item in state.items do if item.id == id and item.cost < cost then best, cost = tonumber(key), item.cost end end
+		end
+		if not best then return emptyBay(), "PLACE" end
+		if cash < cost then return earn(cost) end
+		return bayModel(plot, best), "LEVEL UP"
+	elseif t == "PlotUpgrade" then
+		local cost = C.plotCost((state.plotLevel or 0) + 1) or 0
+		local e = emptyBay()
+		if e then return e, "PLACE", "Fill every bay first." end
+		if cash < cost then return nil, nil, "Save up: " .. Format.cash(cash) .. " / " .. Format.cash(cost) .. ". Level up your crushers to earn faster!" end
+		return find(plot, "PlotUpgradeStation"), "UPGRADE!"
+	elseif t == "RewardsButton" or t == "BookButton" then
+		return nil, nil, nil, hudButton(t)
+	end
+	return nil
+end
+
 -- Next goal after the tutorial: (target, label over it, tag, title, hint, progress 0-1)
 local function nextGoal(): (Instance?, string?, string, string, string, number)
 	local plot = plotModel()
@@ -340,15 +479,52 @@ local function topOf(target: Instance): Vector3?
 end
 
 -- the target is looked up a few times a second (searching the plot every frame is slow)
-local cached: { target: Instance?, text: string?, override: string? } = {}
+local cached: { target: Instance?, text: string?, override: string?, ui: GuiObject? } = {}
 local nextLook = 0
 RunService.RenderStepped:Connect(function()
 	-- 31 Oct: during a factory event the event's own core path takes over
 	local eventOn = me:GetAttribute("FactoryEventRunning") == true
 	local active = state and STEPS[state.tutorial] and not busy and not eventOn
 	local root = me.Character and me.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	-- 2 Nov: the GOALS come first
+	local goalsOn = state ~= nil and not STEPS[state.tutorial] and state.goal ~= nil and GOALS[state.goal] ~= nil and not eventOn and root ~= nil
+	if goalsOn and not busy then
+		if not goalsMode or not card.Visible then
+			goalsMode = true goalShown = state.goal goalMode = false
+			bar.Visible = false goalBar.Visible = true chip.Visible = true
+			paintGoal(state.goal) slideIn()
+		elseif state.goal > goalShown then
+			task.spawn(finishGoal, goalShown, state.goal)
+			return
+		end
+		if os.clock() >= nextLook then
+			nextLook = os.clock() + 0.25
+			local t, l, o, ui = goalTarget(GOALS[state.goal])
+			cached = { target = t, text = l, override = o, ui = ui }
+			hint.Text = o or GOALS[state.goal].text
+		end
+		local target = cached.target
+		if target and not target:IsDescendantOf(Workspace) then target = nil end
+		local top = target and topOf(target)
+		path:update(root.Position, top, cached.text)
+		if top then
+			if outline.Parent ~= target then outline.Parent = target end
+			outline.Enabled = true
+			outline.OutlineTransparency = 0.15 + 0.35 * (0.5 + 0.5 * math.sin(os.clock() * 5))
+		else outline.Enabled = false end
+		local ui = (cached :: any).ui :: GuiObject?
+		if ui and ui.Visible then
+			uiArrow.Visible = true
+			uiArrow.Position = UDim2.fromOffset(ui.AbsolutePosition.X + ui.AbsoluteSize.X / 2, ui.AbsolutePosition.Y + ui.AbsoluteSize.Y + 4 + 8 * math.sin(os.clock() * 6))
+		else uiArrow.Visible = false end
+		badgeScale.Scale = 1 + 0.04 * math.sin(os.clock() * 4)
+		return
+	end
+	uiArrow.Visible = false
+	if goalsOn then return end
+	if goalsMode then goalsMode = false card.Visible = false end
 	-- 1 Nov: after the tutorial, the NEXT GOAL card and arrows until the last plot upgrade
-	local goalOn = state ~= nil and not STEPS[state.tutorial] and not busy and not eventOn
+	local goalOn = state ~= nil and not STEPS[state.tutorial] and (state.goal == nil or GOALS[state.goal] == nil) and not busy and not eventOn
 		and (state.plotLevel or 0) < C.PlotUpgrade.MaxLevel and root ~= nil
 	setGoalMode(goalOn)
 	if goalOn then
