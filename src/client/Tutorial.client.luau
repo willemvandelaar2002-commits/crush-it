@@ -107,7 +107,7 @@ end
 
 local state: any = nil
 local GOALS = C.Goals2
-local mode: string? = nil -- "tutorial" | "goals" | "next" | nil (what the headline shows)
+local mode: string? = nil -- "tutorial" | "goals" | "finished" | nil (what the headline shows)
 local busy = false
 -- hint timing: the long hint shows after 15 s on the same step
 local stepKey, stepSince = "", 0
@@ -197,7 +197,9 @@ local function finishStep(step: number, nextStep: number)
 		task.wait(2.2)
 		fadeOut()
 		task.wait(0.25)
-		mode = nil
+		-- 2 Nov fix: "finished", not nil, so the next frame's switch() really hides
+		-- the trail and the arrow (with mode = nil it returned early and they stayed)
+		mode = "finished"
 	else
 		paint(nextStep)
 		fadeIn()
@@ -248,7 +250,7 @@ local function finishGoal(i: number, nextGoal: number)
 	fadeOut()
 	task.wait(0.22)
 	goalShown = nextGoal
-	if GOALS[nextGoal] then paintGoal(nextGoal) fadeIn() else mode = nil end
+	if GOALS[nextGoal] then paintGoal(nextGoal) fadeIn() else mode = "finished" end -- (see finishStep)
 	busy = false
 end
 
