@@ -137,16 +137,19 @@ end
 function V.sync(plot,d,quote,now,preview)
 	local v=plot.progression if not v then return end
 	local level=if d then P.level(d) else 0
-	local expanded=level>=1
-	local boardVisible=d and (expanded or P.full(d)) or false
-	Stages.sync(plot,level)
-	local yardOpen=level>=2
+	-- 2 Nov plot split: the decor and stages keep the old structure levels
+	-- (third floor + Coating Lab = plot 2, rear yard = plot 3)
+	local structure=C.structureLevel(level)
+	local expanded=structure>=1
+	local boardVisible=d and (level>=1 or P.full(d)) or false
+	Stages.sync(plot,structure)
+	local yardOpen=structure>=2
 	local signature=tostring(level)..":"..tostring(boardVisible)
 	if v.signature~=signature then
 		v.signature=signature show(v.yard,yardOpen) show(v.accents,expanded)
 		show(v.upgrade.model,boardVisible) v.upgrade.content.Visible=boardVisible
 		-- booth colour follows the plot level (orange, silver, gold versions)
-		local want=if v.lab.booth then boothName(math.max(level,1)) else nil
+		local want=if v.lab.booth then boothName(math.max(structure,1)) else nil
 		if want and v.lab.booth:GetAttribute("Version")~=want then
 			v.lab.booth:Destroy()
 			v.lab.booth=Assets.place(want,v.lab.model,plot.origin*BOOTH_AT,{inset=.8,scale=C.CoatingBoothScale})
@@ -160,7 +163,7 @@ function V.sync(plot,d,quote,now,preview)
 			part.Transparency=if open then 1 else 0 part.CanCollide=not open part.CanQuery=not open
 		end
 	end
-	-- next upgrade: Factory II (+6 rear bays), then Factory III (third floor), then complete
+	-- next upgrade: Factory II (upper floor) ... Factory VI, then complete
 	local maxed=level>=C.PlotUpgrade.MaxLevel
 	local cost=if maxed then 0 else C.plotCost(level+1)
 	local full=d~=nil and P.full(d)
@@ -172,9 +175,10 @@ function V.sync(plot,d,quote,now,preview)
 		success=name.."!"}
 	W.purchase(v.upgrade.button,view)
 	v.upgrade.info.Text=if maxed then C.MaxBays.." BAYS · MASTER FACTORY"
-		elseif level==0 then "+12 BAYS · 3RD FLOOR · COATING LAB"
-		elseif level==1 then "+12 BAYS · REAR YARD · FUSION MACHINE"
-		elseif level==2 then "+6 BAYS · REAR UPPER LEFT · HIGHER LV CAPS"
+		elseif level==0 then "+12 BAYS · UPPER FLOOR · HIGHER LV CAPS"
+		elseif level==1 then "+12 BAYS · 3RD FLOOR · COATING LAB"
+		elseif level==2 then "+12 BAYS · REAR YARD · FUSION MACHINE"
+		elseif level==3 then "+6 BAYS · REAR UPPER LEFT · HIGHER LV CAPS"
 		else "+6 BAYS · REAR UPPER RIGHT · HIGHER LV CAPS"
 	-- the gate sign shows the owner's level (29 Oct: was FACTORY II on every empty plot
 	-- and on level 0 plots); empty plots show nothing
