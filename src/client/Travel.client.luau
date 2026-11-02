@@ -156,7 +156,7 @@ pick.Activated:Connect(function()
 	scale.Scale = if Style.compact() then 0.75 else 1
 	local at = pick.AbsolutePosition
 	local w = 250 * scale.Scale
-	menu.Position = UDim2.fromOffset(math.max(8, at.X + pick.AbsoluteSize.X - w), at.Y + pick.AbsoluteSize.Y + 8 + game:GetService("GuiService"):GetGuiInset().Y)
+	menu.Position = UDim2.fromOffset(math.max(8, at.X + pick.AbsoluteSize.X - w), at.Y + pick.AbsoluteSize.Y + 8) -- same ScreenGui, so no inset maths
 	menu.Visible = true
 end)
 
