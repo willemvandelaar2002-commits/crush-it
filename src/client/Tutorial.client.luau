@@ -566,8 +566,9 @@ RunService.RenderStepped:Connect(function()
 	local want: string? = nil
 	if not eventOn and root then
 		if STEPS[state.tutorial] then want = "tutorial"
-		elseif state.goal ~= nil and GOALS[state.goal] then want = "goals"
-		elseif (state.plotLevel or 0) < C.PlotUpgrade.MaxLevel then want = "next" end
+		elseif state.goal ~= nil and GOALS[state.goal] then want = "goals" end
+		-- 2 Nov (Willem): after the goals (Factory II bought) the guide is done for
+		-- good; the old NEXT GOAL mode (nextGoal) is no longer shown
 	end
 	switch(want)
 	if not want or not root then return end
