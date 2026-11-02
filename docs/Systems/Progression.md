@@ -81,3 +81,11 @@ to your own press whenever you're more than 40 studs from it. Hidden otherwise.
 - Roll-speed upgrade: not added; RollSpeed was retired for pedestals earlier and pedestals already speed up rolling.
 - Lucky Block helpers: waiting for models.
 - Goals v7 (12, Willem: the tutorial took too long): Frenzy, Fill 3, Upgrade x3, Fill 5, Golden toy, Fill 6 (Rare), Turbo, Lv 5, Upgrade x8, Fill 9, Fill 12 (Epic), Factory II (Legendary). Unlock+fill pairs became one "Fill N bays" goal; Roll 10, free gift, Index, Lv 10, Lv 15 and one upgrade goal dropped (the gift counts down on the HUD anyway). Funnel: goals are steps 10-21, Factory III-VI 22-25.
+
+## Intro cutscene (client/IntroCutscene, 2 Nov)
+Brand-new players only (tutorial step 1, one crusher), once per join, ~4.6 s, Skip button. Shot 1: close-up of your
+own crusher, "CRUSH TOYS FOR CASH". Shot 2: the camera rises over the plot and every floor still to build shows as a
+cyan hologram (local copies of the hidden floor parts, one Highlight outline, max 2400 parts / 700 on phones),
+"BUILD THE BIGGEST FACTORY!". Shot 3: back behind the player, HUD and controls return, tutorial step 1 shows.
+The game runs underneath. Studio: player attributes IntroTest (replay) and IntroFreeze = seconds (hold a moment).
+Goal: fewer players leaving before the first collect (funnel step 2, 12.5% churn on 2 Nov).

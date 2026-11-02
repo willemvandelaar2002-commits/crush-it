@@ -345,3 +345,4 @@
 - 2026-11-02: MERGE removed again (Willem: the fuser already does this). Old stars keep their bonus; Merge goal gone (goals v6, 20 goals); What's New v3. Willem.
 - 2026-11-02: Goals cut from 20 to 12 (Willem: tutorial takes too long; funnel showed churn on the filler goals, Roll 10 times 21%). Saves on a removed goal move to the next one that still exists. Willem.
 - 2026-11-02: Fix: when the guide finished (last goal, or a save jumping past the goals) the gold trail and arrow stayed on the old target, because finishGoal/finishStep set mode = nil and switch(nil) then returned early. Willem.
+- 2026-11-02: Intro cutscene for new players (Willem's idea): crusher close-up, then a hologram "vision" of the full factory, ~4.6 s, skippable. Watch funnel step 2. Willem.
