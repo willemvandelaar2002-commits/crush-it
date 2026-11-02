@@ -205,6 +205,7 @@ function R.migrate(d, guid)
 	require(script.Parent.FactoryEventRules).migrate(d) -- event win/reward ID ledger, no inventory changes
 	d.timeSkipAt=number(d.timeSkipAt,0,1e12) -- next free time skip (server time)
 	d.goldenRush=integer(d.goldenRush,0,100000) d.crushed=integer(d.crushed,0,C.MaxMoney)
+	d.playSeconds=integer(d.playSeconds,0,1e10)
 	d.tier=integer(d.tier,1,13) d.rebirths=integer(d.rebirths,0,10000)
 	return d
 end
