@@ -51,6 +51,11 @@ function V.create(plot)
 		record.title=W.text(panel,"RowTitle","",UDim2.fromScale(.02,.03),UDim2.fromScale(.96,.5))
 		record.detail=W.text(panel,"RowDetail","",UDim2.fromScale(.02,.55),UDim2.fromScale(.96,.4))
 		record.plate=plate record.gui=gui record.panel=panel
+		-- 3 Nov (Willem): press E at the row sign to fill this row with one rarity
+		local prompt=Instance.new("ProximityPrompt") prompt.Name="FillRowPrompt" prompt.ActionText="Fill row"
+		prompt.ObjectText="Pick a rarity" prompt.KeyboardKeyCode=Enum.KeyCode.E prompt.HoldDuration=0
+		prompt.MaxActivationDistance=14 prompt.RequiresLineOfSight=false prompt.Enabled=false prompt.Parent=plate
+		record.prompt=prompt
 		plot.rarityRows[index]=record Tags:AddTag(model,V.Tag)
 	end
 end
@@ -70,6 +75,7 @@ function V.sync(plot,snapshot)
 		record.model:SetAttribute("RowBonus",if active then row.bonus else 0)
 		record.model:SetAttribute("RowMatches",if row then row.matches else 0)
 		record.gui.Enabled=visible record.plate.Transparency=if visible then 0 else 1
+		if record.prompt then record.prompt.Enabled=visible==true end
 		record.title.Text=title record.detail.Text=detail
 		record.title.TextColor3=if rarity then color:Lerp(Color3.new(1,1,1),.25) else Color3.new(1,1,1)
 		Style.panel(record.panel,if active then Style.darken(color,.15) else Style.Colors.SteelDark)

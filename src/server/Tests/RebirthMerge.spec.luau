@@ -55,5 +55,14 @@ return function()
 	table.insert(es.owned,rare) table.insert(es.owned,epic)
 	check(act(e,"EquipBest",{rarity="Rare"}) and es.equipped["1"]==rare.id,"equip by rarity puts that rarity in bay 1")
 	check(not act(e,"EquipBest",{rarity="Mythic"}),"equip by rarity needs one of that rarity")
+	-- FILL ROW: row 1 gets the best crushers of the chosen rarity, moved from other bays
+	local f=R.migrate({cash=10},id) f.crushers.available=0
+	local fs=f.crushers fs.bays=8
+	local epics={} for i=1,7 do local e2={id=id(),type=C.rarity("Epic").types[1],rarity="Epic",modifier="Standard",level=i} table.insert(fs.owned,e2) table.insert(epics,e2) end
+	fs.equipped["8"]=epics[7].id
+	check(act(f,"FillRow",{row=1,rarity="Epic"}),"fill row works")
+	local ok6=true for bay=1,6 do local it=R.find(f,fs.equipped[tostring(bay)]) if not it or it.rarity~="Epic" then ok6=false end end
+	check(ok6 and fs.equipped["1"]==epics[7].id and fs.equipped["8"]==nil,"row 1 holds the six best Epics; the best moved from bay 8")
+	check(not act(f,"FillRow",{row=1,rarity="Mythic"}) and not act(f,"FillRow",{row=99,rarity="Epic"}),"fill row checks rarity and row")
 	print("RebirthMerge.spec: "..checks.." checks passed")
 end

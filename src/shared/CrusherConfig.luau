@@ -126,9 +126,10 @@ C.Merge = { MaxStars = 3, Mult = 1.5 }
 -- From Factory IV (MinPlot) with Cost x Growth^rebirths cash. Each rebirth adds
 -- to a permanent income multiplier (Mult ^ rebirths).
 -- 3 Nov (vault: Progression and Pacing, "linear multiplier against exponential cost
--- is the most common mistake"): cash x2 per rebirth (x2, x4, x8...), cost x4, so
--- each run takes about twice as long as the one before (was ~5x with +0.5 / x8).
-C.Rebirth = { MinPlot = 3, Cost = 150e6, Growth = 4, Mult = 2, LuckPer = 0.25, StartCash = 1000 }
+-- is the most common mistake"): cash x1.5 per rebirth (x1.5, x2.25, x3.4...), cost x3,
+-- so each run takes about twice as long as the one before (was ~5x with +0.5 / x8).
+-- (x2 / x4 was tried first: Willem found x32 at 5 rebirths way too much)
+C.Rebirth = { MinPlot = 3, Cost = 150e6, Growth = 3, Mult = 1.5, LuckPer = 0.25, StartCash = 1000 }
 function C.rebirthCost(n) return math.floor(C.Rebirth.Cost*C.Rebirth.Growth^(n or 0)) end
 function C.rebirthMult(n) return C.Rebirth.Mult^(n or 0) end
 -- 2 Nov evening (Willem): each rebirth also +25% luck (multiplies the rare-or-better odds, like the Lucky pass)

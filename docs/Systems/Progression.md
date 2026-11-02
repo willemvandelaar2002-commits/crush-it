@@ -92,9 +92,12 @@ Goal: fewer players leaving before the first collect (funnel step 2, 12.5% churn
 
 ## 3 Nov: rebirth pacing, REBUILD, equip by rarity
 - Rebirth numbers (vault "Progression and Pacing Design": a linear multiplier against an exponential cost makes every
-  run ~5x longer): now cash x2 per rebirth (x2, x4, x8...) and cost x4 ($150M, $600M, $2.4B...), so each run takes
-  about twice as long as the one before. Luck stays +25% per rebirth.
+  run ~5x longer): now cash x1.5 per rebirth (x1.5, x2.25, x3.4, x5.1, x7.6) and cost x3 ($150M, $450M, $1.35B...),
+  so each run takes about twice as long as the one before. (x2 / x4 was live briefly: x32 at 5 rebirths, too much.)
+  Luck stays +25% per rebirth.
 - REBUILD (top row, only after your first rebirth and while bays are left to buy): buys every bay you can afford,
   cheapest first, then Equip Best. A player's idea; the first run stays hands-on.
-- Equip by rarity: the arrow next to EQUIP BEST opens a picker (BEST + every rarity you own, with counts). Picking a
-  rarity equips that rarity first from bay 1, so it fills whole rows (rarity row bonus); the rest is filled best-first.
+- Fill a row (Willem, from a player's idea): press E at a row's sign (the "MATCH A ROW" desk sign in front of each
+  row of 6) and pick a rarity (every rarity you own, with count and row bonus). The server (CrusherRules "FillRow")
+  puts your best crushers of that rarity in that row, moving them from other bays; other rarities in the row go back
+  to the backpack. (A picker arrow next to EQUIP BEST was tried first and removed.)
