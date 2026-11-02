@@ -11,8 +11,8 @@ local C = {
 	RollSeconds = 3, StartPedestals = 1, MaxPedestals = 5,
 	MaxPressEmitters = 1, PressParticleRate = 2,
 	LevelDamage = 1.12, LevelYield = 1.10, DamageFactor = 1.35, SpeedFactor = 0.94,
-	YieldPerLevel = 0.25, LuckPerLevel = 0.12, AutoCrushDamage = 1.25, -- 31 Oct: Yield 0.2 -> 0.25 per level
-	LuckGrowth = 1.01, -- 31 Oct: on top of LuckPerLevel, each Luck level also multiplies rare weights by 1.01^rank, so late levels still count
+	YieldPerLevel = 0.25, LuckPerLevel = 0.3, AutoCrushDamage = 1.25, -- 31 Oct: Yield 0.2 -> 0.25 per level; 2 Nov: Luck 0.12 -> 0.3 (Willem: way too weak)
+	LuckGrowth = 1.015, -- on top of LuckPerLevel, each Luck level also multiplies rare weights by LuckGrowth^rank, so late levels still count (2 Nov: was 1.01)
 	OverkillBonus = 0.065, -- 31 Oct: +6.5% scrap per doubling (was 5%) of damage beyond a one-hit crush (Damage keeps paying late game)
 	GoldenYield = 10, AutoCollectInterval = 2,
 	CameraMaxZoom = 75, ControlsMaxDistance = 170, -- zoom-out limit; how far board/plaque text shows
