@@ -362,3 +362,12 @@ CrusherPlots applies Style.studs to the blue bank back walls, parapets and solid
 - Saves on the v1 list (16 goals) move to the same goal id (`crushers.goalsV` = `C.Goals2Version`); goals inserted before it are skipped.
 - Can't afford the target yet: the arrow first suggests a factory upgrade, then a crusher level-up (each only if it costs at most half of what you're saving for), otherwise collect / sell with "Saving: $a / $b".
 - Funnel: steps 10-35 are the goals, 36-38 Factory III / IV / V.
+
+## 2 Nov: plot split, 6 factories (Willem)
+- The starting factory is only the ground floor: `C.StartBays` = 12 bays (2 rows). The upper floor is now FACTORY II (+12, about $39K = 10x bay 13), then FACTORY III third floor + Coating Lab ($5M), IV rear yard + Fusion (~$452M), V rear upper left, VI rear upper right. `PlotUpgrade.MaxLevel` = 5; capacities 12 / 24 / 36 / 48 / 54 / 60.
+- Caps per level: 25/50 (II), 30/60, 40/80, 50/100, 60/120 (factory upgrade / crusher level); start 20/40.
+- Coating Lab from plot level 2 (`C.CoatingPlotLevel`), fusion from 3 (`C.Fusion.PlotLevel`). Plot decor and stages keep their old levels through `C.structureLevel(level)` = level - 1.
+- The upper floor is hidden at the start and rises when Factory II is bought (floorLook: floors past StartBays are built with the plot level, never as a ghost).
+- Saves from before the split (`crushers.plotsV` ~= 2) with any plot upgrade or more than 12 bays move up one level: same bays, crushers and caps (or higher), nothing lost.
+- Goals v3 (17): ... Upgrades12, Fill all 12 bays (Epic), Level15, Buy FACTORY II (Legendary). Older goal lists (goalsV 1/2) map by goal id; on that remap goals already done are skipped without rewards.
+- After Factory II the guide is finished (no NEXT GOAL mode).

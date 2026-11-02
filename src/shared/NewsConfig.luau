@@ -8,9 +8,9 @@ local M = {}
 M.Version = 1
 M.Title = "What's New"
 M.Lines = {
-	"26 GOALS after the tutorial, with prizes up to a free Legendary crusher!",
+	"Your factory now grows in 6 steps: FACTORY II is the upper floor, at 12 bays (about $39K)!",
+	"17 GOALS after the tutorial, with prizes up to a free Legendary crusher.",
 	"Bays 3 to 6 now cost $50 / $80 / $120 / $180.",
-	"Factory III is much cheaper: about $452M (was $2.21B).",
 	"The Lucky pass and the 2x Luck boost now stack (4x luck with both).",
 	"The Index shows YOUR odds, with all your luck included.",
 	"New: CODES in the Rewards menu. Try CRUSHIT!",
