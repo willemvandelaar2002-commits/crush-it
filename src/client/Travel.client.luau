@@ -86,18 +86,8 @@ Style.text(bang, 2)
 Style.wobble(mark, 10, 5)
 Net.event("CrusherState").OnClientEvent:Connect(function(v)
 	if type(v) ~= "table" or type(v.items) ~= "table" then return end
-	-- would Equip Best change anything? (same ranking as the server: output, then id)
-	local list = table.clone(v.items)
-	table.sort(list, function(a, b)
-		if a.stats.cps == b.stats.cps then return a.id < b.id end
-		return a.stats.cps > b.stats.cps
-	end)
-	local inBay = {}
-	for _, id in v.bays or {} do inBay[id] = true end
-	local better = false
-	for i = 1, math.min(v.unlocked or 0, #list) do
-		if not inBay[list[i].id] then better = true break end
-	end
+	-- would Equip Best change anything? The server runs the real rule (rows included)
+	local better = v.equipBetter == true
 	mark.Visible = better
 end)
 

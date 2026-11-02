@@ -64,5 +64,16 @@ return function()
 	local ok6=true for bay=1,6 do local it=R.find(f,fs.equipped[tostring(bay)]) if not it or it.rarity~="Epic" then ok6=false end end
 	check(ok6 and fs.equipped["1"]==epics[7].id and fs.equipped["8"]==nil,"row 1 holds the six best Epics; the best moved from bay 8")
 	check(not act(f,"FillRow",{row=1,rarity="Mythic"}) and not act(f,"FillRow",{row=99,rarity="Epic"}),"fill row checks rarity and row")
+	-- EQUIP BEST past Factory I: fills bays beyond 12 (bug 3 Nov: it judged only bays 1-12)
+	local q=R.migrate({cash=10},id) q.crushers.available=0
+	local qs=q.crushers qs.plotLevel=1 qs.bays=C.bayCapacity(1) qs.equipped={}
+	local legs={}
+	for i=1,qs.bays do local l={id=id(),type=C.rarity("Legendary").types[1],rarity="Legendary",modifier="Standard",level=1} table.insert(qs.owned,l) table.insert(legs,l) end
+	for i=1,12 do qs.equipped[tostring(i)]=legs[i].id end
+	check(R.equipBestHelps(q,{}),"equip best sees empty bays past 12")
+	check(act(q,"EquipBest"),"equip best fills them")
+	local full=0 for _ in qs.equipped do full+=1 end
+	check(full==qs.bays,"every bay filled: "..full.."/"..qs.bays)
+	check(not R.equipBestHelps(q,{}) and not act(q,"EquipBest"),"then nothing left to improve")
 	print("RebirthMerge.spec: "..checks.." checks passed")
 end

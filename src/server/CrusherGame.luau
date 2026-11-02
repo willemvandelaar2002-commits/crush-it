@@ -273,6 +273,9 @@ local function send(p,message,result)
 	Net.event("CrusherState"):FireClient(p,{cash=d.cash,carried=d.scrap,available=s.available,items=items,
 		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,plotLevel=s.plotLevel,
 		goal=s.goal,goalHave=goalHave,goalNeed=goalNeed,rollLucky=perks(p).lucky,fusion=if s.fusion then {item=Rules.copy(s.fusion.item),readyAt=s.fusion.readyAt,now=os.time()} else nil,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
+		equipBetter=(function() -- 3 Nov: the red "!" on Equip Best, from the real rule (rechecked every 3 s)
+			if not ctx.equipCheckAt or os.clock()-ctx.equipCheckAt>3 or message then ctx.equipCheckAt=os.clock() ctx.equipBetter=Rules.equipBestHelps(d,perks(p)) end
+			return ctx.equipBetter end)(),
 		rollSeconds=C.rollSeconds(),rebirths=s.rebirths or 0,rebirthCost=C.rebirthCost(s.rebirths or 0),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered,coating=ctx.coatingQuote,
 		goals=Goals.view(ctx,d,workspace:GetServerTimeNow()),

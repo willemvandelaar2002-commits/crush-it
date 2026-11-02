@@ -281,48 +281,83 @@ local function act(d,session,action,args,now,random,guid,perks)
 		for key,id in s.equipped do if id==item.id then s.equipped[key]=nil end end
 		s.equipped[tostring(bay)]=item.id
 	elseif action=="EquipBest" then
-		-- fill the unlocked bays with the highest-output crushers; ones that
-		-- are already in a bay and still make the cut stay where they are
-		local list=table.clone(s.owned)
-		-- Compare raw outputs fairly; current row membership must not bias the
-		-- ranking. Before committing, protect a stronger hand-arranged row set.
-		local out={} for _,item in list do out[item.id]=R.stats(d,item,perks,false).cps end
-		-- 3 Nov (a player's idea): args.rarity puts that rarity first, best ones
-		-- first, filling the bays in order so they form full matching rows
+		-- 3 Nov: Equip Best compares whole layouts with the row bonuses included and
+		-- takes the one that earns most:
+		--   raw    the highest-output crushers (ones already in a bay stay put)
+		--   rows   the same set of crushers grouped by rarity, so matching rarities
+		--          fill whole rows (row bonus)
+		--   fill   your current layout with only the empty bays filled
+		-- (Before, a check for "don't break row bonuses" left out the factory level,
+		-- so past Factory I it judged only bays 1-12 and refused to fill the rest.)
+		-- args.rarity: that rarity first from bay 1 (kept for old clients).
+		local out={} for _,item in s.owned do out[item.id]=R.stats(d,item,perks,false).cps end
+		local capacity=math.min(s.bays,C.bayCapacity(s.plotLevel))
+		local function score(equipped)
+			local snap=Rows.snapshot({crushers={owned=s.owned,equipped=equipped,bays=s.bays,plotLevel=s.plotLevel}})
+			local total=0
+			for key,id in equipped do local bay=tonumber(key) if bay and bay<=capacity then total+=(out[id] or 0)*Rows.multiplier(snap,id) end end
+			return total
+		end
+		local function byOutput(a,b) if out[a.id]==out[b.id] then return a.id<b.id end return out[a.id]>out[b.id] end
 		local want=type(args.rarity)=="string" and C.rarity(args.rarity) and args.rarity or nil
+		local candidates={}
 		if want then
-			local any=false for _,item in list do if item.rarity==want then any=true break end end
+			local list={} local any=false
+			for _,item in s.owned do table.insert(list,item) if item.rarity==want then any=true end end
 			if not any then return false,"You don't own any "..want.." crushers." end
-		end
-		local function first(item) return if want and item.rarity==want then 1 else 0 end
-		table.sort(list,function(a,b)
-			if first(a)~=first(b) then return first(a)>first(b) end
-			if out[a.id]==out[b.id] then return a.id<b.id end return out[a.id]>out[b.id]
-		end)
-		local best={} for i=1,math.min(s.bays,#list) do best[list[i].id]=true end
-		local equipped,placed={},{}
-		-- (by rarity: a fresh layout from bay 1, so the chosen rarity fills whole rows)
-		if not want then for key,id in s.equipped do if best[id] and tonumber(key) and tonumber(key)<=s.bays then equipped[key]=id placed[id]=true end end end
-		local nextBest=1
-		for i=1,s.bays do
-			local key=tostring(i)
-			if not equipped[key] then
-				while list[nextBest] and (placed[list[nextBest].id] or not best[list[nextBest].id]) do nextBest+=1 end
-				local item=list[nextBest] if not item then break end
-				equipped[key]=item.id placed[item.id]=true
+			table.sort(list,function(a,b)
+				local fa,fb=a.rarity==want,b.rarity==want
+				if fa~=fb then return fa end return byOutput(a,b)
+			end)
+			local e={} for i=1,math.min(capacity,#list) do e[tostring(i)]=list[i].id end
+			candidates={e}
+		else
+			local list=table.clone(s.owned) table.sort(list,byOutput)
+			local top={} for i=1,math.min(capacity,#list) do top[i]=list[i] end
+			local chosen={} for _,item in top do chosen[item.id]=true end
+			-- raw: keep chosen crushers where they are, fill the gaps best-first
+			local raw,placed={},{}
+			for key,id in s.equipped do local bay=tonumber(key) if bay and bay<=capacity and chosen[id] then raw[key]=id placed[id]=true end end
+			local n=1
+			for i=1,capacity do local key=tostring(i)
+				if not raw[key] then
+					while top[n] and placed[top[n].id] do n+=1 end
+					if not top[n] then break end
+					raw[key]=top[n].id placed[top[n].id]=true
+				end
 			end
+			-- rows: the same crushers, highest rarity first, so each rarity fills whole rows
+			local grouped=table.clone(top)
+			table.sort(grouped,function(a,b)
+				local ra,rb=C.rarity(a.rarity),C.rarity(b.rarity)
+				local ka,kb=ra and ra.rank or 0,rb and rb.rank or 0
+				if ka~=kb then return ka>kb end return byOutput(a,b)
+			end)
+			local rows={} for i,item in grouped do rows[tostring(i)]=item.id end
+			-- fill: current layout, empty bays get the best crushers not in a bay
+			local fill,used={},{}
+			for key,id in s.equipped do local bay=tonumber(key) if bay and bay<=capacity then fill[key]=id used[id]=true end end
+			local m=1
+			for i=1,capacity do local key=tostring(i)
+				if not fill[key] then
+					while list[m] and used[list[m].id] do m+=1 end
+					if not list[m] then break end
+					fill[key]=list[m].id used[list[m].id]=true
+				end
+			end
+			candidates={raw,rows,fill}
 		end
-		local same=true
-		for key,id in equipped do if s.equipped[key]~=id then same=false end end
-		for key,id in s.equipped do if equipped[key]~=id then same=false end end
-		if same then return false,(if want then "Your "..want.." crushers are already in place!" else "You're already using your best crushers!") end
-		local proposed={crushers={owned=s.owned,equipped=equipped,bays=s.bays}}
-		local currentRows,newRows=Rows.snapshot(d),Rows.snapshot(proposed)
-		local before,after=0,0
-		for _,id in s.equipped do before+=(out[id] or 0)*Rows.multiplier(currentRows,id) end
-		for _,id in equipped do after+=(out[id] or 0)*Rows.multiplier(newRows,id) end
-		if not want and after+1e-8<before then return false,"Kept your row bonuses: this setup produces more. Arrange matching rarities manually." end
-		s.equipped=equipped
+		local current=score(s.equipped)
+		local best,bestScore=nil,current
+		for _,e in candidates do local v=score(e) if v>bestScore+1e-8 then best,bestScore=e,v end end
+		if want and candidates[1] then
+			local same=true
+			for key,id in candidates[1] do if s.equipped[key]~=id then same=false end end
+			if same then return false,"Your "..want.." crushers are already in place!" end
+			best=candidates[1]
+		end
+		if not best then return false,"You're already using your best crushers!" end
+		s.equipped=best
 		return true,(if want then "Equipped your "..want.." crushers first!" else "Equipped your best crushers!")
 	elseif action=="Unequip" then
 		if not R.find(d,args.id) then return false,"You do not own that crusher." end
@@ -493,6 +528,15 @@ function R.act(d,session,action,args,now,random,guid,perks)
 		R.tutorialAdvance(d,id)
 	end
 	return ok,message,result
+end
+-- 3 Nov: would Equip Best change anything? (drives the red "!" on the button).
+-- Runs the real rule, then puts the layout back.
+function R.equipBestHelps(d,perks)
+	local saved=d.crushers.equipped
+	d.crushers.equipped=table.clone(saved)
+	local ok=act(d,{},"EquipBest",{},0,function() return .5 end,function() return "" end,perks)
+	d.crushers.equipped=saved
+	return ok==true
 end
 function R.step(d,session,now,perks)
 	local events={} session.bays=session.bays or {}
