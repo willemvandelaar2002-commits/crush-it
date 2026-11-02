@@ -385,7 +385,7 @@ end
 HubPlaza.Boards = {
 	{ id = "Cash", title = "RICHEST" },
 	{ id = "Crushed", title = "MOST CRUSHED" },
-	{ id = "Collection", title = "COLLECTION" },
+	{ id = "Playtime", title = "PLAYTIME" }, -- 2 Nov: was COLLECTION
 }
 HubPlaza.BoardRows = 8
 local function boardScreen(m: Model, cf: CFrame, w: number, h: number, board: any)
