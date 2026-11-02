@@ -5,15 +5,15 @@
 -- the lines with every update; numbers stated plainly.
 local M = {}
 
-M.Version = 1
+M.Version = 2
 M.Title = "What's New"
 M.Lines = {
-	"SMASH! Tap the red button (or F) to fill the meter: FRENZY makes all your crushers 2x fast.",
-	"Golden toys land at your bays: grab them for cash or a boost!",
-	"New TURBO pump on your plot: multiply ALL your cash for a while.",
-	"Your factory grows in 6 steps now, and the big price jumps are gone.",
-	"Higher upgrade and level caps: there's always something to buy.",
-	"New: CODES in the Rewards menu. Try CRUSHIT!",
+	"MERGE: 3 of the same crusher make a ★ version (x1.5 cash per star). Open the Index!",
+	"REBIRTH from Factory IV: start over with all your crushers and earn +50% income forever.",
+	"The Coating Lab now opens with Factory II.",
+	"SMASH! Tap the red button (or F): FRENZY makes all your crushers 2x fast.",
+	"Golden toys land at your bays, and the TURBO pump multiplies ALL your cash.",
+	"Higher caps, smaller price jumps, and CODES in the Rewards menu. Try CRUSHIT!",
 }
 
 return M

@@ -161,6 +161,7 @@ function R.migrate(d, guid)
 	s.available=C.money(number(s.available,0)) s.tutorial=math.clamp(integer(s.tutorial,1,#C.TutorialSteps+1),1,#C.TutorialSteps+1) -- #steps+1 = finished
 	s.rollReadyAt=number(s.rollReadyAt,0,1e12)
 	s.rolls=integer(s.rolls,0,1e9) -- rolls made (the first one is always cheap)
+	s.rebirths=integer(s.rebirths,0,1000) -- 2 Nov evening: crusher-era rebirths (not the legacy d.rebirths)
 	local owned,ids={},{}
 	-- crate crushers have one fixed tier: copies saved under an older tier follow it
 	local function fixTier(v) local def=C.typeById(v.type) if def and def.crate and def.rarity and C.rarity(def.rarity) then v.rarity=def.rarity end end
@@ -193,7 +194,8 @@ function R.migrate(d, guid)
 		local v=f.item
 		local id=if type(v.id)=="string" and #v.id<=64 and #v.id>0 and not ids[v.id] then v.id else guid()
 		ids[id]=true
-		s.fusion={readyAt=number(f.readyAt,0,1e12),item={id=id,type=v.type,rarity=v.rarity,modifier=v.modifier,level=math.clamp(integer(v.level,1,C.topLevelCap()),1,C.topLevelCap())}}
+		s.fusion={readyAt=number(f.readyAt,0,1e12),item={id=id,type=v.type,rarity=v.rarity,modifier=v.modifier,level=math.clamp(integer(v.level,1,C.topLevelCap()),1,C.topLevelCap()),
+			stars=(function() local n=integer(v.stars,0,C.Merge.MaxStars) return if n>0 then n else nil end)()}}
 	else s.fusion=nil end
 	local equipped,used={},{} local old=if type(s.equipped)=="table" then s.equipped else {}
 	for i=1,s.bays do local id=old[tostring(i)] if ids[id] and not used[id] then equipped[tostring(i)]=id used[id]=true end end
@@ -313,6 +315,23 @@ local function act(d,session,action,args,now,random,guid,perks)
 	elseif action=="Unequip" then
 		if not R.find(d,args.id) then return false,"You do not own that crusher." end
 		for key,id in s.equipped do if id==args.id then s.equipped[key]=nil end end
+	elseif action=="Rebirth" then
+		-- 2 Nov evening: "Recycle your factory" (vault: Rebirth and Prestige). Needs
+		-- Factory IV and the rebirth cash. Resets cash, bays, factory level, factory
+		-- upgrades and crusher levels; keeps every crusher (stars, coatings, fusion),
+		-- the Index, Luck, pedestals, passes. Each rebirth: +MultPer income forever.
+		local R2=C.Rebirth local n=s.rebirths or 0
+		if (s.plotLevel or 0)<R2.MinPlot then return false,"Rebirth unlocks with "..C.PlotUpgrade.Names[R2.MinPlot].."." end
+		local cost=C.rebirthCost(n)
+		if d.cash<cost then return false,"Rebirth needs "..C.money(cost).." cash." end
+		local keep=s.equipped["1"]
+		d.cash=R2.StartCash d.scrap=0 s.available=0
+		s.plotLevel=0 s.bays=1 s.equipped={} if keep then s.equipped["1"]=keep end
+		for _,id in {"Damage","Speed","Yield"} do s.upgrades[id]=0 end
+		for _,item in s.owned do item.level=1 end
+		if s.fusion and s.fusion.item then s.fusion.item.level=1 end
+		s.rebirths=n+1
+		return true,"REBIRTH "..s.rebirths.."! Income x"..C.rebirthMult(s.rebirths).." forever.",s.rebirths
 	elseif action=="Merge" then
 		-- 2 Nov evening: two spare copies (same type and stars, not in a bay, not
 		-- fused; the lowest levels go first) merge into this crusher: +1 star

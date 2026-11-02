@@ -61,7 +61,8 @@ local function perks(p)
 	-- 2 Nov: the Lucky pass and the 2x Luck boost stack (x4 with both; before,
 	-- a pass owner who bought the boost got nothing for it)
 	return {speed=Frenzy.speed(p),autoCrush=Store.hasPass(p,"AutoCrush"),lucky=(if Store.hasPass(p,"Lucky") then 2 else 1)*(if Boost.active(p,"Luck",now) then 2 else 1),
-		mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now)),
+		mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now))
+			*(function() local d=Data.get(p) return C.rebirthMult(d and d.crushers.rebirths or 0) end)(), -- 2 Nov evening: rebirth bonus
 		indexLuck=(function() local d=Data.get(p) return if d then IndexRewards.luck(d.crushers) else 0 end)()}
 end
 local function cps(p,d)
@@ -258,7 +259,7 @@ local function send(p,message,result)
 	Tools.sync(p,d) -- unequipped crushers live in the Roblox backpack
 	p:SetAttribute("Cash",d.cash) p:SetAttribute("Scrap",d.scrap) p:SetAttribute("AvailableScrap",s.available)
 	p:SetAttribute("Plot",ctx.plot.index) p:SetAttribute("Crushed",d.crushed) p:SetAttribute("Tier",d.tier)
-	p:SetAttribute("CashRate",cps(p,d)) p:SetAttribute("AutoOn",true) p:SetAttribute("GoldenRush",d.goldenRush) p:SetAttribute("Rebirths",d.rebirths)
+	p:SetAttribute("CashRate",cps(p,d)) p:SetAttribute("AutoOn",true) p:SetAttribute("GoldenRush",d.goldenRush) p:SetAttribute("Rebirths",s.rebirths or 0)
 	local goalHave,goalNeed=nil,nil
 	if s.goal and C.Goals2[s.goal] then goalHave,goalNeed=goalCount(d,C.Goals2[s.goal]) end
 	local items={}
@@ -268,7 +269,7 @@ local function send(p,message,result)
 	Net.event("CrusherState"):FireClient(p,{cash=d.cash,carried=d.scrap,available=s.available,items=items,
 		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,plotLevel=s.plotLevel,
 		goal=s.goal,goalHave=goalHave,goalNeed=goalNeed,rollLucky=perks(p).lucky,fusion=if s.fusion then {item=Rules.copy(s.fusion.item),readyAt=s.fusion.readyAt,now=os.time()} else nil,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
-		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
+		rollSeconds=C.rollSeconds(),rebirths=s.rebirths or 0,rebirthCost=C.rebirthCost(s.rebirths or 0),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered,coating=ctx.coatingQuote,
 		goals=Goals.view(ctx,d,workspace:GetServerTimeNow()),
 		index={seen=(function() local list={} for id in s.seen do table.insert(list,id) end return list end)(),claimed=s.indexClaimed,luck=IndexRewards.luck(s)}})
@@ -700,6 +701,13 @@ local function action(p,name,args)
 		end
 	end
 	-- plot upgrade cutscene: only the buyer, only after the server confirmed it
+	if ok and name=="Rebirth" then
+		-- everyone sees it; the factory goes back to the ground floor (bay models rebuilt)
+		Turbo.resetPeak(p)
+		Analytics.custom(p,"CrusherRebirth",d.crushers.rebirths)
+		Net.event("RarePull"):FireAllClients({text=p.DisplayName.." REBIRTHED! (x"..C.rebirthMult(d.crushers.rebirths).." income)",userId=p.UserId,color=Color3.fromRGB(255,170,60)})
+		Net.event("RebirthDone"):FireClient(p,{rebirths=d.crushers.rebirths,mult=C.rebirthMult(d.crushers.rebirths)})
+	end
 	if ok and name=="UpgradePlot" and Progression.level(d)>levelBefore then
 		Net.event("PlotUpgraded"):FireClient(p,upgradeSummary(levelBefore,Progression.level(d)))
 	end
@@ -840,7 +848,7 @@ function G.start()
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
 		elseif name=="TrashMany" then target=ctx.plot.stations.Trash and ctx.plot.stations.Trash.part reach=40
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
-		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Merge" then
+		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Merge" and name~="Rebirth" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end

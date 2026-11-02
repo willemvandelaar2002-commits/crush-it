@@ -22,6 +22,9 @@ local function baseIncome(api: any, p: Player): number
 	return peak[p]
 end
 
+-- 2 Nov evening: a rebirth drops income on purpose, so the price follows it down
+function M.resetPeak(p: Player) peak[p] = nil end
+
 function M.start(api: any)
 	local result = Net.event("TurboState")
 	local function state(p: Player, message: string?)
