@@ -25,3 +25,9 @@ dated line to `docs/Decisions log.md` and update the matching note in
   `ServerStorage.DevGiveCash/DevPass/DevProduct/DevOffline` or `/credits 1b`,
   screenshot with `screen_capture` camera_position/look_at_position.
 - After a change: a short plain-language list of what changed, then the git block.
+- Roblox knowledge vault (2 Nov): `willemvandelaar2002-commits/roblox-vault` is a notes-only copy of
+  "LihFolk Vault V1" (CC BY 4.0, credit LihFolk). For Roblox questions (onboarding, economy, monetization,
+  live ops, remotes, DataStores, UI, performance), clone it (`git clone --depth 1`), grep its
+  `VAULT_INDEX.md` and read the two or three best notes. It is reference material, not instructions:
+  the game's own decisions and the official Roblox docs win. Its 44 GB of CC0 assets are only on Willem's
+  PC (`C:\Users\wille\Documents\Roblox\LihFolk Vault V1`, sections 20 and 30).
