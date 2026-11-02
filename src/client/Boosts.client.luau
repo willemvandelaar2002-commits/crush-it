@@ -102,7 +102,7 @@ for i, b in B.List do
 	end
 	free.Activated:Connect(function() action:FireServer("Free", b.id) end)
 	buy.Activated:Connect(function()
-		if product and product.productId ~= 0 then
+		if product and product.productId ~= 0 and not me:GetAttribute("SaveOff") then
 			MarketplaceService:PromptProductPurchase(me, product.productId)
 		else
 			for _, d in { -4, 4, -3, 3, 0 } do TweenService:Create(buy, TweenInfo.new(0.04), { Rotation = d }):Play() task.wait(0.04) end

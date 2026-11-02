@@ -211,9 +211,7 @@ function R.stats(d,item,perks,rows)
 	return {damage=damage,cycle=cycle,hp=t.hp,value=C.money(value),cps=value/(math.ceil(t.hp/damage)*cycle+C.inputDelay(s.upgrades.Speed)),rowBonus=multiplier-1,overkill=overkill,delay=C.inputDelay(s.upgrades.Speed)}
 end
 -- bonus: permanent Index-milestone luck (0.1 = +10% weight on every non-Common rarity)
-function R.weights(luck,lucky,bonus)
-	local out={} for i,v in C.Rarities do out[i]=v.weight*C.luckFactor(luck,v.rank)*(if lucky and v.rank>0 then 2 else 1)*(if v.rank>0 then 1+(bonus or 0) else 1) end return out
-end
+function R.weights(luck,lucky,bonus) return C.rollWeights(luck,lucky,bonus) end
 -- Remember every type the save owns now (and the one inside the fuser).
 function R.markSeen(s)
 	if type(s.seen)~="table" then s.seen={} end

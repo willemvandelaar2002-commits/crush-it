@@ -279,7 +279,9 @@ function I.new(gui, act)
 		else
 			local crate=def.crate==true
 			local exclusive=crate or (C.rarityOf(def.id) and C.rarityOf(def.id).exclusive)
-			local odds=label(frame,"Odds",if crate then "CRATE ONLY" elseif exclusive then "SHOP & SPIN ONLY" else "1 in "..commas(C.oddsFor(def.id)),UDim2.new(0,4,1,-30),UDim2.new(1,-8,0,28),if exclusive then 18 else 24)
+			local odds=label(frame,"Odds",if crate then "CRATE ONLY" elseif exclusive then "SHOP & SPIN ONLY" else "1 in "..commas(
+				-- 2 Nov: YOUR odds (Luck upgrade, Lucky pass / 2x Luck boost, Index luck), the same maths as the roll
+				if state and state.upgrades then C.effectiveOdds(def.id,state.upgrades.Luck,state.rollLucky,state.index and state.index.luck) else C.oddsFor(def.id)),UDim2.new(0,4,1,-30),UDim2.new(1,-8,0,28),if exclusive then 18 else 24)
 			odds.ZIndex=4
 			if exclusive then odds.TextColor3=Color3.fromRGB(255,150,225) end
 		end
@@ -322,7 +324,7 @@ function I.new(gui, act)
 			Style.setButtonColor(node,if name==filter then base else Style.darken(base,.45))
 			filterLabels[name].TextColor3=if name==filter then white else Color3.fromRGB(200,204,214)
 		end
-		local keys={tab,filter,tostring(selectedBay),tostring(state.unlocked)}
+		local keys={tab,filter,tostring(selectedBay),tostring(state.unlocked),tostring(state.rollLucky),tostring(state.upgrades and state.upgrades.Luck),tostring(state.index and state.index.luck)}
 		for _,item in state.items do table.insert(keys,item.id..":"..item.type..":"..item.rarity..":"..item.modifier..":"..item.level..":"..item.stats.cps..":"..tostring(item.fused)) end
 		for bay=1,C.MaxBays do table.insert(keys,state.bays[tostring(bay)] or "-") end
 		local nextSignature=table.concat(keys,"|")

@@ -406,7 +406,7 @@ local function shopPads(owner: Player, data: any, plot: any, root: BasePart, now
 		if data.smeltQueue > 0 then
 			Pads.press(top)
 			local product = Store.productById("FinishSmelt")
-			if product and product.productId ~= 0 then
+			if product and product.productId ~= 0 and not owner:GetAttribute("SaveOff") then
 				MarketplaceService:PromptProductPurchase(owner, product.productId)
 			else
 				Notice:FireClient(owner, { text = "Finish Now: coming soon!" })

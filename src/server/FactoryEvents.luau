@@ -253,11 +253,13 @@ function Events.start(api)
 		for p,r in roster do
 			local d=api.getData(p)
 			if d and not r.pending then
+				local eventCash=d.cash
 				local granted,result=Rules.grant(d,roundId,r,C.money,{
 					random=function() return rng:NextNumber() end,
 					giveCrusher=function(rarity,typeId) return api.giveCrusher(p,rarity,typeId) end,
 					addBoost=function(id,minutes) return Boosts.add(p,id,minutes) end,
 				})
+				if d.cash~=eventCash then require(script.Parent.Kit.Analytics).cash(p,"FactoryEvent","Gameplay",eventCash,d.cash) end
 				if granted then
 					r.reward=result.cash r.prizes=result.prizes r.values=result.values api.sync(p)
 					-- The ID ledger and cash are saved together; retry via autosave if storage is down.

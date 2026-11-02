@@ -12,7 +12,7 @@ B.FreeMinutes = 5
 B.MaxMinutes = 240 -- a boost can't stack beyond this
 B.List = {
 	{ id = "Cash", title = "2x Cash", desc = "Your crushers earn double cash", color = Color3.fromRGB(230, 70, 60), icon = "DoubleCash", product = "BoostCash", minutes = 15 },
-	{ id = "Luck", title = "2x Luck", desc = "Double chance of rare crushers", color = Color3.fromRGB(60, 190, 90), icon = "Lucky", product = "BoostLuck", minutes = 15 },
+	{ id = "Luck", title = "2x Luck", desc = "2x luck on crusher rolls for 15 min (stacks with the Lucky pass)", color = Color3.fromRGB(60, 190, 90), icon = "Lucky", product = "BoostLuck", minutes = 15 },
 	{ id = "Super", title = "Super Boost", desc = "2x Cash and 2x Luck together", color = Color3.fromRGB(160, 80, 235), icon = "Golden", product = "BoostSuper", minutes = 15 },
 }
 function B.find(id: any): any

@@ -16,14 +16,12 @@ function P.profile(rarity) return profiles[rarity] or profiles.Common end
 function P.owns(items,id)
 	for _,item in items do if item.type==id then return true end end return false
 end
-function P.odds(id,luck,lucky,first)
+function P.odds(id,luck,lucky,first,bonus)
 	local wanted=C.rarityOf(id) if not wanted or wanted.weight<=0 then return 0 end
 	if first then return if wanted.name=="Common" then #wanted.types else 0 end
-	local total=0 local weight=0
-	for _,r in C.Rarities do
-		local w=r.weight*C.luckFactor(luck,r.rank)*(if lucky and r.rank>0 then 2 else 1)
-		total+=w if r==wanted then weight=w end
-	end
+	-- 2 Nov: the same weights as the server roll (now including Index luck)
+	local w=C.rollWeights(luck,lucky,bonus) local total=0 local weight=0
+	for i,r in C.Rarities do total+=w[i] if r==wanted then weight=w[i] end end
 	return total/weight*#wanted.types
 end
 function P.oddsText(n)

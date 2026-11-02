@@ -18,7 +18,7 @@ local Analytics = require(script.Parent.Kit.Analytics)
 export type Api = {
 	getData: (Player) -> any,
 	whenLoaded: (Player) -> any,
-	addCash: (Player, number) -> (),
+	addCash: (Player, number, string?, string?) -> (), -- amount, economy sku, transaction type
 	sync: (Player) -> (),
 	cashPerSecond: (Player) -> number,
 	giveCrusher: ((Player, string) -> string?)?,
@@ -75,7 +75,7 @@ local function grant(player: Player, data: any, reward: any): string
 		local bonus = ""
 		if type(reward.bonusSeconds) == "number" then
 			local extra = math.max(Config.Rewards.MinCash, math.floor(api.cashPerSecond(player) * reward.bonusSeconds))
-			api.addCash(player, extra)
+			api.addCash(player, extra, "GiftBonus", "TimedReward")
 			bonus = " +" .. Format.cash(extra)
 		end
 		if name then return (if rarity == "Mythic" then "MYTHIC DROP! " else "New " .. rarity .. " crusher: ") .. name .. "!" .. bonus end
@@ -88,7 +88,7 @@ local function grant(player: Player, data: any, reward: any): string
 		return reward.count .. " Golden production bonuses!"
 	end
 	local amount = math.max(Config.Rewards.MinCash, math.floor(api.cashPerSecond(player) * reward.seconds))
-	api.addCash(player, amount)
+	api.addCash(player, amount, "Gift", "TimedReward")
 	return "+" .. Format.cash(amount)
 end
 

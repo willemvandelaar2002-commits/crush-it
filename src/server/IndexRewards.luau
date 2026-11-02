@@ -24,7 +24,7 @@ function IndexRewards.claim(api: any, player: Player, index: any): (boolean, str
 	for _, r in M.List[i].rewards do
 		if r.kind == "cash" then
 			local amount = math.max(100, math.floor(api.cashPerSecond(player) * r.seconds))
-			api.addCash(player, amount)
+			api.addCash(player, amount, "IndexReward", "Gameplay")
 			table.insert(parts, "+" .. Format.cash(amount))
 		elseif r.kind == "boost" then
 			Boosts.add(player, r.id, r.minutes)

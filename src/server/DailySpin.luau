@@ -48,7 +48,9 @@ function Spin.start(api)
 				-- retry the same prize, never roll another or roll back an ambiguous write.
 				if not Data.saveNow(p) then send(p,open,"Your prize is reserved. Reopen Daily Spin to retry saving it.") return end
 				if not p.Parent then return end
+				local spinCash=d.cash
 				local delivered,result=R.deliver(d)
+				if delivered and d.cash~=spinCash then require(script.Parent.Kit.Analytics).cash(p,"DailySpin","TimedReward",spinCash,d.cash) end
 				if not delivered then send(p,open,result) return end
 				d.stats=d.stats or {} d.stats.spins=(d.stats.spins or 0)+1 -- for quests
 				local saved=Data.saveNow(p)
