@@ -184,6 +184,9 @@ local function play()
 	table.insert(s.connections, Run.RenderStepped:Connect(function()
 		if playing ~= s then return end
 		local t = os.clock() - t0
+		-- Studio only: player attribute IntroFreeze = seconds holds that moment (screenshots)
+		local freeze = me:GetAttribute("IntroFreeze")
+		if Run:IsStudio() and type(freeze) == "number" then t = freeze end
 		if t < 0.35 then cam.CFrame = startCam:Lerp(close0, ease(t / 0.35))
 		elseif t < 1.7 then cam.CFrame = close0:Lerp(close1, ease((t - 0.35) / 1.35))
 		elseif t < 2.7 then cam.CFrame = close1:Lerp(wide, ease((t - 1.7) / 1.0))
@@ -227,3 +230,8 @@ Net.event("CrusherState").OnClientEvent:Connect(function(v: any)
 		if playing and not playing.connections[1] then finish() end
 	end)
 end)
+
+-- Studio only: set the player attribute IntroTest to play it again
+if Run:IsStudio() then
+	me:GetAttributeChangedSignal("IntroTest"):Connect(function() if playing then finish() end pcall(play) end)
+end
