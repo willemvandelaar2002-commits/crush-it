@@ -65,3 +65,7 @@ Known gap: the Special Crushers press keeps its normal colours (meant to be gold
 ## Travel buttons
 
 `client/Travel.client.luau` adds two buttons at the top centre: **Mega Crusher** (hub, arrives at (0, `C.HubTravelZ`) facing the stage) and **My Factory** (your plot spawn). The server handles `Net "Travel"` in CrusherGame ("Hub" | "Plot"), with `C.TravelCooldown` between trips, using `G.safeTeleport` so you never fall through unstreamed floors.
+
+## Leaderboards (2 Nov)
+
+The Top Crushers boards show RICHEST (cash), MOST CRUSHED and PLAYTIME (total time in the game). PLAYTIME replaced COLLECTION. `TopBoards.luau` adds 15 s to `d.playSeconds` every 15 s for everyone in the server. The store is `TopPlaytime_v1` and counts from 2 Nov, so earlier play time is not included.

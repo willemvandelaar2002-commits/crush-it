@@ -22,7 +22,10 @@ local INK = Style.Colors.Ink
 local WHITE = Color3.new(1, 1, 1)
 
 -- What each plot level adds (models in the plot) and its feature to spotlight.
+-- 2 Nov plot split: Factory II is now the upper floor (no feature), so the
+-- Coating Lab comes with Factory III and everything after moved up one level
 local SECTIONS = {
+	{ banks = { "UpperFloor1", "UpperFloor2" } },
 	{ banks = { "TopFloor1", "TopFloor2" }, feature = "CoatingBooth" },
 	{ banks = { "RearGround1", "RearGround2" }, extra = { "RearYard", "FusionWing" }, feature = "Fuser" },
 	{ banks = { "RearUpper1" } },
@@ -164,7 +167,10 @@ local function play(info: any)
 	for _, n in def.banks do local m = banks and banks:FindFirstChild(n) if m then table.insert(roots, m) end end
 	for _, n in def.extra or {} do local m = plot:FindFirstChild(n, true) if m then table.insert(roots, m) end end
 	for i = info.first, info.last do local m = plot:FindFirstChild("WorkingBay" .. i, true) if m then table.insert(roots, m) end end
-	local walls = plot:FindFirstChild("StageWalls" .. (info.level + 1), true) if walls then table.insert(roots, walls) end
+	-- stage walls are numbered by the old structure level (plot level - 1)
+	local structure = Config.Crushers.structureLevel(info.level)
+	local walls = if structure >= 1 then plot:FindFirstChild("StageWalls" .. (structure + 1), true) else nil
+	if walls then table.insert(roots, walls) end
 	local folder = Instance.new("Folder") folder.Name = "UpgradeCutsceneFx" folder.Parent = workspace
 	s.folder = folder
 	local copies = {}

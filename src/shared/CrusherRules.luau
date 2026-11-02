@@ -37,7 +37,7 @@ end
 -- the ids of the copies that get used up. Returns main or nil, problem.
 function R.fusionProblem(d,mainId,inputs)
 	local s=d.crushers
-	if (tonumber(s.plotLevel) or 0)<C.Fusion.PlotLevel then return nil,"Upgrade to Factory III to unlock fusion." end
+	if (tonumber(s.plotLevel) or 0)<C.Fusion.PlotLevel then return nil,"Upgrade to Factory IV to unlock fusion." end
 	local main=R.find(d,mainId) if not main then return nil,"Choose one of your crushers first." end
 	if main.fused then return nil,"This crusher is already fused." end
 	if type(inputs)~="table" or #inputs~=C.Fusion.Copies then return nil,"Pick "..C.Fusion.Copies.." copies of the same crusher." end
@@ -116,6 +116,16 @@ function R.migrate(d, guid)
 		d.crusherSchema=C.Schema
 	end
 	local s=d.crushers
+	-- 2 Nov plot split: the starting factory is now only the ground floor and the
+	-- old base (with its upper floor) is Factory II. A save that already owned
+	-- more than the ground floor, or any plot upgrade, moves up one level: same
+	-- bays, same crushers, same caps or higher; nothing is lost.
+	if s.plotsV~=2 then
+		local lv=tonumber(s.plotLevel) or 0
+		if lv~=lv then lv=0 end
+		if lv>=1 or (tonumber(s.bays) or 1)>C.StartBays then s.plotLevel=math.floor(lv)+1 end
+		s.plotsV=2
+	end
 	local oldLayout=(tonumber(s.layout) or 1)<C.LayoutVersion
 	-- Bay layout v2 (25 Oct): the middle rear row is gone. v1 numbering: 25-30
 	-- rear row, 31-42 third floor, 43-66 rear yard; v2: 25-36 third floor, 37-60
@@ -145,7 +155,9 @@ function R.migrate(d, guid)
 	-- Saves from before the 27 Oct change got the whole new row with the plot
 	-- upgrade; layout-v1 saves keep that. New rows are now bought bay by bay.
 	if oldLayout and s.plotLevel>=1 then s.bays=C.bayCapacity(s.plotLevel) end
-	if s.goal~=nil then s.goal=math.clamp(integer(s.goal,1,#C.Goals2+1),1,#C.Goals2+1) end -- 2 Nov goals (nil = not started)
+	-- 2 Nov goals (nil = not started). Not clamped to this list's length: a save
+	-- from an older, longer goal list is remapped by goal id in CrusherGame.goalTick
+	if s.goal~=nil then s.goal=math.clamp(integer(s.goal,1,100),1,100) end
 	s.available=C.money(number(s.available,0)) s.tutorial=math.clamp(integer(s.tutorial,1,#C.TutorialSteps+1),1,#C.TutorialSteps+1) -- #steps+1 = finished
 	s.rollReadyAt=number(s.rollReadyAt,0,1e12)
 	s.rolls=integer(s.rolls,0,1e9) -- rolls made (the first one is always cheap)
@@ -193,6 +205,7 @@ function R.migrate(d, guid)
 	require(script.Parent.FactoryEventRules).migrate(d) -- event win/reward ID ledger, no inventory changes
 	d.timeSkipAt=number(d.timeSkipAt,0,1e12) -- next free time skip (server time)
 	d.goldenRush=integer(d.goldenRush,0,100000) d.crushed=integer(d.crushed,0,C.MaxMoney)
+	d.playSeconds=integer(d.playSeconds,0,1e10)
 	d.tier=integer(d.tier,1,13) d.rebirths=integer(d.rebirths,0,10000)
 	return d
 end

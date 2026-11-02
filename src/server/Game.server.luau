@@ -53,6 +53,7 @@ local TEMPLATE = {
 	levels = { Power = 0, Speed = 0, Value = 0 },
 	rebirths = 0,
 	crushed = 0,
+	playSeconds = 0, -- total time in the game (PLAYTIME leaderboard, 2 Nov)
 	collection = {}, -- ["<tier>"] = { Normal = n, Golden = n, Diamond = n }
 	purchases = {}, -- last 50 Robux receipt ids (Shop)
 	goldenRush = 0, -- objects left that are forced Golden (Golden Rush product)

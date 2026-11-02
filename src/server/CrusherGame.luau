@@ -110,9 +110,12 @@ local function floorLook(plot,unlocked,cap)
 	for _,f in all do
 		-- floors past the base plot come with the plot upgrade (built at once, their
 		-- bays bought one by one): no ghost or BUILD sign, top floors rise in
-		local mode=if unlocked>=f.first or (f.first>C.BaseMaxBays and f.first<=cap) then "built" elseif unlocked+1==f.first and not f.top then "ghost" else "hidden"
+		-- 2 Nov plot split: everything past the ground floor (StartBays) comes with a
+		-- plot upgrade, so a floor is built when the plot includes it, never a ghost
+		local mode=if unlocked>=f.first or (f.first>C.StartBays and f.first<=cap) then "built" elseif unlocked+1==f.first and not f.top and f.first<=C.StartBays then "ghost" else "hidden"
 		if f.mode~=mode then
-			local rise=(f.mode=="ghost" or (f.top==true and plot.riseTop==true)) and mode=="built"
+			-- (2 Nov: the upper floor also rises when Factory II is bought)
+			local rise=(f.mode=="ghost" or (f.top==true and plot.riseTop==true) or (f.mode=="hidden" and not f.top and not f.rear)) and mode=="built"
 			f.mode=mode
 			partsLook(f.model,mode)
 			if f.prompts then for _,prompt in f.prompts do prompt.Enabled=mode=="built" end end
@@ -194,16 +197,21 @@ local function goalTick(p,d)
 	if (s.tutorial or 1)<=#C.TutorialSteps then return end
 	-- Factory III+ is past the whole chain
 	if (s.plotLevel or 0)>=2 then if C.Goals2[s.goal or 1] then s.goal=#C.Goals2+1 end return end
-	-- v1 goal index -> the same goal in v2 (goals inserted before it are skipped)
+	-- an older goal list (goalsV 1/2) -> the same goal id in this list (a goal
+	-- that no longer exists restarts at 1); this once, goals already done are
+	-- skipped without rewards (the plot split can complete several at once)
+	local silent=false
 	if s.goal~=nil and s.goalsV~=C.Goals2Version then
-		if s.goal>#C.Goals2Legacy then s.goal=#C.Goals2+1
+		local ids=C.Goals2History[s.goalsV or 1] or C.Goals2History[1]
+		silent=true
+		if s.goal>#ids then s.goal=#C.Goals2+1
 		else
-			local id=C.Goals2Legacy[s.goal] s.goal=1
-			for i,g in C.Goals2 do if g.id==id then s.goal=i break end end
+			local id=ids[s.goal] local found=nil
+			for i,g in C.Goals2 do if g.id==id then found=i break end end
+			s.goal=found or 1
 		end
 	end
 	s.goalsV=C.Goals2Version
-	local silent=false
 	if s.goal==nil then s.goal=1 silent=(s.bays or 0)>2 or (s.plotLevel or 0)>0 end -- older saves
 	-- older saves also skip the one-off habit goals (gift, index, row, rolls)
 	-- they would otherwise be stuck on, but stop at the first real progress goal

@@ -89,28 +89,35 @@ for i=3,C.MaxBays do
 end
 -- Caps[n] = upgrade caps from plot level n on: factory/roll upgrades (global)
 -- and each crusher's level. Below plot level 1 the base MaxGlobal/MaxLevel apply.
--- Level 1 = Factory II (+12 third floor, Coating Lab), 2 = Factory III (+12
--- rear yard, fusion), 3 = Factory IV (+6 rear upper left), 4 = Factory V (+6
--- rear upper right). Costs[n] = 10x the price of its first new bay; Cost =
--- Costs[1] (old name). Caps: +10 factory upgrades, +20 crusher levels each.
-C.PlotUpgrade = {MaxLevel=4,
-	-- 31 Oct: Factory III / IV / V cheaper (x0.8 / x0.7 / x0.6), Factory II unchanged
-	-- 1 Nov: Factory II $5M (was $31.9M) to match the cheaper first 24 bays
-	Costs={5000000,math.floor(C.BayCosts[C.RearFirst]*10*.8),
+-- 2 Nov (Willem): the starting factory is only the ground floor (C.StartBays =
+-- 12); the upper floor became Factory II, so there are 6 factories:
+-- Level 1 = Factory II (+12 upper floor), 2 = Factory III (+12 third floor,
+-- Coating Lab), 3 = Factory IV (+12 rear yard, fusion), 4 = Factory V (+6 rear
+-- upper left), 5 = Factory VI (+6 rear upper right). Costs[n] = 10x the price of
+-- its first new bay, with the older discounts kept (Factory III $5M, IV-VI x0.8 /
+-- x0.7 / x0.6). Old saves moved up one level (CrusherRules.migrate, plotsV).
+C.StartBays = C.Layout.Wings*C.Layout.PerWing -- ground floor: 12 bays
+C.PlotUpgrade = {MaxLevel=5,
+	Costs={math.floor(C.BayCosts[C.StartBays+1]*10),5000000,math.floor(C.BayCosts[C.RearFirst]*10*.8),
 		math.floor(C.BayCosts[C.RearFirst+12]*10*.7),math.floor(C.BayCosts[C.RearFirst+18]*10*.6)},
-	Names={"FACTORY II","FACTORY III","FACTORY IV","FACTORY V"},
-	Titles={"REINFORCED WORKSHOP","FUSION WORKSHOP","ADVANCED FACTORY","MASTER FACTORY"},
-	Adds={12,12,6,6},
+	Names={"FACTORY II","FACTORY III","FACTORY IV","FACTORY V","FACTORY VI"},
+	Titles={"UPPER FLOOR","REINFORCED WORKSHOP","FUSION WORKSHOP","ADVANCED FACTORY","MASTER FACTORY"},
+	Adds={12,12,12,6,6},
 	-- what each upgrade adds besides bays (cutscene text) and its accent colour
-	Sections={"3RD FLOOR","REAR YARD","REAR UPPER LEFT","REAR UPPER RIGHT"},
-	Unlocks={"COATING LAB","FUSION MACHINE",nil,"MASTER FACTORY LOOK"},
-	Accents={Color3.fromRGB(255,222,24),Color3.fromRGB(255,140,40),Color3.fromRGB(205,215,228),Color3.fromRGB(255,210,68)},
-	Caps={{global=30,level=60},{global=40,level=80},{global=50,level=100},{global=60,level=120}}}
+	Sections={"UPPER FLOOR","3RD FLOOR","REAR YARD","REAR UPPER LEFT","REAR UPPER RIGHT"},
+	Unlocks={nil,"COATING LAB","FUSION MACHINE",nil,"MASTER FACTORY LOOK"},
+	Accents={Color3.fromRGB(80,190,255),Color3.fromRGB(255,222,24),Color3.fromRGB(255,140,40),Color3.fromRGB(205,215,228),Color3.fromRGB(255,210,68)},
+	Caps={{global=25,level=50},{global=30,level=60},{global=40,level=80},{global=50,level=100},{global=60,level=120}}}
+-- plot levels where things unlock (2 Nov: each one level later than before)
+C.CoatingPlotLevel = 2
+-- the old structure levels (third floor = 1, rear yard = 2, ...) for the plot
+-- decor / stages built before the split: structural = plot level - 1
+function C.structureLevel(plotLevel) return math.max(0,(plotLevel or 0)-1) end
 C.PlotUpgrade.Cost=C.PlotUpgrade.Costs[1]
 function C.plotCost(level) return C.PlotUpgrade.Costs[level] end
 function C.bayCapacity(level)
 	if type(level)~="number" or level~=level or level==math.huge then level=0 end
-	local n=C.BaseMaxBays
+	local n=C.StartBays
 	for i=1,math.min(math.floor(level),C.PlotUpgrade.MaxLevel) do n+=C.PlotUpgrade.Adds[i] end
 	return n
 end
@@ -312,10 +319,10 @@ C.Coatings = {
 	{name="Charged",factor=16,color=Color3.fromRGB(185,95,255)},
 }
 C.CoatingQuoteSeconds=20
--- Fusion (unlocks with Factory III, plot level 2): a main crusher plus three
+-- Fusion (unlocks with Factory IV, plot level 3 since 2 Nov): a main crusher plus three
 -- unequipped copies of the same type become one fused crusher. The main keeps
 -- its id, level and coating; the three copies are used up. One tier for now.
-C.Fusion = { PlotLevel=2, Copies=3, Mult=2, MachineScale=1.4, Seconds=600 } -- MachineScale: size of the fuser on the plot (28 Oct: bigger)
+C.Fusion = { PlotLevel=3, Copies=3, Mult=2, MachineScale=1.4, Seconds=600 } -- MachineScale: size of the fuser on the plot (28 Oct: bigger)
 C.CoatingBoothScale = 1.35 -- size of the Coating Lab booth on the plot (28 Oct: bigger)
 C.Upgrades = {
 	Damage = { name = "Damage", group = "Production", base = 20, growth = 1.65 },
@@ -352,10 +359,11 @@ C.StarterScrap = 24 -- 1 Nov: scrap waiting in a new player's bin (three toys' w
 --   reward: { cash = seconds of earnings, min = at least } | { boost = id, minutes }
 --           | { crusher = rarity }
 --   target: what the arrow points at (client/Tutorial)
--- 2 Nov (v2, Willem): more small steps, and factory upgrades + crusher levels
--- between the bay goals (they raise income the most, so the bigger bays stay
--- reachable). "upgrades n" = total factory upgrade levels (Damage + Speed + Yield).
-C.Goals2Version = 2
+-- 2 Nov (v3, Willem): small steps with factory upgrades and crusher levels
+-- between the bay goals (they raise income the most). Since the plot split the
+-- starting factory has 12 bays, so the chain ends with "Fill 12 bays" and
+-- "Buy FACTORY II". "upgrades n" = total factory upgrade levels (Damage + Speed + Yield).
+C.Goals2Version = 3
 C.Goals2 = {
 	{ id="Bay3", check="bays", n=3, title="Unlock bay 3", text="Bays are cheap now: unlock the next one!", target="NextBay", reward={cash=30,min=60} },
 	{ id="Fill3", check="fill", n=3, title="Fill bay 3", text="Roll and buy a crusher, then place it in the empty bay.", target="EmptyBay", reward={cash=30,min=60} },
@@ -370,33 +378,27 @@ C.Goals2 = {
 	{ id="Bay9", check="bays", n=9, title="Unlock 9 bays", text="Keep growing your factory!", target="NextBay", reward={cash=90,min=600} },
 	{ id="Index", check="index", title="Claim an Index reward", text="Open INDEX and claim the reward at the bottom.", target="BookButton", reward={cash=90,min=800} },
 	{ id="Level10", check="level", n=10, title="Level a crusher to Lv 10", text="Level up your best crusher.", target="LevelBay", reward={cash=90,min=1000} },
-	{ id="Fill12", check="fill", n=12, title="Fill 12 bays", text="Halfway to your next factory!", target="NextBayOrEmpty", reward={crusher="Epic"} },
-	{ id="Upgrades15", check="upgrades", n=15, title="Upgrade your factory", text="Upgrades first: the next bays cost more.", target="Production", reward={cash=120,min=2000} },
-	{ id="Row", check="row", title="Complete a rarity row", text="Fill a whole row with crushers of ONE rarity for bonus scrap.", target="EmptyBay", reward={boost="Cash",minutes=10} },
-	{ id="Bay15", check="bays", n=15, title="Unlock 15 bays", text="Keep growing your factory!", target="NextBay", reward={cash=120,min=3000} },
-	{ id="Level15", check="level", n=15, title="Level a crusher to Lv 15", text="Your best crushers earn the most: level them up.", target="LevelBay", reward={cash=120,min=4000} },
-	{ id="Upgrades24", check="upgrades", n=24, title="Upgrade your factory", text="More cash per crush makes the big bays easy.", target="Production", reward={cash=150,min=6000} },
-	{ id="Bay18", check="bays", n=18, title="Unlock 18 bays", text="Almost a full factory!", target="NextBay", reward={cash=150,min=8000} },
-	{ id="Fill18", check="fill", n=18, title="Fill 18 bays", text="Put a crusher in every bay.", target="NextBayOrEmpty", reward={boost="Luck",minutes=15} },
-	{ id="Upgrades33", check="upgrades", n=33, title="Upgrade your factory", text="Upgrade first: the last bays are expensive.", target="Production", reward={cash=180,min=15000} },
-	{ id="Level20", check="level", n=20, title="Level a crusher to Lv 20", text="Level up your best crusher.", target="LevelBay", reward={cash=180,min=20000} },
-	{ id="Bay21", check="bays", n=21, title="Unlock 21 bays", text="Three more to go!", target="NextBay", reward={cash=180,min=30000} },
-	{ id="Fill24", check="fill", n=24, title="Fill all 24 bays", text="Every bay full unlocks the FACTORY II upgrade.", target="NextBayOrEmpty", reward={boost="Cash",minutes=15} },
+	{ id="Upgrades12", check="upgrades", n=12, title="Upgrade your factory", text="Upgrades first: the last bays cost more.", target="Production", reward={cash=120,min=1500} },
+	{ id="Fill12", check="fill", n=12, title="Fill all 12 bays", text="Every bay full unlocks the FACTORY II upgrade. Prize: a FREE EPIC crusher!", target="NextBayOrEmpty", reward={crusher="Epic"} },
+	{ id="Level15", check="level", n=15, title="Level a crusher to Lv 15", text="Your best crushers earn the most: level them up.", target="LevelBay", reward={cash=120,min=3000} },
 	{ id="Factory2", check="plot", n=1, title="Buy FACTORY II", text="Save up and press UPGRADE on the green board. Big prize!", target="PlotUpgrade", reward={crusher="Legendary"} },
 }
--- v1 order (2 Nov morning): saves with a goal index from v1 are moved to the same goal id in v2
-C.Goals2Legacy = { "Bay3","Fill3","Bay5","Fill5","Gift","Fill6","Level5","Upgrades3","Rolls10","Bay9","Index","Row","Fill12","Bay18","Fill24","Factory2" }
+-- earlier orders (goalsV 1 and 2): a save's goal index is moved to the same goal id
+C.Goals2History = {
+	{ "Bay3","Fill3","Bay5","Fill5","Gift","Fill6","Level5","Upgrades3","Rolls10","Bay9","Index","Row","Fill12","Bay18","Fill24","Factory2" },
+	{ "Bay3","Fill3","Upgrades3","Bay5","Fill5","Gift","Fill6","Level5","Rolls10","Upgrades8","Bay9","Index","Level10","Fill12","Upgrades15","Row","Bay15","Level15","Upgrades24","Bay18","Fill18","Upgrades33","Level20","Bay21","Fill24","Factory2" },
+}
 -- Onboarding funnel step names as they appear in the Creator Dashboard
 -- (Analytics > Funnels). 1 = join, 2-9 = the tutorial steps above in order,
 -- 10-13 = bays unlocked after the tutorial (1 Nov), 14-17 = each plot upgrade.
 -- Numbered so they sort in order.
--- 2 Nov: steps 10-25 are the goals (C.Goals2; 25 = Factory II), then Factory III-V
+-- 2 Nov: steps 10.. are the goals (C.Goals2; the last = Factory II), then Factory III-VI
 C.FunnelNames = {
 	"01 Joined the game", "02 Collected scrap", "03 Sold scrap", "04 Rolled a crusher", "05 Bought a crusher",
 	"06 Unlocked a 2nd bay", "07 Placed a crusher", "08 Bought a factory upgrade", "09 Leveled up a crusher (tutorial done)",
 }
 for i,g in C.Goals2 do table.insert(C.FunnelNames,string.format("%02d Goal: %s",9+i,g.title)) end
-for _,name in {"Factory III","Factory IV","Factory V"} do table.insert(C.FunnelNames,string.format("%02d Bought %s",#C.FunnelNames+1,name)) end
+for _,name in {"Factory III","Factory IV","Factory V","Factory VI"} do table.insert(C.FunnelNames,string.format("%02d Bought %s",#C.FunnelNames+1,name)) end
 C.FunnelBays = {} -- 2 Nov: replaced by the goals
 -- Goals board on the plot (reference style): like/favorite, join the group, and
 -- a free time skip (SkipMinutes of your current production as cash) that needs
