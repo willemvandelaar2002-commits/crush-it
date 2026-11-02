@@ -457,6 +457,20 @@ local function goalTarget(g: any): (Instance?, string?, string?, GuiObject?)
 		return find(plot, "PlotUpgradeStation"), "UPGRADE!"
 	elseif t == "RewardsButton" or t == "BookButton" then
 		return nil, nil, nil, hudButton(t)
+	elseif t == "Merge" then
+		-- a crusher with two spare copies (same type and stars)? then the Index, else roll more
+		local inBay = {} for _, id in state.bays do inBay[id] = true end
+		local count: { [string]: number } = {}
+		local ready = false
+		for _, item in state.items do
+			if not item.fused then
+				local key = item.type .. ":" .. tostring(item.stars or 0)
+				count[key] = (count[key] or 0) + 1
+				if count[key] >= C.Merge.Copies + 1 then ready = true end
+			end
+		end
+		if ready then return nil, nil, "Open INDEX > OWNED and press MERGE.", hudButton("BookButton") end
+		return find(plot, "RollStation"), "ROLL", "Roll and buy until you have 3 of the same crusher."
 	elseif t == "SmashButton" then
 		return nil, nil, nil, hudButton("Smash")
 	elseif t == "TurboStation" then

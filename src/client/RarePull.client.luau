@@ -24,7 +24,7 @@ local function show(msg: any)
 	bar.BackgroundColor3 = Color3.fromRGB(24, 28, 46) bar.BackgroundTransparency = 0.15 bar.TextScaled = true bar.RichText = true
 	local color = if typeof(msg.color) == "Color3" then msg.color else Color3.fromRGB(255, 200, 55)
 	local mine = msg.userId == me.UserId
-	bar.Text = string.format('%s rolled a <font color="#%s">%s %s</font>!', if mine then "You" else tostring(msg.player),
+	bar.Text = if type(msg.text) == "string" then msg.text else string.format('%s rolled a <font color="#%s">%s %s</font>!', if mine then "You" else tostring(msg.player),
 		color:ToHex(), string.upper(tostring(msg.rarity)), tostring(msg.name))
 	Style.text(bar, 2.5)
 	local c = Instance.new("UICorner") c.CornerRadius = UDim.new(0, 12) c.Parent = bar

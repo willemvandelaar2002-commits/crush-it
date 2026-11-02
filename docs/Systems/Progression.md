@@ -73,3 +73,11 @@ to your own press whenever you're more than 40 studs from it. Hidden otherwise.
 - **Rare-roll banner**: anyone rolling a Legendary or better is announced to the whole server (client/RarePull).
 - **Prices and caps**: bays x1.36 each all the way (no blend back to x1.45); factories 10x their first new bay: $39K / $2.2M / $87M / $3.5B / $22B. Caps start 20/40, then 30/60, 40/80, 55/110, 70/140, 90/180 (factory upgrade / crusher level); Luck keeps 20-60.
 - Goals v4 (20): Frenzy after Bay3, Golden after Fill5, Turbo after Fill6.
+- Goals v5 (21): MERGE a crusher before the second "Upgrade your factory".
+
+## 2 Nov evening (2): merge, Coating Lab earlier, rebirth
+- **MERGE** (`C.Merge`, CrusherRules "Merge", Index card button MERGE ★): a crusher plus 2 spare copies of the same type and stars (not in a bay, not fused; lowest levels used first) becomes one crusher with +1 star. Each star x1.5 value, max 3 stars (x3.4). Stars show on the bay plaque and in the Index; saved as `item.stars`. From Sell Ores' merge/upgrade loop: duplicates are worth collecting.
+- **Coating Lab** now opens with Factory II (`C.CoatingPlotLevel = 1`) instead of Factory III, so coatings are there early.
+- **REBIRTH** (`C.Rebirth`, CrusherRules "Rebirth", client/Rebirth, HUD button slot 3 shown from Factory III): needs Factory IV and $150M x8^rebirths cash. Resets cash (to $1K), scrap, bays (back to 1, bay 1 keeps its crusher), factory level, Damage/Speed/Yield and crusher levels. Keeps every crusher (stars, coatings, fused), the Index, Luck, pedestals, passes. Each rebirth +50% income forever (x1.5, x2, x2.5...; in perks.mult). Server-wide banner. Saved as `d.crushers.rebirths` (the old `d.rebirths` belongs to the retired press game). The panel asks twice.
+- Roll-speed upgrade: not added; RollSpeed was retired for pedestals earlier and pedestals already speed up rolling.
+- Lucky Block helpers: waiting for models.

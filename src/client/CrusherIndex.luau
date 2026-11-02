@@ -235,7 +235,7 @@ function I.new(gui, act)
 		local known=self.seenSet[def.id]==true -- ever owned (server keeps the list, recycling doesn't forget)
 		for _,owned in state.items do if owned.type==def.id then known=true break end end
 		if state.fusion and state.fusion.item and state.fusion.item.type==def.id then known=true end -- inside the Fusion Machine
-		local name=label(frame,"Name",if known then def.name else "???",UDim2.fromOffset(2,0),UDim2.new(1,-4,0,32),26)
+		local name=label(frame,"Name",if known then ((if item and (item.stars or 0)>0 then string.rep("★",item.stars).." " else "")..def.name) else "???",UDim2.fromOffset(2,0),UDim2.new(1,-4,0,32),26)
 		name.TextScaled=true name.ZIndex=4
 		local fallback=Style.image(box,Icons.Press,{Name="PreviewFallback",Position=UDim2.new(.5,0,0,78),Size=UDim2.fromOffset(94,94),ZIndex=2})
 		fallback.ImageColor3=if known then white else Color3.new(0,0,0)
@@ -257,7 +257,18 @@ function I.new(gui, act)
 					if equipped then act("Unequip",{id=item.id}) else act("Equip",{id=item.id,bay=selectedBay}) end
 				end).TextSize=17
 			local copies=0 for _,other in state.items do if other.type==item.type then copies+=1 end end
-			if not equipped and copies>1 then
+			-- 2 Nov evening: MERGE when two spare copies with the same stars exist
+			local inBay={} for _,id in state.bays do inBay[id]=true end
+			local spare=0
+			for _,other in state.items do
+				if other.id~=item.id and other.type==item.type and (other.stars or 0)==(item.stars or 0) and not other.fused and not inBay[other.id] then spare+=1 end
+			end
+			if spare>=C.Merge.Copies and (item.stars or 0)<C.Merge.MaxStars and not item.fused then
+				local merge=button(frame,"Merge","MERGE "..string.rep("★",(item.stars or 0)+1),UDim2.new(0,7,1,-42),UDim2.new(1,-14,0,33),Color3.fromRGB(255,185,30),function()
+					act("Merge",{id=item.id})
+				end)
+				merge.TextSize=17
+			elseif not equipped and copies>1 then
 				local recycle
 				recycle=button(frame,"Recycle","RECYCLE DUPLICATE",UDim2.new(0,7,1,-42),UDim2.new(1,-14,0,33),Style.Colors.Red,function()
 					if recyclePending==item.id then recyclePending=nil act("Recycle",{id=item.id})

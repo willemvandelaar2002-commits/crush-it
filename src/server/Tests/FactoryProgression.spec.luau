@@ -122,9 +122,7 @@ return function()
 	d=full() local item={id=id(),type="Titan",rarity="Epic",modifier="Standard",level=7}
 	table.insert(d.crushers.owned,item)
 	check(not P.quote(d,item.id,"Polished",0,"q"),"lab is locked until plot upgrade")
-	d.cash=1e12 check(P.expand(d),"coating fixture: Factory II")
-	check(not P.quote(d,item.id,"Polished",0,"q"),"lab still locked at Factory II")
-	d.crushers.bays=24 fill(d,13,24) check(P.expand(d),"coating fixture: Factory III unlocks the lab")
+	d.cash=1e12 check(P.expand(d),"coating fixture: Factory II unlocks the lab")
 	for _,recipe in C.Coatings do
 		item.modifier="Standard" local before=d.cash local serial=item.id
 		local quote=P.quote(d,item.id,recipe.name,100,"quote-"..recipe.name)
