@@ -512,6 +512,16 @@ local function rollShow(p,offers)
 	local seconds=math.max(1.2,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
 	local rollId=guid() local rollData=Data.get(p) local rollPerks=perks(p)
 	local rollLuck=rollData.crushers.upgrades.Luck local first=rollData.crushers.rolls==1
+	-- 2 Nov: a Legendary or better roll is announced to the whole server once revealed
+	local best=nil
+	for _,item in offers do local r=item and C.rarity(item.rarity) if r and r.rank>=4 and (not best or r.rank>best.rank) then best=r best.item=nil best=table.clone(r) best.item=item end end
+	if best then
+		local def=C.typeById(best.item.type)
+		task.delay(seconds+0.4,function()
+			if ctx.rollToken~=token then return end
+			Net.event("RarePull"):FireAllClients({player=p.DisplayName,rarity=best.name,name=def and def.name or best.item.type,color=best.color,userId=p.UserId})
+		end)
+	end
 	for i in st.pedestals do clearOffer(plot,i) end
 	plot.offerModels={}
 	-- silhouettes are built lazily per pedestal and type, then reused
