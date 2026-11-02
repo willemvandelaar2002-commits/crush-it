@@ -51,17 +51,17 @@ end
 local gui = make("ScreenGui", { Name = "TutorialHud", ResetOnSpawn = false, DisplayOrder = 4, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
 -- a CanvasGroup so the whole headline fades in and out as one
 local headline = make("CanvasGroup", { Name = "Headline", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 64),
-	Size = UDim2.fromOffset(HEAD_W, 130), BackgroundTransparency = 1, GroupTransparency = 1, Visible = false }, gui)
+	Size = UDim2.fromOffset(HEAD_W, 150), BackgroundTransparency = 1, GroupTransparency = 1, Visible = false }, gui)
 Style.phoneFit(headline, { scale = 0.62, width = 0.62 })
 local popScale = make("UIScale", { Scale = 1 }, headline)
-local tag = label(headline, "TUTORIAL", UDim2.fromOffset(0, 4), UDim2.new(1, 0, 0, 24), 2.5)
+local tag = label(headline, "TUTORIAL", UDim2.fromOffset(0, 4), UDim2.new(1, 0, 0, 26), 2.5)
 tag.TextColor3 = CYAN
 make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(200, 250, 255), CYAN) }, tag)
-local title = label(headline, "", UDim2.fromOffset(0, 28), UDim2.new(1, 0, 0, 46), 3)
+local title = label(headline, "", UDim2.fromOffset(0, 30), UDim2.new(1, 0, 0, 52), 3)
 Style.bold(title, 3)
-local sub = label(headline, "", UDim2.fromOffset(0, 76), UDim2.new(1, 0, 0, 26), 2.5)
+local sub = label(headline, "", UDim2.fromOffset(0, 84), UDim2.new(1, 0, 0, 32), 3)
 sub.RichText = true
-local hint = label(headline, "", UDim2.fromOffset(0, 104), UDim2.new(1, 0, 0, 22), 2)
+local hint = label(headline, "", UDim2.fromOffset(0, 118), UDim2.new(1, 0, 0, 24), 2.5)
 hint.TextColor3 = Color3.fromRGB(220, 232, 255)
 
 -- the headline sits under the top button row (Equip Best / Mega Crusher / My Factory)
@@ -370,7 +370,7 @@ local function goalTarget(g: any): (Instance?, string?, string?, GuiObject?)
 		local cost = C.BayCosts[state.unlocked + 1]
 		if not cost or state.unlocked >= C.bayCapacity(state.plotLevel or 0) then return emptyBay(), "PLACE" end
 		if cash < cost then return earn(cost) end
-		return bayModel(plot, state.unlocked + 1), "UNLOCK", "Unlock bay " .. (state.unlocked + 1) .. " for " .. Format.cash(cost) .. "!"
+		return bayModel(plot, state.unlocked + 1), "UNLOCK " .. Format.cash(cost)
 	elseif t == "EmptyBay" then
 		local e = emptyBay()
 		if e then return e, "PLACE", if holding() then "Press E at the empty bay to place it." else nil end
