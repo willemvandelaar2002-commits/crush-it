@@ -83,7 +83,7 @@ local function ghosts(plot: Model, folder: Folder): { BasePart }
 				if type(base) == "number" and base < 1 then
 					local copy = Instance.new("Part")
 					copy.Anchored = true copy.CanCollide = false copy.CanQuery = false copy.CanTouch = false copy.CastShadow = false
-					copy.Material = Enum.Material.Neon copy.Color = GOLD copy.Size = p.Size copy.CFrame = p.CFrame
+					copy.Material = Enum.Material.ForceField copy.Color = GOLD copy.Size = p.Size copy.CFrame = p.CFrame
 					copy.Transparency = 1 copy.Parent = folder
 					table.insert(list, copy)
 				end
@@ -100,7 +100,7 @@ local function text(gui: ScreenGui, y: number): (TextLabel, CanvasGroup, UIScale
 	group.BackgroundTransparency = 1 group.GroupTransparency = 1 group.ZIndex = 4 group.Parent = gui
 	local l = Instance.new("TextLabel")
 	l.Size = UDim2.fromScale(1, 0.85) l.BackgroundTransparency = 1 l.TextScaled = true l.Text = "" l.ZIndex = 4
-	l.Parent = group
+	l.Font = Enum.Font.FredokaOne l.Parent = group
 	Style.bold(l, 5)
 	local sc = Instance.new("UIScale") sc.Scale = 0.5 sc.Parent = group
 	return l, group, sc
@@ -159,13 +159,13 @@ local function play()
 	local focus = bayCf.Position + Vector3.new(0, 2.5, 0)
 	local toPlayer = (root.Position - focus) * Vector3.new(1, 0, 1)
 	local dir = if toPlayer.Magnitude > 1 then toPlayer.Unit else -origin.LookVector
-	local close0 = CFrame.lookAt(focus + dir * 15 + Vector3.new(0, 7, 0), focus)
-	local close1 = CFrame.lookAt(focus + dir * 10 + Vector3.new(0, 4.5, 0), focus)
+	local close0 = CFrame.lookAt(focus + dir * 13 + Vector3.new(0, 3.5, 0), focus)
+	local close1 = CFrame.lookAt(focus + dir * 8.5 + Vector3.new(0, 2, 0), focus)
 	local plotCf, plotSize = plot:GetBoundingBox()
 	local centre = plotCf.Position
 	local span = math.max(plotSize.X, plotSize.Z)
-	local wideAt = centre + dir * span * 0.72 + Vector3.new(0, span * 0.42, 0)
-	local wide = CFrame.lookAt(wideAt, centre + Vector3.new(0, 10, 0))
+	local wideAt = centre + dir * span * 0.55 + Vector3.new(0, span * 0.22, 0)
+	local wide = CFrame.lookAt(wideAt, centre + Vector3.new(0, 16, 0))
 	local home = CFrame.lookAt(root.Position + Vector3.new(0, 12, 0) + dir * 20, root.Position + Vector3.new(0, 2, 0))
 	local startCam = cam.CFrame
 	cam.CameraType = Enum.CameraType.Scriptable
@@ -193,9 +193,9 @@ local function play()
 		elseif t < 3.7 then cam.CFrame = wide * CFrame.Angles(0, math.rad(4) * math.sin((t - 2.7) * 1.5), 0)
 		else cam.CFrame = cam.CFrame:Lerp(home, ease((t - 3.7) / 0.9)) end
 		-- the vision: ghost floors glow in while the camera rises, fade on the way back
-		if t >= 1.9 and t < 2.6 then setGhosts(1 - 0.45 * ease((t - 1.9) / 0.7))
-		elseif t >= 2.6 and t < 3.6 then setGhosts(0.55 + 0.08 * math.sin((t - 2.6) * 8))
-		elseif t >= 3.6 then setGhosts(0.55 + 0.45 * ease((t - 3.6) / 0.5)) end
+		if t >= 1.9 and t < 2.6 then setGhosts(1 - ease((t - 1.9) / 0.7))
+		elseif t >= 2.6 and t < 3.6 then setGhosts(0)
+		elseif t >= 3.6 then setGhosts(ease((t - 3.6) / 0.5)) end
 		if said == 0 and t >= 0.3 then said = 1 say("CRUSH TOYS FOR CASH", Color3.fromRGB(140, 255, 110)) end
 		if said == 1 and t >= 1.9 then
 			said = 2 say("BUILD THE BIGGEST FACTORY!", GOLD)
