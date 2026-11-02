@@ -3,7 +3,10 @@
 -- toward a target, plus a bobbing arrow over the target (the forge-game
 -- "follow the arrows" path). Reusable: the game decides where to point.
 --
---   local path = GuidePath.new({ color?, spacing?, speed?, stopDistance?, label? })
+--   local path = GuidePath.new({ color?, spacing?, speed?, stopDistance?, scale?, core?, startAt? })
+--     scale: chevron size (1 = the original thin trail; 2 Nov tutorial uses ~1.7)
+--     core: a brighter inner chevron colour (glowing look); nil = none
+--     startAt: studs in front of you where the trail starts (default 3)
 --   path:update(fromPosition, targetPosition?, label?)  -- call every frame; nil target hides it
 --   path:destroy()
 --
@@ -16,11 +19,11 @@ local Players = game:GetService("Players")
 local GuidePath = {}
 GuidePath.__index = GuidePath
 
-export type Options = { color: Color3?, spacing: number?, speed: number?, stopDistance: number?, maxLength: number? }
+export type Options = { color: Color3?, spacing: number?, speed: number?, stopDistance: number?, maxLength: number?, scale: number?, core: Color3?, startAt: number? }
 
 local MAX = 40 -- chevrons at most (maxLength / spacing)
 
-local function arm(parent: Instance, color: Color3): Part
+local function arm(parent: Instance, color: Color3, scale: number): Part
 	local p = Instance.new("Part")
 	p.Anchored = true
 	p.CanCollide = false
@@ -30,7 +33,7 @@ local function arm(parent: Instance, color: Color3): Part
 	p.Material = Enum.Material.Neon
 	p.Color = color
 	p.Transparency = 0.2
-	p.Size = Vector3.new(0.45, 0.08, 2.1)
+	p.Size = Vector3.new(0.45 * scale, 0.08, 2.1 * scale)
 	p.Parent = parent
 	return p
 end
@@ -43,6 +46,8 @@ function GuidePath.new(opts: Options?)
 	self.speed = o.speed or 6 -- studs per second the chevrons move
 	self.stopDistance = o.stopDistance or 8
 	self.maxLength = o.maxLength or 160
+	self.scale = o.scale or 1
+	self.startAt = o.startAt or 3
 	self.folder = Instance.new("Folder")
 	self.folder.Name = "GuidePath"
 	self.folder.Parent = Workspace
@@ -50,9 +55,14 @@ function GuidePath.new(opts: Options?)
 	for i = 1, MAX do
 		local m = Instance.new("Model")
 		m.Name = "Chevron" .. i
-		local left, right = arm(m, self.color), arm(m, self.color)
+		local left, right = arm(m, self.color, self.scale), arm(m, self.color, self.scale)
+		local c: any = { model = m, left = left, right = right }
+		if o.core then
+			-- thinner, brighter arms on top: the glowing centre line
+			c.coreLeft, c.coreRight = arm(m, o.core, self.scale * 0.45), arm(m, o.core, self.scale * 0.45)
+		end
 		m.Parent = self.folder
-		self.chevrons[i] = { model = m, left = left, right = right }
+		self.chevrons[i] = c
 	end
 	-- arrow over the target
 	local anchor = Instance.new("Part")
@@ -103,6 +113,7 @@ function GuidePath:_hide()
 	for _, c in self.chevrons do
 		c.left.Transparency = 1
 		c.right.Transparency = 1
+		if c.coreLeft then c.coreLeft.Transparency = 1 c.coreRight.Transparency = 1 end
 	end
 	self.billboard.Enabled = false
 end
@@ -136,22 +147,30 @@ function GuidePath:update(from: Vector3, target: Vector3?, label: string?)
 	local shift = (os.clock() * self.speed) % self.spacing
 	local yaw = math.atan2(-dir.X, -dir.Z) -- CFrame looking along dir
 	for i, c in self.chevrons do
-		local d = 3 + (i - 1) * self.spacing + shift
+		local d = self.startAt + (i - 1) * self.spacing + shift
 		if d > length then
 			c.left.Transparency = 1
 			c.right.Transparency = 1
+			if c.coreLeft then c.coreLeft.Transparency = 1 c.coreRight.Transparency = 1 end
 			continue
 		end
 		local x, z = from.X + dir.X * d, from.Z + dir.Z * d
 		local y = self:_ground(x, z, from.Y) + 0.06
 		local base = CFrame.new(x, y, z) * CFrame.Angles(0, yaw, 0)
 		-- ">" shape pointing forward (-Z of base): two arms meeting at the tip
-		c.left.CFrame = base * CFrame.new(-0.62, 0, 0.2) * CFrame.Angles(0, math.rad(-40), 0)
-		c.right.CFrame = base * CFrame.new(0.62, 0, 0.2) * CFrame.Angles(0, math.rad(40), 0)
+		local k = self.scale
+		c.left.CFrame = base * CFrame.new(-0.62 * k, 0, 0.2 * k) * CFrame.Angles(0, math.rad(-40), 0)
+		c.right.CFrame = base * CFrame.new(0.62 * k, 0, 0.2 * k) * CFrame.Angles(0, math.rad(40), 0)
 		-- fade in at the start and out near the end
-		local fade = math.clamp(math.min(d - 3, length - d) / 4, 0, 1)
+		local fade = math.clamp(math.min(d - self.startAt, length - d) / 4, 0, 1)
 		c.left.Transparency = 1 - 0.8 * fade
 		c.right.Transparency = c.left.Transparency
+		if c.coreLeft then
+			c.coreLeft.CFrame = c.left.CFrame + Vector3.new(0, 0.03, 0)
+			c.coreRight.CFrame = c.right.CFrame + Vector3.new(0, 0.03, 0)
+			c.coreLeft.Transparency = 1 - 0.95 * fade
+			c.coreRight.Transparency = c.coreLeft.Transparency
+		end
 	end
 	self.anchor.CFrame = CFrame.new(target + Vector3.new(0, 3 + math.sin(os.clock() * 4) * 0.6, 0))
 	self.labelText.Text = label or ""

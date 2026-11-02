@@ -158,19 +158,21 @@ end
 -- 2 Nov: goals after the tutorial (C.Goals2). Checked from the save on every
 -- state send; each pays its reward once. Saves that had finished the tutorial
 -- before goals existed skip the goals they already passed WITHOUT rewards.
-local function goalDone(d,g)
+-- progress on a goal: (have, need); the client shows it as "3 / 5"
+local function goalCount(d,g)
 	local s=d.crushers
-	if g.check=="bays" then return s.bays>=g.n end
-	if g.check=="fill" then local n=0 for _ in s.equipped do n+=1 end return n>=g.n end
-	if g.check=="level" then for _,v in s.owned do if v.level>=g.n then return true end end return false end
-	if g.check=="upgrades" then return s.upgrades.Damage+s.upgrades.Speed+s.upgrades.Yield>=g.n end
-	if g.check=="rolls" then return (s.rolls or 0)>=g.n end
-	if g.check=="gift" then return ((d.stats and d.stats.gifts) or 0)>=1 end
-	if g.check=="index" then return #(s.indexClaimed or {})>=1 end
-	if g.check=="row" then for _,row in Rows.snapshot(d).rows do if row.active then return true end end return false end
-	if g.check=="plot" then return (s.plotLevel or 0)>=g.n end
-	return false
+	if g.check=="bays" then return s.bays,g.n end
+	if g.check=="fill" then local n=0 for _ in s.equipped do n+=1 end return n,g.n end
+	if g.check=="level" then local best=0 for _,v in s.owned do best=math.max(best,v.level) end return math.min(best,g.n),g.n end
+	if g.check=="upgrades" then return s.upgrades.Damage+s.upgrades.Speed+s.upgrades.Yield,g.n end
+	if g.check=="rolls" then return s.rolls or 0,g.n end
+	if g.check=="gift" then return math.min(1,(d.stats and d.stats.gifts) or 0),1 end
+	if g.check=="index" then return math.min(1,#(s.indexClaimed or {})),1 end
+	if g.check=="row" then for _,row in Rows.snapshot(d).rows do if row.active then return 1,1 end end return 0,1 end
+	if g.check=="plot" then return s.plotLevel or 0,g.n end
+	return 0,1
 end
+local function goalDone(d,g) local have,need=goalCount(d,g) return have>=need end
 local function goalReward(p,d,g)
 	local r=g.reward
 	if r.cash then d.cash=C.money(d.cash+math.max(r.min or 0,math.floor(cps(p,d)*r.cash)))
@@ -229,13 +231,15 @@ local function send(p,message,result)
 	p:SetAttribute("Cash",d.cash) p:SetAttribute("Scrap",d.scrap) p:SetAttribute("AvailableScrap",s.available)
 	p:SetAttribute("Plot",ctx.plot.index) p:SetAttribute("Crushed",d.crushed) p:SetAttribute("Tier",d.tier)
 	p:SetAttribute("CashRate",cps(p,d)) p:SetAttribute("AutoOn",true) p:SetAttribute("GoldenRush",d.goldenRush) p:SetAttribute("Rebirths",d.rebirths)
+	local goalHave,goalNeed=nil,nil
+	if s.goal and C.Goals2[s.goal] then goalHave,goalNeed=goalCount(d,C.Goals2[s.goal]) end
 	local items={}
 	for _,item in s.owned do
 		local v=Rules.copy(item) v.stats=Rules.stats(d,item,perks(p),rowState) v.cost=C.individualCost(item) table.insert(items,v)
 	end
 	Net.event("CrusherState"):FireClient(p,{cash=d.cash,carried=d.scrap,available=s.available,items=items,
 		bays=s.equipped,unlocked=s.bays,upgrades=s.upgrades,plotLevel=s.plotLevel,
-		goal=s.goal,fusion=if s.fusion then {item=Rules.copy(s.fusion.item),readyAt=s.fusion.readyAt,now=os.time()} else nil,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
+		goal=s.goal,goalHave=goalHave,goalNeed=goalNeed,fusion=if s.fusion then {item=Rules.copy(s.fusion.item),readyAt=s.fusion.readyAt,now=os.time()} else nil,tutorial=s.tutorial,rate=cps(p,d),rows=rowState.rows,
 		rollSeconds=C.rollSeconds(),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered,coating=ctx.coatingQuote,
 		goals=Goals.view(ctx,d,workspace:GetServerTimeNow()),
