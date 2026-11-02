@@ -30,14 +30,18 @@ panel:SetAttribute("FitWidth", W + 40)
 panel:SetAttribute("FitHeight", H + 40)
 
 local title = make("TextLabel", { Name = "Title", Position = UDim2.fromOffset(20, 14), Size = UDim2.new(1, -40, 0, 56), BackgroundTransparency = 1,
-	TextScaled = true, Text = "What's New", ZIndex = 7 }, panel)
+	TextScaled = true, Text = "What's New", Font = Style.Font, ZIndex = 7 }, panel)
 Style.bold(title, 3)
 title.TextColor3 = Color3.fromRGB(255, 220, 90)
 local list = make("Frame", { Name = "Lines", Position = UDim2.fromOffset(28, 80), Size = UDim2.new(1, -56, 1, -160), BackgroundTransparency = 1, ZIndex = 6 }, panel)
 make("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, list)
 local ok = make("TextButton", { Name = "Ok", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -16), Size = UDim2.fromOffset(220, 58),
-	Text = "LET'S GO!", TextScaled = true, ZIndex = 7 }, panel)
+	Text = "", ZIndex = 7 }, panel)
 Style.button(ok, Style.GREEN)
+-- (the button's gradient would tint its own text: the words are a child label)
+local okText = make("TextLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Text = "LET'S GO!", TextScaled = true, ZIndex = 8 }, ok)
+Style.text(okText, 3)
+make("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 8), PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12) }, okText)
 
 local current: number? = nil
 ok.Activated:Connect(function()
@@ -56,9 +60,10 @@ Net.event("WhatsNew").OnClientEvent:Connect(function(news: any)
 	for _, c in list:GetChildren() do if c:IsA("TextLabel") then c:Destroy() end end
 	title.Text = news.title or "What's New"
 	for i, line in news.lines do
-		local l = make("TextLabel", { Name = "Line" .. i, LayoutOrder = i, Size = UDim2.new(1, 0, 0, 34), BackgroundTransparency = 1,
-			TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, Text = "• " .. tostring(line), ZIndex = 7 }, list)
+		local l = make("TextLabel", { Name = "Line" .. i, LayoutOrder = i, Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y,
+			BackgroundTransparency = 1, TextSize = 22, TextWrapped = true, TextXAlignment = Enum.TextXAlignment.Left, Text = "• " .. tostring(line), ZIndex = 7 }, list)
 		Style.text(l, 2)
+		l.TextSize = 22
 	end
 	current = news.version
 	panel.Visible = true

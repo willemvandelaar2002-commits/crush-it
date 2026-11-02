@@ -510,7 +510,7 @@ local function refresh()
 	end
 	-- a "!" on a tab that has something to claim
 	for n, t in tabs do
-		local has = if n == "Playtime" then anyPlay else anyDaily
+		local has = if n == "Playtime" then anyPlay elseif n == "Daily" then anyDaily else false
 		local mark = t:FindFirstChild("Ready") :: Frame?
 		if not mark then
 			mark = make("Frame", { Name = "Ready", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0, 4, 0, 4), Size = UDim2.fromOffset(26, 26), BackgroundColor3 = RED, ZIndex = 9 }, t)

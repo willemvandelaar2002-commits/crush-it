@@ -78,7 +78,7 @@ return function()
 	check(t.crushers.tutorial==#C.TutorialSteps+1 and t.cash==cash0+total,"finishing pays every step and the bonus once")
 	local old=fresh() old.crushers.bays=3 old.crushers.rolls=4 table.insert(old.crushers.owned,{id=id(),type="Steel",rarity="Common",modifier="Standard",level=1})
 	R.tutorialCatchUp(old) check(old.crushers.tutorial==6 and C.TutorialSteps[6].id=="Equip","catch-up skips steps already done, stops at the first open one")
-	d=R.migrate({cash=0},id) s={} d.crushers.tutorial=#C.TutorialSteps+1 -- ledger checks below without tutorial rewards
+	d=R.migrate({cash=0},id) s={} d.crushers.tutorial=#C.TutorialSteps+1 d.crushers.available=0 -- ledger checks below without tutorial rewards (fresh saves start with C.StarterScrap)
 	local events=R.step(d,s,0,{}) check(d.crushers.available==0 and events[1].kind=="Input","input spawn never awards scrap")
 	for time=1,7 do R.step(d,s,time,{}) end
 	check(d.crushers.available==8 and d.crushed==1,"scrap only on completed object")
