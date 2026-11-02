@@ -182,7 +182,6 @@ local function goalCount(d,g)
 	if g.check=="frenzy" then return math.min(1,stats.frenzies or 0),1 end
 	if g.check=="golden" then return math.min(1,stats.goldenToys or 0),1 end
 	if g.check=="turbo" then return math.min(1,stats.turbos or 0),1 end
-	if g.check=="merge" then return math.min(1,stats.merges or 0),1 end
 	return 0,1
 end
 local function goalDone(d,g) local have,need=goalCount(d,g) return have>=need end
@@ -214,16 +213,20 @@ local function goalTick(p,d)
 		silent=true
 		if s.goal>#ids then s.goal=#C.Goals2+1
 		else
-			local id=ids[s.goal] local found=nil
-			for i,g in C.Goals2 do if g.id==id then found=i break end end
-			s.goal=found or 1
+			-- a removed goal (e.g. Merge) moves on to the next old goal that still exists
+			local found=nil
+			for k=s.goal,#ids do
+				for i,g in C.Goals2 do if g.id==ids[k] then found=i break end end
+				if found then break end
+			end
+			s.goal=found or #C.Goals2+1
 		end
 	end
 	s.goalsV=C.Goals2Version
 	if s.goal==nil then s.goal=1 silent=(s.bays or 0)>2 or (s.plotLevel or 0)>0 end -- older saves
 	-- older saves also skip the one-off habit goals (gift, index, row, rolls)
 	-- they would otherwise be stuck on, but stop at the first real progress goal
-	local habit={gift=true,index=true,row=true,rolls=true,frenzy=true,golden=true,turbo=true,merge=true}
+	local habit={gift=true,index=true,row=true,rolls=true,frenzy=true,golden=true,turbo=true}
 	local done=0
 	while C.Goals2[s.goal] and (goalDone(d,C.Goals2[s.goal]) or (silent and habit[C.Goals2[s.goal].check])) and done<#C.Goals2 do
 		if not silent then goalReward(p,d,C.Goals2[s.goal]) end
@@ -848,7 +851,7 @@ function G.start()
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
 		elseif name=="TrashMany" then target=ctx.plot.stations.Trash and ctx.plot.stations.Trash.part reach=40
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
-		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Merge" and name~="Rebirth" then
+		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end

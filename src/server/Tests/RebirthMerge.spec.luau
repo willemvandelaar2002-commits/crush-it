@@ -1,5 +1,5 @@
 --!strict
--- Run explicitly in Studio. 2 Nov evening: MERGE (stars) and REBIRTH rules.
+-- Run explicitly in Studio. 2 Nov evening: REBIRTH rules (and old merge stars).
 return function()
 	local C=require(game.ReplicatedStorage.Shared.CrusherConfig)
 	local R=require(game.ReplicatedStorage.Shared.CrusherRules)
@@ -9,21 +9,14 @@ return function()
 	local function act(d,name,args) return R.act(d,{},name,args or {},0,function() return .1 end,id,{}) end
 	local function copyOf(item) return {id=id(),type=item.type,rarity=item.rarity,modifier=item.modifier,level=1} end
 
-	-- MERGE: needs Copies spare copies of the same type and stars
+	-- MERGE was removed again; stars made while it was live still count and survive saves
 	local d=R.migrate({cash=1e9},id) d.crushers.available=0
-	local s=d.crushers local base=s.owned[1]
-	check(not act(d,"Merge",{id=base.id}),"no spare copies: no merge")
-	local a=copyOf(base) local b=copyOf(base) table.insert(s.owned,a) table.insert(s.owned,b)
+	local base=d.crushers.owned[1]
 	local before=R.stats(d,base).value
-	local ok=act(d,"Merge",{id=base.id})
-	check(ok and base.stars==1 and #s.owned==1,"merge uses the two spare copies and adds a star")
-	check(math.abs(R.stats(d,base).value-before*C.Merge.Mult)<1e-6,"a star multiplies the value")
-	local saved=R.migrate(R.copy(d),id)
-	check(saved.crushers.owned[1].stars==1,"stars survive migrate")
-	-- a starless copy can't feed a 1-star merge
-	table.insert(s.owned,copyOf(base)) table.insert(s.owned,copyOf(base))
-	check(not act(d,"Merge",{id=base.id}),"copies must have the same stars")
-	check(#s.owned==3,"failed merge keeps the copies")
+	check(not act(d,"Merge",{id=base.id}),"merge is gone")
+	base.stars=1
+	check(math.abs(R.stats(d,base).value-before*C.Merge.Mult)<1e-6,"an old star still multiplies the value")
+	check(R.migrate(R.copy(d),id).crushers.owned[1].stars==1,"stars survive migrate")
 
 	-- REBIRTH
 	local r=R.migrate({cash=10},id) r.crushers.available=0

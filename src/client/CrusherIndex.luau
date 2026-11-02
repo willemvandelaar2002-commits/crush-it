@@ -257,18 +257,7 @@ function I.new(gui, act)
 					if equipped then act("Unequip",{id=item.id}) else act("Equip",{id=item.id,bay=selectedBay}) end
 				end).TextSize=17
 			local copies=0 for _,other in state.items do if other.type==item.type then copies+=1 end end
-			-- 2 Nov evening: MERGE when two spare copies with the same stars exist
-			local inBay={} for _,id in state.bays do inBay[id]=true end
-			local spare=0
-			for _,other in state.items do
-				if other.id~=item.id and other.type==item.type and (other.stars or 0)==(item.stars or 0) and not other.fused and not inBay[other.id] then spare+=1 end
-			end
-			if spare>=C.Merge.Copies and (item.stars or 0)<C.Merge.MaxStars and not item.fused then
-				local merge=button(frame,"Merge","MERGE "..string.rep("★",(item.stars or 0)+1),UDim2.new(0,7,1,-42),UDim2.new(1,-14,0,33),Color3.fromRGB(255,185,30),function()
-					act("Merge",{id=item.id})
-				end)
-				merge.TextSize=17
-			elseif not equipped and copies>1 then
+			if not equipped and copies>1 then
 				local recycle
 				recycle=button(frame,"Recycle","RECYCLE DUPLICATE",UDim2.new(0,7,1,-42),UDim2.new(1,-14,0,33),Style.Colors.Red,function()
 					if recyclePending==item.id then recyclePending=nil act("Recycle",{id=item.id})
