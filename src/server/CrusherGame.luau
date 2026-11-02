@@ -799,6 +799,11 @@ function G.start()
 			if plot.owner~=p then Net.event("Notice"):FireClient(p,{text="Use your own factory."}) return end
 			action(p,"Buy",{slot=slot})
 		end) end
+		-- 3 Nov: the row sign's prompt opens the rarity picker for that row
+		for index,record in plot.rarityRows or {} do if record.prompt then record.prompt.Triggered:Connect(function(p)
+			if plot.owner~=p then Net.event("Notice"):FireClient(p,{text="Use your own factory."}) return end
+			Net.event("CrusherOpen"):FireClient(p,"FillRow",index)
+		end) end end
 		for i,bay in plot.bays do bay.prompt.Triggered:Connect(function(p)
 			if plot.owner~=p then return end
 			-- holding a crusher from the backpack: place it in this bay
@@ -852,7 +857,7 @@ function G.start()
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
 		elseif name=="TrashMany" then target=ctx.plot.stations.Trash and ctx.plot.stations.Trash.part reach=40
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
-		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" and name~="Rebuild" then
+		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" and name~="Rebuild" and name~="FillRow" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end

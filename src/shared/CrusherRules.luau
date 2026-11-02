@@ -409,6 +409,27 @@ local function act(d,session,action,args,now,random,guid,perks)
 		local lv=s.upgrades[args.id] if lv>=C.upgradeMax(args.id,s.plotLevel) then return false,if u.max then "Upgrade is at maximum level." else R.capMessage(s.plotLevel) end
 		if not pay(C.globalCost(args.id,lv)) then return false,"Not enough cash. Collect and sell scrap." end
 		s.upgrades[args.id]+=1
+	elseif action=="FillRow" then
+		-- 3 Nov (Willem, from a player's idea): fill one physical row with the best
+		-- crushers of one rarity, moving them from other bays if needed; crushers
+		-- of other rarities in that row go back to the backpack
+		local index=tonumber(args.row) local want=type(args.rarity)=="string" and C.rarity(args.rarity) and args.rarity or nil
+		if not index or index~=math.floor(index) or index<1 or index>Rows.count() or not want then return false,"Pick a row and a rarity." end
+		local first=(index-1)*C.Layout.PerWing+1
+		local last=math.min(first+C.Layout.PerWing-1,s.bays,C.bayCapacity(s.plotLevel))
+		if last<first then return false,"Unlock a bay in this row first." end
+		local list={} for _,item in s.owned do if item.rarity==want then table.insert(list,item) end end
+		if #list==0 then return false,"You don't own any "..want.." crushers." end
+		local out={} for _,item in list do out[item.id]=R.stats(d,item,perks,false).cps end
+		table.sort(list,function(a,b) if out[a.id]==out[b.id] then return a.id<b.id end return out[a.id]>out[b.id] end)
+		local placed=0
+		for bay=first,last do
+			local item=list[bay-first+1] if not item then break end
+			for key,id in s.equipped do if id==item.id then s.equipped[key]=nil end end
+			s.equipped[tostring(bay)]=item.id placed+=1
+		end
+		local rowName=Rows.snapshot(d).rows[index].name
+		return true,"Filled "..rowName.." with "..placed.." "..want.."!"..(if placed<C.Layout.PerWing then " A full row of "..C.Layout.PerWing.." gives the row bonus." else ""),placed
 	elseif action=="Rebuild" then
 		-- 3 Nov (a player's idea + vault: the run after a rebirth must feel faster):
 		-- after your first rebirth, one button buys every bay you can afford
