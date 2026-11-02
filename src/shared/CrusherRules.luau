@@ -315,7 +315,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		local same=true
 		for key,id in equipped do if s.equipped[key]~=id then same=false end end
 		for key,id in s.equipped do if equipped[key]~=id then same=false end end
-		if same then return false,if want then "Your "..want.." crushers are already in place!" else "You're already using your best crushers!" end end
+		if same then return false,(if want then "Your "..want.." crushers are already in place!" else "You're already using your best crushers!") end end
 		local proposed={crushers={owned=s.owned,equipped=equipped,bays=s.bays}}
 		local currentRows,newRows=Rows.snapshot(d),Rows.snapshot(proposed)
 		local before,after=0,0
@@ -323,7 +323,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		for _,id in equipped do after+=(out[id] or 0)*Rows.multiplier(newRows,id) end
 		if not want and after+1e-8<before then return false,"Kept your row bonuses: this setup produces more. Arrange matching rarities manually." end
 		s.equipped=equipped
-		return true,if want then "Equipped your "..want.." crushers first!" else "Equipped your best crushers!"
+		return true,(if want then "Equipped your "..want.." crushers first!" else "Equipped your best crushers!")
 	elseif action=="Unequip" then
 		if not R.find(d,args.id) then return false,"You do not own that crusher." end
 		for key,id in s.equipped do if id==args.id then s.equipped[key]=nil end end
