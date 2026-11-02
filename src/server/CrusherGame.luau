@@ -799,11 +799,6 @@ function G.start()
 			if plot.owner~=p then Net.event("Notice"):FireClient(p,{text="Use your own factory."}) return end
 			action(p,"Buy",{slot=slot})
 		end) end
-		-- 3 Nov: the row sign's prompt opens the rarity picker for that row
-		for index,record in plot.rarityRows or {} do if record.prompt then record.prompt.Triggered:Connect(function(p)
-			if plot.owner~=p then Net.event("Notice"):FireClient(p,{text="Use your own factory."}) return end
-			Net.event("CrusherOpen"):FireClient(p,"FillRow",index)
-		end) end end
 		for i,bay in plot.bays do bay.prompt.Triggered:Connect(function(p)
 			if plot.owner~=p then return end
 			-- holding a crusher from the backpack: place it in this bay

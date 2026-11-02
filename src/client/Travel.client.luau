@@ -101,8 +101,8 @@ Net.event("CrusherState").OnClientEvent:Connect(function(v)
 	mark.Visible = better
 end)
 
--- 3 Nov (Willem, from a player's idea): press E at a row's sign (server prompt,
--- CrusherOpen "FillRow") to pick a rarity; the server fills that row with your
+-- 3 Nov (Willem, from a player's idea): press the FILL ROW board at a row's sign
+-- to pick a rarity; the server fills that row with your
 -- best crushers of it, so the row bonus is one press away.
 local C = Config.Crushers
 local menu = Instance.new("Frame")
@@ -150,9 +150,9 @@ local function openPicker(index: number)
 	scale.Scale = if Style.compact() then 0.75 else 1
 	menu.Visible = true
 end
-Net.event("CrusherOpen").OnClientEvent:Connect(function(kind: any, index: any)
-	if kind == "FillRow" and type(index) == "number" then openPicker(index) end
-end)
+-- the FILL ROW board's button (bound in CrusherHud) fires this with the row number
+local openEvent = Instance.new("BindableEvent") openEvent.Name = "OpenFillRow" openEvent.Parent = gui
+openEvent.Event:Connect(function(index: any) if type(index) == "number" then openPicker(index) end end)
 
 -- 3 Nov (a player's idea + vault: a run after a rebirth must feel faster):
 -- REBUILD, only after your first rebirth and while you have bays left to buy
