@@ -35,8 +35,25 @@ return function()
 	check(rs.plotLevel==0 and rs.bays==1 and rs.equipped["1"]==item.id and rs.equipped["2"]==nil,"factory back to bay 1")
 	check(rs.upgrades.Damage==0 and rs.upgrades.Luck==7 and rs.upgrades.Pedestals==2,"factory upgrades reset, Luck and pedestals kept")
 	check(#rs.owned==2 and item.level==1 and item.stars==2 and extra.modifier=="Golden","crushers kept (stars, coating), levels reset")
-	check(C.rebirthMult(1)==1+C.Rebirth.MultPer and C.rebirthCost(1)>C.rebirthCost(0),"bonus rises, next rebirth costs more")
+	check(C.rebirthMult(1)==C.Rebirth.Mult and C.rebirthMult(2)==C.Rebirth.Mult^2 and C.rebirthCost(1)>C.rebirthCost(0),"bonus rises, next rebirth costs more")
 	local again=R.migrate(R.copy(r),id)
 	check(again.crushers.rebirths==1,"rebirths survive migrate")
+	-- REBUILD (after the first rebirth): buys every bay it can afford, then equips the best
+	local b=R.migrate({cash=10},id) b.crushers.available=0
+	check(not act(b,"Rebuild"),"rebuild needs a rebirth")
+	b.crushers.rebirths=1 b.crushers.plotLevel=0 b.crushers.bays=1
+	for i=1,5 do table.insert(b.crushers.owned,copyOf(b.crushers.owned[1])) end
+	b.cash=C.BayCosts[2]+C.BayCosts[3]+C.BayCosts[4]+1
+	local built,_,bought=act(b,"Rebuild")
+	local filled=0 for _ in b.crushers.equipped do filled+=1 end
+	check(built and bought==3 and b.crushers.bays==4 and filled==4 and b.cash<C.BayCosts[5],"rebuild buys bays cheapest first and fills them")
+	-- EQUIP BY RARITY: the chosen rarity goes first, filling bays from bay 1
+	local e=R.migrate({cash=10},id) e.crushers.available=0
+	local es=e.crushers es.bays=3
+	local rare={id=id(),type=C.rarity("Rare").types[1],rarity="Rare",modifier="Standard",level=1}
+	local epic={id=id(),type=C.rarity("Epic").types[1],rarity="Epic",modifier="Standard",level=1}
+	table.insert(es.owned,rare) table.insert(es.owned,epic)
+	check(act(e,"EquipBest",{rarity="Rare"}) and es.equipped["1"]==rare.id,"equip by rarity puts that rarity in bay 1")
+	check(not act(e,"EquipBest",{rarity="Mythic"}),"equip by rarity needs one of that rarity")
 	print("RebirthMerge.spec: "..checks.." checks passed")
 end
