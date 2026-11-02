@@ -51,11 +51,19 @@ function V.create(plot)
 		record.title=W.text(panel,"RowTitle","",UDim2.fromScale(.02,.03),UDim2.fromScale(.96,.5))
 		record.detail=W.text(panel,"RowDetail","",UDim2.fromScale(.02,.55),UDim2.fromScale(.96,.4))
 		record.plate=plate record.gui=gui record.panel=panel
-		-- 3 Nov (Willem): press E at the row sign to fill this row with one rarity
-		local prompt=Instance.new("ProximityPrompt") prompt.Name="FillRowPrompt" prompt.ActionText="Fill row"
-		prompt.ObjectText="Pick a rarity" prompt.KeyboardKeyCode=Enum.KeyCode.E prompt.HoldDuration=0
-		prompt.MaxActivationDistance=14 prompt.RequiresLineOfSight=false prompt.Enabled=false prompt.Parent=plate
-		record.prompt=prompt
+		-- 3 Nov (Willem): a small FILL ROW button board at the end of the row sign;
+		-- clicking it opens the rarity picker for this row (client/Travel)
+		local boardCf=cf*CFrame.new(12,0,0)
+		local box=W.part(model,"FillRowBox",Vector3.new(5.6,3.4,.7),boardCf*CFrame.new(0,0,-.36),W.Navy)
+		box.Transparency=1
+		local board=W.part(model,"FillRowBoard",Vector3.new(5.2,3,.28),boardCf,Style.Colors.Ink)
+		board.Transparency=1
+		local controls=W.surface(board)
+		local holder=Instance.new("Frame") holder.Name="FillRowHolder" holder.Size=UDim2.fromScale(1,1) holder.BackgroundTransparency=1 holder.Visible=false holder.Parent=controls
+		local button=W.button(holder,"FillRow","FILL ROW",UDim2.fromScale(.04,.06),UDim2.fromScale(.92,.88),"FillRow")
+		button:SetAttribute("Row",index)
+		Style.setButtonColor(button,Color3.fromRGB(255,170,40))
+		record.fill={box=box,board=board,holder=holder}
 		plot.rarityRows[index]=record Tags:AddTag(model,V.Tag)
 	end
 end
@@ -75,7 +83,11 @@ function V.sync(plot,snapshot)
 		record.model:SetAttribute("RowBonus",if active then row.bonus else 0)
 		record.model:SetAttribute("RowMatches",if row then row.matches else 0)
 		record.gui.Enabled=visible record.plate.Transparency=if visible then 0 else 1
-		if record.prompt then record.prompt.Enabled=visible==true end
+		if record.fill then
+			record.fill.holder.Visible=visible==true
+			record.fill.board.Transparency=if visible then 0 else 1 record.fill.box.Transparency=if visible then 0 else 1
+			record.fill.board.CanQuery=visible==true
+		end
 		record.title.Text=title record.detail.Text=detail
 		record.title.TextColor3=if rarity then color:Lerp(Color3.new(1,1,1),.25) else Color3.new(1,1,1)
 		Style.panel(record.panel,if active then Style.darken(color,.15) else Style.Colors.SteelDark)

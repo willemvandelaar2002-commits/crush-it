@@ -97,7 +97,7 @@ Goal: fewer players leaving before the first collect (funnel step 2, 12.5% churn
   Luck stays +25% per rebirth.
 - REBUILD (top row, only after your first rebirth and while bays are left to buy): buys every bay you can afford,
   cheapest first, then Equip Best. A player's idea; the first run stays hands-on.
-- Fill a row (Willem, from a player's idea): press E at a row's sign (the "MATCH A ROW" desk sign in front of each
-  row of 6) and pick a rarity (every rarity you own, with count and row bonus). The server (CrusherRules "FillRow")
+- Fill a row (Willem, from a player's idea): an orange FILL ROW button board stands at the right end of each row's
+  sign (the "MATCH A ROW" desk sign in front of each row of 6); click it and pick a rarity (every rarity you own, with count and row bonus). The server (CrusherRules "FillRow")
   puts your best crushers of that rarity in that row, moving them from other bays; other rarities in the row go back
-  to the backpack. (A picker arrow next to EQUIP BEST was tried first and removed.)
+  to the backpack. (A picker arrow next to EQUIP BEST and an E prompt were tried first and removed.)
