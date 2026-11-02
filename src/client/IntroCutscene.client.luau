@@ -2,8 +2,8 @@
 -- 2 Nov (Willem: "a small cutscene of that crusher and a vision"): a ~4.5 s intro
 -- for brand-new players only (tutorial step 1, one crusher), once per join.
 --   1. close-up of your own crusher crushing toys        "CRUSH TOYS FOR CASH"
---   2. the camera swoops up: every floor you can still build appears as a gold
---      ghost (local copies of the hidden floors)        "BUILD THE BIGGEST FACTORY!"
+--   2. the camera swoops up: every floor you can still build appears as a
+--      hologram (local copies of the hidden floors)        "BUILD THE BIGGEST FACTORY!"
 --   3. back behind you; the tutorial's first step shows.
 -- Purely local: the game keeps running underneath (the crusher already makes
 -- scrap). Skip, death or leaving the plot end it at once and restore camera,
@@ -66,8 +66,9 @@ local function plotModel(): Model?
 	return if plot and plot:IsA("Model") then plot else nil
 end
 
--- gold see-through copies of everything that is still hidden (floors to unlock)
-local function ghosts(plot: Model, folder: Folder): { BasePart }
+-- see-through hologram copies of everything that is still hidden (floors to unlock)
+local VISION = Color3.fromRGB(90, 225, 255)
+local function ghosts(plot: Model, folder: Instance): { BasePart }
 	local list: { BasePart } = {}
 	local roots: { Instance } = {}
 	local banks = plot:FindFirstChild("WorkshopBanks")
@@ -83,7 +84,7 @@ local function ghosts(plot: Model, folder: Folder): { BasePart }
 				if type(base) == "number" and base < 1 then
 					local copy = Instance.new("Part")
 					copy.Anchored = true copy.CanCollide = false copy.CanQuery = false copy.CanTouch = false copy.CastShadow = false
-					copy.Material = Enum.Material.ForceField copy.Color = GOLD copy.Size = p.Size copy.CFrame = p.CFrame
+					copy.Material = Enum.Material.SmoothPlastic copy.Color = VISION copy.Size = p.Size copy.CFrame = p.CFrame
 					copy.Transparency = 1 copy.Parent = folder
 					table.insert(list, copy)
 				end
@@ -171,13 +172,21 @@ local function play()
 	cam.CameraType = Enum.CameraType.Scriptable
 	cam.FieldOfView = 62
 
-	local list = ghosts(plot, folder)
-	local ghostT = 1
-	local function setGhosts(t: number)
-		if math.abs(t - ghostT) < 0.02 then return end
-		ghostT = t
-		for _, p in list do p.Transparency = t end
+	-- the vision: hologram copies in one model, outlined by a single Highlight
+	local vision = Instance.new("Model") vision.Name = "Vision" vision.Parent = folder
+	local list = ghosts(plot, vision)
+	local glow = Instance.new("Highlight")
+	glow.Adornee = vision glow.FillColor = VISION glow.OutlineColor = Color3.new(1, 1, 1)
+	glow.FillTransparency = 1 glow.OutlineTransparency = 1 glow.DepthMode = Enum.HighlightDepthMode.Occluded glow.Parent = vision
+	local ghostT = -1
+	-- k: 0 = hidden, 1 = fully shown
+	local function setGhosts(k: number)
+		if math.abs(k - ghostT) < 0.02 then return end
+		ghostT = k
+		for _, p in list do p.Transparency = 1 - 0.45 * k end
+		glow.FillTransparency = 1 - 0.35 * k glow.OutlineTransparency = 1 - k
 	end
+	setGhosts(0)
 	local function ease(x: number): number x = math.clamp(x, 0, 1) return x * x * (3 - 2 * x) end
 	local said = 0
 	local t0 = os.clock()
@@ -193,9 +202,9 @@ local function play()
 		elseif t < 3.7 then cam.CFrame = wide * CFrame.Angles(0, math.rad(4) * math.sin((t - 2.7) * 1.5), 0)
 		else cam.CFrame = cam.CFrame:Lerp(home, ease((t - 3.7) / 0.9)) end
 		-- the vision: ghost floors glow in while the camera rises, fade on the way back
-		if t >= 1.9 and t < 2.6 then setGhosts(1 - ease((t - 1.9) / 0.7))
-		elseif t >= 2.6 and t < 3.6 then setGhosts(0)
-		elseif t >= 3.6 then setGhosts(ease((t - 3.6) / 0.5)) end
+		if t >= 1.9 and t < 2.6 then setGhosts(ease((t - 1.9) / 0.7))
+		elseif t >= 2.6 and t < 3.6 then setGhosts(1)
+		elseif t >= 3.6 then setGhosts(1 - ease((t - 3.6) / 0.5)) end
 		if said == 0 and t >= 0.3 then said = 1 say("CRUSH TOYS FOR CASH", Color3.fromRGB(140, 255, 110)) end
 		if said == 1 and t >= 1.9 then
 			said = 2 say("BUILD THE BIGGEST FACTORY!", GOLD)
