@@ -348,3 +348,10 @@ CrusherPlots applies Style.studs to the blue bank back walls, parapets and solid
 - Server: `goalTick` in CrusherGame runs on every state send after the tutorial (`crushers.goal`, saved). Saves that already had more than 2 bays or a plot upgrade when goals arrived skip the goals they have done and the habit goals (gift, index, row, rolls) with no reward, and start at the first open progress goal; Factory III+ saves skip the chain. Gifts are counted in `stats.gifts` (Rewards.claim).
 - After goal 16 the card goes back to the NEXT GOAL mode (Factory III-V).
 - Funnel: 01-09 tutorial, 10-25 one step per goal ("12 Goal: Unlock 5 bays"), 26-28 Bought Factory III / IV / V. The per-bay funnel steps are gone.
+
+## 2 Nov: tutorial look (after a reference tutorial video)
+- No card any more. Tutorial.client draws floating text under the top button row (placed under EquipBest, re-checked twice a second), inside one CanvasGroup that fades in and out: a cyan tag ("TUTORIAL 3/8", "GOAL 4 / 16", "NEXT GOAL · FACTORY III"), one short order (the step / goal title, chunky Style.bold text), and a line with the counter and the reward ("3 / 5     +$75", rewards coloured: green cash, blue boosts, rarity colour for free crushers).
+- Counters come from the server: the state carries goalHave / goalNeed (CrusherGame goalCount, the same check as goalDone). The plot goal and NEXT GOAL saving show cash / cost.
+- The longer hint line shows only for detours ("You need $50. Sell your scrap first!") or after 15 s on the same step.
+- Done step: the title turns green with a check and pops, the cash flies into the counter (crusher and boost prizes get a big line under the headline), then the next step fades in. The tutorial's end is a 2-second "Tutorial complete! Have fun!" toast with the bonus, then the goals fade in.
+- Trail: GuidePath gained scale / core / startAt options. The tutorial uses a 1.7x thick gold trail with a white glowing centre (centre skipped in Style.lite), faster (12 studs/s), starting at your feet. A glowing gold disc lies on the floor under the target (footprint + 3 studs, pulsing), as well as the outline and the bobbing arrow.
