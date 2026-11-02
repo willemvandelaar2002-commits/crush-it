@@ -352,24 +352,40 @@ C.StarterScrap = 24 -- 1 Nov: scrap waiting in a new player's bin (three toys' w
 --   reward: { cash = seconds of earnings, min = at least } | { boost = id, minutes }
 --           | { crusher = rarity }
 --   target: what the arrow points at (client/Tutorial)
+-- 2 Nov (v2, Willem): more small steps, and factory upgrades + crusher levels
+-- between the bay goals (they raise income the most, so the bigger bays stay
+-- reachable). "upgrades n" = total factory upgrade levels (Damage + Speed + Yield).
+C.Goals2Version = 2
 C.Goals2 = {
 	{ id="Bay3", check="bays", n=3, title="Unlock bay 3", text="Bays are cheap now: unlock the next one!", target="NextBay", reward={cash=30,min=60} },
 	{ id="Fill3", check="fill", n=3, title="Fill bay 3", text="Roll and buy a crusher, then place it in the empty bay.", target="EmptyBay", reward={cash=30,min=60} },
+	{ id="Upgrades3", check="upgrades", n=3, title="Upgrade your factory", text="The blue FACTORY UPGRADES board makes ALL crushers better.", target="Production", reward={cash=45,min=100} },
 	{ id="Bay5", check="bays", n=5, title="Unlock 5 bays", text="More bays = more crushers = more cash!", target="NextBay", reward={cash=45,min=100} },
 	{ id="Fill5", check="fill", n=5, title="Fill 5 bays", text="Put a crusher in every bay you own.", target="EmptyBay", reward={cash=45,min=150} },
 	{ id="Gift", check="gift", title="Claim a free gift", text="Open REWARDS (top left) and claim your playtime gift.", target="RewardsButton", reward={boost="Luck",minutes=5} },
 	{ id="Fill6", check="fill", n=6, title="Fill 6 bays", text="Unlock bay 6 and place a crusher. Prize: a FREE RARE crusher!", target="NextBayOrEmpty", reward={crusher="Rare"} },
 	{ id="Level5", check="level", n=5, title="Level a crusher to Lv 5", text="Press LEVEL UP on a crusher's plaque. Higher level = more scrap.", target="LevelBay", reward={cash=60,min=250} },
-	{ id="Upgrades3", check="upgrades", n=3, title="Buy 3 factory upgrades", text="The blue FACTORY UPGRADES board makes ALL crushers better.", target="Production", reward={cash=60,min=300} },
 	{ id="Rolls10", check="rolls", n=10, title="Roll 10 times", text="Rolling is free! Rarer crushers make way more cash.", target="Roll", reward={boost="Luck",minutes=10} },
+	{ id="Upgrades8", check="upgrades", n=8, title="Upgrade your factory", text="Factory upgrades make every crusher earn more.", target="Production", reward={cash=60,min=300} },
 	{ id="Bay9", check="bays", n=9, title="Unlock 9 bays", text="Keep growing your factory!", target="NextBay", reward={cash=90,min=600} },
 	{ id="Index", check="index", title="Claim an Index reward", text="Open INDEX and claim the reward at the bottom.", target="BookButton", reward={cash=90,min=800} },
-	{ id="Row", check="row", title="Complete a rarity row", text="Fill a whole row with crushers of ONE rarity for bonus scrap.", target="EmptyBay", reward={boost="Cash",minutes=10} },
+	{ id="Level10", check="level", n=10, title="Level a crusher to Lv 10", text="Level up your best crusher.", target="LevelBay", reward={cash=90,min=1000} },
 	{ id="Fill12", check="fill", n=12, title="Fill 12 bays", text="Halfway to your next factory!", target="NextBayOrEmpty", reward={crusher="Epic"} },
-	{ id="Bay18", check="bays", n=18, title="Unlock 18 bays", text="Level up your best crushers to earn faster.", target="NextBay", reward={cash=120,min=5000} },
+	{ id="Upgrades15", check="upgrades", n=15, title="Upgrade your factory", text="Upgrades first: the next bays cost more.", target="Production", reward={cash=120,min=2000} },
+	{ id="Row", check="row", title="Complete a rarity row", text="Fill a whole row with crushers of ONE rarity for bonus scrap.", target="EmptyBay", reward={boost="Cash",minutes=10} },
+	{ id="Bay15", check="bays", n=15, title="Unlock 15 bays", text="Keep growing your factory!", target="NextBay", reward={cash=120,min=3000} },
+	{ id="Level15", check="level", n=15, title="Level a crusher to Lv 15", text="Your best crushers earn the most: level them up.", target="LevelBay", reward={cash=120,min=4000} },
+	{ id="Upgrades24", check="upgrades", n=24, title="Upgrade your factory", text="More cash per crush makes the big bays easy.", target="Production", reward={cash=150,min=6000} },
+	{ id="Bay18", check="bays", n=18, title="Unlock 18 bays", text="Almost a full factory!", target="NextBay", reward={cash=150,min=8000} },
+	{ id="Fill18", check="fill", n=18, title="Fill 18 bays", text="Put a crusher in every bay.", target="NextBayOrEmpty", reward={boost="Luck",minutes=15} },
+	{ id="Upgrades33", check="upgrades", n=33, title="Upgrade your factory", text="Upgrade first: the last bays are expensive.", target="Production", reward={cash=180,min=15000} },
+	{ id="Level20", check="level", n=20, title="Level a crusher to Lv 20", text="Level up your best crusher.", target="LevelBay", reward={cash=180,min=20000} },
+	{ id="Bay21", check="bays", n=21, title="Unlock 21 bays", text="Three more to go!", target="NextBay", reward={cash=180,min=30000} },
 	{ id="Fill24", check="fill", n=24, title="Fill all 24 bays", text="Every bay full unlocks the FACTORY II upgrade.", target="NextBayOrEmpty", reward={boost="Cash",minutes=15} },
 	{ id="Factory2", check="plot", n=1, title="Buy FACTORY II", text="Save up and press UPGRADE on the green board. Big prize!", target="PlotUpgrade", reward={crusher="Legendary"} },
 }
+-- v1 order (2 Nov morning): saves with a goal index from v1 are moved to the same goal id in v2
+C.Goals2Legacy = { "Bay3","Fill3","Bay5","Fill5","Gift","Fill6","Level5","Upgrades3","Rolls10","Bay9","Index","Row","Fill12","Bay18","Fill24","Factory2" }
 -- Onboarding funnel step names as they appear in the Creator Dashboard
 -- (Analytics > Funnels). 1 = join, 2-9 = the tutorial steps above in order,
 -- 10-13 = bays unlocked after the tutorial (1 Nov), 14-17 = each plot upgrade.

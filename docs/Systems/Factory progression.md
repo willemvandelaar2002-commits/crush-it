@@ -356,3 +356,9 @@ CrusherPlots applies Style.studs to the blue bank back walls, parapets and solid
 - The longer hint line shows only for detours ("You need $50. Sell your scrap first!") or after 15 s on the same step.
 - Done step: the title turns green with a check and pops, the cash flies into the counter (crusher and boost prizes get a big line under the headline), then the next step fades in. The tutorial's end is a 2-second "Tutorial complete! Have fun!" toast with the bonus, then the goals fade in.
 - Trail: GuidePath gained scale / core / startAt options. The tutorial uses a 1.7x thick gold trail with a white glowing centre (centre skipped in Style.lite), faster (12 studs/s), starting at your feet. A glowing gold disc lies on the floor under the target (footprint + 3 studs, pulsing), as well as the outline and the bobbing arrow.
+
+## 2 Nov (v2): 26 goals with upgrades in between (Willem)
+- The chain now has 26 small steps: factory upgrades (total levels 3 / 8 / 15 / 24 / 33) and crusher levels (5 / 10 / 15 / 20) sit between the bay goals, so income keeps up with bay prices. Order: Bay3, Fill3, Upgrades3, Bay5, Fill5, Gift, Fill6 (Rare), Level5, Rolls10, Upgrades8, Bay9, Index, Level10, Fill12 (Epic), Upgrades15, Row, Bay15, Level15, Upgrades24, Bay18, Fill18, Upgrades33, Level20, Bay21, Fill24, Factory2 (Legendary).
+- Saves on the v1 list (16 goals) move to the same goal id (`crushers.goalsV` = `C.Goals2Version`); goals inserted before it are skipped.
+- Can't afford the target yet: the arrow first suggests a factory upgrade, then a crusher level-up (each only if it costs at most half of what you're saving for), otherwise collect / sell with "Saving: $a / $b".
+- Funnel: steps 10-35 are the goals, 36-38 Factory III / IV / V.
