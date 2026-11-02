@@ -71,8 +71,8 @@ local function box(x: number, color: Color3, head: string, body: string)
 	local b = label(f, body, UDim2.fromOffset(10, 36), UDim2.new(1, -20, 1, -44), 2)
 	b.TextYAlignment = Enum.TextYAlignment.Top
 end
-box(20, RGB(150, 50, 50), "RESETS", "Cash, bays, factory level,\nfactory upgrades,\ncrusher levels")
-box(40 + (W - 60) / 2, RGB(50, 130, 70), "YOU KEEP", "All crushers (stars, coatings,\nfused), Index, Luck,\npedestals, passes")
+box(20, RGB(150, 50, 50), "RESETS", "Cash, bays, factory level, factory upgrades, crusher levels")
+box(40 + (W - 60) / 2, RGB(50, 130, 70), "YOU KEEP", "All crushers (stars, coatings, fused), Index, Luck, pedestals, passes")
 local progressBack = make("Frame", { Position = UDim2.fromOffset(20, 308), Size = UDim2.new(1, -40, 0, 28), BackgroundColor3 = RGB(24, 28, 46), ZIndex = 6 }, panel)
 make("UICorner", { CornerRadius = UDim.new(1, 0) }, progressBack)
 make("UIStroke", { Thickness = 3, Color = INK }, progressBack)
