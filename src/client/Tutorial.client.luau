@@ -380,10 +380,31 @@ local function goalTarget(g: any): (Instance?, string?, string?, GuiObject?)
 	local plot = plotModel()
 	if not plot then return nil end
 	local cash = state.cash
+	-- 2 Nov (Willem): can't afford it yet? First the cheap things that raise your
+	-- income: a factory upgrade, then a crusher level-up (each only when it costs
+	-- at most half of what you're saving for, so saving still happens); else
+	-- collect / sell.
 	local function earn(need: number): (Instance?, string?, string?)
-		local text = "You need " .. Format.cash(need) .. ". "
-		if state.carried > 0 then return find(plot, "SellStation"), "SELL", text .. "Sell your scrap first!" end
-		return find(plot, "CollectStation"), "COLLECT", text .. "Collect more scrap first!"
+		local level = state.plotLevel or 0
+		local upCost = math.huge
+		for _, id in { "Damage", "Speed", "Yield" } do
+			if (state.upgrades[id] or 0) < C.upgradeMax(id, level) then upCost = math.min(upCost, C.globalCost(id, state.upgrades[id] or 0)) end
+		end
+		if upCost <= cash and upCost <= need * 0.5 then
+			return find(plot, "ProductionStation"), "UPGRADE", "Upgrade your factory first: more cash from every crusher!"
+		end
+		local best, lvCost = nil, math.huge
+		for key, id in state.bays do
+			for _, item in state.items do
+				if item.id == id and item.level < C.levelCap(level) and item.cost < lvCost then best, lvCost = tonumber(key), item.cost end
+			end
+		end
+		if best and lvCost <= cash and lvCost <= need * 0.5 then
+			return bayModel(plot, best), "LEVEL UP", "Level up a crusher first: it earns more!"
+		end
+		local text = "Saving: " .. Format.cash(cash) .. " / " .. Format.cash(need) .. ". "
+		if state.carried > 0 then return find(plot, "SellStation"), "SELL", text .. "Sell your scrap!" end
+		return find(plot, "CollectStation"), "COLLECT", text .. "Collect your scrap!"
 	end
 	local function emptyBay(): Instance?
 		for i = 1, state.unlocked do if not state.bays[tostring(i)] then return bayModel(plot, i) end end
@@ -432,7 +453,7 @@ local function goalTarget(g: any): (Instance?, string?, string?, GuiObject?)
 			if gt then return gt, gl, gh end
 			return e, "PLACE", "Fill every bay first."
 		end
-		if cash < cost then return nil, nil, "Save up: " .. Format.cash(cash) .. " / " .. Format.cash(cost) .. ". Level up your crushers to earn faster!" end
+		if cash < cost then return earn(cost) end
 		return find(plot, "PlotUpgradeStation"), "UPGRADE!"
 	elseif t == "RewardsButton" or t == "BookButton" then
 		return nil, nil, nil, hudButton(t)

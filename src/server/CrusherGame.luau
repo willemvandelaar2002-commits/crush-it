@@ -194,6 +194,15 @@ local function goalTick(p,d)
 	if (s.tutorial or 1)<=#C.TutorialSteps then return end
 	-- Factory III+ is past the whole chain
 	if (s.plotLevel or 0)>=2 then if C.Goals2[s.goal or 1] then s.goal=#C.Goals2+1 end return end
+	-- v1 goal index -> the same goal in v2 (goals inserted before it are skipped)
+	if s.goal~=nil and s.goalsV~=C.Goals2Version then
+		if s.goal>#C.Goals2Legacy then s.goal=#C.Goals2+1
+		else
+			local id=C.Goals2Legacy[s.goal] s.goal=1
+			for i,g in C.Goals2 do if g.id==id then s.goal=i break end end
+		end
+	end
+	s.goalsV=C.Goals2Version
 	local silent=false
 	if s.goal==nil then s.goal=1 silent=(s.bays or 0)>2 or (s.plotLevel or 0)>0 end -- older saves
 	-- older saves also skip the one-off habit goals (gift, index, row, rolls)
