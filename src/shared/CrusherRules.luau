@@ -315,7 +315,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		local same=true
 		for key,id in equipped do if s.equipped[key]~=id then same=false end end
 		for key,id in s.equipped do if equipped[key]~=id then same=false end end
-		if same then return false,(if want then "Your "..want.." crushers are already in place!" else "You're already using your best crushers!") end end
+		if same then return false,(if want then "Your "..want.." crushers are already in place!" else "You're already using your best crushers!") end
 		local proposed={crushers={owned=s.owned,equipped=equipped,bays=s.bays}}
 		local currentRows,newRows=Rows.snapshot(d),Rows.snapshot(proposed)
 		local before,after=0,0
