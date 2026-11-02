@@ -36,7 +36,7 @@ function P.cost(item,name)
 	return if recipe then math.floor(C.rarity(item.rarity).price*recipe.factor*(1+.15*(item.level-1))) else nil
 end
 function P.quote(d,id,name,now,token)
-	if level(d)<C.CoatingPlotLevel then return nil,"Upgrade to Factory III to unlock the Coating Lab." end
+	if level(d)<C.CoatingPlotLevel then return nil,"Upgrade to Factory II to unlock the Coating Lab." end
 	local item=find(d,id)
 	if not item then return nil,"Choose one of your unequipped crushers first." end
 	for _,equipped in d.crushers.equipped do if equipped==id then return nil,"Unequip this crusher before coating it." end end

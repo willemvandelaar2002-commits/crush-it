@@ -169,7 +169,8 @@ function R.migrate(d, guid)
 		if type(v)=="table" and C.typeById(v.type) and C.rarity(v.rarity) and C.modifier(v.modifier) and (#owned<C.MaxInventory or C.rarity(v.rarity).exclusive) then
 			local id=if type(v.id)=="string" and #v.id<=64 and #v.id>0 and not ids[v.id] then v.id else guid()
 			ids[id]=true table.insert(owned,{id=id,type=v.type,rarity=v.rarity,modifier=v.modifier,level=math.clamp(integer(v.level,1,C.topLevelCap()),1,C.topLevelCap()),
-				fused=if v.fused==true then true else nil})
+				fused=if v.fused==true then true else nil,
+				stars=(function() local n=integer(v.stars,0,C.Merge.MaxStars) return if n>0 then n else nil end)()})
 		end
 	end
 	if #owned==0 then local id=guid() table.insert(owned,{id=id,type="Bumper",rarity="Common",modifier="Standard",level=1}) ids[id]=true end
@@ -217,6 +218,7 @@ function R.stats(d,item,perks,rows)
 	local speed=perks.speed or 1
 	local cycle=t.cycle*C.SpeedFactor^s.upgrades.Speed/speed
 	local value=t.value*C.LevelYield^(item.level-1)*(1+C.YieldPerLevel*s.upgrades.Yield)*C.rarity(item.rarity).mult*C.modifier(item.modifier).mult*(perks.mult or 1)*(if item.fused then C.Fusion.Mult else 1)
+		*C.Merge.Mult^(tonumber(item.stars) or 0)
 	-- 31 Oct: damage past a one-hit crush isn't wasted: every doubling of the
 	-- surplus adds C.OverkillBonus scrap (log scale, so it stays modest)
 	local overkill=if damage>t.hp then C.OverkillBonus*math.log(damage/t.hp,2) else 0
@@ -311,6 +313,25 @@ local function act(d,session,action,args,now,random,guid,perks)
 	elseif action=="Unequip" then
 		if not R.find(d,args.id) then return false,"You do not own that crusher." end
 		for key,id in s.equipped do if id==args.id then s.equipped[key]=nil end end
+	elseif action=="Merge" then
+		-- 2 Nov evening: two spare copies (same type and stars, not in a bay, not
+		-- fused; the lowest levels go first) merge into this crusher: +1 star
+		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
+		local stars=tonumber(item.stars) or 0
+		if stars>=C.Merge.MaxStars then return false,"This crusher has the most stars already." end
+		if item.fused then return false,"Fused crushers can't merge." end
+		local equipped={} for _,id in s.equipped do equipped[id]=true end
+		local spare={}
+		for _,other in s.owned do
+			if other.id~=item.id and other.type==item.type and (tonumber(other.stars) or 0)==stars and not other.fused and not equipped[other.id] then table.insert(spare,other) end
+		end
+		if #spare<C.Merge.Copies then return false,"Merging needs "..C.Merge.Copies.." spare copies of this crusher with the same stars." end
+		table.sort(spare,function(a,b) return a.level<b.level end)
+		local gone={} for i=1,C.Merge.Copies do gone[spare[i].id]=true end
+		for i=#s.owned,1,-1 do if gone[s.owned[i].id] then table.remove(s.owned,i) end end
+		item.stars=stars+1
+		d.stats=d.stats or {} d.stats.merges=(d.stats.merges or 0)+1
+		return true,"MERGED! "..string.rep("★",item.stars).." x"..string.format("%.2g",C.Merge.Mult^item.stars).." cash",item.stars
 	elseif action=="Recycle" then
 		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
 		for _,id in s.equipped do if id==item.id then return false,"Unequip this crusher before recycling it." end end

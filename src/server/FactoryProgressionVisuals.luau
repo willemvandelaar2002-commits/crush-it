@@ -155,9 +155,11 @@ function V.sync(plot,d,quote,now,preview)
 			v.lab.booth=Assets.place(want,v.lab.model,plot.origin*BOOTH_AT,{inset=.8,scale=C.CoatingBoothScale})
 			if v.lab.booth then v.lab.booth.Name="CoatingBooth" v.lab.booth:SetAttribute("Version",want) end
 		end
-		show(v.lab.model,expanded)
-		if v.lab.content then v.lab.content.Visible=expanded end
-		if v.lab.prompt then v.lab.prompt.Enabled=expanded end
+		-- (2 Nov evening: the Coating Lab comes with Factory II)
+		local labOpen=level>=C.CoatingPlotLevel
+		show(v.lab.model,labOpen)
+		if v.lab.content then v.lab.content.Visible=labOpen end
+		if v.lab.prompt then v.lab.prompt.Enabled=labOpen end
 		for _,part in v.gateParts do
 			local open=yardOpen
 			part.Transparency=if open then 1 else 0 part.CanCollide=not open part.CanQuery=not open
@@ -175,8 +177,8 @@ function V.sync(plot,d,quote,now,preview)
 		success=name.."!"}
 	W.purchase(v.upgrade.button,view)
 	v.upgrade.info.Text=if maxed then C.MaxBays.." BAYS · MASTER FACTORY"
-		elseif level==0 then "+12 BAYS · UPPER FLOOR · HIGHER LV CAPS"
-		elseif level==1 then "+12 BAYS · 3RD FLOOR · COATING LAB"
+		elseif level==0 then "+12 BAYS · UPPER FLOOR · COATING LAB"
+		elseif level==1 then "+12 BAYS · 3RD FLOOR · HIGHER LV CAPS"
 		elseif level==2 then "+12 BAYS · REAR YARD · FUSION MACHINE"
 		elseif level==3 then "+6 BAYS · REAR UPPER LEFT · HIGHER LV CAPS"
 		else "+6 BAYS · REAR UPPER RIGHT · HIGHER LV CAPS"

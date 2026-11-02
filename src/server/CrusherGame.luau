@@ -181,6 +181,7 @@ local function goalCount(d,g)
 	if g.check=="frenzy" then return math.min(1,stats.frenzies or 0),1 end
 	if g.check=="golden" then return math.min(1,stats.goldenToys or 0),1 end
 	if g.check=="turbo" then return math.min(1,stats.turbos or 0),1 end
+	if g.check=="merge" then return math.min(1,stats.merges or 0),1 end
 	return 0,1
 end
 local function goalDone(d,g) local have,need=goalCount(d,g) return have>=need end
@@ -221,7 +222,7 @@ local function goalTick(p,d)
 	if s.goal==nil then s.goal=1 silent=(s.bays or 0)>2 or (s.plotLevel or 0)>0 end -- older saves
 	-- older saves also skip the one-off habit goals (gift, index, row, rolls)
 	-- they would otherwise be stuck on, but stop at the first real progress goal
-	local habit={gift=true,index=true,row=true,rolls=true,frenzy=true,golden=true,turbo=true}
+	local habit={gift=true,index=true,row=true,rolls=true,frenzy=true,golden=true,turbo=true,merge=true}
 	local done=0
 	while C.Goals2[s.goal] and (goalDone(d,C.Goals2[s.goal]) or (silent and habit[C.Goals2[s.goal].check])) and done<#C.Goals2 do
 		if not silent then goalReward(p,d,C.Goals2[s.goal]) end
@@ -331,7 +332,7 @@ local function send(p,message,result)
 		if item then
 			card.scope.Text="THIS CRUSHER"
 			local r=C.rarity(item.rarity)
-			card.name.Text=C.typeById(item.type).name
+			card.name.Text=(if (item.stars or 0)>0 then string.rep("★",item.stars).." " else "")..C.typeById(item.type).name
 			card.rarity.Text=(if item.fused then "FUSED · " else "")..item.rarity..(if item.modifier~="Standard" then "  ·  "..item.modifier.." x"..C.modifier(item.modifier).mult else "")
 			card.rarity.TextColor3=r.color:Lerp(Color3.new(1,1,1),.25)
 			local view=UpgradeView.crusher(d,item,displayPerks)
@@ -839,7 +840,7 @@ function G.start()
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
 		elseif name=="TrashMany" then target=ctx.plot.stations.Trash and ctx.plot.stations.Trash.part reach=40
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
-		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" then
+		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Merge" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end
