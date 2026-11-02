@@ -26,7 +26,7 @@ Ship, Statue, Planet.
 
 - 31 Oct: overkill: damage above a toy's hp gives scrap x(1 + C.OverkillBonus*log2(damage/hp)), OverkillBonus 0.05 (+5% per doubling; ~+1.2% income per Damage level late game). Board Damage/Speed lines show the next level's real income gain on equipped crushers (CrusherUpgradeView incomeGain).
 
-- 31 Oct: luck factor per rarity = (1 + LuckPerLevel*luck*rank) * LuckGrowth^(luck*rank), LuckGrowth 1.01 (C.luckFactor, used by rolls and roll-odds text). Roll board shows "Legendary+ 1 in N > 1 in N".
+- 31 Oct: luck factor per rarity = (1 + LuckPerLevel*luck*rank) * LuckGrowth^(luck*rank), LuckGrowth 1.01 (2 Nov: LuckPerLevel 0.3 and LuckGrowth 1.015, about 2x the Legendaries at every level: per pedestal Legendary+ 1 in 90 at Luck 5, 55 at 10, 31 at 20, 21 at 30; Secret 1 in 970 at 10) (C.luckFactor, used by rolls and roll-odds text). Roll board shows "Legendary+ 1 in N > 1 in N".
 
 - 31 Oct: YieldPerLevel 0.3 (was 0.2), OverkillBonus 0.08 (was 0.05), toy placing time = C.inputDelay(speed) = 0.8 x max(0.6, 0.94^speed) (Strike Speed now shortens it too).
 
