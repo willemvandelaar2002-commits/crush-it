@@ -188,10 +188,15 @@ end
 local function goalTick(p,d)
 	local s=d.crushers
 	if (s.tutorial or 1)<=#C.TutorialSteps then return end
+	-- Factory III+ is past the whole chain
+	if (s.plotLevel or 0)>=2 then if C.Goals2[s.goal or 1] then s.goal=#C.Goals2+1 end return end
 	local silent=false
 	if s.goal==nil then s.goal=1 silent=(s.bays or 0)>2 or (s.plotLevel or 0)>0 end -- older saves
+	-- older saves also skip the one-off habit goals (gift, index, row, rolls)
+	-- they would otherwise be stuck on, but stop at the first real progress goal
+	local habit={gift=true,index=true,row=true,rolls=true}
 	local done=0
-	while C.Goals2[s.goal] and goalDone(d,C.Goals2[s.goal]) and done<#C.Goals2 do
+	while C.Goals2[s.goal] and (goalDone(d,C.Goals2[s.goal]) or (silent and habit[C.Goals2[s.goal].check])) and done<#C.Goals2 do
 		if not silent then goalReward(p,d,C.Goals2[s.goal]) end
 		s.goal+=1 done+=1
 	end
