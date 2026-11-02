@@ -344,3 +344,4 @@
 - 2026-11-02: MERGE (3 of the same crusher -> +1 star, x1.5 value per star, max 3), Coating Lab moves to Factory II, REBIRTH from Factory IV ($150M x8 per rebirth, +50% income each, keeps all crushers/Index/Luck/pedestals). Roll-speed upgrade not brought back (retired for pedestals). What's New v2. Goals v5 adds a Merge goal. Studio-tested with all specs. Willem.
 - 2026-11-02: MERGE removed again (Willem: the fuser already does this). Old stars keep their bonus; Merge goal gone (goals v6, 20 goals); What's New v3. Willem.
 - 2026-11-02: Goals cut from 20 to 12 (Willem: tutorial takes too long; funnel showed churn on the filler goals, Roll 10 times 21%). Saves on a removed goal move to the next one that still exists. Willem.
+- 2026-11-02: Fix: when the guide finished (last goal, or a save jumping past the goals) the gold trail and arrow stayed on the old target, because finishGoal/finishStep set mode = nil and switch(nil) then returned early. Willem.
