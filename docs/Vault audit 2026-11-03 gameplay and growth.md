@@ -67,3 +67,4 @@ Trading, PvP, battle pass, subscriptions, season resets, combat anti-cheat.
   cash pack texts say "10 minutes / 1 hour / 4 hours of your earnings". Willem: update the dashboard descriptions.
 - 6 timing events: ReachedFactory (minutes played, factory name), ReachedFactoryAfterRebirth, RebirthMinutes.
 - 2 HUD reveal (client/HudReveal): during the 8 tutorial steps shop, rewards, top row, SMASH, rebirth, leaderboard, event countdown, boosts and the INDEX button are hidden; they all appear when the tutorial ends.
+- 4 pity on rolls: after 200 rolls without buying a Legendary+, one pedestal per roll is a Legendary until bought; counter on the roll machine.

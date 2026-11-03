@@ -367,6 +367,11 @@ C.Upgrades = {
 }
 C.UpgradeOrder = { "Damage", "Speed", "Yield", "Luck", "Pedestals" }
 C.UpgradeMany = 10 -- 3 Nov: the x10 button on the FACTORY UPGRADES board
+-- 3 Nov (vault: Genre Playbook - RNG and Collection Games, "pity for the long tail,
+-- shown to players"): after Rolls rolls without buying a Legendary or better, one
+-- pedestal of every roll shows a Legendary until you buy one. Base Legendary+ odds
+-- are about 1 in 480 per pedestal at Luck 0, so this only catches bad streaks.
+C.Pity = { Rolls = 200, Rarity = "Legendary", MinRank = 4 }
 C.IndividualBase = 16
 C.IndividualGrowth = 1.38
 -- Guided tutorial (client/Tutorial): one step at a time, each finished by the
