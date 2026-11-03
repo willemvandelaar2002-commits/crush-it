@@ -11,6 +11,11 @@ local M = {}
 M.Codes = {
 	{ code = "CRUSHIT", reward = { { cash = 600 } } },
 	{ code = "GOALS", reward = { { boost = "Luck", minutes = 15 }, { cash = 300 } }, expires = "2026-11-23" },
+	-- 3 Nov (Willem): codes for the game description, one per reward kind
+	{ code = "LUCKYROLL", reward = { { boost = "Luck", minutes = 15 } } },
+	{ code = "REBIRTH", reward = { { boost = "Cash", minutes = 15 } } },
+	{ code = "FREECRUSHER", reward = { { crusher = "Rare" } } },
+	{ code = "PHONEUPDATE", reward = { { boost = "Super", minutes = 10 }, { cash = 600 } }, expires = "2026-11-17" },
 }
 
 M.MinCash = 100 -- a cash reward is never less than this
