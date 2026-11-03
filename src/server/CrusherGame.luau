@@ -307,6 +307,14 @@ local function send(p,message,result)
 		for _,id in C.UpgradeOrder do if C.Upgrades[id].group==group then
 			local row=ctx.plot.stations[group].rows[id] local view=UpgradeView.board(d,id,displayPerks)
 			row.label.Text=view.effect Workshop.purchase(row.button,view)
+			if row.many then
+				-- x10: price of up to 10 levels (as many as the cap allows); ready when one level is affordable
+				local lv=s.upgrades[id] local max=C.upgradeMax(id,s.plotLevel) local n=math.min(C.UpgradeMany,max-lv)
+				local cost=0 for k=0,n-1 do cost+=C.globalCost(id,lv+k) end
+				local many=UpgradeView.purchase(d.cash,if n>0 then C.globalCost(id,lv) else 0,n<=0,"","")
+				many.button="x"..C.UpgradeMany many.hint=if n<=0 then Rules.capMessage(s.plotLevel) else "Buys up to "..C.UpgradeMany.." levels ("..Format.cash(cost).." for all "..n..")."
+				Workshop.purchase(row.many,many)
+			end
 		end end
 	end
 	-- Favorite is best-effort client confirmation; group and cooldown are server gates.
@@ -666,7 +674,7 @@ local function upgradeSummary(levelBefore,level)
 		caps={global={if before then before.global else C.MaxGlobal,after.global},level={if before then before.level else C.MaxLevel,after.level}}}
 end
 -- 2 Nov: what each action's cash change is called in the economy dashboard
-local ACTION_SKU={Rebuild="UnlockBay",Sell="SellScrap",Buy="BuyCrusher",Unlock="UnlockBay",Upgrade="FactoryUpgrade",Level="LevelUp",LevelMax="LevelUp",
+local ACTION_SKU={UpgradeMany="FactoryUpgrade",Rebuild="UnlockBay",Sell="SellScrap",Buy="BuyCrusher",Unlock="UnlockBay",Upgrade="FactoryUpgrade",Level="LevelUp",LevelMax="LevelUp",
 	UpgradePlot="PlotUpgrade",ApplyCoating="Coating",Fuse="Fusion",RollUpgrade="RollUpgrade"}
 local function action(p,name,args)
 	local ctx=sessions[p] local d=Data.get(p) if not ctx or not d then return false,"Profile is loading." end
@@ -842,7 +850,7 @@ function G.start()
 		if name=="GroupCheck" then ctx.inGroup=checkGroup(p,true) send(p) return end
 		-- World purchases require the owner's own station and a nearby character.
 		local target local reach=C.Layout.InteractionDistance
-		if name=="Upgrade" then local u=C.Upgrades[args.id] if u then target=ctx.plot.stations[u.group].part end
+		if name=="Upgrade" or name=="UpgradeMany" then local u=C.Upgrades[args.id] if u then target=ctx.plot.stations[u.group].part end
 		elseif name=="Level" or name=="LevelMax" or name=="Unlock" then
 			local bay=if type(args.bay)=="number" then ctx.plot.bays[args.bay] else nil
 			if bay and (name=="Unlock" and args.bay==d.crushers.bays+1 or name~="Unlock" and d.crushers.equipped[tostring(args.bay)]==args.id) then target=bay.part end

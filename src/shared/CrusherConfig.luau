@@ -366,6 +366,7 @@ C.Upgrades = {
 	Pedestals = { name = "Rolling pedestals", group = "Rolling", base = 150, growth = 6, max = 4 },
 }
 C.UpgradeOrder = { "Damage", "Speed", "Yield", "Luck", "Pedestals" }
+C.UpgradeMany = 10 -- 3 Nov: the x10 button on the FACTORY UPGRADES board
 C.IndividualBase = 16
 C.IndividualGrowth = 1.38
 -- Guided tutorial (client/Tutorial): one step at a time, each finished by the

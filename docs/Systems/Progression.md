@@ -104,3 +104,4 @@ Goal: fewer players leaving before the first collect (funnel step 2, 12.5% churn
 - Equip Best (3 Nov fix): compares three layouts with the row bonuses included (best output; the same crushers
   grouped by rarity so they fill whole rows; your layout with only the empty bays filled) and picks the one that
   earns most. The red "!" on the button is the server running the same rule (every 3 s).
+- x10 factory upgrades (3 Nov, Willem): a small x10 button next to each FACTORY UPGRADES row (Damage, Strike speed, Scrap yield) buys up to 10 levels (`C.UpgradeMany`), as many as the cash and the cap allow; it counts as that many upgrades for quests. Luck and pedestals stay one at a time.

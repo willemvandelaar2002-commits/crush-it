@@ -104,8 +104,16 @@ function W.board(parent,cf,kind)
 		title.TextXAlignment=Enum.TextXAlignment.Left
 		local level=W.text(row,"LevelStep","",UDim2.fromScale(.18,.56),UDim2.fromScale(.5,.38))
 		level.TextXAlignment=Enum.TextXAlignment.Left level.TextColor3=Color3.fromRGB(255,240,170)
-		local b=W.button(row,"Buy","$0",UDim2.fromScale(.7,.12),UDim2.fromScale(.28,.76),"Upgrade",id)
-		rows[id]={label=level,button=b}
+		local many=nil
+		if kind=="Production" then
+			-- 3 Nov (Willem): x10 next to each factory upgrade
+			local b=W.button(row,"Buy","$0",UDim2.fromScale(.6,.12),UDim2.fromScale(.24,.76),"Upgrade",id)
+			many=W.button(row,"BuyMany","x"..C.UpgradeMany,UDim2.fromScale(.855,.12),UDim2.fromScale(.135,.76),"UpgradeMany",id)
+			rows[id]={label=level,button=b,many=many}
+		else
+			local b=W.button(row,"Buy","$0",UDim2.fromScale(.7,.12),UDim2.fromScale(.28,.76),"Upgrade",id)
+			rows[id]={label=level,button=b}
+		end
 	end end
 	return {part=face,rows=rows}
 end
