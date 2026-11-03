@@ -161,6 +161,7 @@ function R.migrate(d, guid)
 	s.available=C.money(number(s.available,0)) s.tutorial=math.clamp(integer(s.tutorial,1,#C.TutorialSteps+1),1,#C.TutorialSteps+1) -- #steps+1 = finished
 	s.rollReadyAt=number(s.rollReadyAt,0,1e12)
 	s.rolls=integer(s.rolls,0,1e9) -- rolls made (the first one is always cheap)
+	s.pity=integer(s.pity,0,1e6) -- 3 Nov: rolls since the last Legendary+ was bought (C.Pity)
 	s.rebirths=integer(s.rebirths,0,1000) -- 2 Nov evening: crusher-era rebirths (not the legacy d.rebirths)
 	local owned,ids={},{}
 	-- crate crushers have one fixed tier: copies saved under an older tier follow it
@@ -255,12 +256,17 @@ local function act(d,session,action,args,now,random,guid,perks)
 		local offers={}
 		-- the very first roll only offers plain Commons, so it is cheap to buy
 		local first=s.rolls==0
-		for i=1,C.pedestals(s.upgrades.Pedestals) do
+		local count=C.pedestals(s.upgrades.Pedestals)
+		-- pity: one pedestal is a guaranteed Legendary once the counter is full
+		local pitySlot=if not first and (s.pity or 0)+1>=C.Pity.Rolls then math.min(count,math.floor(random()*count)+1) else nil
+		for i=1,count do
 			local rarity=if first then C.Rarities[1] else C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky,perks and perks.indexLuck),random)]
+			if i==pitySlot and rarity.rank<C.Pity.MinRank then rarity=C.rarity(C.Pity.Rarity) end
 			local mod=if first then C.Modifiers[1] else C.Modifiers[choose(weights,random)]
 			offers[i]={type=rarity.types[math.min(#rarity.types,math.floor(random()*#rarity.types)+1)],rarity=rarity.name,modifier=mod.name,level=1}
 		end
 		session.offers=offers session.nextRoll=now+C.rollSeconds() s.rolls+=1
+		if not first then s.pity=math.min((s.pity or 0)+1,C.Pity.Rolls) end
 		return true,"Rolling...",offers
 	elseif action=="Buy" then
 		local slot=args.slot
@@ -272,6 +278,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if not pay(price) then return false,"Need $"..price..". Collect and sell scrap first." end
 		local item={id=guid(),type=offer.type,rarity=offer.rarity,modifier=offer.modifier,level=1}
 		table.insert(s.owned,item) session.offers[slot]=false session.lastRoll=item.id
+		local r=C.rarity(item.rarity) if r and r.rank>=C.Pity.MinRank then s.pity=0 end
 		return true,"Bought "..C.typeById(item.type).name.."!",item
 	elseif action=="Equip" then
 		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end

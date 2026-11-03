@@ -358,3 +358,4 @@
 - 2026-11-03: Vault audit round 2 fixes: device-correct "press E" text, honest Production Boost / cash pack texts, timing events for factory levels and rebirths. Willem.
 - 2026-11-03: HUD reveal for new players (vault FTUE): only tutorial headline, cash, hotbar and world during the 8 tutorial steps; the rest appears when the tutorial is done. Willem.
 - 2026-11-03: SMASH goal removed from the guide (funnel: 4 of 13 players stopped there; Willem). Goals v8 = 11 goals, step 10 is now "Fill 3 bays". SMASH stays as an optional button. Phone/tablet: cash and friend boost moved down so they no longer overlap the INDEX/SHOP/REWARDS labels and the gift chip. Willem.
+- 2026-11-03: Pity on rolls (vault RNG playbook, audit item 4): after 200 rolls without buying a Legendary+, one pedestal of every roll shows a Legendary until you buy one; the roll machine shows "Legendary in N rolls". Willem.

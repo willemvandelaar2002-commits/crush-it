@@ -85,5 +85,16 @@ return function()
 	local _,_,n2=act(u,"UpgradeMany",{id="Damage"})
 	check(n2==2 and u.crushers.upgrades.Damage==12,"x10 buys what the cash covers")
 	check(not act(u,"UpgradeMany",{id="Damage"}) and not act(u,"UpgradeMany",{id="Luck"}),"x10 needs cash and only works on factory upgrades")
+	-- PITY: after C.Pity.Rolls rolls without buying a Legendary+, a roll always shows one
+	local y=R.migrate({cash=1e12},id) y.crushers.available=0
+	local ys=y.crushers ys.rolls=5 ys.pity=C.Pity.Rolls-1
+	local sess={}
+	local okR,_,offs=R.act(y,sess,"Roll",{},0,function() return .01 end,id,{})
+	local slot=nil for i,o in offs do if C.rarity(o.rarity).rank>=C.Pity.MinRank then slot=i end end
+	check(okR and slot~=nil,"the pity roll shows a Legendary+")
+	check(R.act(y,sess,"Buy",{slot=slot},C.RollSeconds,math.random,id,{}) and ys.pity==0,"buying it resets the counter")
+	local okR2=R.act(y,sess,"Roll",{},C.RollSeconds*2,function() return .01 end,id,{})
+	check(okR2 and ys.pity==1,"the counter counts rolls again")
+	check(R.migrate(R.copy(y),id).crushers.pity==1,"pity survives migrate")
 	print("RebirthMerge.spec: "..checks.." checks passed")
 end

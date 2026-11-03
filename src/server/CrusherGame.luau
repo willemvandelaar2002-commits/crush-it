@@ -299,7 +299,10 @@ local function send(p,message,result)
 		st.Turbo.label.Text=if tm>1 then string.format("x%d cash · %d:%02d left",tm,left//60,left%60) else "Boost your crushers!"
 	end
 	local rolling=os.clock()<(ctx.nextRoll or 0)
-	st.Roll.label.Text=if rolling then "Rolling..." else "Free  ·  "..C.pedestals(s.upgrades.Pedestals).." pedestal"..(if C.pedestals(s.upgrades.Pedestals)>1 then "s" else "")
+	-- 3 Nov: the pity counter is shown on the roll machine (vault: pity must be visible)
+	local pityLeft=math.max(0,C.Pity.Rolls-(s.pity or 0))
+	local pityText=if pityLeft<=0 then "LEGENDARY GUARANTEED!" else "Legendary in "..pityLeft.." rolls"
+	st.Roll.label.Text=if rolling then "Rolling..." else "Free  ·  "..C.pedestals(s.upgrades.Pedestals).." pedestal"..(if C.pedestals(s.upgrades.Pedestals)>1 then "s" else "").."\n"..pityText
 	st.Roll.button.Text=if rolling then "ROLLING..." else "ROLL"
 	pedestalLook(ctx.plot,C.pedestals(s.upgrades.Pedestals))
 	local displayPerks=perks(p)
