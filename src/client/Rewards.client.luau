@@ -6,7 +6,7 @@
 -- in a wide rainbow bar with a big countdown. The stud pattern on the header,
 -- cards and bar drifts slowly (Style.flowingStuds).
 --   Playtime  six gifts + a grand prize that unlock after minutes in this session
---   Daily     7-day check-in; day 7 is the grand prize; missing a day starts over
+--   Daily     7-day check-in; day 7 is the grand prize; one missed day a week is forgiven
 -- The server decides everything (server/Rewards.luau); this only shows its
 -- state and counts down. Click a ready card to claim it.
 
@@ -378,7 +378,7 @@ local function showTab(name: string)
 	skip.Visible = name == "Playtime"
 	footer.Text = if name == "Playtime" then "Leaving the game resets your playtime gifts!"
 		elseif name == "Codes" then "New codes with every update: check the game page and our group!"
-		else "Come back every day! Missing a day starts over."
+		else "Come back every day! You can miss 1 day a week."
 	for n, t in tabs do
 		paintBar(t, if n == name then t:GetAttribute("Color") :: Color3 else GREY)
 	end

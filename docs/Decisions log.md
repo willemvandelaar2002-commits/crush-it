@@ -352,3 +352,4 @@
 - 2026-11-03: Rebirth tuned down to x1.5 cash / x3 cost per rebirth (x2 gave x32 at 5 rebirths). Equip-by-rarity moved from an arrow next to Equip Best to the row signs: E at a row sign fills that row with one rarity. Willem.
 - 2026-11-03: Fill row opens from a physical FILL ROW button board at each row sign (not an E prompt). Willem.
 - 2026-11-03: Fix: Equip Best refused to fill bays past 12 (its row-bonus check left out the factory level, so it counted only bays 1-12). Equip Best now compares three layouts with row bonuses included (best output, same crushers grouped by rarity into rows, current layout with empty bays filled) and takes the best; the red "!" comes from the same rule on the server. Willem.
+- 2026-11-03: Daily check-in gets a grace day (vault: Retention and Return Hooks): one missed UTC day a week keeps the streak. Willem kept landing on day 1; days flip at 01:00 Dutch time, so playing around midnight can skip a UTC day. Willem.
