@@ -165,9 +165,15 @@ local function phoneWidths()
 	for _, b in row:GetChildren() do
 		if b:IsA("TextButton") then b.Size = UDim2.fromOffset(if compact then 128 else 190, 54) end
 	end
-	local w = math.max(54, math.floor(list.AbsoluteContentSize.X + 0.5))
+	-- (AbsoluteContentSize already includes the phone UIScale, so add up the
+	-- unscaled widths of the visible buttons instead)
+	local w, n = 0, 0
+	for _, b in row:GetChildren() do
+		if b:IsA("TextButton") and b.Visible then w += b.Size.X.Offset n += 1 end
+	end
+	w = math.max(54, w + math.max(0, n - 1) * list.Padding.Offset)
 	row.Size = UDim2.fromOffset(if compact then w else 800, 54)
 end
-list:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(phoneWidths)
+for _, b in row:GetChildren() do if b:IsA("TextButton") then b:GetPropertyChangedSignal("Visible"):Connect(phoneWidths) end end
 workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(phoneWidths)
 phoneWidths()
