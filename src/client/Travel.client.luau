@@ -22,7 +22,10 @@ row.AnchorPoint = Vector2.new(0.5, 0)
 row.Position = UDim2.new(0.5, 0, 0, 6)
 row.Size = UDim2.fromOffset(800, 54) -- room for REBUILD
 -- 30 Oct (phone patch): top right on phones, clear of the INDEX/SHOP/REWARDS icons
-Style.phoneFit(row, { scale = 0.75, margin = 230, anchor = Vector2.new(1, 0), position = UDim2.new(1, -8, 0, 6) })
+-- 3 Nov (vault: Responsive UI, 44 px taps): on phones the buttons are narrower and the
+-- row is only as wide as its visible buttons, so the scale stays high enough that
+-- the buttons draw at least ~44 px tall; margin leaves room for the 4 HUD icons
+Style.phoneFit(row, { scale = 0.9, margin = 285, anchor = Vector2.new(1, 0), position = UDim2.new(1, -8, 0, 6) })
 row.BackgroundTransparency = 1
 row.Parent = gui
 local list = Instance.new("UIListLayout")
@@ -155,3 +158,16 @@ Net.event("CrusherState").OnClientEvent:Connect(function(v)
 	local capacity = C.bayCapacity(v.plotLevel or 0)
 	rebuild.Visible = (v.rebirths or 0) >= 1 and (v.unlocked or 0) < capacity
 end)
+
+-- 3 Nov: phone sizing (see the phoneFit note above)
+local function phoneWidths()
+	local compact = Style.compact()
+	for _, b in row:GetChildren() do
+		if b:IsA("TextButton") then b.Size = UDim2.fromOffset(if compact then 128 else 190, 54) end
+	end
+	local w = math.max(54, math.floor(list.AbsoluteContentSize.X + 0.5))
+	row.Size = UDim2.fromOffset(if compact then w else 800, 54)
+end
+list:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(phoneWidths)
+workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(phoneWidths)
+phoneWidths()
