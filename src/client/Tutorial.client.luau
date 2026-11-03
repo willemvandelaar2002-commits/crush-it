@@ -116,7 +116,7 @@ local function sameStep(key: string)
 end
 local function showHint(default: string?, override: string?)
 	local text = override or (if os.clock() - stepSince > 15 then default else nil)
-	hint.Text = text or ""
+	hint.Text = if text then Style.controls(text) else ""
 	hint.Visible = text ~= nil
 end
 

@@ -355,3 +355,4 @@
 - 2026-11-03: Daily check-in gets a grace day (vault: Retention and Return Hooks): one missed UTC day a week keeps the streak. Willem kept landing on day 1; days flip at 01:00 Dutch time, so playing around midnight can skip a UTC day. Willem.
 - 2026-11-03: Rebirth cost growth x3 -> x4 (Willem): $150M, $600M, $2.4B, $9.6B, $38.4B; cash stays x1.5 per rebirth. Each run ~2.7x longer than the last. Willem.
 - 2026-11-03: x10 button next to each factory upgrade (Damage, Strike speed, Scrap yield): buys up to 10 levels, as many as cash and the cap allow. Willem.
+- 2026-11-03: Vault audit round 2 fixes: device-correct "press E" text, honest Production Boost / cash pack texts, timing events for factory levels and rebirths. Willem.
