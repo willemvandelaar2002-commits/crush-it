@@ -66,3 +66,4 @@ Trading, PvP, battle pass, subscriptions, season resets, combat anti-cheat.
 - 3 the pass card says "Production Boost: +25% damage for all your crushers, forever" (its dashboard name);
   cash pack texts say "10 minutes / 1 hour / 4 hours of your earnings". Willem: update the dashboard descriptions.
 - 6 timing events: ReachedFactory (minutes played, factory name), ReachedFactoryAfterRebirth, RebirthMinutes.
+- 2 HUD reveal (client/HudReveal): during the 8 tutorial steps shop, rewards, top row, SMASH, rebirth, leaderboard, event countdown, boosts and the INDEX button are hidden; they all appear when the tutorial ends.
