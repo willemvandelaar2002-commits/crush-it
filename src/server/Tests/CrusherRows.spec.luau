@@ -97,7 +97,7 @@ return function()
 	table.insert(d.crushers.owned,outsider)
 	local before=R.copy(d.crushers.equipped)
 	local ok,message=R.act(d,{},"EquipBest",{},0,math.random,guid,{})
-	check(not ok and message:find("row bonuses")~=nil,"Equip Best protects a better matching setup")
+	check(not ok and message:find("best crushers")~=nil,"Equip Best keeps a better matching setup (3 Nov: it compares layouts with row bonuses)")
 	for key,id in before do check(d.crushers.equipped[key]==id,"rejected selection is non-mutating") end
 	check(not R.act(d,{},"ActivateRow",{row=1,rarity="Legendary"},0,math.random,guid,{}),"clients cannot claim a row perk")
 	return {passed=checks}
