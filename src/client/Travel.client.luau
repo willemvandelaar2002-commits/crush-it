@@ -22,7 +22,10 @@ row.AnchorPoint = Vector2.new(0.5, 0)
 row.Position = UDim2.new(0.5, 0, 0, 6)
 row.Size = UDim2.fromOffset(800, 54) -- room for REBUILD
 -- 30 Oct (phone patch): top right on phones, clear of the INDEX/SHOP/REWARDS icons
-Style.phoneFit(row, { scale = 0.75, margin = 230, anchor = Vector2.new(1, 0), position = UDim2.new(1, -8, 0, 6) })
+-- 3 Nov (vault: Responsive UI, 44 px taps): on phones the buttons are narrower and the
+-- row is only as wide as its visible buttons, so the scale stays high enough that
+-- the buttons draw at least ~44 px tall; margin leaves room for the 4 HUD icons
+Style.phoneFit(row, { scale = 0.9, margin = 285, anchor = Vector2.new(1, 0), position = UDim2.new(1, -8, 0, 6) })
 row.BackgroundTransparency = 1
 row.Parent = gui
 local list = Instance.new("UIListLayout")
@@ -61,8 +64,26 @@ local function travelButton(name: string, label: string, color: Color3, where: s
 	if where then b.Activated:Connect(function() Net.event("Travel"):FireServer(where) end) end
 	return b
 end
-travelButton("ToHub", "Mega Crusher", Color3.fromRGB(170, 80, 255), "Hub", 2)
-travelButton("ToPlot", "My Factory", Color3.fromRGB(255, 160, 20), "Plot", 3)
+local toHub = travelButton("ToHub", "Mega Crusher", Color3.fromRGB(170, 80, 255), "Hub", 2)
+local toPlot = travelButton("ToPlot", "My Factory", Color3.fromRGB(255, 160, 20), "Plot", 3)
+-- 3 Nov (Willem): only the button that goes somewhere else shows: on your own plot
+-- MEGA CRUSHER, anywhere else MY FACTORY (same 140-stud plot radius as golden toys)
+local function onOwnPlot(): boolean
+	local root = me.Character and me.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	local plots = workspace:FindFirstChild("Plots")
+	local plot = plots and plots:FindFirstChild("Plot" .. tostring(me:GetAttribute("Plot")))
+	local origin = plot and plot:GetAttribute("Origin") :: CFrame?
+	if not root or not origin then return true end
+	return (root.Position - origin.Position).Magnitude <= 140
+end
+task.spawn(function()
+	while true do
+		local home = onOwnPlot()
+		if toHub.Visible ~= home then toHub.Visible = home end
+		if toPlot.Visible == home then toPlot.Visible = not home end
+		task.wait(0.4)
+	end
+end)
 
 -- EQUIP BEST (reference: "Equip Best" next to "Market"): the server puts your
 -- highest-output crushers in your bays. A red "!" shows when it would help.
@@ -155,3 +176,22 @@ Net.event("CrusherState").OnClientEvent:Connect(function(v)
 	local capacity = C.bayCapacity(v.plotLevel or 0)
 	rebuild.Visible = (v.rebirths or 0) >= 1 and (v.unlocked or 0) < capacity
 end)
+
+-- 3 Nov: phone sizing (see the phoneFit note above)
+local function phoneWidths()
+	local compact = Style.compact()
+	for _, b in row:GetChildren() do
+		if b:IsA("TextButton") then b.Size = UDim2.fromOffset(if compact then 128 else 190, 54) end
+	end
+	-- (AbsoluteContentSize already includes the phone UIScale, so add up the
+	-- unscaled widths of the visible buttons instead)
+	local w, n = 0, 0
+	for _, b in row:GetChildren() do
+		if b:IsA("TextButton") and b.Visible then w += b.Size.X.Offset n += 1 end
+	end
+	w = math.max(54, w + math.max(0, n - 1) * list.Padding.Offset)
+	row.Size = UDim2.fromOffset(if compact then w else 800, 54)
+end
+for _, b in row:GetChildren() do if b:IsA("TextButton") then b:GetPropertyChangedSignal("Visible"):Connect(phoneWidths) end end
+workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(phoneWidths)
+phoneWidths()
