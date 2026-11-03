@@ -37,14 +37,24 @@ local function today(): number
 end
 
 -- Where the streak stands: (next day index 1..7, can claim now).
-local function dailyState(data: any): (number, boolean)
+-- 3 Nov (Willem: "it's day 1 for me every day"; vault: Retention and Return Hooks,
+-- "streak with grace"): days are UTC days (they flip at 01:00 in the Netherlands),
+-- so someone who plays around midnight can skip a UTC day without missing an
+-- evening. One missed day now keeps the streak, at most once a week (d.grace =
+-- the UTC day the grace was last used).
+local function dailyState(data: any): (number, boolean, boolean)
 	local d = data.daily
 	local t = today()
 	if d.day == t then
-		return d.streak, false -- already claimed today; `streak` is today's day
+		return d.streak, false, false -- already claimed today; `streak` is today's day
 	end
-	local nextDay = if d.day == t - 1 then (d.streak % #Config.Rewards.Daily) + 1 else 1
-	return nextDay, true
+	local gap = t - d.day
+	local cycle = #Config.Rewards.Daily
+	if gap == 1 then return (d.streak % cycle) + 1, true, false end
+	if gap == 2 and d.streak > 0 and t - (tonumber(d.grace) or -math.huge) >= cycle then
+		return (d.streak % cycle) + 1, true, true
+	end
+	return 1, true, false
 end
 
 local function send(player: Player)
@@ -112,10 +122,11 @@ local function claim(player: Player, kind: any, index: any)
 		text = grant(player, data, reward)
 		Analytics.custom(player, "PlaytimeReward", i)
 	elseif kind == "daily" then
-		local day, canClaim = dailyState(data)
+		local day, canClaim, usedGrace = dailyState(data)
 		if not canClaim then
 			return
 		end
+		if usedGrace then data.daily.grace = today() end
 		data.daily.day = today()
 		data.daily.streak = day
 		text = "Day " .. day .. ": " .. grant(player, data, Config.Rewards.Daily[day])
@@ -151,6 +162,7 @@ function Rewards.start(a: Api)
 		end
 		data.daily.day = math.floor(tonumber(data.daily.day) or 0)
 		data.daily.streak = math.clamp(math.floor(tonumber(data.daily.streak) or 0), 0, #Config.Rewards.Daily)
+		data.daily.grace = if tonumber(data.daily.grace) then math.floor(data.daily.grace) else nil
 		send(player)
 	end
 	Players.PlayerAdded:Connect(join)
