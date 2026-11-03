@@ -34,7 +34,7 @@ function M.start(api: any)
 				table.insert(parts, "+" .. Format.cash(amount))
 			elseif r.boost then
 				require(script.Parent.Boosts).add(p, r.boost, r.minutes)
-				table.insert(parts, "2x " .. r.boost .. " for " .. r.minutes .. " min")
+				table.insert(parts, (if r.boost == "Super" then "Super Boost (2x Cash + 2x Luck)" else "2x " .. r.boost) .. " for " .. r.minutes .. " min")
 			elseif r.crusher then
 				local name = api.giveCrusher(p, r.crusher, nil, true)
 				if name then table.insert(parts, r.crusher .. " crusher: " .. name) end
