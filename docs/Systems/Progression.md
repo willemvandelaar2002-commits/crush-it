@@ -101,3 +101,6 @@ Goal: fewer players leaving before the first collect (funnel step 2, 12.5% churn
   sign (the "MATCH A ROW" desk sign in front of each row of 6); click it and pick a rarity (every rarity you own, with count and row bonus). The server (CrusherRules "FillRow")
   puts your best crushers of that rarity in that row, moving them from other bays; other rarities in the row go back
   to the backpack. (A picker arrow next to EQUIP BEST and an E prompt were tried first and removed.)
+- Equip Best (3 Nov fix): compares three layouts with the row bonuses included (best output; the same crushers
+  grouped by rarity so they fill whole rows; your layout with only the empty bays filled) and picks the one that
+  earns most. The red "!" on the button is the server running the same rule (every 3 s).
