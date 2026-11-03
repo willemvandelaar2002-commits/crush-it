@@ -64,8 +64,26 @@ local function travelButton(name: string, label: string, color: Color3, where: s
 	if where then b.Activated:Connect(function() Net.event("Travel"):FireServer(where) end) end
 	return b
 end
-travelButton("ToHub", "Mega Crusher", Color3.fromRGB(170, 80, 255), "Hub", 2)
-travelButton("ToPlot", "My Factory", Color3.fromRGB(255, 160, 20), "Plot", 3)
+local toHub = travelButton("ToHub", "Mega Crusher", Color3.fromRGB(170, 80, 255), "Hub", 2)
+local toPlot = travelButton("ToPlot", "My Factory", Color3.fromRGB(255, 160, 20), "Plot", 3)
+-- 3 Nov (Willem): only the button that goes somewhere else shows: on your own plot
+-- MEGA CRUSHER, anywhere else MY FACTORY (same 140-stud plot radius as golden toys)
+local function onOwnPlot(): boolean
+	local root = me.Character and me.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	local plots = workspace:FindFirstChild("Plots")
+	local plot = plots and plots:FindFirstChild("Plot" .. tostring(me:GetAttribute("Plot")))
+	local origin = plot and plot:GetAttribute("Origin") :: CFrame?
+	if not root or not origin then return true end
+	return (root.Position - origin.Position).Magnitude <= 140
+end
+task.spawn(function()
+	while true do
+		local home = onOwnPlot()
+		if toHub.Visible ~= home then toHub.Visible = home end
+		if toPlot.Visible == home then toPlot.Visible = not home end
+		task.wait(0.4)
+	end
+end)
 
 -- EQUIP BEST (reference: "Equip Best" next to "Market"): the server puts your
 -- highest-output crushers in your bays. A red "!" shows when it would help.
