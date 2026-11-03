@@ -41,6 +41,9 @@ function Build.block(parent: Instance, name: string, size: Vector3, cf: CFrame, 
 	p.Size = size
 	p.CFrame = cf
 	p.Color = color
+	-- 3 Nov (vault: Art Budgets, "shadows only where they matter"): small trim
+	-- pieces don't cast shadows; their shadows are invisible but cost GPU on phones
+	if math.max(size.X, size.Y, size.Z) < 3 then p.CastShadow = false end
 	Style.studs(p, studFaces or { Enum.NormalId.Top })
 	p.Parent = parent
 	return p
