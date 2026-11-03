@@ -107,3 +107,11 @@ Goal: fewer players leaving before the first collect (funnel step 2, 12.5% churn
 - x10 factory upgrades (3 Nov, Willem): a small x10 button next to each FACTORY UPGRADES row (Damage, Strike speed, Scrap yield) buys up to 10 levels (`C.UpgradeMany`), as many as the cash and the cap allow; it counts as that many upgrades for quests. Luck and pedestals stay one at a time.
 - Goals v8 (3 Nov): the SMASH into a FRENZY goal is gone (30% of players stopped on it); 11 goals, funnel steps 10-20, Factory III-VI 21-24.
 - Pity (3 Nov, `C.Pity`): `s.pity` counts rolls since the last Legendary+ was bought. At 200, one pedestal of every roll is a Legendary until you buy one (base Legendary+ odds ~1 in 480 per pedestal at Luck 0, so it only catches bad streaks). The roll machine shows "Legendary in N rolls".
+
+## Phone pass 1 (3 Nov; vault: Mobile and Low-End Optimization, Responsive UI, HUD Design)
+- client/PhoneLite: on phones/tablets and PCs on graphics 1-3, Bloom/SunRays/DepthOfField off, Atmosphere glare 0 and haze <= 1, particle rates halved. Player attribute LiteGraphics.
+- Build.block: parts smaller than 3 studs cast no shadow.
+- Top row on phones: 128-wide buttons, row as wide as its visible buttons (draws ~48 px tall at 750x381, was 35). Only one travel button: MEGA CRUSHER on your plot (within 140 studs), MY FACTORY elsewhere.
+- client/NearBay: on touch screens, next to one of your bays with a crusher (11 studs): a big "BAY n · LEVEL UP $x" + MAX bar (same Level/LevelMax actions as the plaque). Hidden during the tutorial and cutscenes.
+- Gift chip: 48 px tap pad; phone cash/friend boost moved below it.
+- Measured at 750x381 (Studio phone view): HUD text all >= 12 px, no overlaps. Panels are the desktop menus shrunk (scale 0.41-0.98): Shop and Rewards text down to 8 px, tabs/close 20-26 px. Next: real phone layouts for the panels (vault: Case Study - Phone UI Overhaul).
