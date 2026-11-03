@@ -175,7 +175,7 @@ function H.start()
     elseif action=="LevelMax" then
      -- MAX: buy as many levels for the crusher on this plaque as the cash covers
      local id=state.bays[tostring(bay)] if id then purchase("LevelMax",{id=id,bay=bay}) end
-    elseif action=="Upgrade" then purchase(action,{id=v:GetAttribute("UpgradeId")})
+    elseif action=="Upgrade" or action=="UpgradeMany" then purchase(action,{id=v:GetAttribute("UpgradeId")})
     elseif action=="UpgradePlot" then purchase(action,{})
     elseif action=="ApplyCoating" then purchase(action,{token=state.coating and state.coating.token})
     -- goals board: the favorite / join prompts are Roblox's own (client side)

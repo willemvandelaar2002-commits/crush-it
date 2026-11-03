@@ -75,5 +75,15 @@ return function()
 	local full=0 for _ in qs.equipped do full+=1 end
 	check(full==qs.bays,"every bay filled: "..full.."/"..qs.bays)
 	check(not R.equipBestHelps(q,{}) and not act(q,"EquipBest"),"then nothing left to improve")
+	-- x10 factory upgrades: up to 10 levels, as many as the cash covers
+	local u=R.migrate({cash=10},id) u.crushers.available=0
+	local cost10=0 for k=0,9 do cost10+=C.globalCost("Damage",k) end
+	u.cash=cost10
+	local okU,_,nU=act(u,"UpgradeMany",{id="Damage"})
+	check(okU and nU==10 and u.crushers.upgrades.Damage==10 and u.cash<1,"x10 buys ten levels")
+	u.cash=C.globalCost("Damage",10)+C.globalCost("Damage",11)
+	local _,_,n2=act(u,"UpgradeMany",{id="Damage"})
+	check(n2==2 and u.crushers.upgrades.Damage==12,"x10 buys what the cash covers")
+	check(not act(u,"UpgradeMany",{id="Damage"}) and not act(u,"UpgradeMany",{id="Luck"}),"x10 needs cash and only works on factory upgrades")
 	print("RebirthMerge.spec: "..checks.." checks passed")
 end
