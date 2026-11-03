@@ -139,6 +139,7 @@ Small, quick game to test alongside WarChest: one loop, few systems, out fast.
 - [[Decisions log]]
 - [[Backlog]]
 - [[Vault audit 2026-11-02]] (gaps found against the Roblox vault checklists)
+- [[Vault audit 2026-11-03 gameplay and growth]] (round 2: gameplay, monetization, growth)
 
 ## Status (19 Oct 2026, end of first session)
 Published as "Crush it" (placeId 132070482662061, Willem's account).
