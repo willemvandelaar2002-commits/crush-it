@@ -30,6 +30,8 @@ function H.start()
  end
  fitDesktopHeader() workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitDesktopHeader)
  local toast=text(gui,"Notice","",UDim2.new(.5,0,1,-150),UDim2.fromOffset(640,40)) toast.AnchorPoint=Vector2.new(.5,0) toast.TextColor3=Color3.fromRGB(255,225,136)
+ -- 3 Nov: "press E" becomes "tap the button" on phones (Style.controls)
+ toast:GetPropertyChangedSignal("Text"):Connect(function() local fixed=Style.controls(toast.Text) if fixed~=toast.Text then toast.Text=fixed end end)
  Style.phoneFit(toast,{scale=.6,width=.9,position=UDim2.new(.5,0,1,-112)}) -- 30 Oct phone patch
  local noticeUntil=0
  local favoriteGoal=require(script.Parent.FavoriteGoal).new({

@@ -715,6 +715,16 @@ local function action(p,name,args)
 			local step=#C.TutorialSteps+#C.Goals2+lv-1 Analytics.funnelStep(p,d.onboarding,step,C.FunnelNames[step])
 		end
 	end
+	-- 3 Nov (vault audit: "time per step logged"): minutes played when each factory
+	-- level and each rebirth is reached, to see how long the long loop really takes
+	-- (vault target: first rebirth in 1-3 h). Value = minutes played (playSeconds).
+	if ok and name=="UpgradePlot" and Progression.level(d)>levelBefore then
+		Analytics.custom(p,if (d.crushers.rebirths or 0)==0 then "ReachedFactory" else "ReachedFactoryAfterRebirth",
+			math.floor((d.playSeconds or 0)/60),C.PlotUpgrade.Names[Progression.level(d)])
+	end
+	if ok and name=="Rebirth" then
+		Analytics.custom(p,"RebirthMinutes",math.floor((d.playSeconds or 0)/60),"Rebirth "..d.crushers.rebirths)
+	end
 	-- plot upgrade cutscene: only the buyer, only after the server confirmed it
 	if ok and name=="Rebirth" then
 		-- everyone sees it; the factory goes back to the ground floor (bay models rebuilt)

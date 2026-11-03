@@ -1000,4 +1000,18 @@ end
 
 Style.GREEN = GREEN
 
+-- 3 Nov (vault: FTUE, "device-correct control text"): texts are written for PC
+-- ("press E"); on a phone the prompt is a button to tap, on a gamepad it is X.
+function Style.controls(text: string): string
+	local input = game:GetService("UserInputService")
+	local touch = input.TouchEnabled and not input.KeyboardEnabled
+	local pad = input.GamepadEnabled and not input.KeyboardEnabled and not input.TouchEnabled
+	if not touch and not pad then return text end
+	local key = if pad then "X" else nil
+	local out = text
+	out = out:gsub("([Pp])ress E", function(p: string) return if key then p .. "ress " .. key else (if p == "P" then "Tap" else "tap") .. " the button" end)
+	out = out:gsub("%[E%]", if key then "[" .. key .. "]" else "")
+	return out
+end
+
 return Style

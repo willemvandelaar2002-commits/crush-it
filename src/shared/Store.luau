@@ -16,7 +16,9 @@ export type Product = { id: string, productId: number, price: number, title: str
 Store.Passes = {
 	-- AutoCrush is sold as "Production Boost" (pass 2060699266); the old Auto Crush
 	-- (2041790315) and Offline Earnings (2039938725) passes are not used.
-	{ perk = "AutoCrush", gamePassId = 2060699266, price = 199, title = "Auto Crush", desc = "Crushes for you, even while you're AFK", color = Color3.fromRGB(230, 80, 70) },
+	-- 3 Nov (vault audit, "see exactly what you get"): the shop card said "Auto Crush:
+	-- crushes for you while AFK", but crushers always work; it now says what it does.
+	{ perk = "AutoCrush", gamePassId = 2060699266, price = 199, title = "Production Boost", desc = "+25% damage for all your crushers, forever", color = Color3.fromRGB(230, 80, 70) },
 	{ perk = "DoubleCash", gamePassId = 2039584674, price = 249, title = "2x Cash", desc = "Double cash from every crush, forever", color = Color3.fromRGB(80, 200, 110) },
 	{ perk = "Lucky", gamePassId = 2041580327, price = 149, title = "Lucky", desc = "2x luck on crusher rolls: Uncommon or better about 30% -> 46% of rolls", color = Color3.fromRGB(255, 200, 50) },
 	{ perk = "AutoCollect", gamePassId = 2057934074, price = 99, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
@@ -25,9 +27,9 @@ Store.Passes = {
 } :: { Pass }
 
 Store.Products = {
-	{ id = "CashSmall", productId = 3723657331, price = 19, title = "Cash Pile", desc = "25% of your next press", color = Color3.fromRGB(80, 200, 110) },
-	{ id = "CashMedium", productId = 3723657452, price = 59, title = "Cash Stack", desc = "A whole next press", color = Color3.fromRGB(60, 180, 90) },
-	{ id = "CashLarge", productId = 3723657672, price = 129, title = "Cash Vault", desc = "4x your next press", color = Color3.fromRGB(40, 160, 80) },
+	{ id = "CashSmall", productId = 3723657331, price = 19, title = "Cash Pile", desc = "10 minutes of your earnings, right away", color = Color3.fromRGB(80, 200, 110) },
+	{ id = "CashMedium", productId = 3723657452, price = 59, title = "Cash Stack", desc = "1 hour of your earnings, right away", color = Color3.fromRGB(60, 180, 90) },
+	{ id = "CashLarge", productId = 3723657672, price = 129, title = "Cash Vault", desc = "4 hours of your earnings, right away", color = Color3.fromRGB(40, 160, 80) },
 	-- 30 Oct: no longer sold (Willem); kept hidden for old code paths
 	{ id = "FinishSmelt", productId = 0, price = 19, title = "Finish Now", desc = "Your smelter finishes all its scrap at once", color = Color3.fromRGB(255, 140, 40), hidden = true },
 	{ id = "GoldenRush", productId = 0, price = 49, title = "Golden Rush", desc = "Your next 10 objects are Golden", color = Color3.fromRGB(255, 200, 50), hidden = true },
