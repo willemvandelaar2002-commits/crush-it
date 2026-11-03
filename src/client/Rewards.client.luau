@@ -121,8 +121,14 @@ giftTime.TextColor3 = C(255, 230, 90)
 local function placeGiftChip()
 	Style.placeHudButton(button, 2)
 	local compact = Style.compact()
-	giftChip.Size = if compact then UDim2.fromOffset(110, 30) else UDim2.fromOffset(150, 40)
+	giftChip.Size = if compact then UDim2.fromOffset(116, 36) else UDim2.fromOffset(150, 40)
 	giftChip.Position = UDim2.fromOffset(button.Position.X.Offset + button.Size.X.Offset / 2, button.Position.Y.Offset + button.Size.Y.Offset + 4)
+end
+-- 3 Nov (vault: 44 px taps): an invisible 48 px tap pad over the chip on touch screens
+if game:GetService("UserInputService").TouchEnabled then
+	local pad = make("TextButton", { Name = "TapPad", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.new(1, 8, 0, 48), BackgroundTransparency = 1, Text = "", ZIndex = 6 }, giftChip)
+	pad.Activated:Connect(function() giftChip:SetAttribute("Tapped", os.clock()) end)
 end
 placeGiftChip()
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(placeGiftChip)
@@ -582,6 +588,10 @@ button.Activated:Connect(function()
 	refresh()
 end)
 giftChip.Activated:Connect(function()
+	Style.setOpen(panel, true)
+	refresh()
+end)
+giftChip:GetAttributeChangedSignal("Tapped"):Connect(function() -- the phone tap pad
 	Style.setOpen(panel, true)
 	refresh()
 end)
