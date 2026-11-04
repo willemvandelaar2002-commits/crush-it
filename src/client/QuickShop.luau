@@ -222,7 +222,14 @@ function Quick.build(gui: ScreenGui, deps: Deps)
 	function api.open()
 		mode = "shop" title.Text = "SHOP" panel:SetAttribute("OfferMode", nil) size() rebuild() panel.Visible = true
 	end
+	-- 4 Nov: the pushed offer is its own big card (client/StarterOffer, Willem's mockup);
+	-- the small one-card window below stays as the fallback
+	local big = require(script.Parent.StarterOffer).build(gui, {
+		browse = function() api.open() end,
+		notice = deps.notice,
+	})
 	function api.openOffer()
+		if big.open() then return end
 		mode = "offer" title.Text = "SPECIAL OFFER" panel:SetAttribute("OfferMode", true) size() rebuild() panel.Visible = true
 	end
 	function api.refresh() if panel.Visible then rebuild() end end

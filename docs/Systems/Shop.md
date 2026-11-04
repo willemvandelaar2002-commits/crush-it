@@ -311,3 +311,9 @@ owner's own signs.
 - Starter offer: once per session, after the tutorial and the first goal and at least 3 minutes in the session, when
   no menu/cutscene/pop-up is open and saving works: the same window with only the Starter Pack and SEE THE SHOP.
   Never shown to owners. Logged as ShopOpened "StarterOffer".
+
+## 4 Nov Starter Pack offer card
+The once-per-session pushed offer (Shop.client -> QuickShop.openOffer) opens `client/StarterOffer.luau`, built after
+Willem's mockup: real Candy Colossus portrait (CrusherIcon), cash = Store.cashFor(CashRate, cashMinutes), boost minutes
+from OfferConfig, live Robux price (GetProductInfo; id 0 = COMING SOON). Buy = OfferAction "Prompt" (same as the shop);
+"Browse shop" opens the QuickShop; closes itself when the pack is owned. Hover motions run only while it is open.
