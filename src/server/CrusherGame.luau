@@ -724,9 +724,13 @@ local function action(p,name,args)
 	if ok and name=="UpgradePlot" and Progression.level(d)>levelBefore then
 		Analytics.custom(p,if (d.crushers.rebirths or 0)==0 then "ReachedFactory" else "ReachedFactoryAfterRebirth",
 			math.floor((d.playSeconds or 0)/60),C.PlotUpgrade.Names[Progression.level(d)])
+		if d.fullClock==true and (d.crushers.rebirths or 0)==0 then
+			Analytics.custom(p,"ReachedFactoryNew",math.floor((d.playSeconds or 0)/60),C.PlotUpgrade.Names[Progression.level(d)])
+		end
 	end
 	if ok and name=="Rebirth" then
 		Analytics.custom(p,"RebirthMinutes",math.floor((d.playSeconds or 0)/60),"Rebirth "..d.crushers.rebirths)
+		if d.fullClock==true then Analytics.custom(p,"RebirthMinutesNew",math.floor((d.playSeconds or 0)/60),"Rebirth "..d.crushers.rebirths) end
 	end
 	-- plot upgrade cutscene: only the buyer, only after the server confirmed it
 	if ok and name=="Rebirth" then
@@ -801,6 +805,10 @@ function G.start()
 		local d=Data.whenLoaded(p) if not d then return end
 		-- onboarding funnel: only saves that start here fresh (tutorial step 1); step 1 = Joined
 		if d.onboarding==nil then d.onboarding={funnel=d.crushers.tutorial==1,funnelStep=0} end
+		-- 4 Nov: a brand-new save counts its playtime from the very first second
+		-- (playSeconds only exists since 2 Nov, so older saves undercount). Timing
+		-- events from these saves also go out as *New (clean numbers for pacing).
+		if d.fullClock==nil and d.crushers.tutorial==1 and (d.playSeconds or 0)<=5 and (d.crushers.rolls or 0)==0 then d.fullClock=true end
 		Analytics.funnelStep(p,d.onboarding,1,C.FunnelNames[1])
 		local plot for _,v in Plots.all() do if not v.owner then plot=v break end end
 		if not plot then p:Kick("All factory plots are occupied. Please join another server.") return end
