@@ -1,6 +1,7 @@
 --!strict
 -- Guided tutorial (steps in CrusherConfig.TutorialSteps, progress and rewards
--- on the server in CrusherRules), then the GOALS (C.Goals2, up to Factory II),
+-- on the server in CrusherRules), then the GOALS (C.Goals2: guided up to Factory II,
+-- then quiet ones up to the first rebirth: a small "NEXT GOAL" line, no arrows),
 -- then NEXT GOAL (Factory III+). 2 Nov restyle after a reference tutorial:
 --   * floating text at the top, no box: a small cyan tag ("TUTORIAL 3/8",
 --     "GOAL 4 / 16"), one short order, and a line with the counter ("3 / 5")
@@ -90,11 +91,14 @@ local function setHeadline(tagText: string, titleText: string)
 	title.TextColor3 = Color3.new(1, 1, 1)
 end
 local shownOn = false
+-- 4 Nov: quiet goals (after Factory II) show the headline smaller (see headScale)
+local quiet = false
+local function headScale(): number return if quiet then 0.72 else 1 end
 local function fadeIn()
 	placeHeadline()
 	headline.Visible = true shownOn = true
-	popScale.Scale = 0.85
-	TweenService:Create(popScale, TweenInfo.new(0.35, Enum.EasingStyle.Back), { Scale = 1 }):Play()
+	popScale.Scale = 0.85 * headScale()
+	TweenService:Create(popScale, TweenInfo.new(0.35, Enum.EasingStyle.Back), { Scale = headScale() }):Play()
 	TweenService:Create(headline, TweenInfo.new(0.25), { GroupTransparency = 0 }):Play()
 end
 local function fadeOut(instant: boolean?)
@@ -162,8 +166,8 @@ local function celebrate()
 	coin:Play()
 	title.Text = "✓ " .. title.Text
 	title.TextColor3 = GREEN
-	popScale.Scale = 1.15
-	TweenService:Create(popScale, TweenInfo.new(0.3, Enum.EasingStyle.Back), { Scale = 1 }):Play()
+	popScale.Scale = 1.15 * headScale()
+	TweenService:Create(popScale, TweenInfo.new(0.3, Enum.EasingStyle.Back), { Scale = headScale() }):Play()
 end
 
 -- Tutorial steps --------------------------------------------------------------------
@@ -232,7 +236,9 @@ local goalShown = 0
 local function paintGoal(i: number)
 	local g = GOALS[i]
 	if not g then return end
-	setHeadline("GOAL " .. i .. " / " .. #GOALS, g.title)
+	-- 4 Nov (Willem): goals after Factory II are quiet - "NEXT GOAL", small, no arrows
+	quiet = g.quiet == true
+	setHeadline(if quiet then "NEXT GOAL" else "GOAL " .. i .. " / " .. C.MainGoals, g.title)
 	local text, color = goalReward(g)
 	setSub(goalCounter(g), text, color)
 end
@@ -556,6 +562,7 @@ local function switch(to: string?)
 	if mode == to then return end
 	mode = to
 	if to == nil then fadeOut() hideGuide() return end
+	quiet = false
 	if to == "tutorial" then shown = state.tutorial paint(shown)
 	elseif to == "goals" then goalShown = state.goal paintGoal(goalShown) end
 	nextLook = 0
@@ -597,11 +604,16 @@ RunService.RenderStepped:Connect(function()
 		elseif want == "goals" then
 			local g = GOALS[state.goal]
 			sameStep("g" .. state.goal)
-			local t, l, o, ui = goalTarget(g)
-			look(t, l, o, ui)
 			local text, color = goalReward(g)
 			setSub(goalCounter(g), text, color)
-			showHint(g.text, o)
+			if g.quiet then
+				-- just the line at the top: no trail, outline, floor disc, arrow or hint
+				look(nil) showHint(nil, nil)
+			else
+				local t, l, o, ui = goalTarget(g)
+				look(t, l, o, ui)
+				showHint(g.text, o)
+			end
 		else
 			local t, l, tg, ti, counter, h = nextGoal()
 			sameStep("n" .. ti)

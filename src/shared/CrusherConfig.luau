@@ -403,7 +403,7 @@ C.StarterScrap = 24 -- 1 Nov: scrap waiting in a new player's bin (three toys' w
 -- between the bay goals (they raise income the most). Since the plot split the
 -- starting factory has 12 bays, so the chain ends with "Fill 12 bays" and
 -- "Buy FACTORY II". "upgrades n" = total factory upgrade levels (Damage + Speed + Yield).
-C.Goals2Version = 8 -- 3 Nov: the SMASH goal left the guide (30% churn on it; SMASH stays as a free extra)
+C.Goals2Version = 9 -- 4 Nov: quiet goals after Factory II. 8: 3 Nov: the SMASH goal left the guide (30% churn on it; SMASH stays as a free extra)
 C.Goals2 = {
 	{ id="Fill3", check="fill", n=3, title="Fill 3 bays", text="Unlock bay 3, then roll a crusher and place it there.", target="NextBayOrEmpty", reward={cash=30,min=60} },
 	{ id="Upgrades3", check="upgrades", n=3, title="Upgrade your factory", text="The blue FACTORY UPGRADES board makes ALL crushers better.", target="Production", reward={cash=45,min=100} },
@@ -416,6 +416,19 @@ C.Goals2 = {
 	{ id="Fill9", check="fill", n=9, title="Fill 9 bays", text="Keep growing your factory!", target="NextBayOrEmpty", reward={cash=90,min=600} },
 	{ id="Fill12", check="fill", n=12, title="Fill all 12 bays", text="Every bay full unlocks the FACTORY II upgrade. Prize: a FREE EPIC crusher!", target="NextBayOrEmpty", reward={crusher="Epic"} },
 	{ id="Factory2", check="plot", n=1, title="Buy FACTORY II", text="Save up and press UPGRADE on the green board. Big prize!", target="PlotUpgrade", reward={crusher="Legendary"} },
+	-- 4 Nov (Willem; vault FTUE "the end of the tutorial needs a successor"): after
+	-- Factory II the goals go on QUIETLY (quiet=true): a small "NEXT GOAL" line, no
+	-- arrows, no trail, no hints - just a little direction. Not in the funnel.
+	{ id="Coat", check="coat", quiet=true, title="Coat a crusher", text="The Coating Lab opened with Factory II.", reward={cash=120,min=3000} },
+	{ id="Fill18", check="fill", n=18, quiet=true, title="Fill 18 bays", text="", reward={cash=120,min=3000} },
+	{ id="Upgrades20", check="upgrades", n=20, quiet=true, title="Upgrade your factory", text="", reward={cash=150,min=5000} },
+	{ id="Fill24", check="fill", n=24, quiet=true, title="Fill all 24 bays", text="", reward={cash=150,min=5000} },
+	{ id="Factory3", check="plot", n=2, quiet=true, title="Buy FACTORY III", text="", reward={crusher="Epic"} },
+	{ id="RowSet", check="row", quiet=true, title="Fill a row with one rarity", text="Press FILL ROW at a row's sign.", reward={cash=180,min=8000} },
+	{ id="Fill36", check="fill", n=36, quiet=true, title="Fill 36 bays", text="", reward={cash=180,min=8000} },
+	{ id="Factory4", check="plot", n=3, quiet=true, title="Buy FACTORY IV", text="", reward={crusher="Legendary"} },
+	{ id="Fuse", check="fuse", quiet=true, title="Fuse a crusher", text="The fuser opened with Factory IV.", reward={cash=240,min=20000} },
+	{ id="Rebirth1", check="rebirth", quiet=true, title="REBIRTH", text="x1.5 cash and +25% luck forever.", reward={boost="Super",minutes=15} },
 }
 -- earlier orders (goalsV 1 and 2): a save's goal index is moved to the same goal id
 C.Goals2History = {
@@ -426,6 +439,7 @@ C.Goals2History = {
 	{ "Bay3","Frenzy","Fill3","Upgrades3","Bay5","Fill5","Golden","Gift","Fill6","Turbo","Level5","Rolls10","Merge","Upgrades8","Bay9","Index","Level10","Upgrades12","Fill12","Level15","Factory2" },
 	{ "Bay3","Frenzy","Fill3","Upgrades3","Bay5","Fill5","Golden","Gift","Fill6","Turbo","Level5","Rolls10","Upgrades8","Bay9","Index","Level10","Upgrades12","Fill12","Level15","Factory2" },
 	{ "Frenzy","Fill3","Upgrades3","Fill5","Golden","Fill6","Turbo","Level5","Upgrades8","Fill9","Fill12","Factory2" },
+	{ "Fill3","Upgrades3","Fill5","Golden","Fill6","Turbo","Level5","Upgrades8","Fill9","Fill12","Factory2" },
 }
 -- Onboarding funnel step names as they appear in the Creator Dashboard
 -- (Analytics > Funnels). 1 = join, 2-9 = the tutorial steps above in order,
@@ -436,7 +450,9 @@ C.FunnelNames = {
 	"01 Joined the game", "02 Collected scrap", "03 Sold scrap", "04 Rolled a crusher", "05 Bought a crusher",
 	"06 Unlocked a 2nd bay", "07 Placed a crusher", "08 Bought a factory upgrade", "09 Leveled up a crusher (tutorial done)",
 }
-for i,g in C.Goals2 do table.insert(C.FunnelNames,string.format("%02d Goal: %s",9+i,g.title)) end
+-- the funnel has the main goals only (quiet goals after Factory II are not steps)
+C.MainGoals = 0 for _,g in C.Goals2 do if not g.quiet then C.MainGoals+=1 end end
+for i=1,C.MainGoals do table.insert(C.FunnelNames,string.format("%02d Goal: %s",9+i,C.Goals2[i].title)) end
 for _,name in {"Factory III","Factory IV","Factory V","Factory VI"} do table.insert(C.FunnelNames,string.format("%02d Bought %s",#C.FunnelNames+1,name)) end
 C.FunnelBays = {} -- 2 Nov: replaced by the goals
 -- Goals board on the plot (reference style): like/favorite, join the group, and
