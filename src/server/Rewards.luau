@@ -29,7 +29,7 @@ local Rewards = {}
 
 local DAY = 86400
 local api: Api
-local sessions: { [Player]: { joined: number, claimed: { [number]: boolean }, readyAt: number? } } = {}
+local sessions: { [Player]: { joined: number, claimed: { [number]: boolean }, readyAt: number?, notifyParams: { [string]: string }? } } = {}
 local RewardsRemote = Net.event("Rewards")
 local Purchased = Net.event("Purchased")
 
@@ -43,9 +43,9 @@ end
 -- so someone who plays around midnight can skip a UTC day without missing an
 -- evening. One missed day now keeps the streak, at most once a week (d.grace =
 -- the UTC day the grace was last used).
-local function dailyState(data: any): (number, boolean, boolean)
+local function dailyState(data: any, atDay: number?): (number, boolean, boolean)
 	local d = data.daily
-	local t = today()
+	local t = atDay or today() -- (atDay: the notification asks "what will it be that day?")
 	if d.day == t then
 		return d.streak, false, false -- already claimed today; `streak` is today's day
 	end
@@ -79,6 +79,14 @@ local function send(player: Player)
 	end
 	-- (for the "daily ready" notification when they leave)
 	s.readyAt = if canClaim then os.time() else (today() + 1) * DAY
+	-- the notification's {day} and {reward}: the streak as it will stand on the day it
+	-- is sent (a missed day resets it, so this is worked out for that day, not today)
+	local dueDay = Notify.dueAt(s.readyAt) // DAY
+	local nday = dailyState(data, dueDay)
+	local nr = Config.Rewards.Daily[nday]
+	s.notifyParams = { day = tostring(nday), reward = if nr and nr.kind == "crusher"
+		then "a FREE " .. nr.rarity .. " crusher" .. (if nr.bonusSeconds then " + cash" else "")
+		else "a cash gift" }
 	RewardsRemote:FireClient(player, {
 		joined = s.joined,
 		claimed = claimed,
@@ -185,7 +193,7 @@ function Rewards.start(a: Api)
 	Players.PlayerRemoving:Connect(function(player)
 		local s = sessions[player]
 		sessions[player] = nil
-		if s and s.readyAt then Notify.leave(player.UserId, Workspace:GetServerTimeNow() - s.joined, s.readyAt) end
+		if s and s.readyAt then Notify.leave(player.UserId, Workspace:GetServerTimeNow() - s.joined, s.readyAt, s.notifyParams) end
 	end)
 	Notify.start()
 	Net.event("ClaimReward").OnServerEvent:Connect(claim)

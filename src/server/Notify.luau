@@ -34,14 +34,20 @@ local function map(): MemoryStoreSortedMap?
 end
 local function on(): boolean return N.DailyReady ~= "" end
 
--- the player left; dailyReadyAt = unix time their next daily can be claimed
-function Notify.leave(userId: number, sessionSeconds: number, dailyReadyAt: number)
+-- when a ping for someone leaving now would go out
+function Notify.dueAt(dailyReadyAt: number): number
+	return math.max(os.time() + N.DelayHours * 3600, dailyReadyAt + 600)
+end
+
+-- the player left; dailyReadyAt = unix time their next daily can be claimed;
+-- params = the string's {placeholders} (day, reward), worked out for the due day
+function Notify.leave(userId: number, sessionSeconds: number, dailyReadyAt: number, params: { [string]: string }?)
 	if not on() or sessionSeconds < N.MinSessionMinutes * 60 then return end
-	local due = math.max(os.time() + N.DelayHours * 3600, dailyReadyAt + 600)
+	local due = Notify.dueAt(dailyReadyAt)
 	local m = map() if not m then return end
 	task.spawn(function()
 		pcall(function()
-			(m :: any):SetAsync("u" .. userId, { u = userId }, math.clamp(due - os.time() + 6 * 3600, 60, MAX_TTL), due)
+			(m :: any):SetAsync("u" .. userId, { u = userId, p = params }, math.clamp(due - os.time() + 6 * 3600, 60, MAX_TTL), due)
 		end)
 	end)
 end
@@ -54,7 +60,7 @@ end
 
 local sender: any = nil
 local warned = false
-local function send(userId: number): boolean
+local function send(userId: number, params: { [string]: string }?): boolean
 	if not sender then
 		local oc = ServerScriptService:FindFirstChild("OpenCloud")
 		local mod = oc and oc:FindFirstChild("V2") and oc.V2:FindFirstChild("UserNotification")
@@ -64,10 +70,13 @@ local function send(userId: number): boolean
 		end
 		sender = require(mod :: ModuleScript)
 	end
+	local parameters = {}
+	for k, v in params or { day = "1", reward = "a cash gift" } do parameters[k] = { stringValue = v } end
 	local ok, result = pcall(sender.createUserNotification, userId, {
 		payload = {
 			type = "MOMENT",
 			messageId = N.DailyReady,
+			parameters = parameters,
 			joinExperience = { launchData = "daily" },
 			analyticsData = { category = "DailyReady" },
 		},
@@ -82,19 +91,19 @@ local function send(userId: number): boolean
 	return true
 end
 
-local function claim(m: any, key: string): number?
-	local got: number? = nil
+local function claim(m: any, key: string): (number?, any)
+	local got: number?, params: any = nil, nil
 	pcall(function()
 		m:UpdateAsync(key, function(old: any, sortKey: any)
 			if type(old) ~= "table" then return nil end
 			local now = os.time()
 			if old.by and old.at and now - old.at < CLAIM_SECONDS then return nil end -- another server has it
 			old.by = SERVER old.at = now
-			got = old.u
+			got = old.u params = old.p
 			return old, sortKey
 		end, 600)
 	end)
-	return got
+	return got, params
 end
 
 function Notify.start()
@@ -109,9 +118,9 @@ function Notify.start()
 				end)
 				if ok and items then
 					for _, item in items do
-						local userId = claim(m, item.key)
+						local userId, params = claim(m, item.key)
 						if userId then
-							if not Players:GetPlayerByUserId(userId) then send(userId) end
+							if not Players:GetPlayerByUserId(userId) then send(userId, params) end
 							pcall(function() (m :: any):RemoveAsync(item.key) end)
 						end
 					end
