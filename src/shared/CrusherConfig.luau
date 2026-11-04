@@ -28,8 +28,8 @@ local C = {
 		{ x = -58, z = 78, yaw = math.pi / 2, perks = { "AutoCollect" } },
 		{ x = -42, z = 96, yaw = math.pi, perks = { "DoubleCash" } },
 		{ x = 13, z = 74, yaw = -math.pi / 2, perks = { "Lucky" } },
-		-- 5 Nov: time-skip signs with your amount, on the other side of the Sell counter
-		{ x = 12, z = 98, yaw = math.pi, perks = { "CashSmall", "CashMedium" } }, -- (right of the road: x -8 stood on it)
+		-- (5 Nov: the time-skip signs are gone again: Willem didn't like them by the road;
+		-- RobuxSigns can still build product signs if a better spot comes up)
 	},
 	FloorColors = { [4] = Color3.fromRGB(200, 38, 38) }, -- 31 Oct: plot floor colour per plot level (4 = Factory V: red; a bit deeper so the studs show)
 	FloorChecker = { [4] = true }, -- 31 Oct: checkerboard texture on the plot floor (Factory V); look in Config.World.Checker
