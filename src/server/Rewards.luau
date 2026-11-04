@@ -14,6 +14,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local Format = require(ReplicatedStorage.Shared.Format)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Analytics = require(script.Parent.Kit.Analytics)
+local Notify = require(script.Parent.Notify)
 
 export type Api = {
 	getData: (Player) -> any,
@@ -28,7 +29,7 @@ local Rewards = {}
 
 local DAY = 86400
 local api: Api
-local sessions: { [Player]: { joined: number, claimed: { [number]: boolean } } } = {}
+local sessions: { [Player]: { joined: number, claimed: { [number]: boolean }, readyAt: number? } } = {}
 local RewardsRemote = Net.event("Rewards")
 local Purchased = Net.event("Purchased")
 
@@ -68,11 +69,22 @@ local function send(player: Player)
 		table.insert(claimed, i)
 	end
 	local day, canClaim = dailyState(data)
+	-- 4 Nov (vault: "a timer that resolves tomorrow" is the D1 hook): what tomorrow's
+	-- daily gives, shown after today's claim (cash at today's earning rate)
+	local tomorrow: string? = nil
+	if not canClaim then
+		local r = Config.Rewards.Daily[(day % #Config.Rewards.Daily) + 1]
+		if r and r.kind == "crusher" then tomorrow = "FREE " .. string.upper(r.rarity) .. " CRUSHER"
+		elseif r and r.seconds then tomorrow = Format.cash(math.max(Config.Rewards.MinCash, math.floor(api.cashPerSecond(player) * r.seconds))) .. " CASH" end
+	end
+	-- (for the "daily ready" notification when they leave)
+	s.readyAt = if canClaim then os.time() else (today() + 1) * DAY
 	RewardsRemote:FireClient(player, {
 		joined = s.joined,
 		claimed = claimed,
 		cps = api.cashPerSecond(player),
-		daily = { day = day, canClaim = canClaim, nextAt = (today() + 1) * DAY },
+		daily = { day = day, canClaim = canClaim, nextAt = (today() + 1) * DAY, tomorrow = tomorrow,
+			tomorrowDay = (day % #Config.Rewards.Daily) + 1 },
 	})
 end
 
@@ -153,6 +165,7 @@ function Rewards.start(a: Api)
 	api = a
 	local function join(player: Player)
 		sessions[player] = { joined = Workspace:GetServerTimeNow(), claimed = {} }
+		Notify.joined(player.UserId)
 		local data = api.whenLoaded(player)
 		if not data or not player.Parent then
 			return
@@ -170,8 +183,11 @@ function Rewards.start(a: Api)
 		task.spawn(join, player)
 	end
 	Players.PlayerRemoving:Connect(function(player)
+		local s = sessions[player]
 		sessions[player] = nil
+		if s and s.readyAt then Notify.leave(player.UserId, Workspace:GetServerTimeNow() - s.joined, s.readyAt) end
 	end)
+	Notify.start()
 	Net.event("ClaimReward").OnServerEvent:Connect(claim)
 	task.spawn(function()
 		while true do

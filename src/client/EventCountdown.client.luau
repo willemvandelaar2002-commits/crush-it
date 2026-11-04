@@ -20,7 +20,7 @@ text.TextXAlignment = Enum.TextXAlignment.Right text.Visible = false text.Parent
 -- 1 Nov: on touch screens the jump button sits bottom-right and the hotbar
 -- bottom centre: show it top-right, just under the travel buttons instead
 if game:GetService("UserInputService").TouchEnabled then
-	text.AnchorPoint = Vector2.new(1, 0) text.Position = UDim2.new(1, -10, 0, 50) text.Size = UDim2.fromOffset(220, 18)
+	text.AnchorPoint = Vector2.new(1, 0) text.Position = UDim2.new(1, -10, 0, 100) text.Size = UDim2.fromOffset(220, 18)
 end
 Style.text(text, 1.5)
 text.TextTransparency = .1
