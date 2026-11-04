@@ -4,9 +4,10 @@
 -- only players 13+ who opted in get them; Roblox may still drop some (spam filter).
 --
 -- Willem: Creator Dashboard > Crush It > Engagement > Notifications > create a string
--- (max 99 characters, no parameters needed), copy its asset id into DailyReady.
--- Suggested text:
---   Your next daily reward is ready, and your factory kept crushing while you were away!
+-- (max 99 characters), copy its asset id into DailyReady. The text (4 Nov):
+--   Day {day} reward is ready: {reward}! Your factory kept crushing while you were away.
+-- {day} = the streak day it will be when the ping arrives, {reward} = "a FREE Rare
+-- crusher" / "a cash gift" (server/Rewards works both out for that day).
 -- "" = notifications off (nothing is scheduled or sent).
 return {
 	DailyReady = "",
