@@ -609,3 +609,27 @@ task.spawn(function()
 		refresh()
 	end
 end)
+
+-- 4 Nov (Willem: "do the daily rewards pop up when people log in?"; vault: Retention
+-- "at least one ready thing on every join, never more than one automatic pop-up at a
+-- time", Daily Rewards End to End "auto-open"): when you join with today's daily ready,
+-- the Rewards window opens once on the DAILY tab, through the pop-up gate: after the
+-- welcome-back card / What's New / any other window is closed, never during a factory
+-- event or a cutscene, and only once the HUD is revealed (not in the first tutorial).
+-- If nothing is calm within 2 minutes it doesn't open (the ! badge still shows).
+task.spawn(function()
+	local waited = 0
+	while not state and waited < 30 do task.wait(1) waited += 1 end
+	task.wait(4) -- let the welcome-back card (offline cash) open first
+	local function calm(): boolean
+		return not Style.hasModal() and gui.Enabled and player:GetAttribute("FactoryEventRunning") ~= true
+			and player:GetAttribute("CutscenePlaying") ~= true
+	end
+	waited = 0
+	while not calm() and waited < 120 do task.wait(1) waited += 1 end
+	task.wait(0.8) -- (a window that just closed gets a moment before the next one)
+	if not calm() or not state or not state.daily or not state.daily.canClaim then return end
+	showTab("Daily")
+	Style.setOpen(panel, true)
+	refresh()
+end)
