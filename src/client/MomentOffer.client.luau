@@ -47,7 +47,7 @@ end
 
 local gui = make("ScreenGui", { Name = "MomentOfferHud", ResetOnSpawn = false, DisplayOrder = 8, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
 local card = make("Frame", { Name = "MomentOffer", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -110), Size = UDim2.fromOffset(440, 112),
-	BackgroundColor3 = C(52, 44, 140), Visible = false, ZIndex = 2 }, gui)
+	BackgroundColor3 = Color3.new(1, 1, 1), Visible = false, ZIndex = 2 }, gui)
 make("UICorner", { CornerRadius = UDim.new(0, 18) }, card)
 make("UIStroke", { Thickness = 4, Color = INK }, card)
 local grad = make("UIGradient", { Rotation = 90 }, card)
