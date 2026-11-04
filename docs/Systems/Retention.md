@@ -15,8 +15,8 @@ First data (Creator Dashboard, 7 days to 2 Nov): **D1 retention 1.1-1.2%**, Robl
   and never before tomorrow's daily can be claimed. Joining any server deletes it. Servers poll every 20-30 s,
   claim a job before sending, and send it with Roblox's Open Cloud package (ServerScriptService.OpenCloud,
   asset 16584168800, saved in the place file, not in Git). Studio never sends.
-- **Willem:** create the string in Creator Dashboard > Engagement > Notifications ("Your next daily reward is
-  {day}-style text: "Day {day} reward is ready: {reward}! Your factory kept crushing while you were away."), paste its asset id in NotifyConfig.DailyReady,
+- **Willem:** create the string in Creator Dashboard > Engagement > Notifications ("Day {day} reward is ready: {reward}! Your factory kept
+  crushing while you were away."), paste its asset id in NotifyConfig.DailyReady,
   and Publish (the place must include the OpenCloud package). Watch the Turn Off rate on its Analytics tab.
 
 ## LUCKY WEEKEND (Shared/WeekendConfig, client/WeekendHud)
