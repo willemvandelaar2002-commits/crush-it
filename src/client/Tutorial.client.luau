@@ -81,9 +81,9 @@ local function placeHeadline()
 	if quiet and row and row:IsA("GuiObject") and row.AbsoluteSize.Y > 0 then
 		-- the gap between the left buttons (Index/Shop/Rewards) and the top row
 		local left = 0
-		for _, n in { "BookButton", "ShopButton", "RewardsButton" } do
+		for _, n in { "BookButton", "ShopButton", "RewardsButton", "RebirthButton" } do
 			local b = me.PlayerGui:FindFirstChild(n, true) :: GuiObject?
-			if b and b:IsA("GuiObject") and b.AbsoluteSize.X > 0 then left = math.max(left, b.AbsolutePosition.X + b.AbsoluteSize.X) end
+			if b and b:IsA("GuiObject") and b.Visible and b.AbsoluteSize.X > 0 then left = math.max(left, b.AbsolutePosition.X + b.AbsoluteSize.X) end
 		end
 		local centre = gui.AbsoluteSize.X / 2
 		local room = 2 * math.min(centre - left, row.AbsolutePosition.X - centre) - 16
