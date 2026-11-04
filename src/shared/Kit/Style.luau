@@ -1034,11 +1034,13 @@ function Style.robux(label: TextLabel | TextButton, image: string)
 	probe.Parent = label
 	local raw = label.Text
 	local busy = false
+	local mine = "" -- the text this helper set last (Text events can arrive deferred)
 	local function layout()
 		if busy then return end
 		local s, e = raw:find("R%$ ?")
 		if not s then
 			icon.Visible = false
+			mine = raw
 			if label.Text ~= raw then busy = true label.Text = raw busy = false end
 			return
 		end
@@ -1052,6 +1054,7 @@ function Style.robux(label: TextLabel | TextButton, image: string)
 		local iconW = size
 		local n = math.max(1, math.ceil((iconW + size * 0.18) / spaceW))
 		local shown = prefix .. string.rep(" ", n) .. rest
+		mine = shown
 		if label.Text ~= shown then busy = true label.Text = shown busy = false end
 		local total = label.TextBounds.X
 		local width = label.AbsoluteSize.X
@@ -1065,7 +1068,7 @@ function Style.robux(label: TextLabel | TextButton, image: string)
 		icon.Visible = true
 	end
 	label:GetPropertyChangedSignal("Text"):Connect(function()
-		if busy then return end
+		if busy or label.Text == mine then return end
 		raw = label.Text
 		layout()
 	end)
