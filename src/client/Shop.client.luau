@@ -204,7 +204,8 @@ do
 		while not offered do
 			task.wait(5)
 			local C2 = Config.Crushers
-			local ready = tutorial > #C2.TutorialSteps and goal >= 2 and os.clock() - joinedAt >= 180
+			-- 4 Nov: from goal 3, when the shop itself appears (HudReveal); gui.Enabled = shown
+			local ready = tutorial > #C2.TutorialSteps and goal >= 3 and gui.Enabled and os.clock() - joinedAt >= 180
 			local calm = not Style.hasModal() and not quick.panel.Visible and not panel.Visible
 				and player:GetAttribute("CutscenePlaying") ~= true and player:GetAttribute("SaveOff") ~= true
 			if ready and calm and player:GetAttribute("Offer_StarterPack") ~= true then
