@@ -137,6 +137,7 @@ function T.new(gui: ScreenGui, act: (string, any) -> ())
 	end
 
 	local quickKey = ""
+	local quickH = 40 -- 72 on phones (PhoneArrange below)
 	local function buildQuick(list: { any })
 		local counts: { [string]: number } = {}
 		for _, item in list do counts[item.rarity] = (counts[item.rarity] or 0) + 1 end
@@ -149,7 +150,7 @@ function T.new(gui: ScreenGui, act: (string, any) -> ())
 		for order, r in C.Rarities do
 			local n = counts[r.name]
 			if n then
-				local b = button(quick, "All " .. r.name .. " (" .. n .. ")", UDim2.new(), UDim2.fromOffset(132, 40), r.color, function()
+				local b = button(quick, "All " .. r.name .. " (" .. n .. ")", UDim2.new(), UDim2.fromOffset(if quickH > 40 then 172 else 132, quickH), r.color, function()
 					-- toggle: select every unequipped crusher of this rarity, or clear them
 					local all = true
 					for _, item in unequipped() do if item.rarity == r.name and not selected[item.id] then all = false end end
@@ -240,6 +241,26 @@ function T.new(gui: ScreenGui, act: (string, any) -> ())
 			if panel.Visible and confirmUntil > 0 and os.clock() > confirmUntil then confirmUntil = 0 self.refresh() end
 		end
 	end)
+	-- 4 Nov phone layout (vault: Phone UI Overhaul; checker 12 px / 44 px): the panel was
+	-- 900 x 620 and shrank to ~45% on a phone (5 px text). On compact screens it is
+	-- 900 x 440: the card grid scrolls in less height, bigger quick-select and footer
+	-- buttons, the long hint line goes (the empty-state text says the same).
+	local PH = 460
+	require(script.Parent.PhoneArrange).new(function(set)
+		set(panel, { Size = UDim2.fromOffset(W, PH), ["@FitHeight"] = PH + 70 })
+		set(quick, { Size = UDim2.new(1, -28, 0, 72) })
+		set(content, { Position = UDim2.fromOffset(12, 172), Size = UDim2.new(1, -24, 1, -172 - 94) })
+		set(close, { Size = UDim2.fromOffset(76, 76), Position = UDim2.new(1, -84, 0, 4) })
+		set(empty, { Position = UDim2.fromOffset(40, 200) })
+		set(hint, { Visible = false })
+		set(clearButton, { Position = UDim2.new(0, 18, 1, -86), Size = UDim2.fromOffset(160, 76) })
+		set(trash, { Position = UDim2.new(1, -330, 1, -86), Size = UDim2.fromOffset(312, 76) })
+	end, function(phone)
+		quickH = if phone then 72 else 40
+		quickKey = "" -- rebuild the quick buttons at the new height
+		if state then buildQuick(unequipped()) end
+	end)
+
 	self.panel = panel
 	return self
 end

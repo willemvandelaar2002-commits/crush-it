@@ -84,6 +84,18 @@ function L.window(gui: ScreenGui, opts: any): (Frame, TextButton)
 	return panel, close
 end
 
+-- 4 Nov (phone layout, client/PhoneArrange): a shorter header for L.window on phones:
+-- 80 tall, no subtitle, a smaller icon, the X still 72 px (44+ px at phone scale).
+-- `set` is the PhoneArrange setter (values are restored on big screens).
+function L.phoneHeader(set: (Instance, { [string]: any }) -> (), panel: Frame)
+	local header = panel:FindFirstChild("Header") :: Frame
+	set(header, { Size = UDim2.new(1, -20, 0, 80) })
+	local title = header:FindFirstChild("Title") if title then set(title, { Position = UDim2.fromOffset(110, 4), Size = UDim2.new(1, -210, 0, 72) }) end
+	local sub = header:FindFirstChild("Subtitle") if sub then set(sub, { Visible = false }) end
+	local art = header:FindFirstChild("Art") if art then set(art, { Position = UDim2.fromOffset(-24, -24), Size = UDim2.fromOffset(120, 120) }) end
+	local close = header:FindFirstChild("Close") if close then set(close, { Position = UDim2.new(1, -6, 0, 4), Size = UDim2.fromOffset(72, 72) }) end
+end
+
 function L.fit(panel: Frame, w: number, h: number)
 	-- 30 Oct: Style.modal's ModalScale does the fitting (one UIScale per panel)
 	panel:SetAttribute("FitWidth", w) panel:SetAttribute("FitHeight", h)
