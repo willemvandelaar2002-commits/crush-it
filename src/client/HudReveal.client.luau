@@ -19,7 +19,7 @@ local playerGui = me:WaitForChild("PlayerGui")
 
 -- whole ScreenGuis hidden during the tutorial
 local GUIS = { "ShopHud", "RewardsHud", "TravelButtons", "FrenzyHud", "RebirthHud", "LeaderboardHud",
-	"EventCountdown", "BoostsHud", "TurboHud", "QuestsHud" }
+	"EventCountdown", "BoostsHud", "TurboHud", "QuestsHud", "WeekendHud" }
 -- single buttons inside shared ScreenGuis
 local BUTTONS = { BookButton = true }
 

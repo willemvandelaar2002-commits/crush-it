@@ -536,8 +536,11 @@ local function refresh()
 		if i == d.day and d.canClaim then
 			set(dailyTiles[i], title, sub, "ready", "", true)
 			anyDaily = true
+		elseif not d.canClaim and i == d.tomorrowDay and i ~= d.day then
+			-- 4 Nov: tomorrow's tile counts down (the D1 "come back tomorrow" hook)
+			set(dailyTiles[i], title, sub, "wait", "TOMORROW " .. clock(d.nextAt - now), true)
 		elseif i == d.day then
-			set(dailyTiles[i], title, sub, "wait", clock(d.nextAt - now), true)
+			set(dailyTiles[i], title, sub, "done", "") -- claimed today (tomorrow's tile has the countdown)
 		elseif i < d.day or (i == d.day and not d.canClaim) then
 			set(dailyTiles[i], title, sub, "done", "")
 		else

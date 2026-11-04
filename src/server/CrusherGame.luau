@@ -54,6 +54,7 @@ local function restoredCooldown(d)
 	return os.clock()+math.clamp((d.crushers.rollReadyAt or 0)-workspace:GetServerTimeNow(),0,C.RollSeconds)
 end
 local Boost=require(RS.Shared.BoostConfig)
+local Weekend=require(RS.Shared.WeekendConfig)
 local Turbo=require(script.Parent.Turbo)
 local Frenzy=require(script.Parent.Frenzy)
 local function perks(p)
@@ -61,6 +62,7 @@ local function perks(p)
 	-- 2 Nov: the Lucky pass and the 2x Luck boost stack (x4 with both; before,
 	-- a pass owner who bought the boost got nothing for it)
 	return {speed=Frenzy.speed(p),autoCrush=Store.hasPass(p,"AutoCrush"),lucky=(if Store.hasPass(p,"Lucky") then 2 else 1)*(if Boost.active(p,"Luck",now) then 2 else 1)
+			*Weekend.luck(os.time()) -- 4 Nov: LUCKY WEEKEND (Shared/WeekendConfig), everyone, Sat-Sun UTC
 			*(function() local d=Data.get(p) return C.rebirthLuck(d and d.crushers.rebirths or 0) end)(),
 		mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now))
 			*(function() local d=Data.get(p) return C.rebirthMult(d and d.crushers.rebirths or 0) end)(), -- 2 Nov evening: rebirth bonus
