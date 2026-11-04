@@ -57,7 +57,7 @@ local title = words(card, "", UDim2.fromOffset(108, 12), UDim2.fromOffset(196, 3
 local desc = words(card, "", UDim2.fromOffset(108, 48), UDim2.fromOffset(196, 50), 22, C(235, 240, 255))
 desc.TextWrapped = true
 local buy = make("TextButton", { Name = "Buy", Position = UDim2.fromOffset(312, 24), Size = UDim2.fromOffset(112, 64), Text = "", ZIndex = 3 }, card)
-Style.button(buy, C(60, 200, 80))
+Style.button(buy, C(255, 196, 40)) -- (gold: stands out on the green and orange cards)
 local price = words(buy, "", UDim2.fromOffset(8, 10), UDim2.new(1, -16, 1, -20), 30)
 price.TextXAlignment = Enum.TextXAlignment.Center
 local close = make("TextButton", { Name = "Close", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -6, 0, 6), Size = UDim2.fromOffset(44, 44), Text = "", ZIndex = 5 }, card)
