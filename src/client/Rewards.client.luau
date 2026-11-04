@@ -392,6 +392,102 @@ end
 for n, t in tabs do t.Activated:Connect(function() showTab(n) end) end
 showTab("Playtime")
 
+-- Phone arrangement (4 Nov; vault: Case Study - Phone UI Overhaul "per-screen phone
+-- arrangements, with exact restore", Responsive UI; checker rules 12 px text, 44 px taps).
+-- The desktop panel (tabs outside on the left, 3x2 cards, wide grand prize below) shrank
+-- to ~41% on a phone (8 px text). On compact screens (Style.compact) it becomes wide and
+-- short: tabs inside on the left, the 6 cards at 80%, the grand prize as a tall card on
+-- the right. Every touched value is stored first and restored exactly on bigger screens.
+do
+	local saved: { [Instance]: { [string]: any } } = {}
+	local function set(g: Instance, props: { [string]: any })
+		local keep = saved[g] or {}
+		saved[g] = keep
+		for k, v in props do
+			if keep[k] == nil then keep[k] = (g :: any)[k] end
+			(g :: any)[k] = v
+		end
+	end
+	local function restoreAll()
+		for g, keep in saved do for k, v in keep do (g :: any)[k] = v end end
+	end
+	local function scaleOf(g: Instance): UIScale
+		local s = g:FindFirstChild("PhoneScale") :: UIScale?
+		if not s then s = make("UIScale", { Name = "PhoneScale", Scale = 1 }, g) end
+		return s :: UIScale
+	end
+
+	local CARD = 0.8 -- cards (and the grand card) at 80%
+	local TABS_W = 130
+	local GRID_X = PAD + TABS_W + 12
+	local GRID_W = math.floor((COLS * TILE_W + (COLS - 1) * GAP) * CARD + 0.5) -- 629
+	local GRID_H = math.floor((2 * TILE_H + GAP) * CARD + 0.5) -- 307
+	local GRAND_W = 225 -- design units inside the 80% card -> 180 wide
+	local GRAND_X = GRID_X + GRID_W + 12
+	local PW = GRAND_X + math.floor(GRAND_W * CARD + 0.5) + PAD
+	local PH = GRID_Y + GRID_H + 46
+
+	local function grandPhone(g: Tile)
+		local b = g.button
+		set(b, { Position = UDim2.fromOffset(GRAND_X, GRID_Y), Size = UDim2.fromOffset(GRAND_W, math.floor(GRID_H / CARD + 0.5)) })
+		scaleOf(b).Scale = CARD
+		-- top to bottom: title (two lines), "+ Mythic chance!", crusher, "+ cash", amount, the bar
+		set(g.title, { Position = UDim2.fromOffset(8, 4), Size = UDim2.new(1, -16, 0, 62), TextXAlignment = Enum.TextXAlignment.Center, TextWrapped = true })
+		set(g.sub, { Position = UDim2.fromOffset(8, 66), Size = UDim2.new(1, -16, 0, 28), TextXAlignment = Enum.TextXAlignment.Center })
+		set(g.icon, { Position = UDim2.new(0.5, 0, 0, 138) })
+		for _, c in b:GetChildren() do
+			if c:IsA("TextLabel") and c.Text == "+" then set(c, { Position = UDim2.new(0.5, -82, 0, 186), Size = UDim2.fromOffset(40, 44) }) end
+			if c:IsA("ImageLabel") and c.Name == "Cash" then set(c, { Position = UDim2.new(0.5, 0, 0, 210), Size = UDim2.fromOffset(60, 60) }) end
+		end
+		if g.amount then set(g.amount, { Position = UDim2.new(0, 10, 0, 242), Size = UDim2.new(1, -20, 0, 30) }) end
+		set(g.bar, { Position = UDim2.new(1, -12, 1, -12), Size = UDim2.new(1, -24, 0, 84) })
+	end
+
+	local function apply()
+		if Style.compact() then
+			set(panel, { Size = UDim2.fromOffset(PW, PH) })
+			panel:SetAttribute("FitWidth", PW + 40) panel:SetAttribute("FitHeight", PH + 50)
+			local i = 0
+			for _, name in { "Playtime", "Daily", "Codes" } do
+				local t = tabs[name]
+				set(t, { AnchorPoint = Vector2.new(0, 0), Position = UDim2.fromOffset(PAD, GRID_Y + i * 84), Size = UDim2.fromOffset(TABS_W, 74) })
+				i += 1
+			end
+			-- bigger close / Skip All (44 px taps at phone scale)
+			set(close, { Size = UDim2.fromOffset(76, 76) })
+			set(skip, { Size = UDim2.fromOffset(210, 76), Position = UDim2.new(1, -100, 0.5, 0) })
+			for _, g in { playGrid, dailyGrid } do
+				set(g, { Position = UDim2.fromOffset(GRID_X, GRID_Y) })
+				scaleOf(g).Scale = CARD
+			end
+			for _, list in { playTiles, dailyTiles } do
+				for _, tile in list do
+					-- "+ Mythic chance!" was 20 px tall: bigger so it stays readable at 80%
+					if tile.button.Name:sub(1, 4) == "Tile" then
+						set(tile.sub, { Position = UDim2.fromOffset(8, 38), Size = UDim2.new(1, -16, 0, 26), TextXAlignment = Enum.TextXAlignment.Center })
+					end
+				end
+			end
+			grandPhone(playGrand) grandPhone(dailyGrand)
+			set(codesPage, { Position = UDim2.fromOffset(GRID_X, GRID_Y), Size = UDim2.fromOffset(PW - GRID_X - PAD, 300) })
+			set(footer, { Position = UDim2.fromOffset(GRID_X, PH - 40), Size = UDim2.fromOffset(PW - GRID_X - PAD, 32) })
+		else
+			restoreAll()
+			table.clear(saved)
+			for _, g in { playGrid, dailyGrid, playGrand.button, dailyGrand.button } do
+				local s = g:FindFirstChild("PhoneScale") if s then s:Destroy() end
+			end
+			panel:SetAttribute("FitWidth", W + 340) panel:SetAttribute("FitHeight", H + 90)
+		end
+	end
+	apply()
+	local last = Style.compact()
+	Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+		local now = Style.compact()
+		if now ~= last then last = now apply() end
+	end)
+end
+
 -- State + refresh ------------------------------------------------------------------
 local state: any = nil
 
