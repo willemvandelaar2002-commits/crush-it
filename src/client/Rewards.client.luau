@@ -463,7 +463,9 @@ do
 			for _, list in { playTiles, dailyTiles } do
 				for _, tile in list do
 					-- "+ Mythic chance!" was 20 px tall: bigger so it stays readable at 80%
-					if tile.button.Name:sub(1, 4) == "Tile" then set(tile.sub, { Position = UDim2.new(1, -150, 0, 40), Size = UDim2.fromOffset(142, 28) }) end
+					if tile.button.Name:sub(1, 4) == "Tile" then
+						set(tile.sub, { Position = UDim2.fromOffset(8, 38), Size = UDim2.new(1, -16, 0, 26), TextXAlignment = Enum.TextXAlignment.Center })
+					end
 				end
 			end
 			grandPhone(playGrand) grandPhone(dailyGrand)
