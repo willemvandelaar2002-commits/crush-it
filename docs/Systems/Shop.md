@@ -304,6 +304,7 @@ owner's own signs.
 - **What's New** (Shared/NewsConfig, server/WhatsNew, client/WhatsNew): once per `Version`, never for players still in the tutorial, waits until no menu is open and no factory event runs. Bump `Version` and rewrite the lines with every update.
 
 ## QuickShop and the starter offer (3 Nov; monetization audit, vault: Pricing and Store Design)
+- **5 Nov: retired as the shop.** The SHOP button always opens the full art shop (phones too). QuickShop only hosts the pushed Starter Pack card; the rows below are unused.
 - client/QuickShop: a phone-sized shop in real pixels (rows 68-96 px, R$ buttons 104x48, text >= 14 px; measured 0 small
   texts / 0 small taps at 750x381). Phones always open it; on bigger screens it is the first page for players who own
   no pass, Starter Pack or Prism Mech. Sections: Starter Pack (until owned), passes you don't own, cash packs, boosts,
@@ -316,7 +317,7 @@ owner's own signs.
 The once-per-session pushed offer (Shop.client -> QuickShop.openOffer) opens `client/StarterOffer.luau`, built after
 Willem's mockup: real Candy Colossus portrait (CrusherIcon), cash = Store.cashFor(CashRate, cashMinutes), boost minutes
 from OfferConfig, live Robux price (GetProductInfo; id 0 = COMING SOON). Buy = OfferAction "Prompt" (same as the shop);
-"Browse shop" opens the QuickShop; closes itself when the pack is owned. Hover motions run only while it is open.
+"Browse shop" opens the full shop (5 Nov); closes itself when the pack is owned. Hover motions run only while it is open.
 
 ## 5 Nov monetization round 2
 - Store: VIP pass (gamePassId 0 until created), products ServerLuck (R$99), TurboNow (R$49), CashHuge (12 h, R$299), CashMega (24 h, R$499); ids 0 stay hidden (Store.existing).

@@ -159,24 +159,14 @@ local function openFullShop(from: string)
 	Style.setOpen(panel, true)
 	Net.event("ShopOpened"):FireServer(from)
 end
--- 3 Nov (monetization audit): phones always get the phone-sized QuickShop; on bigger
--- screens it is the first page for players who own nothing yet (vault: "starter
--- shop view"); SEE EVERYTHING opens the full shop.
+-- QuickShop (3 Nov) now only hosts the pushed Starter Pack offer card.
 local quick = require(script.Parent.QuickShop).build(gui, { buyPass = buyPass, buyProduct = buyProduct, notice = notice,
 	openFull = function() openFullShop("QuickShopMore") end })
-local function ownsAnything(): boolean
-	for _, pass in Store.Passes do if Store.hasPass(player, pass.perk) then return true end end
-	for _, id in { "StarterPack", "PrismMech" } do if player:GetAttribute("Offer_" .. id) == true then return true end end
-	return false
-end
+-- 5 Nov (Willem: "it looks really bad, just use the store we actually made art for"):
+-- the SHOP button always opens the full shop, on phones too. QuickShop is only used
+-- for the pushed Starter Pack offer (its big art card, client/StarterOffer).
 local function openShop(from: string)
-	if Style.compact() or not ownsAnything() then
-		shopBadge.Visible = false
-		quick.open()
-		Net.event("ShopOpened"):FireServer(from)
-	else
-		openFullShop(from)
-	end
+	openFullShop(from)
 end
 shopButton.Activated:Connect(function()
 	if panel.Visible then

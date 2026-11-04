@@ -227,7 +227,7 @@ function Quick.build(gui: ScreenGui, deps: Deps)
 	-- 4 Nov: the pushed offer is its own big card (client/StarterOffer, Willem's mockup);
 	-- the small one-card window below stays as the fallback
 	local big = require(script.Parent.StarterOffer).build(gui, {
-		browse = function() api.open() end,
+		browse = function() deps.openFull() end, -- 5 Nov: the full art shop
 		notice = deps.notice,
 	})
 	function api.openOffer()
