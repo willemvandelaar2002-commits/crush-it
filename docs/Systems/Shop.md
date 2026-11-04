@@ -302,3 +302,12 @@ owner's own signs.
 - **Luck:** the Lucky pass and the 2x Luck boost now stack (x2 each, x4 with both; before, a pass owner who bought the boost got nothing). One weights function `C.rollWeights` feeds the server roll, the roll pedestal odds, the Index and the upgrade board; the Index shows YOUR odds (Luck upgrade, pass / boost, Index luck). Lucky pass text: "2x luck on crusher rolls: Uncommon or better about 30% -> 46% of rolls" (update the Creator Dashboard description too).
 - **Codes** (Shared/CodesConfig, server/Codes, CODES tab in Rewards): once per player (`data.codesUsed`), optional expiry date, rewards cash seconds / boosts / crushers. Live codes: CRUSHIT (10 min of earnings), GOALS (2x Luck 15 min + 5 min of earnings, until 23 Nov 2026).
 - **What's New** (Shared/NewsConfig, server/WhatsNew, client/WhatsNew): once per `Version`, never for players still in the tutorial, waits until no menu is open and no factory event runs. Bump `Version` and rewrite the lines with every update.
+
+## QuickShop and the starter offer (3 Nov; monetization audit, vault: Pricing and Store Design)
+- client/QuickShop: a phone-sized shop in real pixels (rows 68-96 px, R$ buttons 104x48, text >= 14 px; measured 0 small
+  texts / 0 small taps at 750x381). Phones always open it; on bigger screens it is the first page for players who own
+  no pass, Starter Pack or Prism Mech. Sections: Starter Pack (until owned), passes you don't own, cash packs, boosts,
+  then SEE EVERYTHING (crates with odds, Mythics) opens the full shop.
+- Starter offer: once per session, after the tutorial and the first goal and at least 3 minutes in the session, when
+  no menu/cutscene/pop-up is open and saving works: the same window with only the Starter Pack and SEE THE SHOP.
+  Never shown to owners. Logged as ShopOpened "StarterOffer".

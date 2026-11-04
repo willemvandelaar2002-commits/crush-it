@@ -153,19 +153,70 @@ shopBadge.Visible = true -- until the shop has been opened once this session
 local shopPanel = require(script.Parent.ShopPanel).build(gui, { notice = notice, buyPass = buyPass, buyProduct = buyProduct })
 local panel = shopPanel.panel
 
-local function openShop(from: string)
+local function openFullShop(from: string)
 	shopPanel.refresh()
 	shopBadge.Visible = false
 	Style.setOpen(panel, true)
 	Net.event("ShopOpened"):FireServer(from)
 end
+-- 3 Nov (monetization audit): phones always get the phone-sized QuickShop; on bigger
+-- screens it is the first page for players who own nothing yet (vault: "starter
+-- shop view"); SEE EVERYTHING opens the full shop.
+local quick = require(script.Parent.QuickShop).build(gui, { buyPass = buyPass, buyProduct = buyProduct, notice = notice,
+	openFull = function() openFullShop("QuickShopMore") end })
+local function ownsAnything(): boolean
+	for _, pass in Store.Passes do if Store.hasPass(player, pass.perk) then return true end end
+	for _, id in { "StarterPack", "PrismMech" } do if player:GetAttribute("Offer_" .. id) == true then return true end end
+	return false
+end
+local function openShop(from: string)
+	if Style.compact() or not ownsAnything() then
+		shopBadge.Visible = false
+		quick.open()
+		Net.event("ShopOpened"):FireServer(from)
+	else
+		openFullShop(from)
+	end
+end
 shopButton.Activated:Connect(function()
 	if panel.Visible then
 		Style.setOpen(panel, false)
+	elseif quick.panel.Visible then
+		quick.panel.Visible = false
 	else
 		openShop("ShopButton")
 	end
 end)
+
+-- 3 Nov (vault: "starter pack shown after a win", "at most one unprompted offer per
+-- session for non-payers"): once per session, after the tutorial and the first
+-- goal (or for returning players after 3 minutes), when no menu, cutscene or other
+-- pop-up is open, the Starter Pack is offered once. Players who own it never see it.
+do
+	local offered = false
+	local joinedAt = os.clock()
+	local goal, tutorial = 0, 0
+	Net.event("CrusherState").OnClientEvent:Connect(function(v: any)
+		if type(v) ~= "table" then return end
+		goal = tonumber(v.goal) or goal tutorial = tonumber(v.tutorial) or tutorial
+	end)
+	task.spawn(function()
+		while not offered do
+			task.wait(5)
+			local C2 = Config.Crushers
+			local ready = tutorial > #C2.TutorialSteps and goal >= 2 and os.clock() - joinedAt >= 180
+			local calm = not Style.hasModal() and not quick.panel.Visible and not panel.Visible
+				and player:GetAttribute("CutscenePlaying") ~= true and player:GetAttribute("SaveOff") ~= true
+			if ready and calm and player:GetAttribute("Offer_StarterPack") ~= true then
+				offered = true
+				quick.openOffer()
+				Net.event("ShopOpened"):FireServer("StarterOffer")
+			elseif player:GetAttribute("Offer_StarterPack") == true then
+				offered = true
+			end
+		end
+	end)
+end
 shopPanel.close.Activated:Connect(function()
 	Style.setOpen(panel, false)
 end)
@@ -480,6 +531,7 @@ gui:GetAttributeChangedSignal("OpenOffer"):Connect(function()
 	local id = gui:GetAttribute("OpenOffer")
 	if type(id) ~= "string" then return end
 	gui:SetAttribute("OpenOffer", nil)
-	openShop("Offer" .. id)
+	if id == "StarterPack" then quick.openOffer() Net.event("ShopOpened"):FireServer("OfferStarterPack") return end
+	openFullShop("Offer" .. id) -- crates and the Mythic show their full details (odds) there
 	shopPanel.openOffer(id)
 end)

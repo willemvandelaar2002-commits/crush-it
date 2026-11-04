@@ -361,3 +361,4 @@
 - 2026-11-03: Pity on rolls (vault RNG playbook, audit item 4): after 200 rolls without buying a Legendary+, one pedestal of every roll shows a Legendary until you buy one; the roll machine shows "Legendary in N rolls". Willem.
 - 2026-11-03: Top row shows one travel button: MEGA CRUSHER on your own plot, MY FACTORY anywhere else (Willem). Phone work in progress on phone-wip: lite graphics on phones, no shadows on small parts, narrower top-row buttons, big LEVEL UP/MAX button near your bay on touch screens.
 - 2026-11-03: Codes for the game description (Willem): LUCKYROLL (2x Luck 15 min), REBIRTH (2x Cash 15 min), FREECRUSHER (Rare crusher), PHONEUPDATE (Super boost 10 min + 10 min cash, until 17 Nov); CRUSHIT and GOALS stay. What's New v4.
+- 2026-11-03: QuickShop (phone-sized shop; first page for non-payers on PC) and a once-per-session Starter Pack offer after the first goal (monetization audit items 1-2). Lucky pass text in plain words. Willem.
