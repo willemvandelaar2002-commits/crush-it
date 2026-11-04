@@ -179,6 +179,10 @@ local function goalCount(d,g)
 	if g.check=="index" then return math.min(1,#(s.indexClaimed or {})),1 end
 	if g.check=="row" then for _,row in Rows.snapshot(d).rows do if row.active then return 1,1 end end return 0,1 end
 	if g.check=="plot" then return s.plotLevel or 0,g.n end
+	-- 4 Nov (quiet goals): a coated crusher (any finish a roll can't give), a fused one, a rebirth
+	if g.check=="coat" then for _,v in s.owned do if v.modifier~="Standard" and v.modifier~="Rusty" then return 1,1 end end return 0,1 end
+	if g.check=="fuse" then for _,v in s.owned do if v.fused then return 1,1 end end return if s.fusion then 1 else 0,1 end
+	if g.check=="rebirth" then return math.min(1,s.rebirths or 0),1 end
 	local stats=d.stats or {}
 	if g.check=="frenzy" then return math.min(1,stats.frenzies or 0),1 end
 	if g.check=="golden" then return math.min(1,stats.goldenToys or 0),1 end
@@ -203,8 +207,6 @@ end
 local function goalTick(p,d)
 	local s=d.crushers
 	if (s.tutorial or 1)<=#C.TutorialSteps then return end
-	-- Factory III+ is past the whole chain
-	if (s.plotLevel or 0)>=2 then if C.Goals2[s.goal or 1] then s.goal=#C.Goals2+1 end return end
 	-- an older goal list (goalsV 1/2) -> the same goal id in this list (a goal
 	-- that no longer exists restarts at 1); this once, goals already done are
 	-- skipped without rewards (the plot split can complete several at once)
@@ -212,7 +214,11 @@ local function goalTick(p,d)
 	if s.goal~=nil and s.goalsV~=C.Goals2Version then
 		local ids=C.Goals2History[s.goalsV or 1] or C.Goals2History[1]
 		silent=true
-		if s.goal>#ids then s.goal=#C.Goals2+1
+		-- 4 Nov: a save that finished the old list goes on after its last goal
+		-- (the quiet goals were added behind it); done ones are skipped silently
+		if s.goal>#ids then
+			local last=nil for i,g in C.Goals2 do if g.id==ids[#ids] then last=i end end
+			s.goal=if last then last+1 else #C.Goals2+1
 		else
 			-- a removed goal (e.g. Merge) moves on to the next old goal that still exists
 			local found=nil
@@ -228,6 +234,11 @@ local function goalTick(p,d)
 	-- older saves also skip the one-off habit goals (gift, index, row, rolls)
 	-- they would otherwise be stuck on, but stop at the first real progress goal
 	local habit={gift=true,index=true,row=true,rolls=true,frenzy=true,golden=true,turbo=true}
+	-- 4 Nov: someone who has rebirthed jumps from any quiet goal straight to the REBIRTH
+	-- goal (after a rebirth "Fill 36 bays" or "Buy Factory IV" would point backwards)
+	if (s.rebirths or 0)>=1 and C.Goals2[s.goal] and C.Goals2[s.goal].quiet then
+		for i,g in C.Goals2 do if g.check=="rebirth" and i>s.goal then s.goal=i end end
+	end
 	local done=0
 	while C.Goals2[s.goal] and (goalDone(d,C.Goals2[s.goal]) or (silent and habit[C.Goals2[s.goal].check])) and done<#C.Goals2 do
 		if not silent then goalReward(p,d,C.Goals2[s.goal]) end
@@ -256,7 +267,7 @@ local function send(p,message,result)
 		for k=1,math.min(#C.TutorialSteps,(s.tutorial or 1)-1) do Analytics.funnelStep(p,d.onboarding,k+1,C.FunnelNames[k+1]) end
 		-- 2 Nov: goals done (steps 10..), only once the tutorial is done so steps stay in order
 		if (s.tutorial or 1)>#C.TutorialSteps and s.goal then
-			for k=1,math.min(#C.Goals2,s.goal-1) do local step=#C.TutorialSteps+1+k Analytics.funnelStep(p,d.onboarding,step,C.FunnelNames[step]) end
+			for k=1,math.min(C.MainGoals,s.goal-1) do local step=#C.TutorialSteps+1+k Analytics.funnelStep(p,d.onboarding,step,C.FunnelNames[step]) end
 		end
 	end
 	Rules.markSeen(s) -- Index: remember every type this save has owned
@@ -715,7 +726,7 @@ local function action(p,name,args)
 	if ok and d.onboarding and name=="UpgradePlot" and Progression.level(d)>levelBefore then
 		-- one step per plot upgrade from Factory III on (Factory II is the last goal), in order
 		for lv=math.max(2,levelBefore+1),Progression.level(d) do
-			local step=#C.TutorialSteps+#C.Goals2+lv-1 Analytics.funnelStep(p,d.onboarding,step,C.FunnelNames[step])
+			local step=#C.TutorialSteps+C.MainGoals+lv-1 Analytics.funnelStep(p,d.onboarding,step,C.FunnelNames[step])
 		end
 	end
 	-- 3 Nov (vault audit: "time per step logged"): minutes played when each factory
@@ -724,9 +735,13 @@ local function action(p,name,args)
 	if ok and name=="UpgradePlot" and Progression.level(d)>levelBefore then
 		Analytics.custom(p,if (d.crushers.rebirths or 0)==0 then "ReachedFactory" else "ReachedFactoryAfterRebirth",
 			math.floor((d.playSeconds or 0)/60),C.PlotUpgrade.Names[Progression.level(d)])
+		if d.fullClock==true and (d.crushers.rebirths or 0)==0 then
+			Analytics.custom(p,"ReachedFactoryNew",math.floor((d.playSeconds or 0)/60),C.PlotUpgrade.Names[Progression.level(d)])
+		end
 	end
 	if ok and name=="Rebirth" then
 		Analytics.custom(p,"RebirthMinutes",math.floor((d.playSeconds or 0)/60),"Rebirth "..d.crushers.rebirths)
+		if d.fullClock==true then Analytics.custom(p,"RebirthMinutesNew",math.floor((d.playSeconds or 0)/60),"Rebirth "..d.crushers.rebirths) end
 	end
 	-- plot upgrade cutscene: only the buyer, only after the server confirmed it
 	if ok and name=="Rebirth" then
@@ -801,6 +816,10 @@ function G.start()
 		local d=Data.whenLoaded(p) if not d then return end
 		-- onboarding funnel: only saves that start here fresh (tutorial step 1); step 1 = Joined
 		if d.onboarding==nil then d.onboarding={funnel=d.crushers.tutorial==1,funnelStep=0} end
+		-- 4 Nov: a brand-new save counts its playtime from the very first second
+		-- (playSeconds only exists since 2 Nov, so older saves undercount). Timing
+		-- events from these saves also go out as *New (clean numbers for pacing).
+		if d.fullClock==nil and d.crushers.tutorial==1 and (d.playSeconds or 0)<=5 and (d.crushers.rolls or 0)==0 then d.fullClock=true end
 		Analytics.funnelStep(p,d.onboarding,1,C.FunnelNames[1])
 		local plot for _,v in Plots.all() do if not v.owner then plot=v break end end
 		if not plot then p:Kick("All factory plots are occupied. Please join another server.") return end

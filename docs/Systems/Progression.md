@@ -106,6 +106,7 @@ Goal: fewer players leaving before the first collect (funnel step 2, 12.5% churn
   earns most. The red "!" on the button is the server running the same rule (every 3 s).
 - x10 factory upgrades (3 Nov, Willem): a small x10 button next to each FACTORY UPGRADES row (Damage, Strike speed, Scrap yield) buys up to 10 levels (`C.UpgradeMany`), as many as the cash and the cap allow; it counts as that many upgrades for quests. Luck and pedestals stay one at a time.
 - Goals v8 (3 Nov): the SMASH into a FRENZY goal is gone (30% of players stopped on it); 11 goals, funnel steps 10-20, Factory III-VI 21-24.
+- Goals v9 (4 Nov): the 11 main goals stay as they are (funnel steps 10-20, `C.MainGoals`); behind them 10 quiet goals (`quiet=true`) lead from Factory II to the first rebirth: Coat, Fill 18, Upgrades 20, Fill 24, Factory III, Fill a row, Fill 36, Factory IV, Fuse, Rebirth. They show as a small "NEXT GOAL" line with counter and reward, no trail, arrow or hint, and are not funnel steps. Rebirthed saves jump to the Rebirth goal.
 - Pity (3 Nov, `C.Pity`): `s.pity` counts rolls since the last Legendary+ was bought. At 200, one pedestal of every roll is a Legendary until you buy one (base Legendary+ odds ~1 in 480 per pedestal at Luck 0, so it only catches bad streaks). The roll machine shows "Legendary in N rolls".
 
 ## Phone pass 1 (3 Nov; vault: Mobile and Low-End Optimization, Responsive UI, HUD Design)
