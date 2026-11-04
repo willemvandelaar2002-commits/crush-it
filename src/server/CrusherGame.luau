@@ -55,6 +55,7 @@ local function restoredCooldown(d)
 end
 local Boost=require(RS.Shared.BoostConfig)
 local Weekend=require(RS.Shared.WeekendConfig)
+local ServerLuck=require(script.Parent.ServerLuck)
 local Turbo=require(script.Parent.Turbo)
 local Frenzy=require(script.Parent.Frenzy)
 local function perks(p)
@@ -63,8 +64,9 @@ local function perks(p)
 	-- a pass owner who bought the boost got nothing for it)
 	return {speed=Frenzy.speed(p),autoCrush=Store.hasPass(p,"AutoCrush"),lucky=(if Store.hasPass(p,"Lucky") then 2 else 1)*(if Boost.active(p,"Luck",now) then 2 else 1)
 			*Weekend.luck(os.time()) -- 4 Nov: LUCKY WEEKEND (Shared/WeekendConfig), everyone, Sat-Sun UTC
+			*ServerLuck.mult() -- 4 Nov: someone bought Server Luck (x2 for the whole server)
 			*(function() local d=Data.get(p) return C.rebirthLuck(d and d.crushers.rebirths or 0) end)(),
-		mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now))
+		mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*(if Store.hasPass(p,"VIP") then Store.Vip.Mult else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now))
 			*(function() local d=Data.get(p) return C.rebirthMult(d and d.crushers.rebirths or 0) end)(), -- 2 Nov evening: rebirth bonus
 		indexLuck=(function() local d=Data.get(p) return if d then IndexRewards.luck(d.crushers) else 0 end)()}
 end

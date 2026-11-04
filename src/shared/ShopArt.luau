@@ -26,5 +26,7 @@ return {
 		CashSmall = id("91590888539709"), -- CashPile.png: low pile
 		CashMedium = id("140435524782279"), -- CashStack.png: tall pyramid of bundles
 		CashLarge = id("72188129858951"), -- CashVault.png: open gold/emerald vault
+		CashHuge = id("72188129858951"), -- 5 Nov: the vault again until Willem makes 12 h / 24 h art
+		CashMega = id("72188129858951"),
 	},
 }

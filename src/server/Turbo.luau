@@ -26,7 +26,26 @@ end
 -- 2 Nov evening: a rebirth drops income on purpose, so the price follows it down
 function M.resetPeak(p: Player) peak[p] = nil end
 
+local savedApi: any = nil
+-- 4 Nov: the Instant Turbo product: your strongest unlocked turbo for
+-- Store.TurboNowMinutes, added to its time (paid: may go past MaxMinutes).
+-- Returns the turbo's title, nil if the player isn't loaded.
+function M.grantNow(p: Player): string?
+	local d = savedApi and savedApi.getData(p)
+	if not d then return nil end
+	local best = T.List[1]
+	for _, t in T.List do if (d.crushers.plotLevel or 0) >= t.plot then best = t end end
+	local now = workspace:GetServerTimeNow()
+	local ends = math.max(now, (p:GetAttribute(T.attr(best.id)) :: number?) or 0) + require(RS.Shared.Store).TurboNowMinutes * 60
+	p:SetAttribute(T.attr(best.id), ends)
+	d.turbo = d.turbo or {}
+	d.turbo[best.id] = os.time() + (ends - now)
+	savedApi.sync(p)
+	return best.title
+end
+
 function M.start(api: any)
+	savedApi = api
 	local result = Net.event("TurboState")
 	local function state(p: Player, message: string?)
 		local d = api.getData(p)

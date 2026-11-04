@@ -22,14 +22,26 @@ Store.Passes = {
 	{ perk = "DoubleCash", gamePassId = 2039584674, price = 249, title = "2x Cash", desc = "Double cash from every crush, forever", color = Color3.fromRGB(80, 200, 110) },
 	{ perk = "Lucky", gamePassId = 2041580327, price = 149, title = "Lucky", desc = "2x luck on crusher rolls: Uncommon or better about 30% -> 46% of rolls", color = Color3.fromRGB(255, 200, 50) },
 	{ perk = "AutoCollect", gamePassId = 2057934074, price = 99, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
+	-- 4 Nov (monetization round 2, vault: Price Points "the 299-599 rung was empty"; Willem):
+	-- VIP. Id 0 until Willem creates the pass (hidden in the shop until then).
+	{ perk = "VIP", gamePassId = 0, price = 399, title = "VIP", desc = "x1.5 cash forever, offline cash up to 12 h (not 6), a gold [VIP] tag in chat", color = Color3.fromRGB(255, 200, 40) },
 	-- (30 Oct: the Offline Earnings pass is gone: offline cash is free for everyone,
 	-- with paid 2x / 5x boosts on the welcome-back card, see Store.Offline)
 } :: { Pass }
 
 Store.Products = {
-	{ id = "CashSmall", productId = 3723657331, price = 19, title = "Cash Pile", desc = "10 minutes of your earnings, right away", color = Color3.fromRGB(80, 200, 110) },
-	{ id = "CashMedium", productId = 3723657452, price = 59, title = "Cash Stack", desc = "1 hour of your earnings, right away", color = Color3.fromRGB(60, 180, 90) },
-	{ id = "CashLarge", productId = 3723657672, price = 129, title = "Cash Vault", desc = "4 hours of your earnings, right away", color = Color3.fromRGB(40, 160, 80) },
+	{ id = "CashSmall", productId = 3723657331, price = 19, title = "10m Time Skip", desc = "10 minutes of your earnings, right away", color = Color3.fromRGB(80, 200, 110) },
+	-- 4 Nov (monetization round 2; vault: RNG genre "social luck sells", Price Points
+	-- "the moment beats the price"). Id 0 = not created yet (hidden everywhere).
+	{ id = "ServerLuck", productId = 0, price = 99, title = "Server Luck", desc = "2x luck for EVERYONE in this server for 15 minutes", color = Color3.fromRGB(80, 220, 90) },
+	{ id = "TurboNow", productId = 0, price = 49, title = "Instant Turbo", desc = "15 minutes of your strongest TURBO, right away", color = Color3.fromRGB(255, 140, 40) },
+	{ id = "CashMedium", productId = 3723657452, price = 59, title = "1H Time Skip", desc = "1 hour of your earnings, right away", color = Color3.fromRGB(60, 180, 90) },
+	{ id = "CashLarge", productId = 3723657672, price = 129, title = "4H Time Skip", desc = "4 hours of your earnings, right away", color = Color3.fromRGB(40, 160, 80) },
+	-- 5 Nov (Willem's references: a time-skip ladder up to 24 h with the cash amount on
+	-- every card; vault: 3-5 rungs, value per Robux rising: 0.5 / 1.0 / 1.9 / 2.4 / 2.9 min
+	-- per Robux). Id 0 until created (hidden until then).
+	{ id = "CashHuge", productId = 0, price = 299, title = "12H Time Skip", desc = "12 hours of your earnings, right away", color = Color3.fromRGB(40, 150, 120) },
+	{ id = "CashMega", productId = 0, price = 499, title = "24H Time Skip", desc = "24 hours of your earnings, right away", color = Color3.fromRGB(230, 170, 30) },
 	-- 30 Oct: no longer sold (Willem); kept hidden for old code paths
 	{ id = "FinishSmelt", productId = 0, price = 19, title = "Finish Now", desc = "Your smelter finishes all its scrap at once", color = Color3.fromRGB(255, 140, 40), hidden = true },
 	{ id = "GoldenRush", productId = 0, price = 49, title = "Golden Rush", desc = "Your next 10 objects are Golden", color = Color3.fromRGB(255, 200, 50), hidden = true },
@@ -58,16 +70,21 @@ Store.Products = {
 } :: { Product }
 
 -- What a cash pack pays: a share of the next press (or of the current one at max size).
-Store.CashPackShare = { CashSmall = 0.25, CashMedium = 1, CashLarge = 4 }
+Store.CashPackShare = { CashSmall = 0.25, CashMedium = 1, CashLarge = 4, CashHuge = 12, CashMega = 24 }
 -- 30 Oct: cash packs pay minutes of YOUR current earnings, so they stay worth it
 -- at every stage (Pile 10 min, Stack 1 h, Vault 4 h). Never less than MinPackCash.
-Store.CashPackMinutes = { CashSmall = 10, CashMedium = 60, CashLarge = 240 }
+Store.CashPackMinutes = { CashSmall = 10, CashMedium = 60, CashLarge = 240, CashHuge = 720, CashMega = 1440 }
 Store.MinPackCash = 100
 -- cash for `seconds` of earnings at `cps` cash per second
 function Store.cashFor(cps: number, seconds: number): number
 	return math.max(Store.MinPackCash, math.floor((cps or 0) * seconds))
 end
 Store.GoldenRushCount = 10
+-- 4 Nov: Server Luck (stacks on time left, capped) and the VIP pass
+Store.ServerLuck = { Mult = 2, Minutes = 15, MaxMinutes = 60 }
+Store.Vip = { Mult = 1.5, OfflineHours = 12 }
+-- the Instant Turbo (TurboNow) gives this many minutes of your best unlocked turbo
+Store.TurboNowMinutes = 15
 
 -- cps: current cash per second (server: api.cashPerSecond; client: attribute CashRate)
 function Store.cashPackAmount(productId: string, tier: number, cps: number?): number
@@ -119,6 +136,18 @@ function Store.livePrice(kind: string, id: number, fallback: number, onPrice: (n
 			onPrice(info.PriceInRobux)
 		end
 	end)
+end
+
+-- 5 Nov: the ids from `ids` whose product exists on Roblox (new products stay hidden
+-- until Willem has created them; the older ones keep showing SOON as before)
+local NEW = { ServerLuck = true, TurboNow = true, CashHuge = true, CashMega = true }
+function Store.existing(ids: { string }): { string }
+	local out = {}
+	for _, id in ids do
+		local p = Store.productById(id)
+		if p and (p.productId ~= 0 or not NEW[id]) then table.insert(out, id) end
+	end
+	return out
 end
 
 function Store.productById(id: string): Product?
