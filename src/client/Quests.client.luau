@@ -129,8 +129,12 @@ local shop = make("ScrollingFrame", { Name = "Shop", Position = UDim2.fromOffset
 make("UIGridLayout", { CellSize = UDim2.fromOffset(266, 176), CellPadding = UDim2.fromOffset(10, 10), SortOrder = Enum.SortOrder.LayoutOrder }, shop)
 make("UIPadding", { PaddingRight = UDim.new(0, 8), PaddingTop = UDim.new(0, 2), PaddingBottom = UDim.new(0, 4) }, shop)
 
+-- 4 Nov phone layout (see the end of this file): rows and shop cards are built with
+-- bigger buttons while `phone` is true
+local phone = false
+
 -- Rows -------------------------------------------------------------------------------
-type Row = { frame: Frame, bar: Frame, barText: TextLabel, button: TextButton, buttonText: TextLabel }
+type Row ={ frame: Frame, bar: Frame, barText: TextLabel, button: TextButton, buttonText: TextLabel }
 local rows: { [string]: Row } = {}
 local current = "Daily"
 local state: any = nil
@@ -168,7 +172,13 @@ local function row(period: string, q: any, order: number): Row
 	ticket(f, UDim2.fromOffset(112, 66), UDim2.fromOffset(32, 22))
 	local reward = label(f, "+" .. q.reward, UDim2.fromOffset(150, 62), UDim2.fromOffset(70, 30), 2.5)
 	reward.TextXAlignment = Enum.TextXAlignment.Left reward.TextColor3 = C(255, 220, 90)
-	local b = make("TextButton", { Name = "Claim", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 63), Size = UDim2.fromOffset(120, 30), Text = "", ZIndex = 9 }, f)
+	-- (phones: a big Claim button on the right, the title and bar make room for it)
+	if phone then
+		t.Size = UDim2.new(1, -112 - 160, 0, 30)
+		barBack.Size = UDim2.new(1, -112 - 160, 0, 22)
+	end
+	local b = make("TextButton", { Name = "Claim", AnchorPoint = Vector2.new(1, 0), Position = if phone then UDim2.new(1, -10, 0, 17) else UDim2.new(1, -10, 0, 63),
+		Size = if phone then UDim2.fromOffset(150, 64) else UDim2.fromOffset(120, 30), Text = "", ZIndex = 9 }, f)
 	goldButton(b, GREY) Style.feedback(b)
 	local bt = label(b, "Claim", UDim2.fromScale(0.08, 0.1), UDim2.fromScale(0.84, 0.8), 2)
 	bt.ZIndex = 10
@@ -203,7 +213,7 @@ local function card(item: any, order: number): Card
 	else
 		make("ImageLabel", { Image = (Icons :: any)[item.icon] or Icons.Cash, BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ScaleType = Enum.ScaleType.Fit, ZIndex = 10 }, art)
 	end
-	local b = make("TextButton", { AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -10), Size = UDim2.fromOffset(170, 38), Text = "", ZIndex = 9 }, f)
+	local b = make("TextButton", { AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -10), Size = if phone then UDim2.fromOffset(200, 60) else UDim2.fromOffset(170, 38), Text = "", ZIndex = 9 }, f)
 	goldButton(b, GREEN) Style.feedback(b)
 	ticket(b, UDim2.fromOffset(10, 6), UDim2.fromOffset(30, 22))
 	local price = label(b, "", UDim2.fromOffset(46, 4), UDim2.new(1, -54, 1, -8), 2)
@@ -295,4 +305,27 @@ for _, p in CollectionService:GetTagged("QuestsPrompt") do bindPrompt(p) end
 CollectionService:GetInstanceAddedSignal("QuestsPrompt"):Connect(bindPrompt)
 task.spawn(function()
 	while true do task.wait(20) if panel.Visible then redraw() end end
+end)
+
+-- 4 Nov phone layout (vault: Phone UI Overhaul; checker 12 px text / 44 px taps): the
+-- 780 x 520 window shrank to ~60% with 30 px Claim buttons. On compact screens it is
+-- 780 x 430 (the lists scroll), with bigger tabs, close, Claim and Buy buttons.
+local PH = 430
+local shopGrid = shop:FindFirstChildOfClass("UIGridLayout") :: UIGridLayout
+require(script.Parent.PhoneArrange).new(function(set)
+	set(panel, { Size = UDim2.fromOffset(W, PH), ["@FitWidth"] = W + 10, ["@FitHeight"] = PH + 10 })
+	set(side, { Size = UDim2.fromOffset(170, PH - 96) })
+	set(content, { Size = UDim2.fromOffset(W - 210, PH - 96) })
+	set(close, { Size = UDim2.fromOffset(60, 60) })
+	set(header, { Size = UDim2.fromOffset(W - 16, 66) })
+	for i, name in { "Daily", "Weekly", "Shop" } do
+		set(tabs[name], { Position = UDim2.fromOffset(12, 10 + (i - 1) * 66), Size = UDim2.fromOffset(146, 58) })
+	end
+	set(shopGrid, { CellSize = UDim2.fromOffset(266, 196) })
+end, function(on)
+	phone = on
+	-- rebuild rows and cards at the new size
+	for _, r in rows do r.frame:Destroy() end table.clear(rows)
+	for _, c in cards do c.frame:Destroy() end table.clear(cards)
+	redraw()
 end)

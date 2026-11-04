@@ -216,10 +216,43 @@ local function mine(prompt: ProximityPrompt): boolean
 	while node and not (node:IsA("Model") and node:GetAttribute("Index") ~= nil) do node = node.Parent end
 	return node ~= nil and node:GetAttribute("Index") == me:GetAttribute("Plot")
 end
+-- 4 Nov phone layout (vault: Phone UI Overhaul, "wide and short for landscape phones";
+-- checker 12 px / 44 px): 1000 x 640 shrank to ~49% (7 px text). On compact screens the
+-- window is 1100 x 470: short header, before -> after side by side, smaller coating
+-- cards, APPLY under them (the multiplier box goes: the cards show the same x numbers).
+local PW, PH = 1100, 470
+local phoneOn = false
+local function fitNow() if phoneOn then L.fit(panel, PW + 40, PH + 34) else L.fit(panel, W, H) end end
+require(script.Parent.PhoneArrange).new(function(set)
+	set(panel, { Size = UDim2.fromOffset(PW, PH) })
+	L.phoneHeader(set, panel)
+	set(left, { Position = UDim2.fromOffset(14, 98), Size = UDim2.fromOffset(300, 360) })
+	set(mid, { Position = UDim2.fromOffset(324, 98), Size = UDim2.fromOffset(380, 360) })
+	set(before, { Position = UDim2.fromOffset(14, 104), Size = UDim2.fromOffset(160, 150) })
+	local arrow = mid:FindFirstChild("Arrow")
+	if arrow then set(arrow, { Position = UDim2.fromOffset(166, 158), Size = UDim2.fromOffset(48, 50), Rotation = -90 }) end
+	set(after, { Position = UDim2.fromOffset(206, 104), Size = UDim2.fromOffset(160, 150) })
+	set(afterHint, { Position = UDim2.fromOffset(206, 104), Size = UDim2.fromOffset(160, 150) })
+	set(right, { Position = UDim2.fromOffset(714, 98), Size = UDim2.fromOffset(372, 282) })
+	for i, recipe in C.Coatings do
+		local c = cards[recipe.name]
+		set(c.button, { Position = UDim2.fromOffset(10 + ((i - 1) % 2) * 178, 58 + math.floor((i - 1) / 2) * 110), Size = UDim2.fromOffset(172, 106) })
+		local art = c.button:FindFirstChild("Art") if art then set(art, { Position = UDim2.new(.5, -22, 0, 2), Size = UDim2.fromOffset(44, 38) }) end
+		local name = c.button:FindFirstChild("Name") if name then set(name, { Position = UDim2.fromOffset(0, 38) }) end
+		set(c.mult, { Position = UDim2.fromOffset(0, 57) })
+		set(c.price, { Position = UDim2.new(.08, 0, 1, -30), Size = UDim2.new(.84, 0, 0, 26) })
+	end
+	set(info, { Visible = false })
+	set(apply, { Position = UDim2.fromOffset(714, 388), Size = UDim2.fromOffset(372, 74) })
+end, function(on)
+	phoneOn = on
+	if panel.Visible then fitNow() end
+end)
+
 PPS.PromptTriggered:Connect(function(prompt)
 	if prompt.Name ~= "CoatingPrompt" or not mine(prompt) then return end
 	picked = nil status.Text = "" status.TextColor3 = L.WHITE previewing = false
-	L.fit(panel, W, H)
+	fitNow()
 	Style.setOpen(panel, true)
 	actionRemote:FireServer("Sync")
 	redraw()
@@ -230,7 +263,7 @@ panel:GetPropertyChangedSignal("Visible"):Connect(function() if panel.Visible th
 if game:GetService("RunService"):IsStudio() then
 	local probe = make("BindableFunction", { Name = "CoatingPreview" }, script)
 	probe.OnInvoke = function(fake: any, pick: string?, id: string?)
-		previewing = true state = fake picked = pick selectedId = id L.fit(panel, W, H) Style.setOpen(panel, true) redraw()
+		previewing = true state = fake picked = pick selectedId = id fitNow() Style.setOpen(panel, true) redraw()
 		return true
 	end
 end

@@ -286,10 +286,37 @@ local function mine(prompt: ProximityPrompt): boolean
 	while plot and plot:GetAttribute("Index") == nil do plot = plot.Parent and plot.Parent:FindFirstAncestorWhichIsA("Model") or nil end
 	return plot ~= nil and plot:GetAttribute("Index") == me:GetAttribute("Plot")
 end
+-- 4 Nov phone layout (vault: Phone UI Overhaul; checker 12 px / 44 px): 1000 x 640 shrank
+-- to ~49% (5 px text). On compact screens the window is 1100 x 470: short header, the
+-- 4 slots in a row with the note under them, result + FUSE in a column on the right
+-- (the green connector lines go: there is no room for them).
+local PW, PH = 1100, 470
+local phoneOn = false
+local function fitNow() if phoneOn then L.fit(panel, PW + 40, PH + 34) else L.fit(panel, W, H) end end
+require(script.Parent.PhoneArrange).new(function(set)
+	set(panel, { Size = UDim2.fromOffset(PW, PH) })
+	L.phoneHeader(set, panel)
+	set(left, { Position = UDim2.fromOffset(14, 98), Size = UDim2.fromOffset(300, 360) })
+	set(right, { Position = UDim2.fromOffset(324, 98), Size = UDim2.fromOffset(762, 360) })
+	for i, s in slots do set(s.frame, { Position = UDim2.fromOffset(12 + (i - 1) * 140, 60), Size = UDim2.fromOffset(132, 150) }) end
+	for _, line in right:GetChildren() do
+		if line:IsA("GuiObject") and (line.Name:match("^Drop") or line.Name == "Rail" or line.Name == "Arrow") then set(line, { Visible = false }) end
+	end
+	set(noteBox, { Position = UDim2.fromOffset(12, 222), Size = UDim2.fromOffset(552, 74) })
+	set(resultBox, { Position = UDim2.fromOffset(586, 52), Size = UDim2.fromOffset(164, 104) })
+	set(resultLabel, { Position = UDim2.fromOffset(580, 158), Size = UDim2.fromOffset(172, 70) })
+	set(badge, { Position = UDim2.new(.5, -80, 0, 34), Size = UDim2.fromOffset(160, 30) })
+	set(fuse, { Position = UDim2.fromOffset(580, 236), Size = UDim2.fromOffset(172, 76), TextScaled = true })
+	set(status, { Position = UDim2.fromOffset(580, 316), Size = UDim2.fromOffset(172, 38) })
+end, function(on)
+	phoneOn = on
+	if panel.Visible then fitNow() end
+end)
+
 PPS.PromptTriggered:Connect(function(prompt)
 	if prompt.Name ~= "FusionPrompt" or not mine(prompt) then return end
 	pending = false status.Text = "" status.TextColor3 = L.WHITE previewing = false
-	L.fit(panel, W, H)
+	fitNow()
 	Style.setOpen(panel, true)
 	actionRemote:FireServer("Sync")
 	redraw()
@@ -300,7 +327,7 @@ panel:GetPropertyChangedSignal("Visible"):Connect(function() if panel.Visible th
 if game:GetService("RunService"):IsStudio() then
 	local preview = make("BindableFunction", { Name = "FusionPreview" }, script)
 	preview.OnInvoke = function(fake: any)
-		previewing = true state = fake pending = false L.fit(panel, W, H) Style.setOpen(panel, true) redraw()
+		previewing = true state = fake pending = false fitNow() Style.setOpen(panel, true) redraw()
 		return true
 	end
 end
