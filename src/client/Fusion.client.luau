@@ -308,6 +308,10 @@ require(script.Parent.PhoneArrange).new(function(set)
 	set(badge, { Position = UDim2.new(.5, -80, 0, 34), Size = UDim2.fromOffset(160, 30) })
 	set(fuse, { Position = UDim2.fromOffset(580, 236), Size = UDim2.fromOffset(172, 76), TextScaled = true })
 	set(status, { Position = UDim2.fromOffset(580, 316), Size = UDim2.fromOffset(172, 38) })
+	-- bigger small print (it was 6-11 px at phone scale)
+	set(footerText, { TextSize = 24 })
+	set(noteText, { TextSize = 24 })
+	for _, s in slots do set(s.note, { TextSize = 18 }) end
 end, function(on)
 	phoneOn = on
 	if panel.Visible then fitNow() end

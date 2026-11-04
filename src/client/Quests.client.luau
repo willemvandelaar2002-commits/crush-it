@@ -316,10 +316,10 @@ require(script.Parent.PhoneArrange).new(function(set)
 	set(panel, { Size = UDim2.fromOffset(W, PH), ["@FitWidth"] = W + 10, ["@FitHeight"] = PH + 10 })
 	set(side, { Size = UDim2.fromOffset(170, PH - 96) })
 	set(content, { Size = UDim2.fromOffset(W - 210, PH - 96) })
-	set(close, { Size = UDim2.fromOffset(60, 60) })
-	set(header, { Size = UDim2.fromOffset(W - 16, 66) })
+	set(close, { Size = UDim2.fromOffset(70, 70) })
+	set(header, { Size = UDim2.fromOffset(W - 16, 76) })
 	for i, name in { "Daily", "Weekly", "Shop" } do
-		set(tabs[name], { Position = UDim2.fromOffset(12, 10 + (i - 1) * 66), Size = UDim2.fromOffset(146, 58) })
+		set(tabs[name], { Position = UDim2.fromOffset(12, 10 + (i - 1) * 72), Size = UDim2.fromOffset(146, 64) })
 	end
 	set(shopGrid, { CellSize = UDim2.fromOffset(266, 196) })
 end, function(on)
