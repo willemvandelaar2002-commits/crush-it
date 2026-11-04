@@ -58,6 +58,21 @@ task.spawn(function()
 		if test == "active" then active, left = true, 101400 elseif test == "upcoming" then active, left = false, 33600 end
 		on = active
 		pill.Visible = left ~= nil
+		-- under the top-right button row; on short screens (phones) the SMASH button sits
+		-- there too, so then the banner moves to its left
+		if pill.Visible then
+			local pg = me.PlayerGui
+			local row = pg:FindFirstChild("EquipBest", true) :: GuiObject?
+			local y = if row and row:IsA("GuiObject") and row.AbsoluteSize.Y > 0 then row.AbsolutePosition.Y + row.AbsoluteSize.Y + 8 else 64
+			local smash = pg:FindFirstChild("SmashHolder", true) :: GuiObject?
+			local right = gui.AbsoluteSize.X - 10
+			if smash and smash:IsA("GuiObject") and smash.Visible and smash.AbsoluteSize.X > 0 then
+				local h = pill.AbsoluteSize.Y
+				local overlapsY = y < smash.AbsolutePosition.Y + smash.AbsoluteSize.Y and y + h > smash.AbsolutePosition.Y
+				if overlapsY and right > smash.AbsolutePosition.X then right = smash.AbsolutePosition.X - 8 end
+			end
+			pill.Position = UDim2.fromOffset(right, y)
+		end
 		if active and left then
 			text.Text = W.Luck .. "x LUCK WEEKEND · " .. span(left)
 			banner.Image = ART.Active
