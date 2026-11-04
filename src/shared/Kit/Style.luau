@@ -1051,8 +1051,8 @@ function Style.robux(label: TextLabel | TextButton, image: string)
 		local big = Vector2.new(1e5, 1e5)
 		local fontSize = math.max(1, math.floor(size))
 		local spaceW = math.max(1, TextService:GetTextSize(" ", fontSize, label.Font, big).X)
-		local iconW = size
-		local n = math.max(1, math.ceil((iconW + size * 0.18) / spaceW))
+		local iconW = size * 1.1
+		local n = math.max(1, math.ceil((iconW + size * 0.08) / spaceW))
 		local shown = prefix .. string.rep(" ", n) .. rest
 		mine = shown
 		if label.Text ~= shown then busy = true label.Text = shown busy = false end
@@ -1062,7 +1062,10 @@ function Style.robux(label: TextLabel | TextButton, image: string)
 			elseif label.TextXAlignment == Enum.TextXAlignment.Right then width - total
 			else (width - total) / 2
 		local prefixW = if prefix == "" then 0 else TextService:GetTextSize(prefix, fontSize, label.Font, big).X
-		local x = start + prefixW + size * 0.04
+		-- (5 Nov, Willem: "closer by the numbers") the icon sits at the END of the gap,
+		-- right against the number, like the reference shops
+		local gapW = TextService:GetTextSize(string.rep(" ", n), fontSize, label.Font, big).X
+		local x = start + prefixW + gapW - iconW - size * 0.06
 		icon.Size = UDim2.fromOffset(iconW / k, iconW / k)
 		icon.Position = UDim2.new(0, x / k, 0.5, 0)
 		icon.Visible = true
