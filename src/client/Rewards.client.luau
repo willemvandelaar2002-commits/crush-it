@@ -431,15 +431,15 @@ do
 		local b = g.button
 		set(b, { Position = UDim2.fromOffset(GRAND_X, GRID_Y), Size = UDim2.fromOffset(GRAND_W, math.floor(GRID_H / CARD + 0.5)) })
 		scaleOf(b).Scale = CARD
-		set(g.title, { Position = UDim2.fromOffset(10, 6), Size = UDim2.new(1, -20, 0, 34), TextXAlignment = Enum.TextXAlignment.Center })
-		set(g.sub, { Position = UDim2.fromOffset(10, 40), Size = UDim2.new(1, -20, 0, 26), TextXAlignment = Enum.TextXAlignment.Center })
-		-- top to bottom: title, "+ Mythic chance!", crusher, "+ cash", amount, the bar
-		set(g.icon, { Position = UDim2.new(0.5, 0, 0, 112) })
+		-- top to bottom: title (two lines), "+ Mythic chance!", crusher, "+ cash", amount, the bar
+		set(g.title, { Position = UDim2.fromOffset(8, 4), Size = UDim2.new(1, -16, 0, 62), TextXAlignment = Enum.TextXAlignment.Center, TextWrapped = true })
+		set(g.sub, { Position = UDim2.fromOffset(8, 66), Size = UDim2.new(1, -16, 0, 28), TextXAlignment = Enum.TextXAlignment.Center })
+		set(g.icon, { Position = UDim2.new(0.5, 0, 0, 138) })
 		for _, c in b:GetChildren() do
-			if c:IsA("TextLabel") and c.Text == "+" then set(c, { Position = UDim2.new(0.5, -82, 0, 170), Size = UDim2.fromOffset(40, 44) }) end
-			if c:IsA("ImageLabel") and c.Name == "Cash" then set(c, { Position = UDim2.new(0.5, 0, 0, 194), Size = UDim2.fromOffset(64, 64) }) end
+			if c:IsA("TextLabel") and c.Text == "+" then set(c, { Position = UDim2.new(0.5, -82, 0, 186), Size = UDim2.fromOffset(40, 44) }) end
+			if c:IsA("ImageLabel") and c.Name == "Cash" then set(c, { Position = UDim2.new(0.5, 0, 0, 210), Size = UDim2.fromOffset(60, 60) }) end
 		end
-		if g.amount then set(g.amount, { Position = UDim2.new(0, 10, 0, 228), Size = UDim2.new(1, -20, 0, 30) }) end
+		if g.amount then set(g.amount, { Position = UDim2.new(0, 10, 0, 242), Size = UDim2.new(1, -20, 0, 30) }) end
 		set(g.bar, { Position = UDim2.new(1, -12, 1, -12), Size = UDim2.new(1, -24, 0, 84) })
 	end
 
@@ -450,9 +450,12 @@ do
 			local i = 0
 			for _, name in { "Playtime", "Daily", "Codes" } do
 				local t = tabs[name]
-				set(t, { AnchorPoint = Vector2.new(0, 0), Position = UDim2.fromOffset(PAD, GRID_Y + i * 74), Size = UDim2.fromOffset(TABS_W, 64) })
+				set(t, { AnchorPoint = Vector2.new(0, 0), Position = UDim2.fromOffset(PAD, GRID_Y + i * 84), Size = UDim2.fromOffset(TABS_W, 74) })
 				i += 1
 			end
+			-- bigger close / Skip All (44 px taps at phone scale)
+			set(close, { Size = UDim2.fromOffset(76, 76) })
+			set(skip, { Size = UDim2.fromOffset(210, 76), Position = UDim2.new(1, -100, 0.5, 0) })
 			for _, g in { playGrid, dailyGrid } do
 				set(g, { Position = UDim2.fromOffset(GRID_X, GRID_Y) })
 				scaleOf(g).Scale = CARD
