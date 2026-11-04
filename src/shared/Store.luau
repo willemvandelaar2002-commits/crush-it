@@ -133,7 +133,7 @@ end
 if Config.Crushers.Enabled then
 	for _, pass in Store.Passes do
 		if pass.perk == "AutoCrush" then pass.title = "Production Boost" pass.desc = "+25% strike damage. Automatic crushing is free for everyone." end
-		if pass.perk == "Lucky" then pass.desc = "Doubles uncommon-and-rarer crusher roll weights." end
+		if pass.perk == "Lucky" then pass.desc = "2x luck on every roll: more Rare, Epic and Legendary crushers. Stacks with boosts." end -- 3 Nov: plain words
 		if pass.perk == "AutoCollect" then pass.desc = "Automatically collects and sells your finished scrap." end
 	end
 	for _, product in Store.Products do
