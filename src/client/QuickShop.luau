@@ -65,6 +65,12 @@ end
 export type Deps = { buyPass: (string) -> (), buyProduct: (string) -> (), openFull: () -> (), notice: (string) -> () }
 
 function Quick.build(gui: ScreenGui, deps: Deps)
+	-- a dark backdrop behind the window; while open the shop draws above the HUD
+	local baseOrder = gui.DisplayOrder
+	local shade = make("TextButton", { Name = "QuickShopBackdrop", Size = UDim2.fromScale(1, 1), Position = UDim2.fromOffset(0, -60),
+		BackgroundColor3 = INK, BackgroundTransparency = 0.35, BorderSizePixel = 0, Text = "", AutoButtonColor = false,
+		Visible = false, ZIndex = 4, Modal = true }, gui)
+	shade.Size = UDim2.new(1, 0, 1, 120)
 	local panel = make("Frame", { Name = "QuickShop", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
 		BackgroundColor3 = C(44, 48, 54), Visible = false, ZIndex = 5 }, gui)
 	make("UICorner", { CornerRadius = UDim.new(0, 14) }, panel)
@@ -200,6 +206,10 @@ function Quick.build(gui: ScreenGui, deps: Deps)
 	end
 
 	close.Activated:Connect(function() panel.Visible = false end)
+	panel:GetPropertyChangedSignal("Visible"):Connect(function()
+		shade.Visible = panel.Visible
+		gui.DisplayOrder = if panel.Visible then 30 else baseOrder
+	end)
 	player:GetAttributeChangedSignal("Offer_" .. O.StarterPack.id):Connect(function() if panel.Visible then rebuild() end end)
 
 	local api = {}
