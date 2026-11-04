@@ -1,0 +1,116 @@
+{
+  "canvas": {
+    "width": 1448,
+    "height": 1086,
+    "aspectRatio": 1.3333333333333333
+  },
+  "coordinates": "Normalized x,y,width,height relative to full PNG including transparent margins; AnchorPoint 0,0. Starting guides: visually verify after import.",
+  "overlays": {
+    "offerTitle": [
+      0.36,
+      0.052,
+      0.275,
+      0.055
+    ],
+    "packTitle": [
+      0.25,
+      0.115,
+      0.5,
+      0.095
+    ],
+    "closeButton": [
+      0.84,
+      0.135,
+      0.077,
+      0.103
+    ],
+    "rarity": [
+      0.205,
+      0.243,
+      0.16,
+      0.042
+    ],
+    "crusherIcon": [
+      0.115,
+      0.302,
+      0.325,
+      0.3
+    ],
+    "crusherName": [
+      0.12,
+      0.6,
+      0.31,
+      0.085
+    ],
+    "crusherDescription": [
+      0.12,
+      0.682,
+      0.31,
+      0.036
+    ],
+    "cashIcon": [
+      0.485,
+      0.29,
+      0.155,
+      0.155
+    ],
+    "cashAmount": [
+      0.65,
+      0.312,
+      0.24,
+      0.064
+    ],
+    "cashDescription": [
+      0.65,
+      0.377,
+      0.24,
+      0.042
+    ],
+    "boostIcon": [
+      0.485,
+      0.535,
+      0.155,
+      0.155
+    ],
+    "boostTitle": [
+      0.65,
+      0.553,
+      0.24,
+      0.064
+    ],
+    "boostDuration": [
+      0.65,
+      0.618,
+      0.24,
+      0.042
+    ],
+    "purchaseButton": [
+      0.13,
+      0.745,
+      0.74,
+      0.145
+    ],
+    "browseShopButton": [
+      0.35,
+      0.894,
+      0.3,
+      0.046
+    ]
+  },
+  "version": 2,
+  "buttonRendering": "Rectangles define stable root Frames. Center ImageButton within each root with AnchorPoint .5,.5. Put label and UIScale inside ImageButton. Preserve PNG aspect using Fit; scale inner button, not root.",
+  "assets": {
+    "StarterPack-Background.png": {
+      "width": 1448,
+      "height": 1086
+    },
+    "PurchaseButton.png": {
+      "width": 2056,
+      "height": 306
+    },
+    "CloseButton.png": {
+      "width": 967,
+      "height": 959
+    }
+  }
+}
