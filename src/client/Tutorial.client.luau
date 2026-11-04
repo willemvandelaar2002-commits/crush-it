@@ -88,7 +88,10 @@ local function placeHeadline()
 		local centre = gui.AbsoluteSize.X / 2
 		local room = 2 * math.min(centre - left, row.AbsolutePosition.X - centre) - 16
 		local unscaled = title.TextBounds.X / math.max(0.05, popScale.Scale) * phoneFit.Scale
-		local s = if unscaled > 0 then math.min(0.72, room / unscaled) else 0.72
+		-- (on phones the whole headline is already at 0.62: keep the quiet one at least
+		-- 0.55 overall so "NEXT GOAL" stays above the 12 px minimum)
+		local cap = math.max(0.72, 0.55 / math.max(0.3, phoneFit.Scale))
+		local s = if unscaled > 0 then math.min(cap, room / unscaled) else cap
 		if s >= 0.45 then
 			quietScale = s
 			headline.Position = UDim2.new(0.5, 0, 0, row.AbsolutePosition.Y - gui.AbsolutePosition.Y - 6)
