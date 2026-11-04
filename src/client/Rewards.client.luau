@@ -360,6 +360,19 @@ stroke(redeem, 4)
 paintBar(redeem, C(60, 200, 80))
 Style.feedback(redeem)
 label(redeem, "REDEEM", UDim2.fromScale(0.08, 0.12), UDim2.fromScale(0.84, 0.76), 4).ZIndex = 8
+-- 5 Nov: the feedback survey (client/Feedback) can be opened here any time
+local feedback = make("TextButton", { Name = "Feedback", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -6, 0, 176), Size = UDim2.fromOffset(170, 66),
+	Text = "", AutoButtonColor = false, ZIndex = 7 }, codesPage)
+corner(feedback, 4)
+stroke(feedback, 4)
+paintBar(feedback, C(70, 120, 230))
+Style.feedback(feedback)
+label(feedback, "FEEDBACK", UDim2.fromScale(0.08, 0.16), UDim2.fromScale(0.84, 0.68), 3).ZIndex = 8
+feedback.Activated:Connect(function()
+	local hud = player.PlayerGui:FindFirstChild("FeedbackHud")
+	local ev = hud and hud:FindFirstChild("OpenFeedback") :: BindableEvent?
+	if ev then ev:Fire() end
+end)
 local codeResult = label(codesPage, "", UDim2.fromOffset(0, 254), UDim2.new(1, 0, 0, 34), 3)
 codeResult.ZIndex = 7
 redeem.Activated:Connect(function()
