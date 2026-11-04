@@ -32,3 +32,13 @@ When you join with today's daily ready, the Rewards window opens on the DAILY ta
 5 R$ per day per Active Spender who plays 10+ min and opens Crush It among their first 3 games that day;
 35% of new/returning users' first $100 of purchases (needs 100+ average DAU, ID-verified creator).
 Levers: the daily reward + notifications (open us first), a first session past 10 minutes, invites/share links.
+
+## Invite reward (server/Referral, client/CashHud)
+- A brand-new save that arrives through a friend's invite or referral link (GetJoinData().ReferredByPlayerId) is told
+  "X invited you! Play 10 minutes for a FREE LEGENDARY crusher". When it has finished the tutorial and played 10
+  minutes, BOTH get a FREE Legendary: the new player at once, the inviter through a mailbox (DataStore
+  ReferralMailbox_v1, applied on join, on a MessagingService nudge and every 5 min; server banner when it lands).
+- One credit per invited player ever (ReferralClaims_v1); per inviter at most 5 in total and 2 per day.
+  Studio uses *_studio stores. The invite prompt says "You both get a FREE Legendary crusher!".
+- **Willem:** Creator Dashboard > Engagement > Referral Rewards banner: reward "FREE Legendary crusher",
+  limit "up to 5 rewards per inviter" (the banner must match the code).
