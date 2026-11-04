@@ -16,15 +16,22 @@ local INK = Style.Colors.Ink
 local gui = Instance.new("ScreenGui")
 gui.Name = "WeekendHud" gui.ResetOnSpawn = false gui.DisplayOrder = 3 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = me:WaitForChild("PlayerGui")
+-- 4 Nov: Willem's art: Weekend-Upcoming (purple) / Weekend-Active (gold) banners
+-- (1018 x 129) with the Lucky-Clover (512 x 512) on the left end
+local ART = { Upcoming = "rbxassetid://70823757255724", Active = "rbxassetid://139379552120006", Clover = "rbxassetid://92298197015475" }
 local pill = Instance.new("Frame")
-pill.Name = "Weekend" pill.AnchorPoint = Vector2.new(1, 0) pill.Position = UDim2.new(1, -10, 0, 62)
-pill.Size = UDim2.fromOffset(300, 38) pill.Visible = false pill.Parent = gui
-local corner = Instance.new("UICorner") corner.CornerRadius = UDim.new(0, 17) corner.Parent = pill
-local stroke = Instance.new("UIStroke") stroke.Thickness = 3 stroke.Color = INK stroke.Parent = pill
-local grad = Instance.new("UIGradient") grad.Rotation = 90 grad.Parent = pill
+pill.Name = "Weekend" pill.AnchorPoint = Vector2.new(1, 0) pill.Position = UDim2.new(1, -10, 0, 64)
+pill.Size = UDim2.fromOffset(316, 40) pill.BackgroundTransparency = 1 pill.Visible = false pill.Parent = gui
+local banner = Instance.new("ImageLabel")
+banner.Name = "Banner" banner.BackgroundTransparency = 1 banner.Size = UDim2.fromScale(1, 1) banner.ScaleType = Enum.ScaleType.Stretch
+banner.Image = ART.Upcoming banner.Parent = pill
+local clover = Instance.new("ImageLabel")
+clover.Name = "Clover" clover.BackgroundTransparency = 1 clover.Image = ART.Clover clover.ScaleType = Enum.ScaleType.Fit
+clover.AnchorPoint = Vector2.new(0.5, 0.5) clover.Position = UDim2.new(0, 6, 0.5, 0) clover.Size = UDim2.fromOffset(54, 54) clover.ZIndex = 3
+clover.Parent = pill
 local text = Instance.new("TextLabel")
-text.BackgroundTransparency = 1 text.TextScaled = true text.Position = UDim2.fromOffset(10, 5) text.Size = UDim2.new(1, -20, 1, -10)
-text.Parent = pill
+text.BackgroundTransparency = 1 text.TextScaled = true text.Position = UDim2.new(0, 38, 0.18, 0) text.Size = UDim2.new(1, -56, 0.64, 0)
+text.ZIndex = 2 text.Parent = pill
 Style.text(text, 2)
 local cap = Instance.new("UITextSizeConstraint") cap.MinTextSize = 12 cap.MaxTextSize = 22 cap.Parent = text
 local pulse = Instance.new("UIScale") pulse.Parent = pill
@@ -46,19 +53,38 @@ task.spawn(function()
 	while true do
 		local now = workspace:GetServerTimeNow()
 		local active, left = W.status(now)
+		-- Studio only: workspace attribute WeekendTest = "active" / "upcoming" previews the pill
+		local test = if RunService:IsStudio() then workspace:GetAttribute("WeekendTest") else nil
+		if test == "active" then active, left = true, 101400 elseif test == "upcoming" then active, left = false, 33600 end
 		on = active
 		pill.Visible = left ~= nil
+		-- under the top-right button row; on short screens (phones) the SMASH button sits
+		-- there too, so then the banner moves to its left
+		if pill.Visible then
+			local pg = me.PlayerGui
+			local row = pg:FindFirstChild("EquipBest", true) :: GuiObject?
+			local y = if row and row:IsA("GuiObject") and row.AbsoluteSize.Y > 0 then row.AbsolutePosition.Y + row.AbsoluteSize.Y + 8 else 64
+			local smash = pg:FindFirstChild("SmashHolder", true) :: GuiObject?
+			local right = gui.AbsoluteSize.X - 10
+			if smash and smash:IsA("GuiObject") and smash.Visible and smash.AbsoluteSize.X > 0 then
+				local h = pill.AbsoluteSize.Y
+				local overlapsY = y < smash.AbsolutePosition.Y + smash.AbsoluteSize.Y and y + h > smash.AbsolutePosition.Y
+				if overlapsY and right > smash.AbsolutePosition.X then right = smash.AbsolutePosition.X - 8 end
+			end
+			pill.Position = UDim2.fromOffset(right, y)
+		end
 		if active and left then
-			text.Text = "🍀 " .. W.Luck .. "x LUCK WEEKEND · " .. span(left)
-			grad.Color = ColorSequence.new(C(255, 220, 70), C(240, 150, 20))
+			text.Text = W.Luck .. "x LUCK WEEKEND · " .. span(left)
+			banner.Image = ART.Active
 		elseif left then
 			text.Text = W.Name .. " in " .. span(left)
-			grad.Color = ColorSequence.new(C(90, 80, 170), C(56, 46, 130))
+			banner.Image = ART.Upcoming
 		end
 		task.wait(1)
 	end
 end)
 RunService.RenderStepped:Connect(function()
 	local base = if fit then fit.Scale else 1
-	pulse.Scale = base * (if on then 1 + 0.04 * math.sin(os.clock() * 3) else 1)
+	pulse.Scale = base * (if on then 1 + 0.03 * math.sin(os.clock() * 3) else 1)
+	clover.Rotation = math.sin(os.clock() * (if on then 2.4 else 1.2)) * 8 -- the clover sways (faster during the weekend)
 end)
