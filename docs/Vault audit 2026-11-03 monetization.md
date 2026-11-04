@@ -31,8 +31,9 @@ Points and Offer Design, Game Passes, Genre Playbook - RNG and Collection Games,
    a VIP pass (399), and a **server-wide luck boost** (everyone in the server gets 2x luck, the buyer is announced -
    social visibility sells, vault). Our luck/cash products are personal and cheap. The core 299-599 rung is empty
    except one Mythic.
-5. **4 of 5 Mythic direct sales have product id 0** (Jackpot Press, Seraph Press, Phantom Pirate, Candy Colossus):
-   they show COMING SOON. Direct-sale exclusives are the cleanest RNG monetization (vault).
+5. ~~4 Mythic direct sales show COMING SOON~~ Correction (3 Nov): those four products (id 0) are hidden leftovers and
+   are shown nowhere. Jackpot Press, Seraph Press and Phantom Pirate are in the Factory Crate (weight 2 of 76, about
+   2.6% each), Candy Colossus comes with the Starter Pack, Prism Mech is sold directly. Nothing to do.
 6. **Turbo is cash-only.** An instant Robux Turbo (e.g. ULTRA x8 15 min) is a natural consumable at the moment a
    player wants speed.
 
@@ -41,5 +42,4 @@ Points and Offer Design, Game Passes, Genre Playbook - RNG and Collection Games,
 2. Starter pack offer card once, after the tutorial is done and the first goal reward (pop-up gate, dismissible).
 3. Server Luck product (99): 2x luck for everyone in the server for 15 min, buyer announced server-wide.
 4. VIP pass (399): x1.5 cash, +1 roll pedestal, VIP tag; and/or Double Roll pass (two results per roll).
-5. Willem: create the 4 missing Mythic products on the dashboard (or hide them).
 6. Robux Turbo consumable at the Turbo pump.
