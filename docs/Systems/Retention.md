@@ -8,6 +8,9 @@ First data (Creator Dashboard, 7 days to 2 Nov): **D1 retention 1.1-1.2%**, Robl
   (cash at today's earning rate). Once per session; goes away by itself after 7 s when there is no question.
 - In the Rewards panel the claimed tile shows CLAIMED and tomorrow's tile counts down ("TOMORROW 4:35:52").
 
+## Daily pops up on join (client/Rewards)
+When you join with today's daily ready, the Rewards window opens on the DAILY tab once, after any other window, never during an event/cutscene or the first tutorial; gives up after 2 minutes.
+
 ## Notifications (server/Notify, Shared/NotifyConfig)
 - REMIND ME on that card opens Roblox's own opt-in prompt (only shown when Roblox allows asking: 13+, not opted in,
   not asked in the last 30 days, and only once NotifyConfig.DailyReady is set).
