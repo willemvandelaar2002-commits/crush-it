@@ -31,7 +31,7 @@ local CrusherIcon = require(script.Parent.CrusherIcon)
 local player = Players.LocalPlayer
 local C = Color3.fromRGB
 local INK = Style.Colors.Ink
-local W, H = 700, 520
+local W, H = 700, 552 -- design size: everything (pill on top to the Browse link) is inside it
 
 local Offer = {}
 
@@ -105,7 +105,7 @@ function Offer.build(gui: ScreenGui, deps: Deps)
 	local product = Store.productById(starter.product)
 	local crusherName = string.upper(((Config.Crushers.typeById(starter.crusher) :: any) or { name = starter.crusher }).name)
 
-	local panel = make("Frame", { Name = "StarterOffer", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.52),
+	local panel = make("Frame", { Name = "StarterOffer", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
 		Size = UDim2.fromOffset(W, H), BackgroundTransparency = 1, Visible = false, ZIndex = 5 }, gui)
 	-- everything that hovers lives in `float` so the modal's scale stays on `panel`
 	local float = make("Frame", { Name = "Float", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = 5 }, panel)
@@ -231,7 +231,7 @@ function Offer.build(gui: ScreenGui, deps: Deps)
 	rim.Size = UDim2.fromOffset(W - 68, 498 + 52 - 56) body.Size = UDim2.fromOffset(W - 80, 498 + 40 - 62)
 
 	Style.modal(panel)
-	panel:SetAttribute("FitWidth", W) panel:SetAttribute("FitHeight", 556)
+	panel:SetAttribute("FitWidth", W) panel:SetAttribute("FitHeight", H)
 
 	-- live data ---------------------------------------------------------------------------
 	local price: number? = nil
