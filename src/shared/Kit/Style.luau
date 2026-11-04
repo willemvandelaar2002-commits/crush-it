@@ -1014,4 +1014,67 @@ function Style.controls(text: string): string
 	return out
 end
 
+-- 5 Nov: a Robux price drawn with an icon instead of the letters "R$".
+-- Style.robux(label, image): from now on, whenever the label's text contains "R$ 99"
+-- (alone or inside a longer text such as "GET STARTER PACK · R$ 69"), the "R$" is
+-- replaced by a gap of spaces and the icon is placed in that gap, sized to the text.
+-- Works with TextScaled, any alignment and any UIScale above it (sizes are measured on
+-- screen and converted back). Only call it on the client (it measures rendered text).
+local TextService = game:GetService("TextService")
+function Style.robux(label: TextLabel | TextButton, image: string)
+	if label:GetAttribute("RobuxIcon") then return end
+	label:SetAttribute("RobuxIcon", true)
+	local icon = Instance.new("ImageLabel")
+	icon.Name = "RobuxIcon" icon.BackgroundTransparency = 1 icon.Image = image icon.ScaleType = Enum.ScaleType.Fit
+	icon.AnchorPoint = Vector2.new(0, 0.5) icon.Visible = false icon.ZIndex = label.ZIndex + 2
+	icon.Parent = label
+	-- (a 100-unit probe tells how much the UIScales above shrink or grow things)
+	local probe = Instance.new("Frame")
+	probe.Name = "RobuxProbe" probe.BackgroundTransparency = 1 probe.Size = UDim2.fromOffset(100, 0)
+	probe.Parent = label
+	local raw = label.Text
+	local busy = false
+	local mine = "" -- the text this helper set last (Text events can arrive deferred)
+	local function layout()
+		if busy then return end
+		local s, e = raw:find("R%$ ?")
+		if not s then
+			icon.Visible = false
+			mine = raw
+			if label.Text ~= raw then busy = true label.Text = raw busy = false end
+			return
+		end
+		local size = label.TextBounds.Y
+		local k = probe.AbsoluteSize.X / 100
+		if size <= 0 or k <= 0 then return end
+		local prefix, rest = raw:sub(1, s - 1), raw:sub(e + 1)
+		local big = Vector2.new(1e5, 1e5)
+		local fontSize = math.max(1, math.floor(size))
+		local spaceW = math.max(1, TextService:GetTextSize(" ", fontSize, label.Font, big).X)
+		local iconW = size
+		local n = math.max(1, math.ceil((iconW + size * 0.18) / spaceW))
+		local shown = prefix .. string.rep(" ", n) .. rest
+		mine = shown
+		if label.Text ~= shown then busy = true label.Text = shown busy = false end
+		local total = label.TextBounds.X
+		local width = label.AbsoluteSize.X
+		local start = if label.TextXAlignment == Enum.TextXAlignment.Left then 0
+			elseif label.TextXAlignment == Enum.TextXAlignment.Right then width - total
+			else (width - total) / 2
+		local prefixW = if prefix == "" then 0 else TextService:GetTextSize(prefix, fontSize, label.Font, big).X
+		local x = start + prefixW + size * 0.04
+		icon.Size = UDim2.fromOffset(iconW / k, iconW / k)
+		icon.Position = UDim2.new(0, x / k, 0.5, 0)
+		icon.Visible = true
+	end
+	label:GetPropertyChangedSignal("Text"):Connect(function()
+		if busy or label.Text == mine then return end
+		raw = label.Text
+		layout()
+	end)
+	label:GetPropertyChangedSignal("TextBounds"):Connect(layout)
+	label:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
+	layout()
+end
+
 return Style

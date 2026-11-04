@@ -26,6 +26,7 @@ return {
 	Lucky = id("138780104233345"), -- decal 136809184380141
 	Golden = id("85828350065088"), -- decal 77768517736981
 	Trophy = id("101098329602259"), -- decal 139626264780814
+	Robux = id("72020707845820"), -- 5 Nov: Willem's Robux coin; drawn before every Robux price (client/RobuxIcons)
 	-- Coating Lab / Fusion Machine art (Willem's PNGs in docs/art/icons, 27 Oct).
 	-- An empty id makes the screen show an emoji stand-in.
 	FactoryCrate = id("134946124538197"), -- the Factory Crate in the shop (29 Oct)
