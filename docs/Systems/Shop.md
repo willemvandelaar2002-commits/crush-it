@@ -317,3 +317,9 @@ The once-per-session pushed offer (Shop.client -> QuickShop.openOffer) opens `cl
 Willem's mockup: real Candy Colossus portrait (CrusherIcon), cash = Store.cashFor(CashRate, cashMinutes), boost minutes
 from OfferConfig, live Robux price (GetProductInfo; id 0 = COMING SOON). Buy = OfferAction "Prompt" (same as the shop);
 "Browse shop" opens the QuickShop; closes itself when the pack is owned. Hover motions run only while it is open.
+
+## 5 Nov monetization round 2
+- Store: VIP pass (gamePassId 0 until created), products ServerLuck (R$99), TurboNow (R$49), CashHuge (12 h, R$299), CashMega (24 h, R$499); ids 0 stay hidden (Store.existing).
+- server/ServerLuck (workspace ServerLuckEnds/ServerLuckBy; perks.lucky x2), server/Turbo.grantNow, Shop.grant handlers; VIP x1.5 in perks.mult and 12 h offline.
+- client/MomentOffer (one small card, max one unprompted offer per session with the starter offer: attribute AutoOfferShown), WeekendHud Server Luck pill, Turbo panel Instant Turbo strip, VipTag chat prefix.
+- RobuxSigns: product signs (CashSmall, CashMedium) with the plot owner's amount, at plot x 12 z 98.

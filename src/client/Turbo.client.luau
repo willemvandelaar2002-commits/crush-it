@@ -27,6 +27,11 @@ end
 local gui = make("ScreenGui", { Name = "TurboHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
 local CARD_W, GAP = 190, 14
 local W, H = #T.List * CARD_W + (#T.List + 1) * GAP, 330
+-- 4 Nov: the Instant Turbo (Robux) strip under the cards, once its product exists
+local Store = require(RS.Shared.Store)
+local turboNow = Store.productById("TurboNow")
+local SELL_NOW = turboNow ~= nil and turboNow.productId ~= 0
+if SELL_NOW then H += 70 end
 local panel = make("Frame", { Name = "TurboPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.52), Size = UDim2.fromOffset(W, H),
 	BackgroundColor3 = Color3.fromRGB(44, 48, 54), Visible = false, ZIndex = 5 }, gui)
 make("UICorner", { CornerRadius = UDim.new(0, 16) }, panel)
@@ -52,6 +57,21 @@ message.TextColor3 = Color3.fromRGB(255, 230, 120)
 
 type Card = { buy: TextButton, price: TextLabel, left: TextLabel, lock: TextLabel, def: any }
 local cards: { Card } = {}
+if SELL_NOW and turboNow then
+	local strip = make("TextButton", { Name = "TurboNow", Position = UDim2.fromOffset(GAP, 296), Size = UDim2.new(1, -GAP * 2, 0, 60), Text = "",
+		BackgroundColor3 = Color3.fromRGB(255, 140, 40), ZIndex = 8 }, panel)
+	make("UICorner", { CornerRadius = UDim.new(0, 12) }, strip)
+	make("UIStroke", { Thickness = 4, Color = INK, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, strip)
+	make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(255, 190, 80), Color3.fromRGB(230, 100, 20)) }, strip)
+	Style.feedback(strip)
+	local st = label(strip, "INSTANT: 15 MIN OF YOUR BEST TURBO  ·  R$ " .. turboNow.price, UDim2.fromOffset(12, 8), UDim2.new(1, -24, 1, -16), 3)
+	st.ZIndex = 9
+	Store.livePrice("product", turboNow.productId, turboNow.price, function(n) st.Text = "INSTANT: 15 MIN OF YOUR BEST TURBO  ·  R$ " .. n end)
+	strip.Activated:Connect(function()
+		if me:GetAttribute("SaveOff") then return end
+		game:GetService("MarketplaceService"):PromptProductPurchase(me, turboNow.productId)
+	end)
+end
 for i, t in T.List do
 	local x = GAP + (i - 1) * (CARD_W + GAP)
 	local card = make("Frame", { Position = UDim2.fromOffset(x, 108), Size = UDim2.fromOffset(CARD_W, 180), BackgroundColor3 = t.color, ZIndex = 6 }, panel)

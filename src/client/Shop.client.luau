@@ -208,8 +208,10 @@ do
 			local ready = tutorial > #C2.TutorialSteps and goal >= 3 and gui.Enabled and os.clock() - joinedAt >= 180
 			local calm = not Style.hasModal() and not quick.panel.Visible and not panel.Visible
 				and player:GetAttribute("CutscenePlaying") ~= true and player:GetAttribute("SaveOff") ~= true
-			if ready and calm and player:GetAttribute("Offer_StarterPack") ~= true then
+			-- (4 Nov: one unprompted offer per session: not after a moment offer, client/MomentOffer)
+			if ready and calm and player:GetAttribute("Offer_StarterPack") ~= true and player:GetAttribute("AutoOfferShown") ~= true then
 				offered = true
+				player:SetAttribute("AutoOfferShown", true)
 				quick.openOffer()
 				Net.event("ShopOpened"):FireServer("StarterOffer")
 			elseif player:GetAttribute("Offer_StarterPack") == true then

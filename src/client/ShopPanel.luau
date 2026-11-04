@@ -496,10 +496,11 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		b.Activated:Connect(function() onBuy(b) end)
 		return b, d
 	end
-	local PASS_ICONS: { [string]: string } = { AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, Lucky = Icons.Lucky, OfflineEarnings = Icons.Offline, AutoCollect = Icons.Cash }
+	local PASS_ICONS: { [string]: string } = { AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, Lucky = Icons.Lucky, OfflineEarnings = Icons.Offline, AutoCollect = Icons.Cash, VIP = Icons.Trophy }
 	local function passCards(page: ScrollingFrame, order: number)
 		local g = grid(page, order)
 		for i, pass in Store.Passes do
+			if pass.gamePassId == 0 and pass.perk == "VIP" then continue end -- 4 Nov: VIP shows once its pass exists
 			local b = card(g, i, pass.title, pass.desc, pass.color, PASS_ICONS[pass.perk] or Icons.Shop, function(button)
 				if Store.hasPass(player, pass.perk) then return end
 				if pass.gamePassId == 0 then shake(button) end
@@ -559,7 +560,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		for i, id in ids do
 			local product = Store.productById(id)
 			if not product then continue end
-			local image = if Store.CashPackShare[id] then Icons.Cash elseif id == "GoldenRush" then Icons.Golden elseif id == "BoostLuck" then Icons.Lucky
+			local image = if Store.CashPackShare[id] then Icons.Cash elseif id == "GoldenRush" then Icons.Golden elseif id == "BoostLuck" or id == "ServerLuck" then Icons.Lucky elseif id == "TurboNow" then Icons.Speed
 				elseif id == "BoostSuper" then Icons.Golden elseif id == "BoostCash" then Icons.DoubleCash else Icons.Press
 			local function buy(button: TextButton)
 				if product.productId == 0 then shake(button) end
@@ -600,13 +601,13 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	starterBanner(pages.PACKS, 2)
 	showroomBanner(pages.PACKS, 3)
 	heading(pages.PACKS, "Boosts", 4)
-	productCards(pages.PACKS, 5, { "BoostCash", "BoostLuck", "BoostSuper" })
+	productCards(pages.PACKS, 5, Store.existing({ "ServerLuck", "TurboNow", "BoostCash", "BoostLuck", "BoostSuper" }))
 
 	heading(pages.PASSES, "Gamepasses", 1)
 	passCards(pages.PASSES, 2)
 
 	heading(pages.CASH, "Cash", 1)
-	productCards(pages.CASH, 2, { "CashSmall", "CashMedium", "CashLarge" })
+	productCards(pages.CASH, 2, Store.existing({ "CashSmall", "CashMedium", "CashLarge", "CashHuge", "CashMega" }))
 
 	showTab("FEATURED")
 

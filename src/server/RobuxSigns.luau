@@ -13,6 +13,8 @@ local Style = require(ReplicatedStorage.Shared.Kit.Style)
 local Icons = require(ReplicatedStorage.Shared.Icons)
 local Build = require(script.Parent.Kit.Build)
 local Analytics = require(script.Parent.Kit.Analytics)
+local Format = require(ReplicatedStorage.Shared.Format)
+local ShopArt = require(ReplicatedStorage.Shared.ShopArt)
 
 local RobuxSigns = {}
 
@@ -21,6 +23,10 @@ RobuxSigns.Signs = {
 	{ perk = "DoubleCash", icon = Icons.DoubleCash, a = Color3.fromRGB(120, 235, 100), b = Color3.fromRGB(40, 150, 60) },
 	{ perk = "AutoCollect", icon = Icons.Cash, a = Color3.fromRGB(255, 185, 70), b = Color3.fromRGB(225, 110, 30) },
 	{ perk = "Lucky", icon = Icons.Lucky, a = Color3.fromRGB(110, 230, 120), b = Color3.fromRGB(30, 150, 70) },
+	-- 5 Nov (Willem's references: time-skip signs by the counter showing the cash you'd
+	-- get): developer products, the line under the title is YOUR amount (plot owner)
+	{ product = "CashSmall", icon = ShopArt.CashPacks.CashSmall, a = Color3.fromRGB(120, 235, 100), b = Color3.fromRGB(40, 150, 60) },
+	{ product = "CashMedium", icon = ShopArt.CashPacks.CashMedium, a = Color3.fromRGB(90, 220, 140), b = Color3.fromRGB(30, 140, 90) },
 }
 -- Which signs stand next to the press (the scrap shop island has its own Auto Collect sign).
 RobuxSigns.PressSigns = { "AutoCrush", "DoubleCash" }
@@ -38,20 +44,20 @@ function RobuxSigns.build(parent: Instance, frameColor: Color3, perks: { string 
 	local list = {}
 	for _, perk in perks or RobuxSigns.PressSigns do
 		for _, def in RobuxSigns.Signs do
-			if def.perk == perk then
+			if def.perk == perk or def.product == perk then
 				table.insert(list, def)
 			end
 		end
 	end
 	local total = #list * (W + 2) + (#list - 1) * GAP
 	for i, def in list do
-		local pass = Store.passByPerk(def.perk)
+		local pass: any = if def.perk then Store.passByPerk(def.perk) else Store.productById(def.product)
 		if not pass then
 			continue
 		end
 		local x = -total / 2 + (i - 1) * (W + 2 + GAP) + (W + 2) / 2
 		local sign, face = Build.signFrame(m, CFrame.new(x, 0, 0), W, H, frameColor)
-		sign.Name = def.perk
+		sign.Name = def.perk or def.product
 		local gui = Instance.new("SurfaceGui")
 		gui.Name = "Offer"
 		gui.Face = Enum.NormalId.Back
@@ -88,6 +94,7 @@ function RobuxSigns.build(parent: Instance, frameColor: Color3, perks: { string 
 		desc.TextScaled = true
 		desc.TextWrapped = true
 		desc.Text = pass.desc
+		desc.Name = "Desc"
 		desc.ZIndex = 2
 		desc.Parent = bg
 		Style.text(desc, 2)
@@ -115,7 +122,7 @@ function RobuxSigns.build(parent: Instance, frameColor: Color3, perks: { string 
 			if part:IsA("BasePart") and (part.Name == "Face" or part.Name == "Frame") then
 				local click = Instance.new("ClickDetector")
 				click.MaxActivationDistance = 60
-				click:SetAttribute("Perk", def.perk)
+				if def.perk then click:SetAttribute("Perk", def.perk) else click:SetAttribute("Product", def.product) end
 				click.Parent = part
 			end
 		end
@@ -142,6 +149,20 @@ function RobuxSigns.price(pass: any): number
 	return livePrice[id]
 end
 
+local liveProduct: { [number]: number } = {}
+function RobuxSigns.productPrice(product: any): number
+	local id = product.productId
+	if id == 0 then return product.price end
+	if liveProduct[id] == nil then
+		liveProduct[id] = product.price
+		task.spawn(function()
+			local ok, info = pcall(function() return MarketplaceService:GetProductInfo(id, Enum.InfoType.Product) end)
+			if ok and info and type(info.PriceInRobux) == "number" then liveProduct[id] = info.PriceInRobux end
+		end)
+	end
+	return liveProduct[id]
+end
+
 function RobuxSigns.start(getPlots: () -> { PlotLike })
 	local Notice = Net.event("Notice")
 	local function onClick(player: Player, perk: string)
@@ -156,11 +177,25 @@ function RobuxSigns.start(getPlots: () -> { PlotLike })
 		end
 		MarketplaceService:PromptGamePassPurchase(player, pass.gamePassId)
 	end
+	local function onProduct(player: Player, id: string)
+		local product = Store.productById(id)
+		if not product then return end
+		Analytics.custom(player, "SignClicked", nil, id)
+		if product.productId == 0 or player:GetAttribute("SaveOff") then
+			Notice:FireClient(player, { text = product.title .. ": coming soon!" })
+			return
+		end
+		MarketplaceService:PromptProductPurchase(player, product.productId)
+	end
 	for _, plot in getPlots() do
 		for _, d in plot.model:GetDescendants() do
 			if d:IsA("ClickDetector") and d:GetAttribute("Perk") then
 				d.MouseClick:Connect(function(player)
 					onClick(player, d:GetAttribute("Perk") :: string)
+				end)
+			elseif d:IsA("ClickDetector") and d:GetAttribute("Product") then
+				d.MouseClick:Connect(function(player)
+					onProduct(player, d:GetAttribute("Product") :: string)
 				end)
 			end
 		end
@@ -179,6 +214,22 @@ function RobuxSigns.start(getPlots: () -> { PlotLike })
 		while true do
 			for _, e in entries do
 				for _, def in RobuxSigns.Signs do
+					if def.product then
+						-- the owner's amount and Roblox's price
+						local sign = e.signs:FindFirstChild(def.product)
+						local product = Store.productById(def.product)
+						if sign and product then
+							local owner = e.plot.owner
+							local desc = sign:FindFirstChild("Desc", true) :: TextLabel?
+							local rate = if owner then (owner:GetAttribute("CashRate") :: number?) or 0 else 0
+							local text = "+" .. Format.cash(Store.cashFor(rate, (Store.CashPackMinutes[def.product] or 0) * 60))
+							if desc and desc.Text ~= text then desc.Text = text end
+							local price = sign:FindFirstChild("Price", true) :: TextButton?
+							local pt = "R$ " .. RobuxSigns.productPrice(product)
+							if price and price.Text ~= pt then price.Text = pt end
+						end
+						continue
+					end
 					local sign = e.signs:FindFirstChild(def.perk)
 					local price = sign and sign:FindFirstChild("Price", true) :: TextButton?
 					local pass = Store.passByPerk(def.perk)

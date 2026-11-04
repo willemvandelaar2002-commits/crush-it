@@ -81,7 +81,9 @@ local function offlineAmount(player: Player, data: any): (number, number)
 	if away < Store.Offline.MinAwayMinutes * 60 then
 		return 0, 0
 	end
-	local seconds = math.min(away, Store.Offline.MaxHours * 3600)
+	-- 4 Nov: VIP keeps up to 12 h instead of 6
+	local hours = if Store.hasPass(player, "VIP") then Store.Vip.OfflineHours else Store.Offline.MaxHours
+	local seconds = math.min(away, hours * 3600)
 	return seconds, math.floor(api.cashPerSecond(player) * seconds * Store.Offline.Share)
 end
 
@@ -168,6 +170,15 @@ local function grant(player: Player, productId: string, purchaseId: string)
 		local b = require(ReplicatedStorage.Shared.BoostConfig).find(productId:sub(6))
 		require(script.Parent.Boosts).add(player, b.id, b.minutes)
 		Purchased:FireClient(player, { id = productId, text = b.title .. " for " .. b.minutes .. " minutes!" })
+	elseif productId == "ServerLuck" then
+		-- 4 Nov: 2x luck for everyone in this server (server/ServerLuck)
+		require(script.Parent.ServerLuck).add(player)
+		Purchased:FireClient(player, { id = productId, text = "SERVER LUCK for everyone! Thank you!" })
+	elseif productId == "TurboNow" then
+		-- 4 Nov: your strongest unlocked turbo, right away (server/Turbo)
+		local title = require(script.Parent.Turbo).grantNow(player)
+		if not title then error("Instant Turbo grant failed") end
+		Purchased:FireClient(player, { id = productId, text = title .. " for " .. Store.TurboNowMinutes .. " minutes!" })
 	elseif productId == "SkipRewards" then
 		require(script.Parent.Rewards).skipAll(player)
 		Purchased:FireClient(player, { id = productId, text = "All playtime gifts unlocked!" })

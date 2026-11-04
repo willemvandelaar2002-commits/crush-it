@@ -171,10 +171,11 @@ function Quick.build(gui: ScreenGui, deps: Deps)
 		-- passes you don't own yet
 		local firstPass = true
 		for _, pass in Store.Passes do
-			if not Store.hasPass(player, pass.perk) then
+			-- (4 Nov: a pass without an id yet, like VIP before it's created, is hidden)
+			if not Store.hasPass(player, pass.perk) and pass.gamePassId ~= 0 then
 				if firstPass then section(nextOrder(), "FOREVER (GAME PASSES)") firstPass = false end
 				local p = price("pass", pass.gamePassId, function() if panel.Visible then rebuild() end end)
-				local icon = ({ AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, Lucky = Icons.Lucky, AutoCollect = Icons.Cash } :: any)[pass.perk] or Icons.Shop
+				local icon = ({ AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, Lucky = Icons.Lucky, AutoCollect = Icons.Cash, VIP = Icons.Trophy } :: any)[pass.perk] or Icons.Shop
 				row(nextOrder(), pass.color, icon, string.upper(pass.title), pass.desc,
 					if pass.gamePassId == 0 then "SOON" else robux(p), pass.gamePassId ~= 0, function() deps.buyPass(pass.perk) end)
 			end
@@ -182,7 +183,7 @@ function Quick.build(gui: ScreenGui, deps: Deps)
 		-- cash packs and boosts
 		section(nextOrder(), "CASH (YOUR EARNINGS, RIGHT AWAY)")
 		local rate = (player:GetAttribute("CashRate") :: number?) or 0
-		for _, id in { "CashSmall", "CashMedium", "CashLarge" } do
+		for _, id in Store.existing({ "CashSmall", "CashMedium", "CashLarge", "CashHuge", "CashMega" }) do
 			local product = Store.productById(id)
 			if product then
 				local minutes = Store.CashPackMinutes[id] or 0
@@ -193,11 +194,12 @@ function Quick.build(gui: ScreenGui, deps: Deps)
 			end
 		end
 		section(nextOrder(), "BOOSTS")
-		for _, id in { "BoostCash", "BoostLuck", "BoostSuper" } do
+		-- 4 Nov: Server Luck and Instant Turbo first (hidden until their ids exist)
+		for _, id in { "ServerLuck", "TurboNow", "BoostCash", "BoostLuck", "BoostSuper" } do
 			local product = Store.productById(id)
-			if product then
+			if product and (product.productId ~= 0 or (id ~= "ServerLuck" and id ~= "TurboNow")) then
 				local p = price("product", product.productId, function() if panel.Visible then rebuild() end end)
-				local icon = if id == "BoostLuck" then Icons.Lucky elseif id == "BoostSuper" then Icons.Golden else Icons.DoubleCash
+				local icon = if id == "BoostLuck" or id == "ServerLuck" then Icons.Lucky elseif id == "BoostSuper" then Icons.Golden elseif id == "TurboNow" then Icons.Speed else Icons.DoubleCash
 				row(nextOrder(), product.color, icon, string.upper(product.title), product.desc,
 					if product.productId == 0 then "SOON" else robux(p), product.productId ~= 0, function() deps.buyProduct(id) end)
 			end
