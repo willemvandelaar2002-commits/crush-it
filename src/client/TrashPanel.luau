@@ -150,7 +150,7 @@ function T.new(gui: ScreenGui, act: (string, any) -> ())
 		for order, r in C.Rarities do
 			local n = counts[r.name]
 			if n then
-				local b = button(quick, "All " .. r.name .. " (" .. n .. ")", UDim2.new(), UDim2.fromOffset(132, quickH), r.color, function()
+				local b = button(quick, "All " .. r.name .. " (" .. n .. ")", UDim2.new(), UDim2.fromOffset(if quickH > 40 then 172 else 132, quickH), r.color, function()
 					-- toggle: select every unequipped crusher of this rarity, or clear them
 					local all = true
 					for _, item in unequipped() do if item.rarity == r.name and not selected[item.id] then all = false end end

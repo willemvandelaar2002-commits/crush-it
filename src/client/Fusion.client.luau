@@ -298,11 +298,11 @@ require(script.Parent.PhoneArrange).new(function(set)
 	L.phoneHeader(set, panel)
 	set(left, { Position = UDim2.fromOffset(14, 98), Size = UDim2.fromOffset(300, 360) })
 	set(right, { Position = UDim2.fromOffset(324, 98), Size = UDim2.fromOffset(762, 360) })
-	for i, s in slots do set(s.frame, { Position = UDim2.fromOffset(12 + (i - 1) * 140, 60), Size = UDim2.fromOffset(132, 150) }) end
+	for i, s in slots do set(s.frame, { Position = UDim2.fromOffset(12 + (i - 1) * 140, 60), Size = UDim2.fromOffset(132, 160) }) end
 	for _, line in right:GetChildren() do
 		if line:IsA("GuiObject") and (line.Name:match("^Drop") or line.Name == "Rail" or line.Name == "Arrow") then set(line, { Visible = false }) end
 	end
-	set(noteBox, { Position = UDim2.fromOffset(12, 222), Size = UDim2.fromOffset(552, 74) })
+	set(noteBox, { Position = UDim2.fromOffset(12, 230), Size = UDim2.fromOffset(552, 74) })
 	set(resultBox, { Position = UDim2.fromOffset(586, 52), Size = UDim2.fromOffset(164, 104) })
 	set(resultLabel, { Position = UDim2.fromOffset(580, 158), Size = UDim2.fromOffset(172, 70) })
 	set(badge, { Position = UDim2.new(.5, -80, 0, 34), Size = UDim2.fromOffset(160, 30) })
