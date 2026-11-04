@@ -980,6 +980,7 @@ function G.start()
 	Frenzy.start(api)
 	require(script.Parent.GoldenToys).start(api)
 	require(script.Parent.WhatsNew).start(api)
+	require(script.Parent.Referral).start(api) -- 4 Nov: invite a friend -> both get a Legendary
 	-- /credits <amount> (or /cash): test cash, e.g. "/credits 5m". Studio, or the
 	-- place owner in live servers. No amount gives 1M.
 	local SUFFIX={k=1e3,m=1e6,b=1e9,t=1e12,qa=1e15}

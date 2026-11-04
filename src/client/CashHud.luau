@@ -75,7 +75,14 @@ function CashHud.start(gui: ScreenGui)
 	local function promptInvite()
 		local social = game:GetService("SocialService")
 		local ok, can = pcall(function() return social:CanSendGameInviteAsync(player) end)
-		if ok and can then pcall(function() social:PromptGameInvite(player) end) end
+		if ok and can then
+			-- 4 Nov: the invite reward (server/Referral); short, or Roblox hides the message
+			pcall(function()
+				local options = Instance.new("ExperienceInviteOptions")
+				options.PromptMessage = "You both get a FREE Legendary crusher!"
+				social:PromptGameInvite(player, options)
+			end)
+		end
 	end
 	invite.Activated:Connect(promptInvite)
 	invite:GetAttributeChangedSignal("Tapped"):Connect(promptInvite)
