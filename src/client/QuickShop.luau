@@ -79,7 +79,10 @@ function Quick.build(gui: ScreenGui, deps: Deps)
 	local function size()
 		local v = workspace.CurrentCamera.ViewportSize
 		local inset = game:GetService("GuiService"):GetGuiInset().Y
-		panel.Size = UDim2.fromOffset(math.min(560, v.X - 24), math.min(620, v.Y - inset - 16))
+		-- 4 Nov: the starter offer is one card + one button, so the window is only that tall
+		-- (it was full height with a big empty area under the button)
+		local want = if panel:GetAttribute("OfferMode") then 64 + 96 + 8 + 52 + 22 else 620
+		panel.Size = UDim2.fromOffset(math.min(560, v.X - 24), math.min(want, v.Y - inset - 16))
 		panel.Position = UDim2.new(0.5, 0, 0.5, -inset / 2)
 	end
 	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(size)
@@ -160,7 +163,9 @@ function Quick.build(gui: ScreenGui, deps: Deps)
 			Style.button(more, C(64, 140, 255))
 			local ml = label(more, "SEE THE SHOP", UDim2.fromOffset(8, 8), UDim2.new(1, -16, 1, -16), 2.5)
 			ml.TextXAlignment = Enum.TextXAlignment.Center ml.ZIndex = 9
-			more.Activated:Connect(function() mode = "shop" rebuild() end)
+			more.Activated:Connect(function()
+				mode = "shop" title.Text = "SHOP" panel:SetAttribute("OfferMode", nil) size() rebuild()
+			end)
 			return
 		end
 		-- passes you don't own yet
@@ -215,10 +220,10 @@ function Quick.build(gui: ScreenGui, deps: Deps)
 	local api = {}
 	api.panel = panel
 	function api.open()
-		mode = "shop" title.Text = "SHOP" size() rebuild() panel.Visible = true
+		mode = "shop" title.Text = "SHOP" panel:SetAttribute("OfferMode", nil) size() rebuild() panel.Visible = true
 	end
 	function api.openOffer()
-		mode = "offer" title.Text = "SPECIAL OFFER" size() rebuild() panel.Visible = true
+		mode = "offer" title.Text = "SPECIAL OFFER" panel:SetAttribute("OfferMode", true) size() rebuild() panel.Visible = true
 	end
 	function api.refresh() if panel.Visible then rebuild() end end
 	return api

@@ -53,8 +53,16 @@ local gui = make("ScreenGui", { Name = "TutorialHud", ResetOnSpawn = false, Disp
 -- a CanvasGroup so the whole headline fades in and out as one
 local headline = make("CanvasGroup", { Name = "Headline", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 64),
 	Size = UDim2.fromOffset(HEAD_W, 150), BackgroundTransparency = 1, GroupTransparency = 1, Visible = false }, gui)
-Style.phoneFit(headline, { scale = 0.62, width = 0.62 })
+-- 4 Nov: one UIScale only (two UIScales on one object: Roblox applies just one, so on
+-- phones the phone fit or the pop was lost). The phone-fit scale is read from a
+-- detached UIScale and multiplied into popScale (see headScale).
+local phoneFit = Style.phoneFit(headline, { scale = 0.62, width = 0.62 })
+phoneFit.Parent = nil
 local popScale = make("UIScale", { Scale = 1 }, headline)
+-- quiet goals (after Factory II): smaller, and in the free gap of the top button row
+-- when it fits (else under the row like the tutorial)
+local quiet = false
+local quietScale = 0.72
 local tag = label(headline, "TUTORIAL", UDim2.fromOffset(0, 4), UDim2.new(1, 0, 0, 26), 2.5)
 tag.TextColor3 = CYAN
 make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(200, 250, 255), CYAN) }, tag)
@@ -69,6 +77,24 @@ hint.TextColor3 = Color3.fromRGB(220, 232, 255)
 local function placeHeadline()
 	local row = me.PlayerGui:FindFirstChild("EquipBest", true) :: GuiObject?
 	local y = 64
+	quietScale = 0.72
+	if quiet and row and row:IsA("GuiObject") and row.AbsoluteSize.Y > 0 then
+		-- the gap between the left buttons (Index/Shop/Rewards) and the top row
+		local left = 0
+		for _, n in { "BookButton", "ShopButton", "RewardsButton" } do
+			local b = me.PlayerGui:FindFirstChild(n, true) :: GuiObject?
+			if b and b:IsA("GuiObject") and b.AbsoluteSize.X > 0 then left = math.max(left, b.AbsolutePosition.X + b.AbsoluteSize.X) end
+		end
+		local centre = gui.AbsoluteSize.X / 2
+		local room = 2 * math.min(centre - left, row.AbsolutePosition.X - centre) - 16
+		local unscaled = title.TextBounds.X / math.max(0.05, popScale.Scale) * phoneFit.Scale
+		local s = if unscaled > 0 then math.min(0.72, room / unscaled) else 0.72
+		if s >= 0.45 then
+			quietScale = s
+			headline.Position = UDim2.new(0.5, 0, 0, row.AbsolutePosition.Y - gui.AbsolutePosition.Y - 6)
+			return
+		end
+	end
 	if row and row:IsA("GuiObject") and row.AbsoluteSize.Y > 0 then
 		-- (both in screen pixels; minus where this ScreenGui starts)
 		y = row.AbsolutePosition.Y + row.AbsoluteSize.Y - gui.AbsolutePosition.Y + 6
@@ -91,10 +117,10 @@ local function setHeadline(tagText: string, titleText: string)
 	title.TextColor3 = Color3.new(1, 1, 1)
 end
 local shownOn = false
--- 4 Nov: quiet goals (after Factory II) show the headline smaller (see headScale)
-local quiet = false
-local function headScale(): number return if quiet then 0.72 else 1 end
+local function headScale(): number return phoneFit.Scale * (if quiet then quietScale else 1) end
+local poppedAt = 0
 local function fadeIn()
+	poppedAt = os.clock()
 	placeHeadline()
 	headline.Visible = true shownOn = true
 	popScale.Scale = 0.85 * headScale()
@@ -166,6 +192,7 @@ local function celebrate()
 	coin:Play()
 	title.Text = "✓ " .. title.Text
 	title.TextColor3 = GREEN
+	poppedAt = os.clock()
 	popScale.Scale = 1.15 * headScale()
 	TweenService:Create(popScale, TweenInfo.new(0.3, Enum.EasingStyle.Back), { Scale = headScale() }):Play()
 end
@@ -589,7 +616,11 @@ RunService.RenderStepped:Connect(function()
 	end
 	switch(want)
 	if not want or not root then return end
-	if os.clock() - lastPlace > 0.5 then lastPlace = os.clock() placeHeadline() end
+	if os.clock() - lastPlace > 0.5 then
+		lastPlace = os.clock() placeHeadline()
+		-- the screen size or the gap changed: settle on the new size (not mid-pop)
+		if os.clock() - poppedAt > 0.6 and math.abs(popScale.Scale - headScale()) > 0.01 then popScale.Scale = headScale() end
+	end
 	-- a step finished since the last frame (the state handler catches most)
 	if want == "tutorial" and state.tutorial > shown then task.spawn(finishStep, shown, state.tutorial) return end
 	if want == "goals" and state.goal > goalShown then task.spawn(finishGoal, goalShown, state.goal) return end
