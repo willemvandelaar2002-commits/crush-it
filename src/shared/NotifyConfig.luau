@@ -10,7 +10,7 @@
 -- crusher" / "a cash gift" (server/Rewards works both out for that day).
 -- "" = notifications off (nothing is scheduled or sent).
 return {
-	DailyReady = "",
+	DailyReady = "4dd2ec5c-26e7-5549-8c97-0b6ecd57857c", -- 4 Nov: "Day {day} reward is ready: {reward}! ..."
 	-- when a player leaves, the ping is due this many hours later (about the same time
 	-- tomorrow, when they are likely free again), and never before tomorrow's daily
 	-- reward can be claimed
