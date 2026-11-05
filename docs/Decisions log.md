@@ -392,3 +392,4 @@
 - 2026-11-05: Studio-only chat command /skip (finish the tutorial, rewards paid) and /skip goals (also jump past the main goals).
 - 2026-11-05: Live prices on the Starter Pack, Prism Mech and Factory Crate banners (crate opens its odds first); studded shop buttons like the reference shop.
 - 2026-11-05: Willem's clock icon (139908856885129) on the 12H/24H Time Skips.
+- 2026-11-05: FILL ROW no longer pulls crushers out of other rows (backpack + that row only), keeps crushers already in place; picker counts match. All 20 rule specs pass (SpecialCrushers animation-timing spec is flaky under Studio load, unrelated).

@@ -144,9 +144,18 @@ end
 local function openPicker(index: number)
 	rowIndex = index
 	for _, c in menu:GetChildren() do if c:IsA("TextButton") then c:Destroy() end end
-	local counts: { [string]: number } = {}
-	for _, item in (last and last.items) or {} do counts[item.rarity] = (counts[item.rarity] or 0) + 1 end
 	local first = (index - 1) * C.Layout.PerWing + 1
+	-- 5 Nov: only crushers in the backpack or already in this row (the server never
+	-- takes them from other rows)
+	local elsewhere: { [string]: boolean } = {}
+	for key, id in (last and last.bays) or {} do
+		local b = tonumber(key)
+		if b and (b < first or b > first + C.Layout.PerWing - 1) then elsewhere[id] = true end
+	end
+	local counts: { [string]: number } = {}
+	for _, item in (last and last.items) or {} do
+		if not elsewhere[item.id] then counts[item.rarity] = (counts[item.rarity] or 0) + 1 end
+	end
 	menuTitle.Text = "FILL ROW " .. index .. " (BAYS " .. first .. "-" .. (first + C.Layout.PerWing - 1) .. ")"
 	for i, r in C.Rarities do
 		local n = counts[r.name]

@@ -116,3 +116,4 @@ Goal: fewer players leaving before the first collect (funnel step 2, 12.5% churn
 - client/NearBay: on touch screens, next to one of your bays with a crusher (11 studs): a big "BAY n · LEVEL UP $x" + MAX bar (same Level/LevelMax actions as the plaque). Hidden during the tutorial and cutscenes.
 - Gift chip: 48 px tap pad; phone cash/friend boost moved below it.
 - Measured at 750x381 (Studio phone view): HUD text all >= 12 px, no overlaps. Panels are the desktop menus shrunk (scale 0.41-0.98): Shop and Rewards text down to 8 px, tabs/close 20-26 px. Next: real phone layouts for the panels (vault: Case Study - Phone UI Overhaul).
+- 5 Nov (Willem: "it takes from other bays"): FILL ROW only uses crushers from the backpack or already in that row; crushers in other rows stay put; crushers already in the right place keep their bay; the picker counts only usable crushers. Spec: RebirthMerge.spec.

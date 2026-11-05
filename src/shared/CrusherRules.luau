@@ -465,22 +465,36 @@ local function act(d,session,action,args,now,random,guid,perks)
 		return true,"+"..bought.." "..u.name.." level"..(if bought==1 then "" else "s").."!",bought
 	elseif action=="FillRow" then
 		-- 3 Nov (Willem, from a player's idea): fill one physical row with the best
-		-- crushers of one rarity, moving them from other bays if needed; crushers
-		-- of other rarities in that row go back to the backpack
+		-- crushers of one rarity; crushers it replaces go back to the backpack.
+		-- 5 Nov (Willem: "it takes from other bays"): only crushers from the backpack
+		-- or already in THIS row are used; crushers in other rows stay where they are.
 		local index=tonumber(args.row) local want=type(args.rarity)=="string" and C.rarity(args.rarity) and args.rarity or nil
 		if not index or index~=math.floor(index) or index<1 or index>Rows.count() or not want then return false,"Pick a row and a rarity." end
 		local first=(index-1)*C.Layout.PerWing+1
 		local last=math.min(first+C.Layout.PerWing-1,s.bays,C.bayCapacity(s.plotLevel))
 		if last<first then return false,"Unlock a bay in this row first." end
-		local list={} for _,item in s.owned do if item.rarity==want then table.insert(list,item) end end
-		if #list==0 then return false,"You don't own any "..want.." crushers." end
+		local elsewhere={} -- crushers in a bay outside this row
+		for key,id in s.equipped do local b=tonumber(key) if b and (b<first or b>last) then elsewhere[id]=true end end
+		local owned=0
+		local list={} for _,item in s.owned do if item.rarity==want then owned+=1 if not elsewhere[item.id] then table.insert(list,item) end end end
+		if owned==0 then return false,"You don't own any "..want.." crushers." end
+		if #list==0 then return false,"All your "..want.." crushers are in other rows. Roll or take one out first." end
 		local out={} for _,item in list do out[item.id]=R.stats(d,item,perks,false).cps end
 		table.sort(list,function(a,b) if out[a.id]==out[b.id] then return a.id<b.id end return out[a.id]>out[b.id] end)
-		local placed=0
+		-- bays of this row that already hold a chosen crusher keep it; the rest are
+		-- filled in order (so nothing jumps around more than needed)
+		local chosen={} for i=1,math.min(#list,last-first+1) do chosen[list[i].id]=true end
+		local free={} local placed=0
 		for bay=first,last do
-			local item=list[bay-first+1] if not item then break end
-			for key,id in s.equipped do if id==item.id then s.equipped[key]=nil end end
-			s.equipped[tostring(bay)]=item.id placed+=1
+			local id=s.equipped[tostring(bay)]
+			if id and chosen[id] then chosen[id]=nil placed+=1 else table.insert(free,bay) end
+		end
+		for _,item in list do
+			if chosen[item.id] then
+				local bay=table.remove(free,1) if not bay then break end
+				for key,id in s.equipped do if id==item.id then s.equipped[key]=nil end end
+				s.equipped[tostring(bay)]=item.id chosen[item.id]=nil placed+=1
+			end
 		end
 		local rowName=Rows.snapshot(d).rows[index].name
 		return true,"Filled "..rowName.." with "..placed.." "..want.."!"..(if placed<C.Layout.PerWing then " A full row of "..C.Layout.PerWing.." gives the row bonus." else ""),placed
