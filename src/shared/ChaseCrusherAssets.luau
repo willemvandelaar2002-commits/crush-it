@@ -1,4 +1,122 @@
 --!strict
--- Rebuilt losslessly from the recovered Metadata/rigs.json.
--- Merge these entries into the existing SpecialCrusherAssets table.
-return {["ShadowShredder"] = {["kit"] = "motion", ["size"] = Vector3.new(7.69999980927, 8.66137695312, 6.01748657227), ["bedTop"] = 1.3, ["parts"] = {["Frame"] = {["center"] = Vector3.new(0, 3.91499996185, 0.0587433576584), ["size"] = Vector3.new(7.69999980927, 7.82999992371, 6.01748657227), ["origin"] = Vector3.new(0, 0, -0), ["triangles"] = 4212}, ["Ram"] = {["center"] = Vector3.new(0, 4.88250017166, 0.0799999833107), ["size"] = Vector3.new(3.96000003815, 0.784999847412, 3.32000017166), ["origin"] = Vector3.new(0, 4.90000009537, 0.0500000007451), ["triangles"] = 1080}, ["PistonShaft"] = {["center"] = Vector3.new(0, 5.73750019073, -0.550000011921), ["size"] = Vector3.new(0.479999989271, 0.925000190735, 0.480000019073), ["origin"] = Vector3.new(0, 6.19999980927, -0.550000011921), ["triangles"] = 284}, ["Rotor_L"] = {["center"] = Vector3.new(-1.20000004768, 7.98000049591, -0.550000071526), ["size"] = Vector3.new(1.41999995708, 1.36275339127, 2.20000004768), ["origin"] = Vector3.new(-1.20000004768, 7.98000001907, -0.550000011921), ["triangles"] = 3436}, ["Rotor_R"] = {["center"] = Vector3.new(1.20000004768, 7.98000049591, -0.550000071526), ["size"] = Vector3.new(1.41999995708, 1.36275339127, 2.20000004768), ["origin"] = Vector3.new(1.20000004768, 7.98000001907, -0.550000011921), ["triangles"] = 3436}}, ["motion"] = {{["name"] = "Ram", ["kind"] = "move", ["vector"] = Vector3.new(0, -3.14000024796, 0), ["curve"] = "press"}, {["name"] = "PistonShaft", ["kind"] = "extend", ["axis"] = "Y", ["ratio"] = 4.39459486265, ["curve"] = "press"}, {["name"] = "Rotor_L", ["kind"] = "rotate", ["axis"] = Vector3.new(0, 0, -1), ["angle"] = -3.76991118431, ["curve"] = "wind"}, {["name"] = "Rotor_R", ["kind"] = "rotate", ["axis"] = Vector3.new(0, 0, -1), ["angle"] = 3.76991118431, ["curve"] = "wind"}}, ["contact"] = {"Ram"}}, ["VoidVise"] = {["kit"] = "motion", ["size"] = Vector3.new(7.69999980927, 8.83000087738, 6.01748657227), ["bedTop"] = 1.3, ["parts"] = {["Frame"] = {["center"] = Vector3.new(0, 4.26999998093, 0.0587433576584), ["size"] = Vector3.new(7.69999980927, 8.53999996185, 6.01748657227), ["origin"] = Vector3.new(0, 0, -0), ["triangles"] = 5024}, ["Ram"] = {["center"] = Vector3.new(0, 4.82250022888, 0.0799999833107), ["size"] = Vector3.new(3.96000003815, 0.905000209808, 3.32000017166), ["origin"] = Vector3.new(0, 4.90000009537, 0.0500000007451), ["triangles"] = 972}, ["PistonShaft"] = {["center"] = Vector3.new(0, 5.73750019073, -0.550000011921), ["size"] = Vector3.new(0.479999989271, 0.925000190735, 0.480000019073), ["origin"] = Vector3.new(0, 6.19999980927, -0.550000011921), ["triangles"] = 284}, ["VoidRing"] = {["center"] = Vector3.new(0, 8.02000045776, -0.670000016689), ["size"] = Vector3.new(1.75999999046, 1.6200003624, 0.22000002861), ["origin"] = Vector3.new(0, 8.02000045776, -0.670000016689), ["triangles"] = 728}}, ["motion"] = {{["name"] = "Ram", ["kind"] = "move", ["vector"] = Vector3.new(0, -3.01999988556, 0), ["curve"] = "press"}, {["name"] = "PistonShaft", ["kind"] = "extend", ["axis"] = "Y", ["ratio"] = 4.26486474114, ["curve"] = "press"}, {["name"] = "VoidRing", ["kind"] = "rotate", ["axis"] = Vector3.new(0, 0, -1), ["angle"] = 2.19911485751, ["curve"] = "wind"}}, ["contact"] = {"Ram"}}, ["EclipseEngine"] = {["kit"] = "motion", ["size"] = Vector3.new(7.69999980927, 8.85534954071, 6.01748657227), ["bedTop"] = 1.3, ["parts"] = {["Frame"] = {["center"] = Vector3.new(0, 3.91499996185, 0.0587433576584), ["size"] = Vector3.new(7.69999980927, 7.82999992371, 6.01748657227), ["origin"] = Vector3.new(0, 0, -0), ["triangles"] = 4104}, ["Ram"] = {["center"] = Vector3.new(0, 4.9375, 0.124999940395), ["size"] = Vector3.new(4.36000013351, 0.894999504089, 3.40999984741), ["origin"] = Vector3.new(0, 4.90000009537, 0.0500000007451), ["triangles"] = 1336}, ["PistonShaft"] = {["center"] = Vector3.new(0, 5.73750019073, -0.550000011921), ["size"] = Vector3.new(0.479999989271, 0.925000190735, 0.480000019073), ["origin"] = Vector3.new(0, 6.19999980927, -0.550000011921), ["triangles"] = 284}, ["EclipseDial"] = {["center"] = Vector3.new(0, 7.71999979019, -0.480399996042), ["size"] = Vector3.new(2.27070021629, 2.27069950104, 0.348000109196), ["origin"] = Vector3.new(0, 7.71999979019, -0.550000011921), ["triangles"] = 2440}}, ["motion"] = {{["name"] = "Ram", ["kind"] = "move", ["vector"] = Vector3.new(0, -3.14000024796, 0), ["curve"] = "press"}, {["name"] = "PistonShaft", ["kind"] = "extend", ["axis"] = "Y", ["ratio"] = 4.39459486265, ["curve"] = "press"}, {["name"] = "EclipseDial", ["kind"] = "rotate", ["axis"] = Vector3.new(0, 0, -1), ["angle"] = 2.19911485751, ["curve"] = "wind"}}, ["contact"] = {"Ram"}}, ["NightRipper"] = {["kit"] = "motion", ["size"] = Vector3.new(7.69999980927, 8.80000019073, 6.01748657227), ["bedTop"] = 1.3, ["parts"] = {["Frame"] = {["center"] = Vector3.new(0, 4.40000009537, 0.0587433576584), ["size"] = Vector3.new(7.69999980927, 8.80000019073, 6.01748657227), ["origin"] = Vector3.new(0, 0, -0), ["triangles"] = 4584}, ["Ram"] = {["center"] = Vector3.new(0, 4.58750009537, 0.175000011921), ["size"] = Vector3.new(3.55999994278, 1.375, 3.11000013351), ["origin"] = Vector3.new(0, 4.90000009537, 0.0500000007451), ["triangles"] = 912}, ["PistonShaft"] = {["center"] = Vector3.new(0, 5.73750019073, -0.550000011921), ["size"] = Vector3.new(0.479999989271, 0.925000190735, 0.480000019073), ["origin"] = Vector3.new(0, 6.19999980927, -0.550000011921), ["triangles"] = 284}}, ["motion"] = {{["name"] = "Ram", ["kind"] = "move", ["vector"] = Vector3.new(0, -2.55000009537, 0), ["curve"] = "press"}, {["name"] = "PistonShaft", ["kind"] = "extend", ["axis"] = "Y", ["ratio"] = 3.75675685986, ["curve"] = "press"}}, ["contact"] = {"Ram"}}, ["HaloHammer"] = {["kit"] = "motion", ["size"] = Vector3.new(7.69999980927, 9.13000011444, 6.01748657227), ["bedTop"] = 1.3, ["parts"] = {["Frame"] = {["center"] = Vector3.new(0, 3.91499996185, 0.0587433576584), ["size"] = Vector3.new(7.69999980927, 7.82999992371, 6.01748657227), ["origin"] = Vector3.new(0, 0, -0), ["triangles"] = 4392}, ["Ram"] = {["center"] = Vector3.new(0, 4.94000005722, 0.0799999833107), ["size"] = Vector3.new(4.57999992371, 1.35999965668, 3.11999988556), ["origin"] = Vector3.new(0, 4.90000009537, 0.0500000007451), ["triangles"] = 1488}, ["PistonShaft"] = {["center"] = Vector3.new(0, 5.73750019073, -0.550000011921), ["size"] = Vector3.new(0.479999989271, 0.925000190735, 0.480000019073), ["origin"] = Vector3.new(0, 6.19999980927, -0.550000011921), ["triangles"] = 284}, ["Halo"] = {["center"] = Vector3.new(0, 8.11999988556, -0.550000011921), ["size"] = Vector3.new(2.01999998093, 2.02000045776, 0.280000090599), ["origin"] = Vector3.new(0, 8.11999988556, -0.550000011921), ["triangles"] = 512}}, ["motion"] = {{["name"] = "Ram", ["kind"] = "move", ["vector"] = Vector3.new(0, -2.91000022888, 0), ["curve"] = "press"}, {["name"] = "PistonShaft", ["kind"] = "extend", ["axis"] = "Y", ["ratio"] = 4.14594619339, ["curve"] = "press"}, {["name"] = "Halo", ["kind"] = "rotate", ["axis"] = Vector3.new(0, 1, 0), ["angle"] = 0.69115038379, ["curve"] = "wind"}}, ["contact"] = {"Ram"}}, ["CelestialCrusher"] = {["kit"] = "motion", ["size"] = Vector3.new(7.69999980927, 8.65999984741, 6.01748657227), ["bedTop"] = 1.3, ["parts"] = {["Frame"] = {["center"] = Vector3.new(0, 4.00500011444, 0.0587433576584), ["size"] = Vector3.new(7.69999980927, 8.01000022888, 6.01748657227), ["origin"] = Vector3.new(0, 0, -0), ["triangles"] = 4904}, ["Ram"] = {["center"] = Vector3.new(0, 4.88250017166, 0.0949999690056), ["size"] = Vector3.new(4.15999984741, 0.784999847412, 3.34999990463), ["origin"] = Vector3.new(0, 4.90000009537, 0.0500000007451), ["triangles"] = 576}, ["PistonShaft"] = {["center"] = Vector3.new(0, 5.73750019073, -0.550000011921), ["size"] = Vector3.new(0.479999989271, 0.925000190735, 0.480000019073), ["origin"] = Vector3.new(0, 6.19999980927, -0.550000011921), ["triangles"] = 284}, ["Planet"] = {["center"] = Vector3.new(0.0176221728325, 7.92000007629, -0.565562069416), ["size"] = Vector3.new(1.52475571632, 1.47999954224, 1.51112449169), ["origin"] = Vector3.new(0, 7.92000007629, -0.550000011921), ["triangles"] = 2640}}, ["motion"] = {{["name"] = "Ram", ["kind"] = "move", ["vector"] = Vector3.new(0, -3.14000024796, 0), ["curve"] = "press"}, {["name"] = "PistonShaft", ["kind"] = "extend", ["axis"] = "Y", ["ratio"] = 4.39459486265, ["curve"] = "press"}, {["name"] = "Planet", ["kind"] = "rotate", ["axis"] = Vector3.new(0, 1, 0), ["angle"] = 4.39822971503, ["curve"] = "wind"}}, ["contact"] = {"Ram"}}, ["ArchangelAnvil"] = {["kit"] = "motion", ["size"] = Vector3.new(8.10000038147, 8.84000015259, 6.01748657227), ["bedTop"] = 1.62, ["parts"] = {["Frame"] = {["center"] = Vector3.new(0, 4.42000007629, 0.0587433576584), ["size"] = Vector3.new(7.69999980927, 8.84000015259, 6.01748657227), ["origin"] = Vector3.new(0, 0, -0), ["triangles"] = 4100}, ["Ram"] = {["center"] = Vector3.new(0, 4.88250017166, 0.0799999237061), ["size"] = Vector3.new(3.8599998951, 0.784999847412, 3.01999998093), ["origin"] = Vector3.new(0, 4.90000009537, 0.0500000007451), ["triangles"] = 540}, ["PistonShaft"] = {["center"] = Vector3.new(0, 5.73750019073, -0.550000011921), ["size"] = Vector3.new(0.479999989271, 0.925000190735, 0.480000019073), ["origin"] = Vector3.new(0, 6.19999980927, -0.550000011921), ["triangles"] = 284}, ["Shield_L"] = {["center"] = Vector3.new(-3.27500009537, 6.40000009537, 0.422500014305), ["size"] = Vector3.new(1.55000019073, 2, 0.625), ["origin"] = Vector3.new(-2.75, 6.30000019073, 0.34999999404), ["triangles"] = 340}, ["Shield_R"] = {["center"] = Vector3.new(3.27500009537, 6.40000009537, 0.422500014305), ["size"] = Vector3.new(1.55000019073, 2, 0.625), ["origin"] = Vector3.new(2.75, 6.30000019073, 0.34999999404), ["triangles"] = 340}}, ["motion"] = {{["name"] = "Ram", ["kind"] = "move", ["vector"] = Vector3.new(0, -2.82000024796, 0), ["curve"] = "press"}, {["name"] = "PistonShaft", ["kind"] = "extend", ["axis"] = "Y", ["ratio"] = 4.04864891671, ["curve"] = "press"}, {["name"] = "Shield_L", ["kind"] = "rotate", ["axis"] = Vector3.new(0, 0, -1), ["angle"] = -0.14, ["curve"] = "wind"}, {["name"] = "Shield_R", ["kind"] = "rotate", ["axis"] = Vector3.new(0, 0, -1), ["angle"] = 0.14, ["curve"] = "wind"}}, ["contact"] = {"Ram"}}, ["AuroraPress"] = {["kit"] = "motion", ["size"] = Vector3.new(7.69999980927, 8.86999988556, 6.01748657227), ["bedTop"] = 1.3, ["parts"] = {["Frame"] = {["center"] = Vector3.new(0, 4.21192121506, 0.0587433576584), ["size"] = Vector3.new(7.69999980927, 8.42384243011, 6.01748657227), ["origin"] = Vector3.new(0, 0, -0), ["triangles"] = 8856}, ["Ram"] = {["center"] = Vector3.new(0, 4.88250017166, 0.114999949932), ["size"] = Vector3.new(4.21000003815, 0.784999847412, 3.38999986649), ["origin"] = Vector3.new(0, 4.90000009537, 0.0500000007451), ["triangles"] = 864}, ["PistonShaft"] = {["center"] = Vector3.new(0, 5.73750019073, -0.550000011921), ["size"] = Vector3.new(0.479999989271, 0.925000190735, 0.480000019073), ["origin"] = Vector3.new(0, 6.19999980927, -0.550000011921), ["triangles"] = 284}, ["AuroraStar"] = {["center"] = Vector3.new(0, 8.26397895813, -0.475000023842), ["size"] = Vector3.new(1.27441573143, 1.21204137802, 0.250000029802), ["origin"] = Vector3.new(0, 8.19999980927, -0.550000011921), ["triangles"] = 72}}, ["motion"] = {{["name"] = "Ram", ["kind"] = "move", ["vector"] = Vector3.new(0, -3.14000024796, 0), ["curve"] = "press"}, {["name"] = "PistonShaft", ["kind"] = "extend", ["axis"] = "Y", ["ratio"] = 4.39459486265, ["curve"] = "press"}, {["name"] = "AuroraStar", ["kind"] = "rotate", ["axis"] = Vector3.new(0, 0, -1), ["angle"] = 0.942477796077, ["curve"] = "wind"}}, ["contact"] = {"Ram"}}}
+-- 5 Nov 2026: Willem's new Secret / Divine models (CrushIt-Secret-Divine-Crushers1).
+-- Generated from the Studio import (part centers, sizes, pivots; units = Blender units,
+-- axes = the import's own: studio = (-blenderX, blenderZ, blenderY)) and the pack's
+-- Model-manifest.json (motions). inputCenter / inputSize: where the scrap sits.
+-- Merged into SpecialCrusherAssets.
+return {
+	["ShadowShredder"] = {kit = "motion", grow = true, size = Vector3.new(4.64, 2.9025, 3.005), bedTop = 0.704,
+		inputCenter = Vector3.new(0, 1.73, -0.68), inputSize = 0.60,
+		parts = {
+			["Frame"] = {center = Vector3.new(0, 1.4512, -0.0275), size = Vector3.new(4.64, 2.9025, 3.005), origin = Vector3.new(0, 0, 0)},
+			["Roller_Lower"] = {center = Vector3.new(0, 1.2, -0.27), size = Vector3.new(2.84, 1.1595, 1.1595), origin = Vector3.new(0, 1.2, -0.27)},
+			["Roller_Upper"] = {center = Vector3.new(0, 2.28, -0.27), size = Vector3.new(2.84, 1.1595, 1.1595), origin = Vector3.new(0, 2.28, -0.27)},
+		},
+		motion = {
+			{name = "Roller_Lower", kind = "rotate", axis = Vector3.new(-1, 0, 0), angle = 6.28319, curve = "spin"},
+			{name = "Roller_Upper", kind = "rotate", axis = Vector3.new(-1, 0, 0), angle = -6.28319, curve = "spin"},
+		},
+		contact = {"Roller_Lower", "Roller_Upper"},
+	},
+	["VoidVise"] = {kit = "motion", grow = true, size = Vector3.new(4.64, 3.0299, 3.005), bedTop = 0.684,
+		inputCenter = Vector3.new(0, 1.12, -0.38), inputSize = 0.55,
+		parts = {
+			["Frame"] = {center = Vector3.new(0, 1.4734, -0.0275), size = Vector3.new(4.64, 2.9468, 3.005), origin = Vector3.new(0, 0, 0)},
+			["Gravity_Core"] = {center = Vector3.new(0.0065, 2.57, 0.74), size = Vector3.new(0.9043, 0.9198, 0.78), origin = Vector3.new(0, 2.57, 0.74)},
+			["Jaw_L"] = {center = Vector3.new(1.0111, 1.2834, -0.41), size = Vector3.new(1.3672, 1.1868, 1.18), origin = Vector3.new(1.04, 1.27, -0.38)},
+			["Jaw_R"] = {center = Vector3.new(-1.0111, 1.2834, -0.41), size = Vector3.new(1.3672, 1.1868, 1.18), origin = Vector3.new(-1.04, 1.27, -0.38)},
+		},
+		motion = {
+			{name = "Jaw_L", kind = "move", vector = Vector3.new(-0.31, 0, 0), curve = "press"},
+			{name = "Jaw_R", kind = "move", vector = Vector3.new(0.31, 0, 0), curve = "press"},
+			{name = "Gravity_Core", kind = "rotate", axis = Vector3.new(0, 0, 1), angle = 6.28319, curve = "spin"},
+		},
+		contact = {"Gravity_Core", "Jaw_L", "Jaw_R"},
+	},
+	["EclipseEngine"] = {kit = "motion", grow = true, size = Vector3.new(4.64, 3.7486, 3.005), bedTop = 0.910,
+		inputCenter = Vector3.new(0, 1.88, -0.42), inputSize = 0.75,
+		parts = {
+			["Frame"] = {center = Vector3.new(0, 1.8743, -0.0275), size = Vector3.new(4.64, 3.7486, 3.005), origin = Vector3.new(0, 0, 0)},
+			["Crescent_Bottom"] = {center = Vector3.new(0, 1.0254, -0.4137), size = Vector3.new(1.4678, 0.4108, 0.6375), origin = Vector3.new(0, 1.24, -0.42)},
+			["Crescent_Top"] = {center = Vector3.new(0, 2.7546, -0.4137), size = Vector3.new(1.4678, 0.4108, 0.6375), origin = Vector3.new(0, 2.54, -0.42)},
+		},
+		motion = {
+			{name = "Crescent_Top", kind = "move", vector = Vector3.new(0, -0.37, 0), curve = "press"},
+			{name = "Crescent_Bottom", kind = "move", vector = Vector3.new(0, 0.37, 0), curve = "press"},
+		},
+		contact = {"Crescent_Bottom", "Crescent_Top"},
+	},
+	["NightRipper"] = {kit = "motion", grow = true, size = Vector3.new(4.64, 2.64, 3.005), bedTop = 0.714,
+		inputCenter = Vector3.new(0, 1.01, -0.43), inputSize = 0.60,
+		parts = {
+			["Frame"] = {center = Vector3.new(0, 0.7188, -0.0275), size = Vector3.new(4.64, 1.4376, 3.005), origin = Vector3.new(0, 0, 0)},
+			["Claw_L"] = {center = Vector3.new(1.0472, 1.88, -0.4525), size = Vector3.new(1.7657, 1.52, 0.725), origin = Vector3.new(1.64, 1.41, -0.37)},
+			["Claw_R"] = {center = Vector3.new(-1.0472, 1.88, -0.4525), size = Vector3.new(1.7657, 1.52, 0.725), origin = Vector3.new(-1.64, 1.41, -0.37)},
+		},
+		motion = {
+			{name = "Claw_L", kind = "rotate", axis = Vector3.new(0, 0, 1), angle = 0.36652, curve = "press"},
+			{name = "Claw_R", kind = "rotate", axis = Vector3.new(0, 0, 1), angle = -0.36652, curve = "press"},
+		},
+		contact = {"Claw_L", "Claw_R"},
+	},
+	["HaloHammer"] = {kit = "motion", grow = true, size = Vector3.new(4.64, 2.76, 3.0075), bedTop = 0.734,
+		inputCenter = Vector3.new(0, 0.95, -0.43), inputSize = 0.55,
+		parts = {
+			["Frame"] = {center = Vector3.new(0, 0.7068, -0.0288), size = Vector3.new(4.64, 1.4135, 3.0075), origin = Vector3.new(0, 0, 0)},
+			["Hammer_Arm"] = {center = Vector3.new(0.4341, 1.86, -0.2538), size = Vector3.new(2.4719, 1.8, 1.5976), origin = Vector3.new(1.28, 1.35, 0.12)},
+		},
+		motion = {
+			{name = "Hammer_Arm", kind = "rotate", axis = Vector3.new(0, 0, 1), angle = 0.45379, curve = "press"},
+		},
+		contact = {"Hammer_Arm"},
+	},
+	["CelestialCrusher"] = {kit = "motion", grow = true, size = Vector3.new(4.64, 3.7522, 3.0075), bedTop = 0.844,
+		inputCenter = Vector3.new(0, 2.1, 0.05), inputSize = 0.70,
+		parts = {
+			["Frame"] = {center = Vector3.new(0, 1.7861, -0.0288), size = Vector3.new(4.64, 3.5722, 3.0075), origin = Vector3.new(0, 0, 0)},
+			["Celestial_Ram_1"] = {center = Vector3.new(0, 3.0312, 0.106), size = Vector3.new(0.62, 0.7275, 0.668), origin = Vector3.new(0, 3.12, 0.02)},
+			["Celestial_Ram_2"] = {center = Vector3.new(0.8083, 1.6162, 0.106), size = Vector3.new(0.8465, 0.7743, 0.668), origin = Vector3.new(0.8833, 1.59, 0.02)},
+			["Celestial_Ram_3"] = {center = Vector3.new(-0.8083, 1.6162, 0.106), size = Vector3.new(0.8465, 0.7743, 0.668), origin = Vector3.new(-0.8833, 1.59, 0.02)},
+			["Orbit_Gold"] = {center = Vector3.new(0.0038, 2.0957, 0.1808), size = Vector3.new(3.3732, 3.3131, 1.9807), origin = Vector3.new(0, 2.1, 0.19)},
+			["Orbit_Indigo"] = {center = Vector3.new(0, 2.1, 0.1653), size = Vector3.new(3.2572, 3.2572, 0.2895), origin = Vector3.new(0, 2.1, 0.19)},
+		},
+		motion = {
+			{name = "Orbit_Indigo", kind = "rotate", axis = Vector3.new(0, 0, 1), angle = 6.28319, curve = "spin"},
+			{name = "Orbit_Gold", kind = "rotate", axis = Vector3.new(-0.3746, 0, 0.9272), angle = 0.48869, curve = "wind"},
+			{name = "Celestial_Ram_1", kind = "move", vector = Vector3.new(0, -0.37, 0), curve = "press"},
+			{name = "Celestial_Ram_2", kind = "move", vector = Vector3.new(-0.3204, 0.185, 0), curve = "press"},
+			{name = "Celestial_Ram_3", kind = "move", vector = Vector3.new(0.3204, 0.185, 0), curve = "press"},
+		},
+		contact = {"Celestial_Ram_1", "Celestial_Ram_2", "Celestial_Ram_3", "Orbit_Gold", "Orbit_Indigo"},
+	},
+	["ArchangelAnvil"] = {kit = "motion", grow = true, size = Vector3.new(4.64, 3.2766, 3.0075), bedTop = 0.924,
+		inputCenter = Vector3.new(0, 1.17, -0.3), inputSize = 0.50,
+		parts = {
+			["Frame"] = {center = Vector3.new(0, 1.555, -0.0288), size = Vector3.new(4.64, 3.11, 3.0075), origin = Vector3.new(0, 0, 0)},
+			["Ram"] = {center = Vector3.new(0, 2.2625, -0.3362), size = Vector3.new(1.42, 1.225, 0.9925), origin = Vector3.new(0, 1.91, -0.3)},
+			["Wing_L"] = {center = Vector3.new(1.6241, 2.4783, 0.1233), size = Vector3.new(1.3882, 1.5966, 0.6815), origin = Vector3.new(1.18, 1.93, 0.16)},
+			["Wing_R"] = {center = Vector3.new(-1.6241, 2.4783, 0.1233), size = Vector3.new(1.3882, 1.5966, 0.6815), origin = Vector3.new(-1.18, 1.93, 0.16)},
+		},
+		motion = {
+			{name = "Wing_L", kind = "rotate", axis = Vector3.new(0, 0, 1), angle = 0.41888, curve = "press"},
+			{name = "Wing_R", kind = "rotate", axis = Vector3.new(0, 0, 1), angle = -0.41888, curve = "press"},
+			{name = "Ram", kind = "move", vector = Vector3.new(0, -0.65, 0), curve = "press"},
+		},
+		contact = {"Ram", "Wing_L", "Wing_R"},
+	},
+	["AuroraPress"] = {kit = "motion", grow = true, size = Vector3.new(4.64, 3.38, 3.0075), bedTop = 0.754,
+		inputCenter = Vector3.new(0, 0.99, -0.27), inputSize = 0.50,
+		parts = {
+			["Frame"] = {center = Vector3.new(0, 1.69, -0.0288), size = Vector3.new(4.64, 3.38, 3.0075), origin = Vector3.new(0, 0, 0)},
+			["Prism_Stage_1"] = {center = Vector3.new(0, 2.6065, -0.27), size = Vector3.new(1.4254, 0.463, 1.4254), origin = Vector3.new(0, 2.51, -0.27)},
+			["Prism_Stage_2"] = {center = Vector3.new(0, 2.2665, -0.27), size = Vector3.new(1.1507, 0.463, 1.1507), origin = Vector3.new(0, 2.17, -0.27)},
+			["Prism_Stage_3"] = {center = Vector3.new(0, 1.894, -0.27), size = Vector3.new(0.8763, 0.528, 0.8763), origin = Vector3.new(0, 1.83, -0.27)},
+		},
+		motion = {
+			{name = "Prism_Stage_1", kind = "move", vector = Vector3.new(0, -0.44, 0), curve = "press"},
+			{name = "Prism_Stage_2", kind = "move", vector = Vector3.new(0, -0.56, 0), curve = "press"},
+			{name = "Prism_Stage_3", kind = "move", vector = Vector3.new(0, -0.68, 0), curve = "press"},
+		},
+		contact = {"Prism_Stage_1", "Prism_Stage_2", "Prism_Stage_3"},
+	},
+}
