@@ -36,7 +36,7 @@ local Net = {}
 --   RedeemCode  client -> server : code text; CodeResult server -> client : { ok, text } (2 Nov)
 --   Feedback    client -> server : ("Shown") | ("Rating", 1-3) | ("Wish", key) — the tap survey (5 Nov)
 --   WhatsNew    server -> client : the news (NewsConfig) once per version; NewsSeen client -> server : closed it
-for _, name in { "CrusherAction", "CrusherState", "CrusherOpen", "Travel", "DailySpin", "QuestState", "QuestAction", "BoostAction", "PlotUpgraded", "OfferState", "OfferAction", "FactoryEventAction", "FactoryEventState", "ClaimIndexReward", "OfflineAction", "RedeemCode", "CodeResult", "WhatsNew", "NewsSeen", "RarePull", "TurboAction", "TurboState", "Smash", "FrenzyState", "GoldenToy", "RebirthDone", "Feedback" } do table.insert(NAMES, name) end
+for _, name in { "CrusherAction", "CrusherState", "CrusherOpen", "Travel", "DailySpin", "QuestState", "QuestAction", "BoostAction", "PlotUpgraded", "OfferState", "OfferAction", "FactoryEventAction", "FactoryEventState", "ClaimIndexReward", "OfflineAction", "RedeemCode", "CodeResult", "WhatsNew", "NewsSeen", "RarePull", "TurboAction", "TurboState", "Smash", "FrenzyState", "GoldenToy", "RebirthDone", "Feedback", "BigRoll" } do table.insert(NAMES, name) end
 
 local folder: Instance
 if RunService:IsServer() then

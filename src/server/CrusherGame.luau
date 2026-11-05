@@ -558,13 +558,35 @@ local function rollShow(p,offers)
 	local rollId=guid() local rollData=Data.get(p) local rollPerks=perks(p)
 	local rollLuck=rollData.crushers.upgrades.Luck local first=rollData.crushers.rolls==1
 	-- 2 Nov: a Legendary or better roll is announced to the whole server once revealed
-	local best=nil
-	for _,item in offers do local r=item and C.rarity(item.rarity) if r and r.rank>=4 and (not best or r.rank>best.rank) then best=table.clone(r) best.item=item end end
+	local best=nil local bestSlot=nil
+	for slot,item in offers do local r=item and C.rarity(item.rarity) if r and r.rank>=4 and (not best or r.rank>best.rank) then best=table.clone(r) best.item=item bestSlot=slot end end
+	-- 5 Nov: Secret and up get the big cinematic (BigRoll.client): that pedestal is
+	-- held back for C.BigRoll[rarity].Hold seconds so the impact lands on the reveal;
+	-- the next roll and buying wait as long (no rolling a Secret away by accident)
+	local big=if best and best.rank>=C.BigRoll.MinRank then C.BigRoll[best.name] else nil
+	local hold=if big then big.Hold else 0
+	if big then
+		ctx.nextRoll=(ctx.nextRoll or 0)+hold
+		rollData.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock())
+		local def=C.typeById(best.item.type) local ped=st.pedestals[bestSlot]
+		local odds=RollLook.odds(best.item.type,rollLuck,rollPerks.lucky,first,rollPerks.indexLuck)
+		task.delay(seconds,function()
+			if ctx.rollToken~=token or sessions[p]~=ctx then return end
+			Net.event("BigRoll"):FireAllClients({userId=p.UserId,player=p.DisplayName,rarity=best.name,rank=best.rank,color=best.color,
+				name=def and def.name or best.item.type,type=best.item.type,odds=odds,slot=bestSlot,at=ped.top.CFrame,hold=hold,
+				revealAt=workspace:GetServerTimeNow()+hold,aftershock=big.AftershockLuck,aftershockSeconds=big.AftershockSeconds})
+		end)
+	end
 	if best then
 		local def=C.typeById(best.item.type)
-		task.delay(seconds+0.4,function()
+		task.delay(seconds+hold+0.4,function()
 			if ctx.rollToken~=token then return end
 			Net.event("RarePull"):FireAllClients({player=p.DisplayName,rarity=best.name,name=def and def.name or best.item.type,color=best.color,userId=p.UserId})
+			if big and big.AftershockLuck then
+				ServerLuck.aftershock(p,big.AftershockLuck,big.AftershockSeconds)
+				Net.event("RarePull"):FireAllClients({text="DIVINE AFTERSHOCK: +"..math.floor((big.AftershockLuck-1)*100+.5).."% luck for EVERYONE for "..big.AftershockSeconds.." seconds!",
+					userId=p.UserId,color=best.color})
+			end
 		end)
 	end
 	for i in st.pedestals do clearOffer(plot,i) end
@@ -645,7 +667,7 @@ local function rollShow(p,offers)
 			local d=Data.get(p)
 			for slot,item in offers do
 				-- reveal the pedestals one after another, centre first
-				task.delay((slot-1)*.12,function()
+				task.delay((slot-1)*.12+(if slot==bestSlot then hold else 0),function()
 					if ctx.rollToken~=token or sessions[p]~=ctx or not item then return end
 					if not ctx.offers or ctx.offers[slot]~=item then return end -- already bought/replaced during the stagger
 					local ped=st.pedestals[slot] local r=C.rarity(item.rarity)
@@ -715,6 +737,11 @@ local function action(p,name,args)
 		-- fusion timing uses real unix time (it runs while you're offline); never trust a client time
 		if name=="Fuse" or name=="CollectFusion" then args.serverTime=os.time() end
 		ok,message,result=Rules.act(d,ctx,name,args,os.clock(),random,guid,perks(p))
+	end
+	-- Studio only (DevCrusher "ForceRoll"): the first pedestal of the next roll gets this rarity
+	if ok and name=="Roll" and ctx.forceRarity and RunService:IsStudio() then
+		local r=C.rarity(ctx.forceRarity) ctx.forceRarity=nil
+		if r and #r.types>0 then result[1]={type=r.types[1],rarity=r.name,modifier="Standard",level=1} ctx.offers=result end
 	end
 	if ok and name=="Roll" then d.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock()) rollShow(p,result) end
 	if ok and name=="Buy" then
@@ -1059,6 +1086,7 @@ function G.start()
 				Net.event("PlotUpgraded"):FireClient(p,upgradeSummary(level-1,level)) return true
 			end
 			if cmd=="Action" then return action(p,args.name,args.args) end
+			if cmd=="ForceRoll" then sessions[p].forceRarity=args return true end -- 5 Nov: test the big roll cinematic
 			if cmd=="Reload" then
 				assert(Data.isMock(),"Mock store only") assert(Data.saveNow(p)) Data.reloadForTest(p)
 				local ctx=sessions[p] ctx.bays={} ctx.nextRoll=restoredCooldown(Data.get(p)) reconcile(p) send(p) return true
