@@ -365,16 +365,37 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 
 	local function starterDetail(body: Frame)
 		detailTitle(string.upper(starter.title), C(255, 150, 215))
-		detailRow(70, crusherImage(starter.crusher), typeName(starter.crusher), mythicDesc, "x1", C(255, 90, 170))
-		detailRow(166, Icons.Cash, Format.cash(Store.cashFor((player:GetAttribute("CashRate") :: number?) or 0, starter.cashMinutes * 60)) .. " cash", starter.cashMinutes .. " min of your earnings, right away", "x1", C(60, 180, 90))
-		detailRow(262, (Icons :: any)[boost.icon] or Icons.DoubleCash, boost.title .. " boost", starter.boost.minutes .. " minutes · " .. boost.desc, "x1", boost.color)
-		local note = label(body, "One-time pack: everything above is guaranteed, once per player.", UDim2.fromOffset(20, 360), UDim2.new(1, -300, 0, 26), 2, 22)
+		-- 5 Nov polish: three big reward tiles in the featured card's colours
+		local cashLabel: TextLabel? = nil
+		local span = if starter.cashMinutes % 60 == 0 then (starter.cashMinutes // 60) .. (if starter.cashMinutes == 60 then " hour" else " hours") else starter.cashMinutes .. " min"
+		local tiles = {
+			{ kind = "MYTHIC", palette = "CandyMythic", image = crusherImage(starter.crusher), name = typeName(starter.crusher), line = "3x Legendary output" },
+			{ kind = "CASH", palette = "Cash", image = Icons.Cash, name = "", line = span .. " of earnings" },
+			{ kind = "BOOST", palette = "CashBoost", image = (Icons :: any)[boost.icon] or Icons.DoubleCash, name = boost.title, line = starter.boost.minutes .. " min" },
+		}
+		local tileW = math.floor((CONTENT_W - 40 - 24) / 3)
+		for i, tl in tiles do
+			local t = make("Frame", { Name = "Reward_" .. tl.kind, Position = UDim2.fromOffset(20 + (i - 1) * (tileW + 12), 64), Size = UDim2.fromOffset(tileW, 250), ZIndex = 22 }, body)
+			Style.rewardCard(t, tl.palette)
+			local k = label(t, tl.kind, UDim2.fromOffset(10, 8), UDim2.new(1, -20, 0, 28), 3, 24)
+			Style.bold(k, 3)
+			local art = icon(t, tl.image, UDim2.new(0.5, -66, 0, 40), UDim2.fromOffset(132, 132), 24)
+			Style.floatArt(art, { gate = detail, bob = 2.5, tilt = 0, period = 3.2 })
+			local n = label(t, tl.name, UDim2.fromOffset(10, 176), UDim2.new(1, -20, 0, 32), 3, 24)
+			if tl.kind == "CASH" then cashLabel = n n.TextColor3 = C(255, 240, 110) end
+			local p = make("Frame", { Position = UDim2.new(0.5, -((tileW - 40) / 2), 0, 212), Size = UDim2.fromOffset(tileW - 40, 28), BackgroundColor3 = INK,
+				BackgroundTransparency = 0.15, ZIndex = 24 }, t)
+			corner(p, 99)
+			label(p, tl.line, UDim2.fromOffset(8, 3), UDim2.new(1, -16, 1, -6), 1.5, 25)
+		end
+		local note = label(body, "One-time pack: all three are guaranteed, once per player.", UDim2.fromOffset(20, 330), UDim2.new(1, -300, 0, 26), 2, 22)
 		note.TextXAlignment = Enum.TextXAlignment.Left
 		local buy = bigButton(body, "BUY", UDim2.new(1, -260, 1, -78), UDim2.fromOffset(240, 64), nil, 24)
 		buy.Activated:Connect(function() promptOffer(starter.product, starter.id, false, buy) end)
 		return function()
 			local text, color = offerButtonState(starter.product, starter.id)
 			setCaption(buy, text, color)
+			if cashLabel then cashLabel.Text = Format.cash(Store.cashFor((player:GetAttribute("CashRate") :: number?) or 0, starter.cashMinutes * 60)) end
 		end
 	end
 	local function crateDetail(body: Frame)
@@ -512,29 +533,79 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		})
 	end
 
-	-- Product / pass cards (grid) -------------------------------------------------------
-	local function grid(page: ScrollingFrame, order: number): Frame
+	-- Product / pass cards -------------------------------------------------------------
+	-- 5 Nov (shop polish brief): each card answers name, big icon, main benefit, price.
+	-- Bright coordinated gradients (cyan/blue, pink/purple, yellow/orange), subtle studs,
+	-- icons bob 2.5 px while the shop is open, the whole price button scales on hover/press.
+	local PALETTES = {
+		Cyan = { C(120, 236, 255), C(60, 150, 255), C(40, 90, 220) },
+		Pink = { C(255, 150, 220), C(220, 80, 220), C(130, 60, 230) },
+		Gold = { C(255, 238, 120), C(255, 180, 40), C(245, 120, 30) },
+	}
+	local CARD_W = math.floor((BANNER_W - 24) / 3)
+	local function grid(page: ScrollingFrame, order: number, height: number?): Frame
 		local g = make("Frame", { LayoutOrder = order, Size = UDim2.fromOffset(BANNER_W, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, ZIndex = 7 }, page)
-		make("UIGridLayout", { CellSize = UDim2.fromOffset((BANNER_W - 24) / 3, 158), CellPadding = UDim2.fromOffset(12, 12), SortOrder = Enum.SortOrder.LayoutOrder }, g)
+		make("UIGridLayout", { CellSize = UDim2.fromOffset(CARD_W, height or 214), CellPadding = UDim2.fromOffset(12, 12), SortOrder = Enum.SortOrder.LayoutOrder,
+			HorizontalAlignment = Enum.HorizontalAlignment.Center }, g)
 		return g
 	end
-	local function card(parent: Frame, order: number, title: string, desc: string, color: Color3, image: string, onBuy: (TextButton) -> ()): (TextButton, TextLabel)
-		local f = make("Frame", { LayoutOrder = order, BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 8 }, parent)
-		corner(f, 12)
+	local function bob(image: GuiObject)
+		Style.floatArt(image, { gate = panel, bob = 2.5, tilt = 0, period = 3.2 })
+	end
+	-- boost / pass card (CARD_W x 200): icon left, title, big benefit, short line, price button
+	local function benefitCard(parent: Frame, order: number, o: { title: string, benefit: string, sub: string, palette: string, image: string },
+		onBuy: (TextButton) -> ()): TextButton
+		local pal = PALETTES[o.palette] or PALETTES.Cyan
+		local f = make("Frame", { Name = "Card_" .. o.title:gsub("%W", ""), LayoutOrder = order, BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 8 }, parent)
+		corner(f, 14)
 		outline(f, 4)
-		gradient(f, { Style.lighten(color, 0.12), Style.darken(color, 0.3) }, 25)
-		local st = Style.studsImage(f, 26, 0.75) st.ZIndex = 8 st.ImageColor3 = color
-		icon(f, image, UDim2.fromOffset(8, 10), UDim2.fromOffset(82, 82), 9)
-		local t = label(f, title, UDim2.fromOffset(96, 10), UDim2.new(1, -104, 0, 32), 3, 9)
-		t.TextXAlignment = Enum.TextXAlignment.Right
-		local d = label(f, desc, UDim2.fromOffset(96, 44), UDim2.new(1, -104, 0, 48), 1.5, 9)
-		d.TextScaled = true
-		d.TextWrapped = true
-		d.TextXAlignment = Enum.TextXAlignment.Right
-		d.TextYAlignment = Enum.TextYAlignment.Top
-		local b = bigButton(f, "", UDim2.new(1, -150, 1, -56), UDim2.fromOffset(140, 46), nil, 10)
+		gradient(f, pal, 35)
+		local st = Style.studsImage(f, 26, 0.8) st.ZIndex = 8 st.ImageColor3 = pal[2]
+		local art = icon(f, o.image, UDim2.fromOffset(12, 10), UDim2.fromOffset(98, 98), 9)
+		bob(art)
+		local t = label(f, o.title, UDim2.fromOffset(118, 14), UDim2.new(1, -128, 0, 24), 2.5, 9)
+		t.TextXAlignment = Enum.TextXAlignment.Left
+		t.TextColor3 = C(235, 244, 255)
+		local big = label(f, o.benefit, UDim2.fromOffset(118, 42), UDim2.new(1, -128, 0, 50), 3.5, 9)
+		make("UITextSizeConstraint", { MaxTextSize = 40 }, big)
+		big.TextXAlignment = Enum.TextXAlignment.Left
+		big.TextColor3 = C(255, 246, 150)
+		-- the short line under the icon: one fixed size on every card (two lines max)
+		local sub = label(f, o.sub, UDim2.fromOffset(12, 112), UDim2.new(1, -24, 0, 40), 2, 9)
+		sub.TextScaled = false
+		sub.TextSize = 18
+		sub.TextWrapped = true
+		sub.TextYAlignment = Enum.TextYAlignment.Center
+		local b = bigButton(f, "", UDim2.new(0, 12, 1, -56), UDim2.new(1, -24, 0, 44), nil, 10)
 		b.Activated:Connect(function() onBuy(b) end)
-		return b, d
+		return b
+	end
+	-- cash / time-skip portrait card: Willem's 3:4 backgrounds, designed at 240 x 320
+	-- and scaled to the column width; icon, amount, line and button stay separate
+	local PORTRAIT = { Cash = "rbxassetid://91426858476957", TimeSkip = "rbxassetid://74672158230253" }
+	local PORTRAIT_H = math.floor(CARD_W * 320 / 240 + 0.5)
+	local function portraitCard(parent: Frame, order: number, id: string, product: any, timeSkip: boolean, onBuy: (TextButton) -> ()): (TextButton, TextLabel)
+		local f = make("Frame", { Name = "Cash_" .. id, LayoutOrder = order, BackgroundTransparency = 1, ZIndex = 8 }, parent)
+		local body = make("Frame", { Name = "Body", Size = UDim2.fromOffset(240, 320), BackgroundTransparency = 1, ZIndex = 8 }, f)
+		make("UIScale", { Scale = CARD_W / 240 }, body)
+		make("ImageLabel", { Name = "Background", Image = if timeSkip then PORTRAIT.TimeSkip else PORTRAIT.Cash, Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 8 }, body)
+		local t = label(body, product.title, UDim2.fromOffset(16, 20), UDim2.fromOffset(208, 32), 3, 10)
+		Style.bold(t, 3)
+		local art = icon(body, ShopArt.CashPacks[id] or Icons.Cash, UDim2.fromOffset(52, 60), UDim2.fromOffset(136, 136), 10)
+		art.Name = "Art"
+		bob(art)
+		local amount = label(body, "", UDim2.fromOffset(16, 202), UDim2.fromOffset(208, 32), 3.5, 10)
+		amount.Name = "Amount"
+		amount.TextColor3 = C(255, 240, 110)
+		local minutes = Store.CashPackMinutes[id] or 0
+		local span = if minutes >= 60 and minutes % 60 == 0 then (minutes // 60) .. (if minutes == 60 then " hour" else " hours") else minutes .. " min"
+		-- honest wording: cash equal to that much of your current earnings (no timers move)
+		local note = label(body, "Cash = " .. span .. " of earnings", UDim2.fromOffset(16, 236), UDim2.fromOffset(208, 20), 2, 10)
+		note.TextColor3 = C(235, 244, 255)
+		local b = bigButton(body, "", UDim2.fromOffset(18, 266), UDim2.fromOffset(204, 40), nil, 11)
+		b.Activated:Connect(function() onBuy(b) end)
+		return b, amount
 	end
 	-- 5 Nov: the red "LOWER PRICE!" ribbon in a card's top-left corner (Store.PriceDrop)
 	lowerPrice = function(card: GuiObject, key: string, scale: number?)
@@ -553,18 +624,40 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		end)
 	end
 	local PASS_ICONS: { [string]: string } = { AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, Lucky = Icons.Lucky, OfflineEarnings = Icons.Offline, AutoCollect = Icons.Cash, VIP = Icons.Trophy }
+	-- the short, readable version of each pass / boost (the long text stays in Store)
+	local PASS_TEXT: { [string]: { benefit: string, sub: string, palette: string } } = {
+		AutoCrush = { benefit = "+25% POWER", sub = "+25% damage for all your crushers, forever", palette = "Pink" },
+		DoubleCash = { benefit = "2x CASH", sub = "Double cash from every crush, forever", palette = "Gold" },
+		Lucky = { benefit = "2x LUCK", sub = "Forever. Uncommon or better: 30% -> 46% of rolls", palette = "Cyan" },
+		AutoCollect = { benefit = "AUTO SELL", sub = "Scrap collects and sells itself", palette = "Gold" },
+		VIP = { benefit = "x1.5 CASH", sub = "12 h offline cash and a gold VIP tag", palette = "Pink" },
+	}
+	local function boostText(id: string): { benefit: string, sub: string, palette: string }
+		if id == "ServerLuck" then return { benefit = "2x LUCK", sub = "EVERYONE here, " .. Store.ServerLuck.Minutes .. " min. Uncommon+: 30% -> 46%", palette = "Cyan" } end
+		if id == "TurboNow" then return { benefit = "TURBO NOW", sub = "Your strongest turbo, " .. Store.TurboNowMinutes .. " min", palette = "Gold" } end
+		local b = BoostConfig.find(id:sub(6))
+		local m = if b then b.minutes else 15
+		if id == "BoostCash" then return { benefit = "2x CASH", sub = "Double cash for you, " .. m .. " min", palette = "Pink" } end
+		if id == "BoostLuck" then return { benefit = "2x LUCK", sub = "For you, " .. m .. " min. Uncommon+: 30% -> 46%", palette = "Cyan" } end
+		if id == "BoostSuper" then return { benefit = "2x BOTH", sub = "2x cash and 2x luck, " .. m .. " min", palette = "Pink" } end
+		return { benefit = "", sub = "", palette = "Gold" }
+	end
 	local function passCards(page: ScrollingFrame, order: number)
 		local g = grid(page, order)
 		for i, pass in Store.Passes do
 			if pass.gamePassId == 0 and pass.perk == "VIP" then continue end -- 4 Nov: VIP shows once its pass exists
-			local b = card(g, i, pass.title, pass.desc, pass.color, PASS_ICONS[pass.perk] or Icons.Shop, function(button)
+			local txt = PASS_TEXT[pass.perk] or { benefit = pass.title, sub = pass.desc, palette = "Gold" }
+			local b = benefitCard(g, i, { title = pass.title, benefit = txt.benefit, sub = txt.sub, palette = txt.palette, image = PASS_ICONS[pass.perk] or Icons.Shop }, function(button)
 				if Store.hasPass(player, pass.perk) then return end
 				if pass.gamePassId == 0 then shake(button) end
 				deps.buyPass(pass.perk)
 			end)
 			if not Store.hasPass(player, pass.perk) then lowerPrice(b.Parent :: GuiObject, pass.perk) end
 			local function update()
-				if Store.hasPass(player, pass.perk) then setCaption(b, "OWNED", GREY)
+				if Store.hasPass(player, pass.perk) then
+					setCaption(b, "OWNED", GREY)
+					local ribbon = (b.Parent :: Instance):FindFirstChild("LowerPrice")
+					if ribbon then ribbon:Destroy() end
 				elseif pass.gamePassId == 0 then setCaption(b, "SOON", GREY)
 				else
 					local price = priceOf("pass", pass.gamePassId)
@@ -575,59 +668,27 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 			table.insert(refreshers, update)
 		end
 	end
-	-- Cash pack card (31 Oct): its own icon per pack (ShopArt.CashPacks) in a
-	-- 122 px slot on the left; title, live amount and earnings time in their own
-	-- rows on the right; the buy button bottom-right, clear of the art.
-	local function cashCard(parent: Frame, order: number, id: string, product: any, onBuy: (TextButton) -> ()): (TextButton, TextLabel)
-		local f = make("Frame", { Name = "Cash_" .. id, LayoutOrder = order, BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 8 }, parent)
-		corner(f, 12)
-		outline(f, 4)
-		gradient(f, { Style.lighten(product.color, 0.12), Style.darken(product.color, 0.3) }, 25)
-		local st = Style.studsImage(f, 26, 0.75) st.ZIndex = 8 st.ImageColor3 = product.color
-		-- art slot: still at rest, grows/tilts a little on hover (text never moves)
-		local slot = make("TextButton", { Name = "ArtSlot", Text = "", BackgroundTransparency = 1, AutoButtonColor = false,
-			Position = UDim2.fromOffset(4, 6), Size = UDim2.fromOffset(122, 122), ZIndex = 9 }, f)
-		local fallback = icon(slot, Icons.Cash, UDim2.fromOffset(20, 20), UDim2.fromOffset(82, 82), 9)
-		fallback.Name = "Fallback"
-		local art = icon(slot, ShopArt.CashPacks[id] or Icons.Cash, UDim2.new(), UDim2.fromScale(1, 1), 10)
-		art.Name = "Art"
-		task.spawn(function()
-			while art.Parent and not art.IsLoaded do task.wait(0.25) end
-			if art.IsLoaded then fallback.Visible = false end
-		end)
-		Style.hoverLift(slot, { art = art, scale = 1.06, artScale = 1.04, lift = 2, tilt = 3, press = 0.97 })
-		local t = label(f, product.title, UDim2.fromOffset(128, 8), UDim2.new(1, -136, 0, 30), 3, 9)
-		t.TextXAlignment = Enum.TextXAlignment.Right
-		local amount = label(f, "", UDim2.fromOffset(128, 40), UDim2.new(1, -136, 0, 32), 3, 9)
-		amount.Name = "Amount"
-		amount.TextXAlignment = Enum.TextXAlignment.Right
-		amount.TextColor3 = C(255, 240, 120)
-		local minutes = Store.CashPackMinutes[id] or 0
-		local span = if minutes >= 60 and minutes % 60 == 0 then (minutes // 60) .. (if minutes == 60 then " hour" else " hours") else minutes .. " min"
-		local note = label(f, span .. " of earnings", UDim2.fromOffset(128, 74), UDim2.new(1, -136, 0, 20), 1.5, 9)
-		note.TextScaled = true
-		note.TextWrapped = true
-		note.TextXAlignment = Enum.TextXAlignment.Right
-		local b = bigButton(f, "", UDim2.new(1, -128, 1, -52), UDim2.fromOffset(120, 44), nil, 10)
-		b.Activated:Connect(function() onBuy(b) end)
-		return b, amount
-	end
 	local function productCards(page: ScrollingFrame, order: number, ids: { string })
-		local g = grid(page, order)
+		local cash = #ids > 0 and Store.CashPackShare[ids[1]] ~= nil
+		local g = grid(page, order, if cash then PORTRAIT_H else nil)
 		for i, id in ids do
 			local product = Store.productById(id)
 			if not product then continue end
-			local image = if Store.CashPackShare[id] then Icons.Cash elseif id == "GoldenRush" then Icons.Golden elseif id == "BoostLuck" or id == "ServerLuck" then Icons.Lucky elseif id == "TurboNow" then Icons.Speed
+			local image = if id == "GoldenRush" then Icons.Golden elseif id == "BoostLuck" or id == "ServerLuck" then Icons.Lucky elseif id == "TurboNow" then Icons.Speed
 				elseif id == "BoostSuper" then Icons.Golden elseif id == "BoostCash" then Icons.DoubleCash else Icons.Press
 			local function buy(button: TextButton)
 				if product.productId == 0 then shake(button) end
 				deps.buyProduct(id)
 			end
 			local b, d
-			if Store.CashPackShare[id] then b, d = cashCard(g, i, id, product, buy)
-			else b, d = card(g, i, product.title, product.desc, product.color, image, buy) end
+			if Store.CashPackShare[id] then
+				b, d = portraitCard(g, i, id, product, (Store.CashPackMinutes[id] or 0) >= 720, buy)
+			else
+				local txt = boostText(id)
+				b = benefitCard(g, i, { title = product.title, benefit = txt.benefit, sub = txt.sub, palette = txt.palette, image = image }, buy)
+			end
 			local function update()
-				if Store.CashPackShare[id] then d.Text = "+" .. Format.cash(Store.cashPackAmount(id, 1, (player:GetAttribute("CashRate") :: number?) or 0)) end
+				if d then d.Text = "+" .. Format.cash(Store.cashPackAmount(id, 1, (player:GetAttribute("CashRate") :: number?) or 0)) end
 				if product.productId == 0 then setCaption(b, "SOON", GREY)
 				else
 					local price = priceOf("product", product.productId)
@@ -662,14 +723,28 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	-- game 250 R$ a month for 3 months for every player who subscribes through this
 	-- button. Honest benefits only, no gameplay advantage, no pop-up: the player taps it.
 	heading(pages.PASSES, "Roblox Plus", 3)
-	do
-		local g = grid(pages.PASSES, 4)
-		local b = card(g, 1, "Roblox Plus", "Roblox's subscription: 10% off everything in this game, free private servers, and a [PLUS] tag in chat here.",
-			Color3.fromRGB(70, 150, 255), Icons.Trophy, function(button)
-				if player.HasRobloxSubscription then return end
-				local ok = pcall(function() MarketplaceService:PromptRobloxSubscriptionPurchase(player) end)
-				if not ok then shake(button) end
-			end)
+	do -- one full-width row (5 Nov polish: no lone tile next to empty space)
+		local pal = PALETTES.Cyan
+		local f = make("Frame", { Name = "RobloxPlus", LayoutOrder = 4, Size = UDim2.fromOffset(BANNER_W, 104), BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 8 }, pages.PASSES)
+		corner(f, 14)
+		outline(f, 4)
+		gradient(f, pal, 10)
+		local st = Style.studsImage(f, 26, 0.8) st.ZIndex = 8 st.ImageColor3 = pal[2]
+		local art = icon(f, Icons.Trophy, UDim2.fromOffset(14, 10), UDim2.fromOffset(84, 84), 9)
+		bob(art)
+		local t = label(f, "ROBLOX PLUS", UDim2.fromOffset(110, 12), UDim2.fromOffset(380, 40), 3.5, 9)
+		t.TextXAlignment = Enum.TextXAlignment.Left
+		t.TextColor3 = C(255, 246, 150)
+		local sub = label(f, "Roblox's subscription: 10% off everything here, free private servers and a blue PLUS tag.", UDim2.fromOffset(110, 56), UDim2.new(1, -350, 0, 38), 2, 9)
+		sub.TextWrapped = true
+		sub.TextXAlignment = Enum.TextXAlignment.Left
+		make("UITextSizeConstraint", { MaxTextSize = 18 }, sub)
+		local b = bigButton(f, "", UDim2.new(1, -226, 0.5, -26), UDim2.fromOffset(210, 52), nil, 10)
+		b.Activated:Connect(function()
+			if player.HasRobloxSubscription then return end
+			local ok = pcall(function() MarketplaceService:PromptRobloxSubscriptionPurchase(player) end)
+			if not ok then shake(b) end
+		end)
 		local function update()
 			if player.HasRobloxSubscription then setCaption(b, "ACTIVE", GREY) else setCaption(b, "GET PLUS", Style.GREEN) end
 		end

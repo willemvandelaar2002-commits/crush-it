@@ -333,7 +333,7 @@ function Style.feedback(btn: GuiButton)
 	local tween: Tween? = nil
 	local function update()
 		if tween then tween:Cancel() end
-		local target = if not btn.Active then 1 else if down then 0.94 else if hover then 1.04 else 1
+		local target = if not btn.Active then 1 else if down then 0.97 else if hover then 1.04 else 1 -- 5 Nov: press 0.97 (shop polish brief)
 		local nextTween = TweenService:Create(scale, TweenInfo.new(0.14, Enum.EasingStyle.Quad), { Scale = target })
 		tween = nextTween
 		nextTween:Play()

@@ -366,3 +366,10 @@ quests; QuestRules keeps frenzies/goldenToys/turbos/gifts (they were wiped on lo
   odds first (paid random item: never bought straight from the banner). Shop buttons are studded like Willem's
   reference shop (`Style.buttonStuds`: stud colour map tinted with the button colour; a caption child keeps the
   text above the studs; RobuxIcons skips the invisible button text).
+- 5 Nov shop polish (Willem's brief): cash and time-skip products are 3:4 portrait cards (designed at 240 x 320,
+  scaled to a third of the shop width) on Willem's backgrounds (cash 91426858476957, time skip 74672158230253):
+  title, bobbing icon, live amount, "Cash = N of earnings" (no timers move), studded price button. Boosts and
+  passes are benefit-first cards (title, big benefit like "2x LUCK", one short line at a fixed size, full-width
+  price/OWNED button) in cyan/blue, pink/purple or yellow/orange. Roblox Plus is one full-width row. The Starter
+  Pack details show three big reward tiles (featured-card colours) and the live price on BUY. Icons bob 2.5 px
+  (ShowcaseMotion, paused when the shop is hidden); Style.feedback press is now 0.97.
