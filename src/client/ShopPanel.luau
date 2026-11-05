@@ -181,14 +181,16 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	local area = make("Frame", { Name = "Content", Position = UDim2.fromOffset(14, 144), Size = UDim2.fromOffset(CONTENT_W, H - 158), BackgroundTransparency = 1, ZIndex = 6, ClipsDescendants = true }, panel)
 	local scroll = make("ScrollingFrame", { Name = "All", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 8,
 		ScrollBarImageColor3 = C(255, 214, 60), AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(), ZIndex = 6 }, area)
-	make("UIListLayout", { Padding = UDim.new(0, 18), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Left }, scroll)
-	make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 24), PaddingLeft = UDim.new(0, 2) }, scroll)
+	-- 5 Nov (Willem: "too much background, compare it to the reference"): tight gaps
+	-- everywhere, like the reference shop (sections 8, items 6, cards 6 apart)
+	make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Left }, scroll)
+	make("UIPadding", { PaddingTop = UDim.new(0, 2), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 2) }, scroll)
 	Style.scroll(scroll)
 
 	local function newPage(name: string, order: number): Frame
 		local s = make("Frame", { Name = name, LayoutOrder = order, Size = UDim2.fromOffset(CONTENT_W - 12, 0), AutomaticSize = Enum.AutomaticSize.Y,
 			BackgroundTransparency = 1, ZIndex = 6 }, scroll)
-		make("UIListLayout", { Padding = UDim.new(0, 12), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Left }, s)
+		make("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Left }, s)
 		pages[name] = s
 		return s
 	end
@@ -247,7 +249,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 
 	-- Section heading "~ Title ~" -----------------------------------------------------
 	local function heading(page: ScrollingFrame, text: string, order: number)
-		local l = label(page, "~ " .. text .. " ~", UDim2.new(), UDim2.fromOffset(BANNER_W, 30), 2.5, 7)
+		local l = label(page, "~ " .. text .. " ~", UDim2.new(), UDim2.fromOffset(BANNER_W, 24), 2.5, 7)
 		l.LayoutOrder = order
 	end
 
@@ -542,10 +544,10 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		Pink = { C(255, 150, 220), C(220, 80, 220), C(130, 60, 230) },
 		Gold = { C(255, 238, 120), C(255, 180, 40), C(245, 120, 30) },
 	}
-	local CARD_W = math.floor((BANNER_W - 24) / 3)
+	local CARD_W = math.floor((BANNER_W - 12) / 3)
 	local function grid(page: ScrollingFrame, order: number, height: number?): Frame
 		local g = make("Frame", { LayoutOrder = order, Size = UDim2.fromOffset(BANNER_W, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, ZIndex = 7 }, page)
-		make("UIGridLayout", { CellSize = UDim2.fromOffset(CARD_W, height or 214), CellPadding = UDim2.fromOffset(12, 12), SortOrder = Enum.SortOrder.LayoutOrder,
+		make("UIGridLayout", { CellSize = UDim2.fromOffset(CARD_W, height or 214), CellPadding = UDim2.fromOffset(6, 6), SortOrder = Enum.SortOrder.LayoutOrder,
 			HorizontalAlignment = Enum.HorizontalAlignment.Center }, g)
 		return g
 	end
