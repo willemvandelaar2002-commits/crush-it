@@ -149,3 +149,10 @@ light shafts from the top beam. Colours and amounts in `C.SpecialBay` (Secret ne
 Client-only, no lights, half the sparkles under `Style.lite()`, hidden while the factory event hides the plot,
 removed on unequip. Checked in Studio (all eight in bays 1-8, unequip clears it, no errors); not on a phone.
 
+
+### Plaque (5 Nov)
+The bay plaque of a Secret/Divine crusher gets a `SpecialPlaque` frame (ZIndex 0, behind the text) in the
+plaque's SurfaceGui: on your own plot that's the PlayerGui gui adorned to the bay's Panel (the Panel's own
+WorkshopControls is disabled there), on other plots the Panel's WorkshopControls. A UIGradient slides through
+`C.SpecialBay.Plaque[rarity]` every `SlideSeconds`, a white shine sweeps across every `ShineEvery` (skipped on
+lite), and a UIStroke rim has a rotating gradient. Divine colours are kept deep enough that white text stays readable.

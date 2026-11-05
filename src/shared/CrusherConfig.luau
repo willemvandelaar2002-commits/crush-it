@@ -388,6 +388,13 @@ C.SpecialBay = {
 	Secret = { main = Color3.fromRGB(176, 70, 255), accent = Color3.fromRGB(255, 70, 200), sparkles = 7, shafts = false },
 	Divine = { main = Color3.fromRGB(255, 205, 80), accent = Color3.fromRGB(120, 235, 255), sparkles = 9, shafts = true },
 	PlateTransparency = { 0.5, 0.75 }, PulseSeconds = 1.6, WallHeight = 9,
+	-- the bay plaque (Willem: "this stuff that changes"): a colour band sliding across,
+	-- a shine sweeping over it and a glowing rim; seconds per slide / per shine
+	Plaque = {
+		Secret = { Color3.fromRGB(58, 18, 112), Color3.fromRGB(150, 40, 210), Color3.fromRGB(235, 60, 190), Color3.fromRGB(40, 170, 230), Color3.fromRGB(58, 18, 112) },
+		Divine = { Color3.fromRGB(190, 110, 20), Color3.fromRGB(235, 165, 40), Color3.fromRGB(250, 205, 90), Color3.fromRGB(60, 150, 230), Color3.fromRGB(190, 110, 20) },
+		SlideSeconds = 4, ShineEvery = 3.2,
+	},
 }
 C.IndividualBase = 16
 C.IndividualGrowth = 1.38
