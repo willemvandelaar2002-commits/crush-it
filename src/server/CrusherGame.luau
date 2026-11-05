@@ -573,7 +573,7 @@ local function rollShow(p,offers)
 		task.delay(seconds,function()
 			if ctx.rollToken~=token or sessions[p]~=ctx then return end
 			Net.event("BigRoll"):FireAllClients({userId=p.UserId,player=p.DisplayName,rarity=best.name,rank=best.rank,color=best.color,
-				name=def and def.name or best.item.type,type=best.item.type,odds=odds,slot=bestSlot,at=ped.top,hold=hold,
+				name=def and def.name or best.item.type,type=best.item.type,odds=odds,slot=bestSlot,at=ped.top,machine=st.die:GetPivot().Position,hold=hold,
 				revealAt=workspace:GetServerTimeNow()+hold,aftershock=big.AftershockLuck,aftershockSeconds=big.AftershockSeconds})
 		end)
 	end

@@ -130,10 +130,12 @@ local function cinematic(msg: any)
 	Style.button(skip, Style.Colors.Gold)
 	skip.TextScaled = true Style.text(skip, 2)
 
-	-- the camera looks at the pedestal from the player's side
+	-- the camera looks at the pedestal from its outer side, the roll machine behind it
+	-- (from the player's side the machine itself blocks the view)
 	local look = me.Character and me.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
-	local from = if look then look.Position else camera.CFrame.Position
-	local flat = Vector3.new(from.X - P.X, 0, from.Z - P.Z)
+	local machine: Vector3? = if typeof(msg.machine) == "Vector3" then msg.machine else nil
+	local flat = if machine then Vector3.new(P.X - machine.X, 0, P.Z - machine.Z)
+		else (function() local from = if look then look.Position else camera.CFrame.Position return Vector3.new(from.X - P.X, 0, from.Z - P.Z) end)()
 	flat = if flat.Magnitude > 1 then flat.Unit else Vector3.new(0, 0, 1)
 	local shot = CFrame.lookAt(P + flat * 26 + Vector3.new(0, 10, 0), P + Vector3.new(0, 7, 0))
 	camera.CameraType = Enum.CameraType.Scriptable
@@ -215,7 +217,7 @@ local function cinematic(msg: any)
 	if not divine then
 		local press = Instance.new("Model") press.Name = "BigRollPress" press.Parent = workspace table.insert(trash, press)
 		local high = P + Vector3.new(0, 70, 0)
-		local head = part("Head", Vector3.new(13, 4, 13), CFrame.new(high), Color3.fromRGB(46, 48, 58), Enum.Material.DiamondPlate) head.Parent = press
+		local head = part("Head", Vector3.new(13, 4, 13), CFrame.new(high), Color3.fromRGB(96, 100, 116), Enum.Material.DiamondPlate) head.Parent = press
 		local rim = part("Rim", Vector3.new(13.6, 1, 13.6), CFrame.new(high - Vector3.new(0, 1.6, 0)), color) rim.Parent = press
 		local rod = part("Rod", Vector3.new(60, 3.2, 3.2), CFrame.new(high + Vector3.new(0, 32, 0)) * CFrame.Angles(0, 0, math.pi / 2), Color3.fromRGB(150, 155, 165), Enum.Material.Metal)
 		rod.Shape = Enum.PartType.Cylinder rod.Parent = press
