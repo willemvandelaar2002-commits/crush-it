@@ -98,3 +98,4 @@ these top tiers. Nothing is faked: the server only fires `BigRoll` when the roll
   is x1.5 for 30 s, the roll specs pass and there are no errors in Output. Not seen yet: phones, a second player
   watching the pillar, and the Server Luck pill with an aftershock after the tutorial (the HUD is hidden during it).
 
+5 Nov: the cinematic's odds counter uses the type's base odds (RollLook.odds with luck 0, no pass, no Index bonus); the pedestal card still shows the player's own odds.

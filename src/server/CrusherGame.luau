@@ -574,7 +574,9 @@ local function rollShow(p,offers)
 		ctx.nextRoll=(ctx.nextRoll or 0)+hold
 		rollData.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock())
 		local def=C.typeById(best.item.type) local ped=st.pedestals[bestSlot]
-		local odds=RollLook.odds(best.item.type,rollLuck,rollPerks.lucky,first,rollPerks.indexLuck)
+		-- 5 Nov (Willem): the cinematic counts up to the BASE odds of that crusher (no luck,
+		-- passes or boosts), so a Secret / Divine always shows how rare it really is
+		local odds=RollLook.odds(best.item.type,0,nil,false,0)
 		task.delay(seconds,function()
 			if ctx.rollToken~=token or sessions[p]~=ctx then return end
 			Net.event("BigRoll"):FireAllClients({userId=p.UserId,player=p.DisplayName,rarity=best.name,rank=best.rank,color=best.color,
