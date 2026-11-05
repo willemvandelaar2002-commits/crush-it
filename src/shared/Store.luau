@@ -33,7 +33,7 @@ Store.Products = {
 	{ id = "CashSmall", productId = 3723657331, price = 19, title = "10m Time Skip", desc = "10 minutes of your earnings, right away", color = Color3.fromRGB(80, 200, 110) },
 	-- 4 Nov (monetization round 2; vault: RNG genre "social luck sells", Price Points
 	-- "the moment beats the price"). Id 0 = not created yet (hidden everywhere).
-	{ id = "ServerLuck", productId = 0, price = 99, title = "Server Luck", desc = "2x luck for EVERYONE in this server for 15 minutes", color = Color3.fromRGB(80, 220, 90) },
+	{ id = "ServerLuck", productId = 0, price = 99, title = "Server Luck", desc = "2x luck for EVERYONE in this server, 15 min: Uncommon or better about 30% -> 46% of rolls", color = Color3.fromRGB(80, 220, 90) },
 	{ id = "TurboNow", productId = 0, price = 49, title = "Instant Turbo", desc = "15 minutes of your strongest TURBO, right away", color = Color3.fromRGB(255, 140, 40) },
 	{ id = "CashMedium", productId = 3723657452, price = 59, title = "1H Time Skip", desc = "1 hour of your earnings, right away", color = Color3.fromRGB(60, 180, 90) },
 	{ id = "CashLarge", productId = 3723657672, price = 129, title = "4H Time Skip", desc = "4 hours of your earnings, right away", color = Color3.fromRGB(40, 160, 80) },
@@ -48,7 +48,7 @@ Store.Products = {
 	-- Rewards panel "Skip All": every playtime gift unlocks now (not in the shop list)
 	-- Hub Boosts station (Shared/BoostConfig); hidden from the shop list
 	{ id = "BoostCash", productId = 3723657898, price = 19, title = "2x Cash Boost", desc = "15 minutes of double cash", color = Color3.fromRGB(230, 70, 60), hidden = true },
-	{ id = "BoostLuck", productId = 3723657981, price = 19, title = "2x Luck Boost", desc = "15 minutes of 2x luck on crusher rolls (stacks with the Lucky pass)", color = Color3.fromRGB(60, 190, 90), hidden = true },
+	{ id = "BoostLuck", productId = 3723657981, price = 19, title = "2x Luck Boost", desc = "15 min of 2x luck: Uncommon or better about 30% -> 46% of rolls (stacks with the Lucky pass)", color = Color3.fromRGB(60, 190, 90), hidden = true },
 	{ id = "BoostSuper", productId = 3723658049, price = 29, title = "Super Boost", desc = "15 minutes of 2x cash and 2x luck", color = Color3.fromRGB(160, 80, 235), hidden = true },
 	-- 30 Oct: welcome-back card multipliers (the card shows these Robux prices until
 	-- the productIds are filled in from the Creator Dashboard; 0 = "SOON")

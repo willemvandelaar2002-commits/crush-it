@@ -6,6 +6,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local MarketplaceService = game:GetService("MarketplaceService")
+local GuiService = game:GetService("GuiService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
@@ -487,8 +488,54 @@ Net.event("ShopNotice").OnClientEvent:Connect(function(msg)
 	offlineCard.Visible = paid < 5
 end)
 
+-- Purchase "processing" (5 Nov, vault V2 Player QoL: Purchase Receipts and Purchase
+-- History in UI: "no feedback until the grant" makes "I paid and got nothing" tickets):
+-- between Roblox's purchase window closing with a buy and our grant arriving, a small
+-- pill says the purchase is on its way. The Purchased event (the server granted and
+-- saved) replaces it; after 15 s it explains that it arrives by itself, even after a rejoin.
+-- (its own ScreenGui: the shop HUD is hidden early on, purchases can come from anywhere)
+local processingGui = make("ScreenGui", { Name = "PurchaseProcessing", ResetOnSpawn = false, DisplayOrder = 60, Parent = player.PlayerGui })
+local processing = make("Frame", { Name = "Processing", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0.3, 0),
+	Size = UDim2.fromOffset(380, 46), BackgroundColor3 = Color3.fromRGB(24, 28, 46), BackgroundTransparency = 0.1, Visible = false, ZIndex = 60, Parent = processingGui },
+	{ make("UICorner", { CornerRadius = UDim.new(1, 0) }), make("UIStroke", { Color = GOLD, Thickness = 2.5, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }) })
+local processingIcon = make("ImageLabel", { Image = Icons.Robux, BackgroundTransparency = 1, Position = UDim2.fromOffset(10, 7), Size = UDim2.fromOffset(32, 32),
+	ScaleType = Enum.ScaleType.Fit, ZIndex = 61, Parent = processing })
+local processingText = make("TextLabel", { BackgroundTransparency = 1, Position = UDim2.fromOffset(50, 8), Size = UDim2.new(1, -62, 1, -16), Font = FONT,
+	TextScaled = true, TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 61, Parent = processing }, { stroke(2) })
+Style.phoneFit(processing, { scale = 0.8, width = 0.8 })
+local processingToken = 0
+local function endProcessing()
+	processingToken += 1
+	processing.Visible = false
+end
+local function startProcessing()
+	processingToken += 1
+	local mine = processingToken
+	processingText.Text = "Processing your purchase..."
+	processing.Visible = true
+	task.spawn(function()
+		local started = os.clock()
+		while processingToken == mine do
+			if not GuiService.ReducedMotionEnabled then processingIcon.Rotation = (os.clock() - started) * 220 % 360 end
+			if os.clock() - started > 15 then
+				processingText.Text = "On its way: it arrives by itself, even if you rejoin."
+			end
+			if os.clock() - started > 25 then endProcessing() break end
+			task.wait()
+		end
+		processingIcon.Rotation = 0
+	end)
+end
+MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId: number, _productId: number, isPurchased: boolean)
+	if userId == player.UserId and isPurchased then startProcessing() end
+end)
+MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(who: Player, _passId: number, wasPurchased: boolean)
+	if who == player and wasPurchased then startProcessing() end
+end)
+
 -- Purchase celebration ----------------------------------------------------------
 Net.event("Purchased").OnClientEvent:Connect(function(msg)
+	endProcessing()
 	panel.Visible = false
 	if string.sub(tostring(msg.id), 1, 7) == "Offline" then
 		Style.setOpen(offlineCard, false) -- the welcome-back card was answered

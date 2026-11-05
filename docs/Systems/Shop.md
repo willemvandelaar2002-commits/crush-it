@@ -332,3 +332,14 @@ from OfferConfig, live Robux price (GetProductInfo; id 0 = COMING SOON). Buy = O
 - `ShopOpened` analytics: only known source names (else "Other"), max one per 0.5 s per player.
 - Pass ownership at join: 4 tries with backoff.
 - See [[Vault audit 2026-11-05 code audit V2]].
+
+## 5 Nov: status tags, odds in text, grant check, processing pill
+- server/NameTags: a gold "VIP" (VIP pass) or blue "PLUS" (Roblox Plus) pill above the head, built on the
+  server so everyone sees it; VIP wins. Mirrors Plus to the player attribute `PlusMember` (the chat tag reads it).
+  The chat tags (VipTag.client) stop working when Roblox's platform-integrated chat becomes default (Feb 2027);
+  the head tags stay.
+- Server Luck and 2x Luck Boost texts state the odds: "Uncommon or better about 30% -> 46% of rolls".
+- Shop.canGrant + a startup warning in Output for any product without a grant; an unknown product is refused
+  (the receipt waits) instead of falling through to the cash-pack branch.
+- Purchase processing pill (Shop.client, own ScreenGui): shows when Roblox's window closes with a buy, until the
+  server's Purchased event; after 15 s "On its way: it arrives by itself, even if you rejoin."; gone after 25 s.
