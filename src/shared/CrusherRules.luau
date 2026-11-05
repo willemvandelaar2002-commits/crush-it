@@ -181,6 +181,10 @@ function R.migrate(d, guid)
 	local seen={}
 	for typeId,v in (if type(s.seen)=="table" then s.seen else {}) do if v==true and C.typeById(typeId) then seen[typeId]=true end end
 	s.seen=seen
+	-- 5 Nov: big roll cinematics already watched (Secret / Divine): from then on they can be skipped
+	local big={}
+	for name,v in (if type(s.bigSeen)=="table" then s.bigSeen else {}) do if v==true and type(name)=="string" then big[name]=true end end
+	s.bigSeen=big
 	R.markSeen(s)
 	local claimed,claimedOnce={},{}
 	for _,i in (if type(s.indexClaimed)=="table" then s.indexClaimed else {}) do

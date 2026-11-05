@@ -579,7 +579,10 @@ local function rollShow(p,offers)
 		local odds=RollLook.odds(best.item.type,0,nil,false,0)
 		task.delay(seconds,function()
 			if ctx.rollToken~=token or sessions[p]~=ctx then return end
-			Net.event("BigRoll"):FireAllClients({userId=p.UserId,player=p.DisplayName,rarity=best.name,rank=best.rank,color=best.color,
+			-- 5 Nov (Willem): skippable once you have watched this rarity's cinematic before (saved)
+			local cs=rollData.crushers if type(cs.bigSeen)~="table" then cs.bigSeen={} end
+			local canSkip=cs.bigSeen[best.name]==true cs.bigSeen[best.name]=true
+			Net.event("BigRoll"):FireAllClients({canSkip=canSkip,userId=p.UserId,player=p.DisplayName,rarity=best.name,rank=best.rank,color=best.color,
 				name=def and def.name or best.item.type,type=best.item.type,odds=odds,slot=bestSlot,at=ped.top,machine=st.die:GetPivot().Position,hold=hold,
 				revealAt=workspace:GetServerTimeNow()+hold,aftershock=big.AftershockLuck,aftershockSeconds=big.AftershockSeconds})
 		end)

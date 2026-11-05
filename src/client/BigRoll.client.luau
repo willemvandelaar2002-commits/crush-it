@@ -77,7 +77,9 @@ local function cinematic(msg: any)
 	local rarity: string = msg.rarity
 	local color = colorOf(rarity)
 	local divine = rarity == "Divine"
-	local canSkip = seen[rarity] == true
+	-- 5 Nov (Willem): skippable once you've watched this rarity's cinematic before (the server
+	-- remembers it in your save); the session table also covers older servers
+	local canSkip = msg.canSkip == true or seen[rarity] == true
 	seen[rarity] = true
 	local P = (msg.at :: CFrame).Position
 	local impactIn = math.max(1.6, (msg.revealAt :: number) - now())
