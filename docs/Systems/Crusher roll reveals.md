@@ -13,7 +13,8 @@ Common-only roll correctly. This is the marginal chance of that type; it does
 not include the additional independent modifier probability. Flickering preview
 silhouettes deliberately show no odds, since they are cosmetic weighted samples.
 
-An unseen offer says UNOWNED / BUY TO COLLECT. NEW DISCOVERY appears only after
+An offer whose type is not in your Index yet (`crushers.seen`, every type the save ever had; since 5 Nov,
+before that: not in the inventory) says UNOWNED / BUY TO COLLECT. NEW DISCOVERY appears only after
 the server successfully purchases the first copy of a type. Failed purchases,
 duplicates, rejoin/Sync and rolling alone cannot trigger it. Existing inventory
 protection keeps the last copy, so this needs no new save ledger. Purchase

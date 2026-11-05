@@ -249,6 +249,11 @@ local function goalTick(p,d)
 		s.goal+=1 done+=1
 	end
 end
+-- 5 Nov (Willem): UNOWNED / NEW DISCOVERY mean "not in your Index yet" (every type
+-- the save ever had, crushers.seen), not "not in your inventory right now"
+local function inIndex(s,typeId)
+	return (type(s.seen)=="table" and s.seen[typeId]==true) or RollLook.owns(s.owned,typeId)
+end
 local function send(p,message,result)
 	local d=Data.get(p) local ctx=sessions[p] if not d or not ctx then return end
 	local s=d.crushers
@@ -256,7 +261,7 @@ local function send(p,message,result)
 	-- A first purchase (or spin prize) can make another visible offer of the
 	-- same type known. Keep its badge honest without rebuilding the model.
 	for slot,model in ctx.plot.offerModels or {} do
-		if model.Parent and model:GetAttribute("RevealUnowned") and RollLook.owns(s.owned,model:GetAttribute("RevealType")) then
+		if model.Parent and model:GetAttribute("RevealUnowned") and inIndex(s,model:GetAttribute("RevealType")) then
 			model:SetAttribute("RevealUnowned",false)
 			local card=ctx.plot.stations.Roll.pedestals[slot].card
 			card.rarity.Text=card.rarity.Text:gsub(" · UNOWNED","")
@@ -672,7 +677,7 @@ local function rollShow(p,offers)
 					if not ctx.offers or ctx.offers[slot]~=item then return end -- already bought/replaced during the stagger
 					local ped=st.pedestals[slot] local r=C.rarity(item.rarity)
 					local odds=RollLook.odds(item.type,rollLuck,rollPerks.lucky,first,rollPerks.indexLuck)
-					local unowned=d and not RollLook.owns(d.crushers.owned,item.type)
+					local unowned=d and not inIndex(d.crushers,item.type)
 					local model=displayModel(item.type,ped.top,item) model.Name="OfferCrusher"
 					model:SetAttribute("RevealOwner",p.UserId) model:SetAttribute("RevealRoll",rollId)
 					model:SetAttribute("RevealSlot",slot) model:SetAttribute("RevealAt",workspace:GetServerTimeNow())
@@ -720,7 +725,7 @@ local function action(p,name,args)
 	local ctx=sessions[p] local d=Data.get(p) if not ctx or not d then return false,"Profile is loading." end
 	local cashBefore=d.cash
 	local offer=if name=="Buy" and type(args)=="table" and type(args.slot)=="number" then ctx.offers and ctx.offers[args.slot] else nil
-	local newType=offer and not RollLook.owns(d.crushers.owned,offer.type)
+	local newType=offer and not inIndex(d.crushers,offer.type)
 	local ok,message,result
 	local levelBefore=Progression.level(d) local baysBefore=C.bayCapacity(levelBefore)
 	-- coating: the crusher chosen on the coating screen (args.item), or the held one (old board)
