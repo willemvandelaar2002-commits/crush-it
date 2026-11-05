@@ -590,20 +590,22 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		make("UIScale", { Scale = CARD_W / 240 }, body)
 		make("ImageLabel", { Name = "Background", Image = if timeSkip then PORTRAIT.TimeSkip else PORTRAIT.Cash, Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 8 }, body)
-		local t = label(body, product.title, UDim2.fromOffset(16, 20), UDim2.fromOffset(208, 32), 3, 10)
+		-- 5 Nov (Willem: "too much of the background visible"): bigger icon and text,
+		-- the empty middle of the card filled
+		local t = label(body, product.title, UDim2.fromOffset(14, 16), UDim2.fromOffset(212, 36), 3, 10)
 		Style.bold(t, 3)
-		local art = icon(body, ShopArt.CashPacks[id] or Icons.Cash, UDim2.fromOffset(52, 60), UDim2.fromOffset(136, 136), 10)
+		local art = icon(body, ShopArt.CashPacks[id] or Icons.Cash, UDim2.fromOffset(30, 50), UDim2.fromOffset(180, 166), 10)
 		art.Name = "Art"
 		bob(art)
-		local amount = label(body, "", UDim2.fromOffset(16, 202), UDim2.fromOffset(208, 32), 3.5, 10)
+		local amount = label(body, "", UDim2.fromOffset(14, 212), UDim2.fromOffset(212, 38), 3.5, 10)
 		amount.Name = "Amount"
 		amount.TextColor3 = C(255, 240, 110)
 		local minutes = Store.CashPackMinutes[id] or 0
 		local span = if minutes >= 60 and minutes % 60 == 0 then (minutes // 60) .. (if minutes == 60 then " hour" else " hours") else minutes .. " min"
 		-- honest wording: cash equal to that much of your current earnings (no timers move)
-		local note = label(body, "Cash = " .. span .. " of earnings", UDim2.fromOffset(16, 236), UDim2.fromOffset(208, 20), 2, 10)
+		local note = label(body, "Cash = " .. span .. " of earnings", UDim2.fromOffset(16, 249), UDim2.fromOffset(208, 20), 2, 10)
 		note.TextColor3 = C(235, 244, 255)
-		local b = bigButton(body, "", UDim2.fromOffset(18, 266), UDim2.fromOffset(204, 40), nil, 11)
+		local b = bigButton(body, "", UDim2.fromOffset(16, 272), UDim2.fromOffset(208, 40), nil, 11)
 		b.Activated:Connect(function() onBuy(b) end)
 		return b, amount
 	end
