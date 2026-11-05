@@ -8,6 +8,10 @@
 -- the FEEDBACK button on the Codes tab of Rewards opens it again any time.
 return {
 	AskAfterMinutes = 10,
+	-- 6 Nov (Willem: 59% likes): after LOVE IT, one friendly page asks for a 👍 on the game
+	-- page. No reward (vault Community Building: don't reward likes; a reminder is fine),
+	-- only to players who just said they love it. Logged as FeedbackLikeAsk.
+	LikeAsk = { Title = "Yay, thank you! 😍", Text = "Could you give Crush It a 👍 LIKE on the game page? It helps new players find the game!", Button = "SURE!" },
 	Ratings = {
 		{ value = 3, emoji = "😍", label = "LOVE IT", key = "LoveIt" },
 		{ value = 2, emoji = "🙂", label = "IT'S OK", key = "ItsOk" },

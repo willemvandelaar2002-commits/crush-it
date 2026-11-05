@@ -53,13 +53,21 @@ local close, _ = button(panel, "X", UDim2.new(1, -78, 0, 12), UDim2.fromOffset(6
 local page1 = make("Frame", { Position = UDim2.fromOffset(20, 90), Size = UDim2.new(1, -40, 1, -110), BackgroundTransparency = 1, ZIndex = 6 }, panel)
 -- page 2: wishes
 local page2 = make("Frame", { Position = UDim2.fromOffset(20, 84), Size = UDim2.new(1, -40, 1, -104), BackgroundTransparency = 1, Visible = false, ZIndex = 6 }, panel)
+-- page 3 (6 Nov): after LOVE IT, ask for a like (no reward)
+local page3 = make("Frame", { Position = UDim2.fromOffset(20, 84), Size = UDim2.new(1, -40, 1, -104), BackgroundTransparency = 1, Visible = false, ZIndex = 6 }, panel)
+local thumb = make("TextLabel", { Text = "👍", Position = UDim2.new(0.5, -60, 0, 0), Size = UDim2.fromOffset(120, 110), BackgroundTransparency = 1,
+	TextScaled = true, Font = Enum.Font.GothamBold, ZIndex = 9 }, page3)
+local _ = thumb
+words(page3, F.LikeAsk.Text, UDim2.fromOffset(10, 112), UDim2.new(1, -20, 0, 66), 28)
+local sure, _s = button(page3, F.LikeAsk.Button, UDim2.new(0.5, -90, 1, -58), UDim2.fromOffset(180, 54), C(60, 190, 80), 30)
 local thanks = words(panel, "", UDim2.fromOffset(30, H - 44), UDim2.new(1, -60, 0, 30), 24)
 thanks.TextColor3 = C(150, 255, 140)
 
 local function showPage(n: number)
 	page1.Visible = n == 1
 	page2.Visible = n == 2
-	title.Text = if n == 1 then "How do you like Crush It so far?" else "What would make it better?"
+	page3.Visible = n == 3
+	title.Text = if n == 1 then "How do you like Crush It so far?" elseif n == 3 then F.LikeAsk.Title else "What would make it better?"
 	thanks.Text = if n == 2 then "Thanks! Tap as many as you like." else ""
 end
 
@@ -74,7 +82,12 @@ for i, r in F.Ratings do
 	t.ZIndex = 9
 	b.Activated:Connect(function()
 		remote:FireServer("Rating", r.value)
-		showPage(2)
+		if r.value == 3 then
+			remote:FireServer("LikeAsk")
+			showPage(3)
+		else
+			showPage(2)
+		end
 	end)
 end
 
@@ -91,6 +104,8 @@ for i, w in F.Wishes do
 	end)
 end
 local done, _d = button(page2, "DONE", UDim2.new(0.5, -90, 0, 3 * 66 + 2), UDim2.fromOffset(180, 52), C(60, 190, 80), 30)
+
+sure.Activated:Connect(function() showPage(2) end)
 
 local function open()
 	showPage(1)
