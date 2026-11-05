@@ -51,15 +51,16 @@ end
 
 -- A tall see-through column of light over the pedestal, seen from across the map.
 local function pillar(cf: CFrame, color: Color3, seconds: number)
-	local base = cf.Position
+	-- 5 Nov (Willem: it covered the crusher): the column starts above the crusher, not on the pedestal
+	local base = cf.Position + Vector3.new(0, 14, 0)
 	local model = Instance.new("Model") model.Name = "BigRollPillar"
 	local outer = part("Glow", Vector3.new(260, 7, 7), CFrame.new(base + Vector3.new(0, 130, 0)) * CFrame.Angles(0, 0, math.pi / 2), color)
-	outer.Shape = Enum.PartType.Cylinder outer.Transparency = 0.6 outer.Parent = model
+	outer.Shape = Enum.PartType.Cylinder outer.Transparency = 0.72 outer.Parent = model
 	local core = part("Core", Vector3.new(260, 2.4, 2.4), outer.CFrame, color:Lerp(WHITE, 0.6))
-	core.Shape = Enum.PartType.Cylinder core.Transparency = 0.35 core.Parent = model
+	core.Shape = Enum.PartType.Cylinder core.Transparency = 0.5 core.Parent = model
 	model.Parent = workspace
 	if not GuiService.ReducedMotionEnabled then
-		TweenService:Create(outer, TweenInfo.new(1.1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Transparency = 0.8, Size = Vector3.new(260, 9, 9) }):Play()
+		TweenService:Create(outer, TweenInfo.new(1.1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Transparency = 0.88, Size = Vector3.new(260, 9, 9) }):Play()
 	end
 	task.delay(seconds - 1.5, function()
 		for _, p in { outer, core } do TweenService:Create(p, TweenInfo.new(1.5), { Transparency = 1 }):Play() end
