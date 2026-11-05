@@ -353,3 +353,6 @@ No "was/now" sale label: the old prices were live for under a week (vault Limite
 must have been the live price for 30+ days; Roblox: no permanent "sale").
 Quests (QuestConfig): "Start FRENZY 3 times!" (daily) and "Grab 50 golden toys!" (weekly) replace the Daily Spin
 quests; QuestRules keeps frenzies/goldenToys/turbos/gifts (they were wiped on load before).
+- 5 Nov: red "LOWER PRICE!" ribbon (ShopPanel `lowerPrice`, `Store.PriceDrop`) on the four passes and the Starter Pack
+  whose price Willem cut, hidden once owned, gone by itself on 13 Nov 00:00 Amsterdam. No "was" price shown.
+  VIP went live at R$199 (new, so no ribbon).

@@ -387,3 +387,4 @@
 - 2026-11-05: Tutorial SKIP from step 2 (Willem): confirm card on his art, server finishes the steps and pays all their rewards; TutorialSkipped analytics. Funnel steps 3-9 include skippers.
 - 2026-11-05: VIP/PLUS tags above the head (vault: status pass visible to all; chat prefixes end Feb 2027), luck odds in Server Luck/Luck Boost text, startup grant check (unknown products refused, not paid as cash), purchase processing pill.
 - 2026-11-05: Live ids for Server Luck, Instant Turbo, 12H/24H Time Skip and the VIP pass; Willem lowered pass and Starter Pack prices (no fake "was" sale label, see Systems/Shop). Quests: FRENZY and golden toys replace the Daily Spin chores; fixed quest stats wiping frenzies/goldenToys/turbos/gifts on load.
+- 2026-11-05: "LOWER PRICE!" ribbon on the 4 passes and the Starter Pack Willem cut, until 13 Nov (real end, no was-price). VIP live at R$199.
