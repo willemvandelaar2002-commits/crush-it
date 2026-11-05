@@ -57,11 +57,19 @@ function B.build(origin,id,source: Model?,scale: number?)
 	if metadata.kit=="motion" then
 		rig=B.rig(model,metadata,fit)
 		for name,alpha in metadata.transparent or {} do local p=component(model,name) if p and p:IsA("BasePart") then p.Transparency=alpha end end
-		for _,name in metadata.contact do for _,p in parts(component(model,name)) do
+		for _,name in metadata.contact or {} do for _,p in parts(component(model,name)) do
 			for _,x in {-1,1} do for _,y in {-1,1} do for _,z in {-1,1} do
 				lowest=math.min(lowest,origin:PointToObjectSpace(p.CFrame:PointToWorldSpace(p.Size*Vector3.new(x,y,z)/2)).Y)
 			end end end
 		end end
+	end
+	-- 5 Nov (new Secret/Divine pack): the scrap sits at the model's own input point
+	-- (between the rollers, in the jaws, floating in the Celestial orbit) at a set size
+	if metadata.inputCenter and metadata.inputSize then
+		local s=metadata.inputSize*fit
+		local at=placed:PointToWorldSpace(metadata.inputCenter*fit-Vector3.new(0,s/2,0))
+		return {model=model,groups=groups,frame=frame,special=id,origin=placed,rig=rig,
+			base=CFrame.new(at)*origin.Rotation,clearance=s,bedWidth=s*1.1,strikes=0}
 	end
 	return {model=model,groups=groups,frame=frame,special=id,origin=placed,rig=rig,
 		base=origin*CFrame.new(0,bedY,0),clearance=lowest-bedY,bedWidth=6*fit,strikes=0}
@@ -73,6 +81,7 @@ end
 local CURVES={ -- (frame-1)/71 -> amount, from the pack's build.py
 	press={{0,0},{15/71,0},{26/71,.25},{33/71,1},{39/71,1},{56/71,0},{1,0}},
 	wind={{0,0},{11/71,.18},{24/71,.76},{33/71,1},{43/71,1},{62/71,0},{1,0}},
+	spin={{0,0},{1,1}}, -- 5 Nov: rollers / rings turn one full circle per strike (ends where it started)
 }
 local function amount(curve,t)
 	local keys=CURVES[curve] or CURVES.press

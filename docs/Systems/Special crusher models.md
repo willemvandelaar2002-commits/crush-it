@@ -122,3 +122,23 @@ the templates have `BayFrontYaw = 0` (not pi) so they face the bay front like th
 others. The cm-scale imported originals were moved to `ServerStorage.ChaseCrusherImports`
 (out of the world). Checked in Studio: all eight build, face the front in a bay,
 and Ram/PistonShaft press and return.
+
+## 5 Nov: new Secret and Divine models (CrushIt-Secret-Divine-Crushers1)
+Willem's new eight replace the 29 Oct ones (same ids, odds, rarities, yields, saves, Index icons).
+- Templates: `ServerStorage.SpecialCrusherMeshes.<Id>` = Willem's Studio imports (cm scale, ImportRoot inside,
+  anchored, no collide/touch/query, `BayFrontYaw = pi`: these imports face -Z local, the bay needs the half turn).
+  The 29 Oct templates are in `ServerStorage.ChaseCrusherBackups_Oct29`. Place-only: **Willem must save/publish.**
+- Metadata `shared/ChaseCrusherAssets.luau` is generated (assets/special-crushers-v2: the pack's manifest + the
+  Studio measurement of every part): units = Blender units, axes = the import's own, studio = (-bx, bz, by).
+  Part centers/sizes from Studio, pivots from each MeshPart's PivotOffset (they match the manifest).
+- Motion (SpecialCrushers.rig): rollers, Gravity_Core and Orbit_Indigo turn one full circle per strike (new
+  "spin" curve); jaws, crescents, rams and prism stages "move"; claws, hammer arm and wings "rotate" about their
+  pivots (press curve, contact on the shared hit time); Orbit_Gold tilts 28 degrees (wind curve, axis = its
+  base Z turn applied to Y).
+- Scrap: `inputCenter` / `inputSize` place the input where each model expects it (between the rollers, in the
+  jaws, floating in the Celestial orbit) instead of on the bed; older templates are unchanged.
+- Checked in Play (Plot1, all eight in bays 1-8): facing the walkway, embedded colours loaded, fit 1.85 (8.6 wide),
+  every moving part moves by its manifest amount (x fit) and towards the scrap, frames still; roll silhouette and
+  pedestal offer use the new model; SpecialCrushers, CrusherRules and RollPresentation specs pass; no errors.
+  Not done: the pack's optional effect pulses (tooth flash, impact ring...), phone check.
+
