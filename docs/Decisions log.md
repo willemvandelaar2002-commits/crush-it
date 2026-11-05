@@ -389,3 +389,4 @@
 - 2026-11-05: Live ids for Server Luck, Instant Turbo, 12H/24H Time Skip and the VIP pass; Willem lowered pass and Starter Pack prices (no fake "was" sale label, see Systems/Shop). Quests: FRENZY and golden toys replace the Daily Spin chores; fixed quest stats wiping frenzies/goldenToys/turbos/gifts on load.
 - 2026-11-05: "LOWER PRICE!" ribbon on the 4 passes and the Starter Pack Willem cut, until 13 Nov (real end, no was-price). VIP live at R$199.
 - 2026-11-05: Shop is one scrolling page (tabs jump to sections); Cash packs (Pile/Stack/Vault) and Time Skips (12H/24H) as two rows (Willem: keep both).
+- 2026-11-05: Studio-only chat command /skip (finish the tutorial, rewards paid) and /skip goals (also jump past the main goals).
