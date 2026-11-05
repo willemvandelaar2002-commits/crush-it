@@ -104,13 +104,20 @@ function Card.build(parent: Instance, o: any): Frame
 	local corner = view:FindFirstChild("Corner") :: UICorner? if corner then corner.CornerRadius = UDim.new(0, 12) end
 	make("UITextSizeConstraint", { MaxTextSize = 26 }, view)
 	make("UIPadding", { PaddingTop = UDim.new(0, 5), PaddingBottom = UDim.new(0, 5) }, view)
-	view.Activated:Connect(o.open)
+	-- 5 Nov (Willem: "the prices should be there as well"): with o.buyState the button
+	-- shows the live Robux price and buys; the tiles and the crusher still open the details
+	view.Activated:Connect(function() if o.buy then o.buy(view) else o.open() end end)
 	o.onRefresh(function()
 		local owned = o.owned()
 		tagText.Text = if owned then "OWNED" else "ONE-TIME PACK"
 		tag.BackgroundColor3 = if owned then C(40, 140, 70) else INK
 		view.Text = if owned then "OWNED" else "VIEW PACK"
 		Style.setButtonColor(view, if owned then C(120, 124, 140) else Style.GREEN)
+		if o.buyState and not owned then
+			local text, color = o.buyState()
+			view.Text = text
+			Style.setButtonColor(view, color)
+		end
 		local a, n = o.cashText()
 		cashName.Text = a cashPill.Text = n
 	end)

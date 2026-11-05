@@ -89,9 +89,16 @@ function Card.build(parent: Instance, o: any): Frame
 	local find = button(body, "FindOnPlot", "FIND ON PLOT", UDim2.fromOffset(310, 180), UDim2.fromOffset(186, 46), Style.GREEN)
 	find.Activated:Connect(o.find)
 	local details = button(body, "Details", "DETAILS", UDim2.fromOffset(506, 180), UDim2.fromOffset(128, 46), C(60, 196, 255))
-	details.Activated:Connect(o.details)
+	-- 5 Nov: with o.buyState the second button shows the live price and buys (the crusher
+	-- itself still opens the details)
+	details.Activated:Connect(function() if o.buy then o.buy(details) else o.details() end end)
 	o.onRefresh(function()
 		local owned = o.owned()
+		if o.buyState then
+			local text, color = o.buyState()
+			details.Text = text
+			Style.setButtonColor(details, color)
+		end
 		tagText.Text = if owned then "OWNED" else o.tag
 		tag.BackgroundColor3 = if owned then C(40, 140, 70) else INK
 		tagStroke.Color = if owned then C(140, 255, 160) else C(255, 228, 117)
