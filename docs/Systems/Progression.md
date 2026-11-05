@@ -122,3 +122,9 @@ Goal: fewer players leaving before the first collect (funnel step 2, 12.5% churn
 - Gift chip: 48 px tap pad; phone cash/friend boost moved below it.
 - Measured at 750x381 (Studio phone view): HUD text all >= 12 px, no overlaps. Panels are the desktop menus shrunk (scale 0.41-0.98): Shop and Rewards text down to 8 px, tabs/close 20-26 px. Next: real phone layouts for the panels (vault: Case Study - Phone UI Overhaul).
 - 5 Nov (Willem: "it takes from other bays"): FILL ROW only uses crushers from the backpack or already in that row; crushers in other rows stay put; crushers already in the right place keep their bay; the picker counts only usable crushers. Spec: RebirthMerge.spec.
+
+## Rebirth panel look (5 Nov)
+client/Rebirth.client.luau draws the panel on Willem's art (ART.Background 99505950209721, 1448x1086) with the layout
+fractions from the art pack (L table). Text, the gold progress bar and the green/red buttons (starter offer sprites
+106307684676239 / 86950187561147) are live UI on top. The reset/keep lists match CrusherRules "Rebirth": update both
+together if the rules change.
