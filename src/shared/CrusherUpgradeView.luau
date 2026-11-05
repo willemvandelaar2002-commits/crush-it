@@ -17,9 +17,9 @@ function V.purchase(cash,cost,maxed,hint,success)
 end
 
 -- 31 Oct: "1 in N" for Legendary or better (the Uncommon+ % flattens out late)
-local function legendaryOdds(level,lucky)
+local function topOdds(level,lucky,rank)
 	local weights=Rules.weights(level,lucky) local total,top=0,0
-	for i,w in weights do total+=w if C.Rarities[i].rank>=4 then top+=w end end
+	for i,w in weights do total+=w if C.Rarities[i].rank>=rank then top+=w end end
 	return math.max(1,math.floor(total/top+.5))
 end
 local function uncommonChance(level,lucky)
@@ -57,7 +57,12 @@ function V.board(d,id,perks)
 		effect=if maxed then string.format("Scrap x%.1f",1+C.YieldPerLevel*lv) else string.format("x%.1f > x%.1f scrap",1+C.YieldPerLevel*lv,1+C.YieldPerLevel*n)
 	elseif id=="Luck" then
 		local lucky=perks and perks.lucky
-		effect=if maxed then string.format("Legendary+ 1 in %d",legendaryOdds(lv,lucky)) else string.format("Legendary+ 1 in %d > 1 in %d",legendaryOdds(lv,lucky),legendaryOdds(n,lucky))
+		-- 5 Nov (Willem): from C.LuckBoardSecretFrom the Legendary+ odds barely move per level
+		-- ("1 in 10 > 1 in 10"), so the board shows Secret+ odds, which still change clearly
+		local secret=lv>=C.LuckBoardSecretFrom
+		local name=if secret then "Secret+" else "Legendary+"
+		local rank=if secret then 5 else 4
+		effect=if maxed then string.format("%s 1 in %d",name,topOdds(lv,lucky,rank)) else string.format("%s 1 in %d > 1 in %d",name,topOdds(lv,lucky,rank),topOdds(n,lucky,rank))
 	else
 		effect=if maxed then C.pedestals(lv).." choices / roll" else C.pedestals(lv).." > "..C.pedestals(n).." choices / roll"
 	end

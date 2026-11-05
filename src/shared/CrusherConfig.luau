@@ -508,6 +508,7 @@ function C.modifier(name)
 	for _,v in C.CraftModifiers do if v.name==name then return v end end
 end
 -- Luck multiplier on a rarity's roll weight (rank 0 = Common stays 1)
+C.LuckBoardSecretFrom = 40 -- 5 Nov: the Luck board shows Secret+ odds from this level (Legendary+ before)
 function C.luckFactor(luck, rank) return (1 + C.LuckPerLevel * luck * rank) * C.LuckGrowth ^ (luck * rank) end
 -- seconds to place the next toy in a bay (Strike Speed shortens it, to PlacingFloor)
 function C.inputDelay(speedLevel) return C.InputDelay * math.max(C.PlacingFloor, C.SpeedFactor ^ (speedLevel or 0)) end

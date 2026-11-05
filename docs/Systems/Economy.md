@@ -34,3 +34,5 @@ Ship, Statue, Planet.
 
 ## 2 Nov: economy events (Creator Dashboard > Analytics > Economy)
 Kit/Analytics `cash(player, sku, tx, before, after)` logs every cash change with its reason, summed per player and sent once a minute (and on leave); `cashBalance` (every second) logs whatever no call explained as `Passive` (gain) or `Other` (loss). Currency "Cash". Sources: SellScrap, AutoSell, GoalReward (Onboarding), Gift / GiftBonus / DailySpin / OfflineCash / TimeSkip / Code (TimedReward), IndexReward, FactoryEvent, QuestShop, cash packs and OfflineMultiplier / OfferPack (IAP), Passive. Sinks: UnlockBay, BuyCrusher (Shop), FactoryUpgrade, LevelUp, PlotUpgrade, Coating, Fusion, RollUpgrade.
+
+5 Nov: the Luck board shows Legendary+ odds up to Luck 39 and Secret+ odds from Luck 40 (C.LuckBoardSecretFrom), where Legendary+ barely moves per level.
