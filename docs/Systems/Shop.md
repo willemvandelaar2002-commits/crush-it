@@ -361,3 +361,8 @@ quests; QuestRules keeps frenzies/goldenToys/turbos/gifts (they were wiped on lo
   -> Cash. The tabs (FEATURED, CRATES, BOOSTS, PASSES, CASH) jump to their section and light up for the section in
   view; the shop opens at the top. Cash: "Cash Pile / Cash Stack / Cash Vault" (10 min / 1 h / 4 h of earnings, the
   Roblox names) and a "Time Skips" row (12H, 24H; vault art until Willem makes clock art).
+- 5 Nov: banners show live prices: Starter Pack and Prism Mech buttons show "R$ n" and buy directly (tiles/crusher
+  still open details); the Factory Crate has a price button under the chest that opens its details with all the
+  odds first (paid random item: never bought straight from the banner). Shop buttons are studded like Willem's
+  reference shop (`Style.buttonStuds`: stud colour map tinted with the button colour; a caption child keeps the
+  text above the studs; RobuxIcons skips the invisible button text).

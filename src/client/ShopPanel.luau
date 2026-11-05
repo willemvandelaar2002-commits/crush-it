@@ -85,6 +85,7 @@ end
 local function bigButton(parent: Instance, text: string, pos: UDim2, size: UDim2, color: Color3?, z: number?): TextButton
 	local b = make("TextButton", { Text = "", Position = pos, Size = size, ZIndex = z or 4 }, parent)
 	Style.button(b, color or Style.GREEN)
+	Style.buttonStuds(b, color or Style.GREEN) -- 5 Nov: studded like the reference shop
 	local l = label(b, text, UDim2.fromScale(0.06, 0.14), UDim2.fromScale(0.88, 0.72), 3, (z or 4) + 1)
 	l.Name = "Caption"
 	return b
@@ -462,6 +463,8 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 			cashIcon = Icons.Cash, cashText = cashText,
 			boostIcon = (Icons :: any)[boost.icon] or Icons.DoubleCash, boostTitle = boost.title, boostMinutes = starter.boost.minutes,
 			owned = function() return owns(starter.id) end,
+			buyState = function() local t, c = offerButtonState(starter.product, starter.id, false) return t, c end,
+			buy = function(b) promptOffer(starter.product, starter.id, false, b) end,
 			onRefresh = function(f) table.insert(refreshers, f) f() end,
 		})
 		if not owns(starter.id) then lowerPrice(starterCard, "StarterPack", 1.4) end
@@ -483,6 +486,8 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 				return not detail.Visible and not (reveal and reveal.Visible)
 			end,
 			open = function() openDetail(crateDetail) end,
+			buyState = function() local t, c = offerButtonState(crate.bundles[1].product, nil, true) return t, c end,
+			onRefresh = function(f) table.insert(refreshers, f) f() end,
 		})
 	end
 	local function showroomBanner(page: ScrollingFrame, order: number)
@@ -500,6 +505,8 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 				Style.setOpen(panel, false)
 			end,
 			details = function() openDetail(showroomDetail) end,
+			buyState = function() local t, c = offerButtonState(show.product, show.id, false) return t, c end,
+			buy = function(b) promptOffer(show.product, show.id, false, b) end,
 			owned = function() return owns(show.id) end,
 			onRefresh = function(f) table.insert(refreshers, f) f() end,
 		})

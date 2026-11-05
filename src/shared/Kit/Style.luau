@@ -373,10 +373,52 @@ function Style.button(btn: TextButton, color: Color3?)
 	Style.feedback(btn)
 end
 
+-- 5 Nov (Willem's reference shop): a faint stud texture on a button, like the
+-- studded price buttons there. Sits on the button under its caption child.
+-- A TextButton that draws its own text gets a caption child above the studs (the
+-- button's text goes invisible and the caption follows it), so the studs never dim it.
+function Style.buttonStuds(btn: GuiObject, color: Color3?)
+	-- the stud image is a colour map: tinted with the button colour and mostly opaque it
+	-- reads as the button with stud outlines (like the shop header)
+	local st = Style.studsImage(btn, 26, 0.4)
+	st.Name = "ButtonStuds"
+	st.ImageColor3 = color or GREEN
+	st.ZIndex = btn.ZIndex
+	local corner = btn:FindFirstChild("Corner") :: UICorner?
+	local c = st:FindFirstChild("Corner") :: UICorner?
+	if corner and c then c.CornerRadius = corner.CornerRadius end
+	if btn:IsA("TextButton") and not btn:FindFirstChild("Caption") then
+		local b = btn :: TextButton
+		local cap = Instance.new("TextLabel")
+		cap.Name = "StudsCaption"
+		cap.BackgroundTransparency = 1
+		cap.Size = UDim2.fromScale(1, 1)
+		cap.ZIndex = b.ZIndex + 1
+		cap.TextScaled = b.TextScaled
+		cap.TextSize = b.TextSize
+		cap.RichText = b.RichText
+		Style.text(cap, 2)
+		cap.Font = b.Font
+		cap.TextColor3 = b.TextColor3
+		cap.Text = b.Text
+		for _, k in b:GetChildren() do
+			if k:IsA("UITextSizeConstraint") or k:IsA("UIPadding") then k:Clone().Parent = cap end
+		end
+		cap.Parent = b
+		b.TextTransparency = 1
+		local outline = b:FindFirstChild("TextOutline") :: UIStroke?
+		if outline then outline.Enabled = false end
+		b:GetPropertyChangedSignal("Text"):Connect(function() cap.Text = b.Text end)
+	end
+	return st
+end
+
 -- Recolour a button made with Style.button.
 function Style.setButtonColor(btn: TextButton, c: Color3)
 	local fill = btn:FindFirstChild("Fill") :: UIGradient?
 	local outline = btn:FindFirstChild("Outline") :: UIStroke?
+	local studs = btn:FindFirstChild("ButtonStuds") :: ImageLabel?
+	if studs then studs.ImageColor3 = c end
 	if fill then
 		fill.Color = buttonFill(c)
 	end

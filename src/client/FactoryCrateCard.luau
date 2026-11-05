@@ -101,8 +101,29 @@ function Card.build(parent: Instance, o: any): Frame
 	Style.floatArt(holder, { gate = o.gate, enabled = o.enabled, bob = 4.5, tilt = 3, period = 3.4 })
 	Style.feedback(chest)
 	chest.Activated:Connect(o.open)
-	local title = text(body, "Title", string.upper(o.title), UDim2.fromOffset(92, 246), UDim2.fromOffset(206, 30), 13, 28)
+	local title = text(body, "Title", string.upper(o.title), UDim2.fromOffset(92, if o.buyState then 24 else 246), UDim2.fromOffset(206, 30), 13, 28)
 	Style.bold(title, 3)
+	-- 5 Nov (Willem: prices visible on the banners): the crate's live price under the chest.
+	-- A crate is a paid random item, so this opens the details with ALL the odds and the
+	-- BUY button there (vault: full odds shown before purchase), it never buys directly.
+	if o.buyState then
+		local edge = make("Frame", { Name = "PriceEdge", Position = UDim2.fromOffset(110, 234), Size = UDim2.fromOffset(150, 44),
+			BackgroundColor3 = INK, BorderSizePixel = 0, ZIndex = 15 }, body)
+		make("UICorner", { CornerRadius = UDim.new(0, 12) }, edge)
+		local price = make("TextButton", { Name = "Price", Text = "", TextScaled = true, Position = UDim2.fromOffset(110, 228),
+			Size = UDim2.fromOffset(150, 44), ZIndex = 16 }, body)
+		Style.button(price)
+		local corner = price:FindFirstChild("Corner") :: UICorner? if corner then corner.CornerRadius = UDim.new(0, 12) end
+		Style.buttonStuds(price)
+		make("UITextSizeConstraint", { MaxTextSize = 26 }, price)
+		make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) }, price)
+		price.Activated:Connect(function() Style.click() o.open() end)
+		o.onRefresh(function()
+			local t, color = o.buyState()
+			price.Text = t
+			Style.setButtonColor(price, color)
+		end)
+	end
 	-- rewards: right side, inside the backplate's safe area (x 6-94 %, y 15-84 %)
 	local heading = text(body, "PreviewHeading", "SOME OF WHAT'S INSIDE", UDim2.fromOffset(318, 50), UDim2.fromOffset(418, 32), 13, 28)
 	heading.TextColor3 = C(255, 226, 80)
