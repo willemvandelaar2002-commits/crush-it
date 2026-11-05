@@ -18,13 +18,13 @@ Store.Passes = {
 	-- (2041790315) and Offline Earnings (2039938725) passes are not used.
 	-- 3 Nov (vault audit, "see exactly what you get"): the shop card said "Auto Crush:
 	-- crushes for you while AFK", but crushers always work; it now says what it does.
-	{ perk = "AutoCrush", gamePassId = 2060699266, price = 199, title = "Production Boost", desc = "+25% damage for all your crushers, forever", color = Color3.fromRGB(230, 80, 70) },
-	{ perk = "DoubleCash", gamePassId = 2039584674, price = 249, title = "2x Cash", desc = "Double cash from every crush, forever", color = Color3.fromRGB(80, 200, 110) },
-	{ perk = "Lucky", gamePassId = 2041580327, price = 149, title = "Lucky", desc = "2x luck on crusher rolls: Uncommon or better about 30% -> 46% of rolls", color = Color3.fromRGB(255, 200, 50) },
-	{ perk = "AutoCollect", gamePassId = 2057934074, price = 99, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
+	{ perk = "AutoCrush", gamePassId = 2060699266, price = 79, title = "Production Boost", desc = "+25% damage for all your crushers, forever", color = Color3.fromRGB(230, 80, 70) },
+	{ perk = "DoubleCash", gamePassId = 2039584674, price = 59, title = "2x Cash", desc = "Double cash from every crush, forever", color = Color3.fromRGB(80, 200, 110) },
+	{ perk = "Lucky", gamePassId = 2041580327, price = 99, title = "Lucky", desc = "2x luck on crusher rolls: Uncommon or better about 30% -> 46% of rolls", color = Color3.fromRGB(255, 200, 50) },
+	{ perk = "AutoCollect", gamePassId = 2057934074, price = 69, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
 	-- 4 Nov (monetization round 2, vault: Price Points "the 299-599 rung was empty"; Willem):
 	-- VIP. Id 0 until Willem creates the pass (hidden in the shop until then).
-	{ perk = "VIP", gamePassId = 0, price = 399, title = "VIP", desc = "x1.5 cash forever, offline cash up to 12 h (not 6), a gold VIP tag above your head and in chat", color = Color3.fromRGB(255, 200, 40) },
+	{ perk = "VIP", gamePassId = 2072630333, price = 399, title = "VIP", desc = "x1.5 cash forever, offline cash up to 12 h (not 6), a gold VIP tag above your head and in chat", color = Color3.fromRGB(255, 200, 40) },
 	-- (30 Oct: the Offline Earnings pass is gone: offline cash is free for everyone,
 	-- with paid 2x / 5x boosts on the welcome-back card, see Store.Offline)
 } :: { Pass }
@@ -33,15 +33,15 @@ Store.Products = {
 	{ id = "CashSmall", productId = 3723657331, price = 19, title = "10m Time Skip", desc = "10 minutes of your earnings, right away", color = Color3.fromRGB(80, 200, 110) },
 	-- 4 Nov (monetization round 2; vault: RNG genre "social luck sells", Price Points
 	-- "the moment beats the price"). Id 0 = not created yet (hidden everywhere).
-	{ id = "ServerLuck", productId = 0, price = 99, title = "Server Luck", desc = "2x luck for EVERYONE in this server, 15 min: Uncommon or better about 30% -> 46% of rolls", color = Color3.fromRGB(80, 220, 90) },
-	{ id = "TurboNow", productId = 0, price = 49, title = "Instant Turbo", desc = "15 minutes of your strongest TURBO, right away", color = Color3.fromRGB(255, 140, 40) },
+	{ id = "ServerLuck", productId = 3728462569, price = 79, title = "Server Luck", desc = "2x luck for EVERYONE in this server, 15 min: Uncommon or better about 30% -> 46% of rolls", color = Color3.fromRGB(80, 220, 90) },
+	{ id = "TurboNow", productId = 3728462615, price = 29, title = "Instant Turbo", desc = "15 minutes of your strongest TURBO, right away", color = Color3.fromRGB(255, 140, 40) },
 	{ id = "CashMedium", productId = 3723657452, price = 59, title = "1H Time Skip", desc = "1 hour of your earnings, right away", color = Color3.fromRGB(60, 180, 90) },
 	{ id = "CashLarge", productId = 3723657672, price = 129, title = "4H Time Skip", desc = "4 hours of your earnings, right away", color = Color3.fromRGB(40, 160, 80) },
 	-- 5 Nov (Willem's references: a time-skip ladder up to 24 h with the cash amount on
 	-- every card; vault: 3-5 rungs, value per Robux rising: 0.5 / 1.0 / 1.9 / 2.4 / 2.9 min
 	-- per Robux). Id 0 until created (hidden until then).
-	{ id = "CashHuge", productId = 0, price = 299, title = "12H Time Skip", desc = "12 hours of your earnings, right away", color = Color3.fromRGB(40, 150, 120) },
-	{ id = "CashMega", productId = 0, price = 499, title = "24H Time Skip", desc = "24 hours of your earnings, right away", color = Color3.fromRGB(230, 170, 30) },
+	{ id = "CashHuge", productId = 3728462797, price = 299, title = "12H Time Skip", desc = "12 hours of your earnings, right away", color = Color3.fromRGB(40, 150, 120) },
+	{ id = "CashMega", productId = 3728462818, price = 399, title = "24H Time Skip", desc = "24 hours of your earnings, right away", color = Color3.fromRGB(230, 170, 30) },
 	-- 30 Oct: no longer sold (Willem); kept hidden for old code paths
 	{ id = "FinishSmelt", productId = 0, price = 19, title = "Finish Now", desc = "Your smelter finishes all its scrap at once", color = Color3.fromRGB(255, 140, 40), hidden = true },
 	{ id = "GoldenRush", productId = 0, price = 49, title = "Golden Rush", desc = "Your next 10 objects are Golden", color = Color3.fromRGB(255, 200, 50), hidden = true },
@@ -57,7 +57,7 @@ Store.Products = {
 	{ id = "SkipRewards", productId = 3723658147, price = 99, title = "Skip All", desc = "Unlock every playtime gift now", color = Color3.fromRGB(255, 200, 40), hidden = true },
 	-- Shop offers (Shared/OfferConfig, server/Offers). price = 0: not approved
 	-- yet; once a productId is set the shop shows Roblox's own price.
-	{ id = "StarterPack", productId = 3723658249, price = 69, title = "Starter Pack", desc = "Candy Colossus + cash + 2x Cash boost (once)", color = Color3.fromRGB(255, 80, 170), hidden = true },
+	{ id = "StarterPack", productId = 3723658249, price = 49, title = "Starter Pack", desc = "Candy Colossus + cash + 2x Cash boost (once)", color = Color3.fromRGB(255, 80, 170), hidden = true },
 	{ id = "FactoryCrate1", productId = 3723658442, price = 39, title = "Factory Crate", desc = "One random crate crusher (Epic, Legendary or Mythic)", color = Color3.fromRGB(150, 70, 230), hidden = true },
 	-- Mythic crushers (exclusive: never rolled). productId 0 shows SOON.
 	-- Hidden: the Factory Crate and the Prism Mech showroom sell these now; the
