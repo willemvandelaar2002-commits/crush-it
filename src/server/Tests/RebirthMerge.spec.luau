@@ -55,14 +55,23 @@ return function()
 	table.insert(es.owned,rare) table.insert(es.owned,epic)
 	check(act(e,"EquipBest",{rarity="Rare"}) and es.equipped["1"]==rare.id,"equip by rarity puts that rarity in bay 1")
 	check(not act(e,"EquipBest",{rarity="Mythic"}),"equip by rarity needs one of that rarity")
-	-- FILL ROW: row 1 gets the best crushers of the chosen rarity, moved from other bays
+	-- FILL ROW: row 1 gets the best crushers of the chosen rarity from the backpack;
+	-- 5 Nov: crushers in OTHER rows stay where they are
 	local f=R.migrate({cash=10},id) f.crushers.available=0
 	local fs=f.crushers fs.bays=8
 	local epics={} for i=1,7 do local e2={id=id(),type=C.rarity("Epic").types[1],rarity="Epic",modifier="Standard",level=i} table.insert(fs.owned,e2) table.insert(epics,e2) end
 	fs.equipped["8"]=epics[7].id
 	check(act(f,"FillRow",{row=1,rarity="Epic"}),"fill row works")
 	local ok6=true for bay=1,6 do local it=R.find(f,fs.equipped[tostring(bay)]) if not it or it.rarity~="Epic" then ok6=false end end
-	check(ok6 and fs.equipped["1"]==epics[7].id and fs.equipped["8"]==nil,"row 1 holds the six best Epics; the best moved from bay 8")
+	check(ok6 and fs.equipped["8"]==epics[7].id and fs.equipped["1"]==epics[6].id,"row 1 holds the six best spare Epics; bay 8 keeps its Epic")
+	local again2=0 for _ in fs.equipped do again2+=1 end
+	check(act(f,"FillRow",{row=1,rarity="Epic"}) and fs.equipped["1"]==epics[6].id and again2==7,"filling again keeps the row as it is")
+	-- every Epic in another row: nothing to take
+	local g=R.migrate({cash=10},id) g.crushers.available=0
+	local gs=g.crushers gs.bays=8
+	local lone={id=id(),type=C.rarity("Epic").types[1],rarity="Epic",modifier="Standard",level=1} table.insert(gs.owned,lone)
+	gs.equipped["7"]=lone.id
+	check(not act(g,"FillRow",{row=1,rarity="Epic"}) and gs.equipped["7"]==lone.id,"fill row never takes from another row")
 	check(not act(f,"FillRow",{row=1,rarity="Mythic"}) and not act(f,"FillRow",{row=99,rarity="Epic"}),"fill row checks rarity and row")
 	-- EQUIP BEST past Factory I: fills bays beyond 12 (bug 3 Nov: it judged only bays 1-12)
 	local q=R.migrate({cash=10},id) q.crushers.available=0
