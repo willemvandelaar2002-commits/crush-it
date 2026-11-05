@@ -11,7 +11,47 @@ local Style = require(RS.Shared.Kit.Style)
 local LITE = Style.lite()
 local S = C.SpecialBay
 local plots = workspace:WaitForChild("Plots")
-local active: { [Model]: { rarity: string, folder: Folder } } = {}
+local active: { [Model]: { rarity: string, folder: Folder, plaque: Frame? } } = {}
+local RunService = game:GetService("RunService")
+
+-- the plaque: a moving colour band behind the plaque text, a shine sweep, a glowing rim
+local function plaque(bay: Model, rarity: string): Frame?
+	local gui = bay:FindFirstChild("Panel") and (bay :: any).Panel:FindFirstChild("WorkshopControls")
+	if not gui then return nil end
+	local colors = S.Plaque[rarity]
+	local keys = {}
+	for i, c in colors do keys[i] = ColorSequenceKeypoint.new((i - 1) / (#colors - 1), c) end
+	local back = Instance.new("Frame") back.Name = "SpecialPlaque" back.Size = UDim2.fromScale(1, 1)
+	back.BorderSizePixel = 0 back.BackgroundColor3 = Color3.new(1, 1, 1) back.ZIndex = 0
+	local grad = Instance.new("UIGradient") grad.Name = "Slide" grad.Color = ColorSequence.new(keys) grad.Rotation = 20 grad.Parent = back
+	local shine = Instance.new("Frame") shine.Name = "Shine" shine.AnchorPoint = Vector2.new(0.5, 0.5)
+	shine.Size = UDim2.fromScale(0.16, 2) shine.Rotation = 20 shine.Position = UDim2.fromScale(-0.3, 0.5)
+	shine.BackgroundColor3 = Color3.new(1, 1, 1) shine.BorderSizePixel = 0 shine.ZIndex = 0
+	local sg = Instance.new("UIGradient") sg.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0.45), NumberSequenceKeypoint.new(1, 1) }) sg.Parent = shine
+	shine.Parent = back
+	back.ClipsDescendants = true
+	local rim = Instance.new("UIStroke") rim.Name = "Rim" rim.Thickness = 10 rim.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	rim.Color = Color3.new(1, 1, 1)
+	local rg = Instance.new("UIGradient") rg.Color = ColorSequence.new(keys) rg.Parent = rim
+	rim.Parent = back
+	back.Parent = gui
+	return back
+end
+local started = os.clock()
+RunService.Heartbeat:Connect(function()
+	local t = os.clock() - started
+	local slide = (t / S.Plaque.SlideSeconds) % 2 - 1 -- -1 .. 1, the band keeps travelling
+	local shineX = ((t % S.Plaque.ShineEvery) / S.Plaque.ShineEvery) * 1.8 - 0.4
+	for _, entry in active do
+		local back = entry.plaque
+		if back and back.Parent then
+			(back :: any).Slide.Offset = Vector2.new(slide, 0)
+			local rim = (back :: any).Rim:FindFirstChildOfClass("UIGradient")
+			if rim then rim.Rotation = (t * 60) % 360 end
+			if not LITE then (back :: any).Shine.Position = UDim2.fromScale(shineX, 0.5) end
+		end
+	end
+end)
 
 local function part(parent: Instance, name: string, size: Vector3, cf: CFrame, color: Color3, transparency: number): Part
 	local p = Instance.new("Part")
@@ -83,7 +123,7 @@ end
 
 local function clear(bay: Model)
 	local entry = active[bay]
-	if entry then entry.folder:Destroy() end
+	if entry then entry.folder:Destroy() if entry.plaque then entry.plaque:Destroy() end end
 	for _, d in bay:GetDescendants() do if d:IsA("Attachment") and d:GetAttribute("SpecialBayFx") then d:Destroy() end end
 	active[bay] = nil
 end
@@ -106,7 +146,7 @@ while true do
 				local entry = active[bay]
 				if r and (not entry or entry.rarity ~= r or not entry.folder.Parent) then
 					clear(bay)
-					active[bay] = { rarity = r, folder = build(bay, r) }
+					active[bay] = { rarity = r, folder = build(bay, r), plaque = plaque(bay, r) }
 				elseif not r and entry then
 					clear(bay)
 				end
