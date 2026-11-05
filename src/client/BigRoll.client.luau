@@ -86,10 +86,15 @@ local function cinematic(msg: any)
 	local finished = false
 
 	-- 1. Lights out and the HUD away (restored at the end, whatever happens)
-	local hidden: { ScreenGui } = {}
-	for _, g in me.PlayerGui:GetChildren() do
-		if g:IsA("ScreenGui") and g.Enabled and g.Name ~= "BigRollHud" then g.Enabled = false table.insert(hidden, g) end
+	-- (re-checked every frame: some HUD scripts switch their own gui back on)
+	local hidden: { [ScreenGui]: boolean } = {}
+	local function hideHud()
+		for _, g in me.PlayerGui:GetChildren() do
+			if g:IsA("ScreenGui") and g.Enabled and g.Name ~= "BigRollHud" then g.Enabled = false hidden[g] = true end
+		end
 	end
+	hideHud()
+	table.insert(conns, RunService.RenderStepped:Connect(hideHud))
 	local cc = Instance.new("ColorCorrectionEffect") cc.Name = "BigRollDim" cc.Parent = Lighting
 	TweenService:Create(cc, TweenInfo.new(0.6), { Brightness = -0.32, Saturation = -0.55, Contrast = 0.1, TintColor = WHITE:Lerp(color, 0.15) }):Play()
 	sound(Config.Sounds.BoomHit, 0.5, 0.6)
@@ -108,7 +113,7 @@ local function cinematic(msg: any)
 	odds.TextColor3 = colorOf("Rare") Style.text(odds, 4) odds.Parent = gui
 	local title = Instance.new("TextLabel") title.Name = "Rarity" title.BackgroundTransparency = 1 title.AnchorPoint = Vector2.new(0.5, 0.5)
 	title.Position = UDim2.fromScale(0.5, 0.24) title.Size = UDim2.fromScale(0.6, 0.09) title.TextScaled = true title.Text = string.upper(rarity)
-	title.TextColor3 = color title.TextTransparency = 1 Style.text(title, 4) title.Parent = gui
+	title.TextColor3 = color:Lerp(WHITE, 0.35) title.TextTransparency = 1 Style.text(title, 4) title.Parent = gui
 	local titleScale = Instance.new("UIScale") titleScale.Scale = 0.4 titleScale.Parent = title
 	local flash = Instance.new("Frame") flash.Size = UDim2.fromScale(1, 1) flash.BackgroundColor3 = WHITE flash.BackgroundTransparency = 1 flash.BorderSizePixel = 0 flash.ZIndex = 5 flash.Parent = gui
 	local skip = Instance.new("TextButton") skip.Name = "Skip" skip.AnchorPoint = Vector2.new(1, 1) skip.Position = UDim2.new(1, -24, 1, -24)
@@ -146,7 +151,8 @@ local function cinematic(msg: any)
 	end))
 
 	-- 2. The odds count up, locking digits left to right, climbing the rarity colours
-	local final = "1 in " .. commas(tonumber(msg.odds) or 0)
+	local number = commas(tonumber(msg.odds) or 0)
+	local final = "1 in " .. number
 	local top = table.find(LADDER, rarity) or #LADDER
 	local countFrom, countTo = 0.7, math.max(1.4, impactIn - (if divine then 2.6 else 0.9))
 	local tier = 0
@@ -154,17 +160,17 @@ local function cinematic(msg: any)
 		local t = os.clock() - started
 		if t < countFrom or finished then return end
 		local p = math.clamp((t - countFrom) / (countTo - countFrom), 0, 1)
-		local locked = math.floor(p * #final + 0.5)
+		local locked = math.floor(p * #number + 0.5)
 		local shown = {}
-		for i = 1, #final do
-			local ch = final:sub(i, i)
+		for i = 1, #number do
+			local ch = number:sub(i, i)
 			shown[i] = if i <= locked or not ch:match("%d") then ch else tostring(math.random(0, 9))
 		end
-		odds.Text = "[ " .. table.concat(shown) .. " ]"
+		odds.Text = "[ 1 in " .. table.concat(shown) .. " ]"
 		local nowTier = math.clamp(1 + math.floor(p * top), 1, top)
 		if nowTier ~= tier then
 			tier = nowTier
-			odds.TextColor3 = colorOf(LADDER[tier])
+			odds.TextColor3 = colorOf(LADDER[tier]):Lerp(WHITE, 0.2)
 			sound(Config.Sounds.RevealTick, 0.6, 0.8 + tier * 0.15)
 		end
 		if p >= 1 and title.TextTransparency == 1 then
@@ -250,7 +256,7 @@ local function cinematic(msg: any)
 		camera.CameraType = Enum.CameraType.Custom
 		local hum = me.Character and me.Character:FindFirstChildOfClass("Humanoid")
 		if hum then camera.CameraSubject = hum end
-		for _, g in hidden do if g.Parent then g.Enabled = true end end
+		for g in hidden do if g.Parent then g.Enabled = true end end
 		for _, x in trash do if x ~= gui then x:Destroy() end end
 		gui:Destroy()
 		playing = false
