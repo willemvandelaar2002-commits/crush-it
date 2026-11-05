@@ -545,7 +545,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	local CARD_W = math.floor((BANNER_W - 24) / 3)
 	local function grid(page: ScrollingFrame, order: number, height: number?): Frame
 		local g = make("Frame", { LayoutOrder = order, Size = UDim2.fromOffset(BANNER_W, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, ZIndex = 7 }, page)
-		make("UIGridLayout", { CellSize = UDim2.fromOffset(CARD_W, height or 200), CellPadding = UDim2.fromOffset(12, 12), SortOrder = Enum.SortOrder.LayoutOrder,
+		make("UIGridLayout", { CellSize = UDim2.fromOffset(CARD_W, height or 214), CellPadding = UDim2.fromOffset(12, 12), SortOrder = Enum.SortOrder.LayoutOrder,
 			HorizontalAlignment = Enum.HorizontalAlignment.Center }, g)
 		return g
 	end
@@ -561,20 +561,22 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		outline(f, 4)
 		gradient(f, pal, 35)
 		local st = Style.studsImage(f, 26, 0.8) st.ZIndex = 8 st.ImageColor3 = pal[2]
-		local art = icon(f, o.image, UDim2.fromOffset(12, 16), UDim2.fromOffset(104, 104), 9)
+		local art = icon(f, o.image, UDim2.fromOffset(12, 10), UDim2.fromOffset(98, 98), 9)
 		bob(art)
-		local t = label(f, o.title, UDim2.fromOffset(124, 12), UDim2.new(1, -134, 0, 24), 2.5, 9)
+		local t = label(f, o.title, UDim2.fromOffset(118, 14), UDim2.new(1, -128, 0, 24), 2.5, 9)
 		t.TextXAlignment = Enum.TextXAlignment.Left
 		t.TextColor3 = C(235, 244, 255)
-		local big = label(f, o.benefit, UDim2.fromOffset(124, 38), UDim2.new(1, -134, 0, 46), 3.5, 9)
+		local big = label(f, o.benefit, UDim2.fromOffset(118, 42), UDim2.new(1, -128, 0, 50), 3.5, 9)
+		big.TextWrapped = false -- one line, shrinks to fit
 		big.TextXAlignment = Enum.TextXAlignment.Left
 		big.TextColor3 = C(255, 246, 150)
-		local sub = label(f, o.sub, UDim2.fromOffset(124, 88), UDim2.new(1, -134, 0, 40), 2, 9)
+		-- the short line under the icon: one fixed size on every card (two lines max)
+		local sub = label(f, o.sub, UDim2.fromOffset(12, 112), UDim2.new(1, -24, 0, 40), 2, 9)
+		sub.TextScaled = false
+		sub.TextSize = 16
 		sub.TextWrapped = true
-		sub.TextXAlignment = Enum.TextXAlignment.Left
-		sub.TextYAlignment = Enum.TextYAlignment.Top
-		make("UITextSizeConstraint", { MaxTextSize = 17 }, sub)
-		local b = bigButton(f, "", UDim2.new(0, 12, 1, -58), UDim2.new(1, -24, 0, 46), nil, 10)
+		sub.TextYAlignment = Enum.TextYAlignment.Center
+		local b = bigButton(f, "", UDim2.new(0, 12, 1, -56), UDim2.new(1, -24, 0, 44), nil, 10)
 		b.Activated:Connect(function() onBuy(b) end)
 		return b
 	end
@@ -625,19 +627,19 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	-- the short, readable version of each pass / boost (the long text stays in Store)
 	local PASS_TEXT: { [string]: { benefit: string, sub: string, palette: string } } = {
 		AutoCrush = { benefit = "+25% DAMAGE", sub = "All your crushers, forever", palette = "Pink" },
-		DoubleCash = { benefit = "2x CASH", sub = "Every crush, forever", palette = "Gold" },
-		Lucky = { benefit = "2x LUCK", sub = "Uncommon+ 30% -> 46% of rolls", palette = "Cyan" },
+		DoubleCash = { benefit = "2x CASH", sub = "Double cash from every crush, forever", palette = "Gold" },
+		Lucky = { benefit = "2x LUCK", sub = "Forever. Uncommon or better: 30% -> 46% of rolls", palette = "Cyan" },
 		AutoCollect = { benefit = "AUTO SELL", sub = "Scrap collects and sells itself", palette = "Gold" },
-		VIP = { benefit = "x1.5 CASH", sub = "12 h offline cash + gold VIP tag", palette = "Pink" },
+		VIP = { benefit = "x1.5 CASH", sub = "12 h offline cash and a gold VIP tag", palette = "Pink" },
 	}
 	local function boostText(id: string): { benefit: string, sub: string, palette: string }
-		if id == "ServerLuck" then return { benefit = "2x LUCK", sub = "EVERYONE here · " .. Store.ServerLuck.Minutes .. " min", palette = "Cyan" } end
-		if id == "TurboNow" then return { benefit = "TURBO NOW", sub = "Your best turbo · " .. Store.TurboNowMinutes .. " min", palette = "Gold" } end
+		if id == "ServerLuck" then return { benefit = "2x LUCK", sub = "EVERYONE here, " .. Store.ServerLuck.Minutes .. " min. Uncommon+: 30% -> 46%", palette = "Cyan" } end
+		if id == "TurboNow" then return { benefit = "TURBO NOW", sub = "Your strongest turbo, " .. Store.TurboNowMinutes .. " min", palette = "Gold" } end
 		local b = BoostConfig.find(id:sub(6))
 		local m = if b then b.minutes else 15
-		if id == "BoostCash" then return { benefit = "2x CASH", sub = "For you · " .. m .. " min", palette = "Pink" } end
-		if id == "BoostLuck" then return { benefit = "2x LUCK", sub = m .. " min · Uncommon+ 30% -> 46%", palette = "Cyan" } end
-		if id == "BoostSuper" then return { benefit = "2x CASH + LUCK", sub = "For you · " .. m .. " min", palette = "Pink" } end
+		if id == "BoostCash" then return { benefit = "2x CASH", sub = "Double cash for you, " .. m .. " min", palette = "Pink" } end
+		if id == "BoostLuck" then return { benefit = "2x LUCK", sub = "For you, " .. m .. " min. Uncommon+: 30% -> 46%", palette = "Cyan" } end
+		if id == "BoostSuper" then return { benefit = "2x BOTH", sub = "2x cash and 2x luck, " .. m .. " min", palette = "Pink" } end
 		return { benefit = "", sub = "", palette = "Gold" }
 	end
 	local function passCards(page: ScrollingFrame, order: number)
