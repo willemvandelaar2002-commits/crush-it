@@ -107,10 +107,10 @@ function Card.build(parent: Instance, o: any): Frame
 	-- A crate is a paid random item, so this opens the details with ALL the odds and the
 	-- BUY button there (vault: full odds shown before purchase), it never buys directly.
 	if o.buyState then
-		local edge = make("Frame", { Name = "PriceEdge", Position = UDim2.fromOffset(110, 244), Size = UDim2.fromOffset(150, 44),
+		local edge = make("Frame", { Name = "PriceEdge", Position = UDim2.fromOffset(110, 234), Size = UDim2.fromOffset(150, 44),
 			BackgroundColor3 = INK, BorderSizePixel = 0, ZIndex = 15 }, body)
 		make("UICorner", { CornerRadius = UDim.new(0, 12) }, edge)
-		local price = make("TextButton", { Name = "Price", Text = "", TextScaled = true, Position = UDim2.fromOffset(110, 238),
+		local price = make("TextButton", { Name = "Price", Text = "", TextScaled = true, Position = UDim2.fromOffset(110, 228),
 			Size = UDim2.fromOffset(150, 44), ZIndex = 16 }, body)
 		Style.button(price)
 		local corner = price:FindFirstChild("Corner") :: UICorner? if corner then corner.CornerRadius = UDim.new(0, 12) end

@@ -387,7 +387,7 @@ function Style.buttonStuds(btn: GuiObject, color: Color3?)
 	local corner = btn:FindFirstChild("Corner") :: UICorner?
 	local c = st:FindFirstChild("Corner") :: UICorner?
 	if corner and c then c.CornerRadius = corner.CornerRadius end
-	if btn:IsA("TextButton") and btn.Text ~= "" then
+	if btn:IsA("TextButton") and not btn:FindFirstChild("Caption") then
 		local b = btn :: TextButton
 		local cap = Instance.new("TextLabel")
 		cap.Name = "StudsCaption"
