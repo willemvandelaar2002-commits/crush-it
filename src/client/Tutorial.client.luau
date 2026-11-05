@@ -135,6 +135,7 @@ local yes = artButton(ART.Green, Rect.new(160, 140, 1896, 166), 0.17, "SKIP", 16
 local no = artButton(ART.Red, Rect.new(230, 230, 737, 729), 0.06, "KEEP GOING", 322, 124)
 
 local skippedNow = false -- the next "tutorial complete" toast says "skipped"
+local skipFrom = 0 -- the tutorial step on screen (set by the frame loop below; `state` is declared later)
 local function rewardLeft(from: number): number
 	local total = C.TutorialBonus
 	for i = from, #STEPS do total += STEPS[i].reward end
@@ -144,8 +145,8 @@ local function closeConfirm()
 	confirmGui.Enabled = false
 end
 local function openConfirm()
-	if not state or not STEPS[state.tutorial] then return end
-	skipLine.Text = 'You still get all its rewards: <font color="' .. "#" .. GREEN:ToHex() .. '">+' .. Format.cash(rewardLeft(state.tutorial)) .. "</font>"
+	if skipFrom < 2 or not STEPS[skipFrom] then return end
+	skipLine.Text = 'You still get all its rewards: <font color="' .. "#" .. GREEN:ToHex() .. '">+' .. Format.cash(rewardLeft(skipFrom)) .. "</font>"
 	confirmGui.Enabled = true
 	cardPop.Scale = 0.75 * cardFit.Scale
 	TweenService:Create(cardPop, TweenInfo.new(0.28, Enum.EasingStyle.Back), { Scale = cardFit.Scale }):Play()
@@ -723,6 +724,7 @@ RunService.RenderStepped:Connect(function()
 	if os.clock() >= nextLook then
 		nextLook = os.clock() + 0.25
 		skipChip.Visible = want == "tutorial" and state.tutorial >= 2
+		skipFrom = if want == "tutorial" then state.tutorial else 0
 		if want == "tutorial" then
 			local step = STEPS[state.tutorial]
 			sameStep("t" .. state.tutorial)
