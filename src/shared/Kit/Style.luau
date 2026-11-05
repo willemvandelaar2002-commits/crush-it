@@ -375,6 +375,8 @@ end
 
 -- 5 Nov (Willem's reference shop): a faint stud texture on a button, like the
 -- studded price buttons there. Sits on the button under its caption child.
+-- A TextButton that draws its own text gets a caption child above the studs (the
+-- button's text goes invisible and the caption follows it), so the studs never dim it.
 function Style.buttonStuds(btn: GuiObject, tile: number?)
 	local st = Style.studsImage(btn, tile or 22, 0.82)
 	st.Name = "ButtonStuds"
@@ -382,6 +384,29 @@ function Style.buttonStuds(btn: GuiObject, tile: number?)
 	local corner = btn:FindFirstChild("Corner") :: UICorner?
 	local c = st:FindFirstChild("Corner") :: UICorner?
 	if corner and c then c.CornerRadius = corner.CornerRadius end
+	if btn:IsA("TextButton") and btn.Text ~= "" then
+		local b = btn :: TextButton
+		local cap = Instance.new("TextLabel")
+		cap.Name = "StudsCaption"
+		cap.BackgroundTransparency = 1
+		cap.Size = UDim2.fromScale(1, 1)
+		cap.ZIndex = b.ZIndex + 1
+		cap.TextScaled = b.TextScaled
+		cap.TextSize = b.TextSize
+		cap.RichText = b.RichText
+		Style.text(cap, 2)
+		cap.Font = b.Font
+		cap.TextColor3 = b.TextColor3
+		cap.Text = b.Text
+		for _, k in b:GetChildren() do
+			if k:IsA("UITextSizeConstraint") or k:IsA("UIPadding") then k:Clone().Parent = cap end
+		end
+		cap.Parent = b
+		b.TextTransparency = 1
+		local outline = b:FindFirstChild("TextOutline") :: UIStroke?
+		if outline then outline.Enabled = false end
+		b:GetPropertyChangedSignal("Text"):Connect(function() cap.Text = b.Text end)
+	end
 	return st
 end
 

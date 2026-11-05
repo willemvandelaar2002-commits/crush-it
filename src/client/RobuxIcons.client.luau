@@ -17,6 +17,8 @@ local function consider(obj: Instance)
 	-- Style.bold draws the text in two child copies ("Drop", "Face"): only the label itself
 	if (obj.Name == "Drop" or obj.Name == "Face") and obj.Parent and obj.Parent:IsA("TextLabel") then return end
 	if obj:GetAttribute("RobuxIcon") or watched[obj] then return end
+	-- a button whose text is drawn by a caption child (Style.buttonStuds): the caption gets the icon
+	if (obj :: any).TextTransparency >= 1 then return end
 	local label = obj :: TextLabel
 	local function check(): boolean
 		if label.Text:find("R%$") then
