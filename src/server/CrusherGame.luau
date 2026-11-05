@@ -1032,6 +1032,20 @@ function G.start()
 			Net.event("Notice"):FireClient(p,{text="Event "..string.lower(name)..(if ok then "" else ": not possible right now")})
 		end)
 		eventCommand.Parent=TCS
+		-- 5 Nov (Willem): /skip finishes the tutorial at once (its rewards are paid, like the
+		-- SKIP button); /skip goals also jumps past the main goals to the quiet ones (no goal
+		-- rewards). Studio only.
+		local skipCommand=Instance.new("TextChatCommand") skipCommand.Name="SkipCommand" skipCommand.PrimaryAlias="/skip"
+		skipCommand.Triggered:Connect(function(source,text)
+			local p=Players:GetPlayerByUserId(source.UserId) local d=p and Data.get(p)
+			if not p or not d then return end
+			local s=d.crushers
+			while C.TutorialSteps[s.tutorial] do Rules.tutorialAdvance(d,C.TutorialSteps[s.tutorial].id) end
+			local goals=string.lower(string.split(text," ")[2] or "")=="goals"
+			if goals then s.goal=math.max(s.goal or 1,C.MainGoals+1) end
+			send(p,if goals then "Tutorial and main goals skipped (dev)" else "Tutorial skipped (dev)")
+		end)
+		skipCommand.Parent=TCS
 	end
 	if RunService:IsStudio() then
 		local dev=Instance.new("BindableFunction") dev.Name="DevCrusher"
