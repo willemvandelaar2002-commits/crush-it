@@ -84,6 +84,8 @@ to your own press whenever you're more than 40 studs from it. Hidden otherwise.
 - Goals v8 (3 Nov): the SMASH/Frenzy goal left. v9 (4 Nov): quiet goals after Factory II. v10 (5 Nov): the TURBO goal left
   (17% churn on it): Fill 3, Upgrade x3, Fill 5, Golden toy, Fill 6 (Rare), Lv 5, Upgrade x8, Fill 9, Fill 12 (Epic),
   Factory II (Legendary). Funnel: goals are steps 10-19. A save on a removed goal moves to the next one that still exists.
+- Goals v11 (5 Nov): the quiet goals after Factory II start with Fill 18 bays, then Coat a crusher; Factory III prize
+  Legendary (was Epic).
 
 ## Intro cutscene (client/IntroCutscene, 2 Nov)
 Brand-new players only (tutorial step 1, one crusher), once per join, ~4.6 s, Skip button. Shot 1: close-up of your

@@ -411,7 +411,7 @@ C.StarterScrap = 24 -- 1 Nov: scrap waiting in a new player's bin (three toys' w
 -- between the bay goals (they raise income the most). Since the plot split the
 -- starting factory has 12 bays, so the chain ends with "Fill 12 bays" and
 -- "Buy FACTORY II". "upgrades n" = total factory upgrade levels (Damage + Speed + Yield).
-C.Goals2Version = 10 -- 5 Nov: the TURBO goal left the guide (17% churn on it; the pump stays). 9: 4 Nov: quiet goals after Factory II. 8: 3 Nov: the SMASH goal left the guide (30% churn on it; SMASH stays as a free extra)
+C.Goals2Version = 11 -- 5 Nov: after Factory II "Fill 18 bays" comes before "Coat a crusher"; Factory III prize Legendary (was Epic). 10: 5 Nov: the TURBO goal left the guide (17% churn on it; the pump stays). 9: 4 Nov: quiet goals after Factory II. 8: 3 Nov: the SMASH goal left the guide (30% churn on it; SMASH stays as a free extra)
 C.Goals2 = {
 	{ id="Fill3", check="fill", n=3, title="Fill 3 bays", text="Unlock bay 3, then roll a crusher and place it there.", target="NextBayOrEmpty", reward={cash=30,min=60} },
 	{ id="Upgrades3", check="upgrades", n=3, title="Upgrade your factory", text="The blue FACTORY UPGRADES board makes ALL crushers better.", target="Production", reward={cash=45,min=100} },
@@ -426,11 +426,11 @@ C.Goals2 = {
 	-- 4 Nov (Willem; vault FTUE "the end of the tutorial needs a successor"): after
 	-- Factory II the goals go on QUIETLY (quiet=true): a small "NEXT GOAL" line, no
 	-- arrows, no trail, no hints - just a little direction. Not in the funnel.
-	{ id="Coat", check="coat", quiet=true, title="Coat a crusher", text="The Coating Lab opened with Factory II.", reward={cash=120,min=3000} },
 	{ id="Fill18", check="fill", n=18, quiet=true, title="Fill 18 bays", text="", reward={cash=120,min=3000} },
+	{ id="Coat", check="coat", quiet=true, title="Coat a crusher", text="The Coating Lab opened with Factory II.", reward={cash=120,min=3000} },
 	{ id="Upgrades20", check="upgrades", n=20, quiet=true, title="Upgrade your factory", text="", reward={cash=150,min=5000} },
 	{ id="Fill24", check="fill", n=24, quiet=true, title="Fill all 24 bays", text="", reward={cash=150,min=5000} },
-	{ id="Factory3", check="plot", n=2, quiet=true, title="Buy FACTORY III", text="", reward={crusher="Epic"} },
+	{ id="Factory3", check="plot", n=2, quiet=true, title="Buy FACTORY III", text="", reward={crusher="Legendary"} },
 	{ id="RowSet", check="row", quiet=true, title="Fill a row with one rarity", text="Press FILL ROW at a row's sign.", reward={cash=180,min=8000} },
 	{ id="Fill36", check="fill", n=36, quiet=true, title="Fill 36 bays", text="", reward={cash=180,min=8000} },
 	{ id="Factory4", check="plot", n=3, quiet=true, title="Buy FACTORY IV", text="", reward={crusher="Legendary"} },
@@ -448,6 +448,7 @@ C.Goals2History = {
 	{ "Frenzy","Fill3","Upgrades3","Fill5","Golden","Fill6","Turbo","Level5","Upgrades8","Fill9","Fill12","Factory2" },
 	{ "Fill3","Upgrades3","Fill5","Golden","Fill6","Turbo","Level5","Upgrades8","Fill9","Fill12","Factory2" },
 	{ "Fill3","Upgrades3","Fill5","Golden","Fill6","Turbo","Level5","Upgrades8","Fill9","Fill12","Factory2","Coat","Fill18","Upgrades20","Fill24","Factory3","RowSet","Fill36","Factory4","Fuse","Rebirth1" },
+	{ "Fill3","Upgrades3","Fill5","Golden","Fill6","Level5","Upgrades8","Fill9","Fill12","Factory2","Coat","Fill18","Upgrades20","Fill24","Factory3","RowSet","Fill36","Factory4","Fuse","Rebirth1" },
 }
 -- Onboarding funnel step names as they appear in the Creator Dashboard
 -- (Analytics > Funnels). 1 = join, 2-9 = the tutorial steps above in order,
