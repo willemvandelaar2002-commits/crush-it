@@ -131,7 +131,7 @@ local function artButton(image: string, rect: Rect, sliceScale: number, text: st
 	b.MouseButton1Up:Connect(function() sc.Scale = 1 end)
 	return b
 end
-local yes = artButton(ART.Green, Rect.new(160, 140, 1896, 166), 0.17, "SKIP", 164, 150)
+local yes = artButton(ART.Green, Rect.new(150, 0, 1906, 306), 54 / 306, "SKIP", 164, 150) -- sliced sideways only: full height at its own aspect
 local no = artButton(ART.Red, Rect.new(230, 230, 737, 729), 0.06, "KEEP GOING", 322, 124)
 
 local skippedNow = false -- the next "tutorial complete" toast says "skipped"
