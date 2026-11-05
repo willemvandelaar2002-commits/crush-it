@@ -380,6 +380,15 @@ C.Pity = { Rolls = 200, Rarity = "Legendary", MinRank = 4 }
 -- whole server x AftershockLuck on rolls for AftershockSeconds (Willem: not Secret).
 C.BigRoll = { MinRank = 5, PillarSeconds = 30,
 	Secret = { Hold = 4.6 }, Divine = { Hold = 6.4, AftershockLuck = 1.5, AftershockSeconds = 30 } }
+-- 5 Nov (Willem): a bay holding a Secret or Divine crusher glows (client/SpecialBayFx):
+-- a light plate on the pedestal, a colour wash up the back wall, rising sparkles;
+-- Divine adds two soft light shafts. Colours match the models (Secret neon purple/pink,
+-- Divine gold/cyan). Phones and low graphics get half the sparkles.
+C.SpecialBay = {
+	Secret = { main = Color3.fromRGB(176, 70, 255), accent = Color3.fromRGB(255, 70, 200), sparkles = 7, shafts = false },
+	Divine = { main = Color3.fromRGB(255, 205, 80), accent = Color3.fromRGB(120, 235, 255), sparkles = 9, shafts = true },
+	PlateTransparency = { 0.5, 0.75 }, PulseSeconds = 1.6, WallHeight = 9,
+}
 C.IndividualBase = 16
 C.IndividualGrowth = 1.38
 -- Guided tutorial (client/Tutorial): one step at a time, each finished by the
