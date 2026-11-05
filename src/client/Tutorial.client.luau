@@ -120,7 +120,7 @@ skipLine.RichText = true
 -- a button on Willem's art: 9-sliced so it keeps its round ends at any width
 local function artButton(image: string, rect: Rect, sliceScale: number, text: string, x: number, w: number): ImageButton
 	local b = make("ImageButton", { Image = image, ScaleType = Enum.ScaleType.Slice, SliceCenter = rect, SliceScale = sliceScale,
-		Position = UDim2.fromOffset(x, 104), Size = UDim2.fromOffset(w, 54), BackgroundTransparency = 1, AutoButtonColor = false, ZIndex = 3 }, card)
+		Position = UDim2.fromOffset(x, 96), Size = UDim2.fromOffset(w, 50), BackgroundTransparency = 1, AutoButtonColor = false, ZIndex = 3 }, card)
 	local t = label(b, text, UDim2.fromOffset(10, 9), UDim2.new(1, -20, 1, -18), 3)
 	t.ZIndex = 4
 	make("UITextSizeConstraint", { MinTextSize = 12, MaxTextSize = 30 }, t)
@@ -131,7 +131,8 @@ local function artButton(image: string, rect: Rect, sliceScale: number, text: st
 	b.MouseButton1Up:Connect(function() sc.Scale = 1 end)
 	return b
 end
-local yes = artButton(ART.Green, Rect.new(150, 0, 1906, 306), 54 / 306, "SKIP", 164, 150) -- sliced sideways only: full height at its own aspect
+-- (Roblox stores the green art at 1021 x 152 and the red at 967 x 959: slice rects are in those pixels)
+local yes = artButton(ART.Green, Rect.new(76, 60, 945, 92), 50 / 152, "SKIP", 164, 150)
 local no = artButton(ART.Red, Rect.new(230, 230, 737, 729), 0.06, "KEEP GOING", 322, 124)
 
 local skippedNow = false -- the next "tutorial complete" toast says "skipped"
