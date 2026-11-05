@@ -85,7 +85,7 @@ end
 local function bigButton(parent: Instance, text: string, pos: UDim2, size: UDim2, color: Color3?, z: number?): TextButton
 	local b = make("TextButton", { Text = "", Position = pos, Size = size, ZIndex = z or 4 }, parent)
 	Style.button(b, color or Style.GREEN)
-	Style.buttonStuds(b) -- 5 Nov: studded like the reference shop
+	Style.buttonStuds(b, color or Style.GREEN) -- 5 Nov: studded like the reference shop
 	local l = label(b, text, UDim2.fromScale(0.06, 0.14), UDim2.fromScale(0.88, 0.72), 3, (z or 4) + 1)
 	l.Name = "Caption"
 	return b

@@ -34,7 +34,7 @@ local function button(parent: Instance, name: string, caption: string, pos: UDim
 	local b = make("TextButton", { Name = name, Text = caption, TextScaled = true, Position = pos, Size = size, ZIndex = 13 }, parent)
 	Style.button(b, color)
 	local corner = b:FindFirstChild("Corner") :: UICorner? if corner then corner.CornerRadius = UDim.new(0, 12) end
-	Style.buttonStuds(b)
+	Style.buttonStuds(b, color)
 	make("UITextSizeConstraint", { MaxTextSize = 24 }, b)
 	make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) }, b)
 	return b

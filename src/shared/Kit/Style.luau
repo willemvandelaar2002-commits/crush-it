@@ -377,9 +377,12 @@ end
 -- studded price buttons there. Sits on the button under its caption child.
 -- A TextButton that draws its own text gets a caption child above the studs (the
 -- button's text goes invisible and the caption follows it), so the studs never dim it.
-function Style.buttonStuds(btn: GuiObject, tile: number?)
-	local st = Style.studsImage(btn, tile or 22, 0.82)
+function Style.buttonStuds(btn: GuiObject, color: Color3?)
+	-- the stud image is a colour map: tinted with the button colour and mostly opaque it
+	-- reads as the button with stud outlines (like the shop header)
+	local st = Style.studsImage(btn, 26, 0.4)
 	st.Name = "ButtonStuds"
+	st.ImageColor3 = color or GREEN
 	st.ZIndex = btn.ZIndex
 	local corner = btn:FindFirstChild("Corner") :: UICorner?
 	local c = st:FindFirstChild("Corner") :: UICorner?
@@ -414,6 +417,8 @@ end
 function Style.setButtonColor(btn: TextButton, c: Color3)
 	local fill = btn:FindFirstChild("Fill") :: UIGradient?
 	local outline = btn:FindFirstChild("Outline") :: UIStroke?
+	local studs = btn:FindFirstChild("ButtonStuds") :: ImageLabel?
+	if studs then studs.ImageColor3 = c end
 	if fill then
 		fill.Color = buttonFill(c)
 	end
