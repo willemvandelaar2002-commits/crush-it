@@ -168,7 +168,23 @@ end
 
 -- Products -------------------------------------------------------------------
 
+-- 5 Nov (vault V2 Monetization Overview: "a product that charged but granted nothing";
+-- write a startup check that every product's grant is supported): every product id
+-- the receipt handler knows how to grant. Anything else is refused (the receipt waits)
+-- instead of quietly falling through to the cash-pack branch.
+local SPECIAL: { [string]: boolean } = { FinishSmelt = true, BoostCash = true, BoostLuck = true, BoostSuper = true,
+	ServerLuck = true, TurboNow = true, SkipRewards = true, GoldenRush = true }
+local function canGrant(productId: string): boolean
+	local product = Store.productById(productId)
+	if not product then return false end
+	if require(script.Parent.Offers).handles(productId) then return true end
+	if Store.Offline.Multipliers[productId] then return true end
+	if product.mythic then return true end
+	return SPECIAL[productId] == true or Store.CashPackShare[productId] ~= nil
+end
+
 local function grant(player: Player, productId: string, purchaseId: string)
+	if not canGrant(productId) then error("no grant for product " .. productId) end
 	local data = api.getData(player)
 	local product = Store.productById(productId)
 	-- Shop offers (Starter Pack, crates, Prism Mech): server/Offers
@@ -227,6 +243,14 @@ for _, p in Store.Products do
 		productHandlers[p.productId] = p.id
 	end
 end
+-- the startup check (Output, every server): a sellable product without a grant
+task.defer(function()
+	for _, p in Store.Products do
+		if not canGrant(p.id) then
+			warn(`[Shop] product {p.id} (id {p.productId}) has NO grant: buying it would fail. Add it to Shop.grant.`)
+		end
+	end
+end)
 
 -- One receipt (also used by Studio's DevReceipt with a made-up PurchaseId).
 -- The check-grant-remember part never yields, so two simultaneous callbacks

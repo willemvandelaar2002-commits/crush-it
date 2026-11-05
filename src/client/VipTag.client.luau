@@ -18,7 +18,7 @@ TextChatService.OnIncomingMessage = function(message: TextChatMessage)
 	local player = source and Players:GetPlayerByUserId(source.UserId)
 	if player and Store.hasPass(player, "VIP") then
 		props.PrefixText = '<font color="#FFC832">[VIP]</font> ' .. message.PrefixText
-	elseif player and player.HasRobloxSubscription then -- 5 Nov: Roblox Plus members (Shop > Passes)
+	elseif player and player:GetAttribute("PlusMember") == true then -- set by server/NameTags -- 5 Nov: Roblox Plus members (Shop > Passes)
 		props.PrefixText = '<font color="#46A0FF">[PLUS]</font> ' .. message.PrefixText
 	end
 	return props
