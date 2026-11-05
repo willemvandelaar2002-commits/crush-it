@@ -899,9 +899,16 @@ function G.start()
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
 		elseif name=="TrashMany" then target=ctx.plot.stations.Trash and ctx.plot.stations.Trash.part reach=40
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
-		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" and name~="Rebuild" and name~="FillRow" then
+		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" and name~="Rebuild" and name~="FillRow" and name~="SkipTutorial" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
+		end
+		if name=="SkipTutorial" then -- 5 Nov: tutorial SKIP button (after a confirm on the client)
+			local before=d.cash local from=Rules.tutorialSkip(d)
+			if not from then send(p) return end
+			Analytics.cash(p,"TutorialSkip","Onboarding",before,d.cash)
+			Analytics.custom(p,"TutorialSkipped",from,C.TutorialSteps[from].id)
+			send(p,"Tutorial skipped: +"..Format.cash(d.cash-before).."!") task.spawn(Data.saveNow,p) return
 		end
 		if name=="Trash" then Net.event("CrusherOpen"):FireClient(p,"Trash") return end -- the trash can's own button opens the picker
 		if name=="Turbo" then Net.event("CrusherOpen"):FireClient(p,"Turbo") return end -- the pump's button opens the Turbo menu

@@ -520,6 +520,16 @@ function R.tutorialAdvance(d,id)
 	if s.tutorial>#C.TutorialSteps then d.cash=C.money(d.cash+C.TutorialBonus) end
 	return true
 end
+-- 5 Nov (vault V2 lihfolk-tutorial: "skip after the first step, with a confirm; a skip
+-- grants what the steps would have paid"): finish every remaining step at once and pay
+-- their rewards plus the tutorial bonus. Only from step 2 on. Returns the step it left
+-- from (or nil when it can't skip).
+function R.tutorialSkip(d): number?
+	local s=d.crushers local from=s.tutorial
+	if type(from)~="number" or from<2 or from>#C.TutorialSteps then return nil end
+	while C.TutorialSteps[s.tutorial] do R.tutorialAdvance(d,C.TutorialSteps[s.tutorial].id) end
+	return from
+end
 -- Skip steps the profile has already done (older saves, steps done out of order).
 function R.tutorialCatchUp(d)
 	local s=d.crushers

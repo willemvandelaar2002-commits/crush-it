@@ -74,6 +74,93 @@ sub.RichText = true
 local hint = label(headline, "", UDim2.fromOffset(0, 118), UDim2.new(1, 0, 0, 24), 2.5)
 hint.TextColor3 = Color3.fromRGB(220, 232, 255)
 
+-- Skip ---------------------------------------------------------------------------
+-- 5 Nov (Willem; vault V2 lihfolk-tutorial "skippable after the first step, with a
+-- short confirm; a skip grants what the steps would have paid"): a small SKIP chip on
+-- the tutorial line from step 2 on. It opens a confirm card on Willem's art (come-back
+-- frame, starter-offer buttons); the server finishes the steps and pays their rewards.
+local ART = {
+	Frame = "rbxassetid://133183009079484", -- ComeBack frame (1022 x 399, glow on the left)
+	Green = "rbxassetid://106307684676239", -- starter offer purchase button (2056 x 306)
+	Red = "rbxassetid://86950187561147", -- starter offer close button (967 x 959)
+}
+local skipChip = make("TextButton", { Name = "Skip", Text = "", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -6, 0, 2),
+	Size = UDim2.fromOffset(104, 30), BackgroundColor3 = Color3.fromRGB(20, 24, 40), BackgroundTransparency = 0.35,
+	AutoButtonColor = false, Visible = false, ZIndex = 6 }, headline)
+make("UICorner", { CornerRadius = UDim.new(1, 0) }, skipChip)
+make("UIStroke", { Color = Color3.fromRGB(255, 255, 255), Transparency = 0.6, Thickness = 1.5, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, skipChip)
+local skipText = label(skipChip, "SKIP  >>", UDim2.fromOffset(10, 5), UDim2.new(1, -20, 1, -10), 2)
+skipText.ZIndex = 7
+skipChip.MouseEnter:Connect(function() skipChip.BackgroundTransparency = 0.1 end)
+skipChip.MouseLeave:Connect(function() skipChip.BackgroundTransparency = 0.35 end)
+
+-- the confirm card (centre of the screen, dims the world behind it)
+local confirmGui = make("ScreenGui", { Name = "TutorialSkipConfirm", ResetOnSpawn = false, DisplayOrder = 45, IgnoreGuiInset = true,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling, Enabled = false }, me:WaitForChild("PlayerGui"))
+local dim = make("TextButton", { Name = "Dim", Text = "", AutoButtonColor = false, Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(0, 0, 0),
+	BackgroundTransparency = 0.45, ZIndex = 1 }, confirmGui)
+local card = make("Frame", { Name = "Card", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(470, 184),
+	BackgroundTransparency = 1, ZIndex = 2 }, confirmGui)
+make("ImageLabel", { Name = "Frame", Image = ART.Frame, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Stretch, ZIndex = 2 }, card)
+local cardFit = Style.phoneFit(card, { scale = 0.8, width = 0.8 })
+cardFit.Parent = nil -- one UIScale per object: read here, applied through cardPop
+local cardPop = make("UIScale", { Scale = 1 }, card)
+local skipIcon = make("ImageLabel", { Name = "Icon", Image = Icons.Cash, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromOffset(86, 92),
+	Size = UDim2.fromOffset(112, 112), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 3 }, card)
+local function cardWords(text: string, y: number, h: number, max: number, color: Color3?): TextLabel
+	local l = label(card, text, UDim2.fromOffset(164, y), UDim2.fromOffset(282, h), 2.5)
+	l.ZIndex = 3
+	l.TextColor3 = color or Color3.new(1, 1, 1)
+	make("UITextSizeConstraint", { MinTextSize = 12, MaxTextSize = max }, l)
+	return l
+end
+cardWords("SKIP THE TUTORIAL?", 18, 30, 30, CYAN)
+local skipLine = cardWords("", 52, 40, 22)
+skipLine.RichText = true
+-- a button on Willem's art: 9-sliced so it keeps its round ends at any width
+local function artButton(image: string, rect: Rect, sliceScale: number, text: string, x: number, w: number): ImageButton
+	local b = make("ImageButton", { Image = image, ScaleType = Enum.ScaleType.Slice, SliceCenter = rect, SliceScale = sliceScale,
+		Position = UDim2.fromOffset(x, 96), Size = UDim2.fromOffset(w, 50), BackgroundTransparency = 1, AutoButtonColor = false, ZIndex = 3 }, card)
+	local t = label(b, text, UDim2.fromOffset(10, 9), UDim2.new(1, -20, 1, -18), 3)
+	t.ZIndex = 4
+	make("UITextSizeConstraint", { MinTextSize = 12, MaxTextSize = 30 }, t)
+	local sc = make("UIScale", { Scale = 1 }, b)
+	b.MouseEnter:Connect(function() TweenService:Create(sc, TweenInfo.new(0.12), { Scale = 1.05 }):Play() end)
+	b.MouseLeave:Connect(function() TweenService:Create(sc, TweenInfo.new(0.12), { Scale = 1 }):Play() end)
+	b.MouseButton1Down:Connect(function() sc.Scale = 0.95 end)
+	b.MouseButton1Up:Connect(function() sc.Scale = 1 end)
+	return b
+end
+-- (Roblox stores the green art at 1021 x 152 and the red at 967 x 959: slice rects are in those pixels)
+local yes = artButton(ART.Green, Rect.new(76, 60, 945, 92), 50 / 152, "SKIP", 164, 150)
+local no = artButton(ART.Red, Rect.new(230, 230, 737, 729), 0.06, "KEEP GOING", 322, 124)
+
+local skippedNow = false -- the next "tutorial complete" toast says "skipped"
+local skipFrom = 0 -- the tutorial step on screen (set by the frame loop below; `state` is declared later)
+local function rewardLeft(from: number): number
+	local total = C.TutorialBonus
+	for i = from, #STEPS do total += STEPS[i].reward end
+	return total
+end
+local function closeConfirm()
+	confirmGui.Enabled = false
+end
+local function openConfirm()
+	if skipFrom < 2 or not STEPS[skipFrom] then return end
+	skipLine.Text = 'You still get all its rewards: <font color="' .. "#" .. GREEN:ToHex() .. '">+' .. Format.cash(rewardLeft(skipFrom)) .. "</font>"
+	confirmGui.Enabled = true
+	cardPop.Scale = 0.75 * cardFit.Scale
+	TweenService:Create(cardPop, TweenInfo.new(0.28, Enum.EasingStyle.Back), { Scale = cardFit.Scale }):Play()
+end
+skipChip.Activated:Connect(openConfirm)
+no.Activated:Connect(closeConfirm)
+dim.Activated:Connect(closeConfirm)
+yes.Activated:Connect(function()
+	closeConfirm()
+	skippedNow = true
+	Net.event("CrusherAction"):FireServer("SkipTutorial", {})
+end)
+
 -- the headline sits under the top button row (Equip Best / Mega Crusher / My Factory)
 local function placeHeadline()
 	local row = me.PlayerGui:FindFirstChild("EquipBest", true) :: GuiObject?
@@ -223,9 +310,12 @@ local function finishStep(step: number, nextStep: number)
 	shown = nextStep
 	if nextStep > #STEPS then
 		-- all done: a short toast with the bonus, then the goals take over
-		setHeadline("TUTORIAL", "Tutorial complete! Have fun!")
+		skipChip.Visible = false confirmGui.Enabled = false
+		local skipped = skippedNow
+		skippedNow = false
+		setHeadline("TUTORIAL", if skipped then "Tutorial skipped! Have fun!" else "Tutorial complete! Have fun!")
 		title.TextColor3 = GREEN
-		setSub(nil, "+" .. Format.cash(C.TutorialBonus) .. " BONUS")
+		setSub(nil, if skipped then "+" .. Format.cash(rewardLeft(step)) .. " REWARDS" else "+" .. Format.cash(C.TutorialBonus) .. " BONUS")
 		hint.Visible = false
 		fadeIn()
 		levelUp:Play()
@@ -596,6 +686,7 @@ end
 local function switch(to: string?)
 	if mode == to then return end
 	mode = to
+	if to ~= "tutorial" then skipChip.Visible = false confirmGui.Enabled = false end
 	if to == nil then fadeOut() hideGuide() return end
 	quiet = false
 	if to == "tutorial" then shown = state.tutorial paint(shown)
@@ -634,6 +725,8 @@ RunService.RenderStepped:Connect(function()
 	if want == "goals" and state.goal > goalShown then task.spawn(finishGoal, goalShown, state.goal) return end
 	if os.clock() >= nextLook then
 		nextLook = os.clock() + 0.25
+		skipChip.Visible = want == "tutorial" and state.tutorial >= 2
+		skipFrom = if want == "tutorial" then state.tutorial else 0
 		if want == "tutorial" then
 			local step = STEPS[state.tutorial]
 			sameStep("t" .. state.tutorial)

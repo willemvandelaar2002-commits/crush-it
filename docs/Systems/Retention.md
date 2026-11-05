@@ -42,3 +42,14 @@ Levers: the daily reward + notifications (open us first), a first session past 1
   Studio uses *_studio stores. The invite prompt says "You both get a FREE Legendary crusher!".
 - **Willem:** Creator Dashboard > Engagement > Referral Rewards banner: reward "FREE Legendary crusher",
   limit "up to 5 rewards per inviter" (the banner must match the code).
+
+## 5 Nov: tutorial SKIP (vault V2 lihfolk-tutorial)
+- From tutorial step 2 a small "SKIP >>" chip sits right of "TUTORIAL n/8". It opens a confirm card on Willem's
+  art (come-back frame 133183009079484, green purchase button 106307684676239, red close button 86950187561147):
+  "SKIP THE TUTORIAL? You still get all its rewards: +$X" with SKIP / KEEP GOING.
+- Server (`CrusherAction "SkipTutorial"` -> `Rules.tutorialSkip`): finishes every remaining step, pays their
+  rewards plus the tutorial bonus, saves. Then the goals take over ("Fill 3 bays").
+- Analytics: custom event `TutorialSkipped` (value = step it left from, field = step id). The onboarding funnel
+  still logs the skipped steps as done (so the goal steps stay in order): subtract TutorialSkipped when reading
+  steps 3-9.
+- Also 5 Nov: stuck hints after 8 s (was 15); tutorial guidance stops pulsing with Reduced Motion.
