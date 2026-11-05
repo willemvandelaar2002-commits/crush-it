@@ -310,6 +310,7 @@ local function finishStep(step: number, nextStep: number)
 	shown = nextStep
 	if nextStep > #STEPS then
 		-- all done: a short toast with the bonus, then the goals take over
+		skipChip.Visible = false confirmGui.Enabled = false
 		local skipped = skippedNow
 		skippedNow = false
 		setHeadline("TUTORIAL", if skipped then "Tutorial skipped! Have fun!" else "Tutorial complete! Have fun!")
