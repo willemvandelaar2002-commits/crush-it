@@ -410,3 +410,4 @@
 - 2026-11-05: Cash pass ladder (Willem): 2x Cash (now R$ 19) -> 4x (R$ 49) -> 8x (R$ 129) -> 16x (R$ 299), four game passes, the highest owned counts (not multiplied together). The right-side 2X CASH button always offers the next step and disappears after 16x; shop panel and quick shop show only the next step too. The 2x Cash board beside Sell is removed. New pass ids are 0 until Willem creates them. See Systems/Shop.
 - 2026-11-05: Cash ladder pass ids filled in: 4x 2070673080, 8x 2070092535, 16x 2071704684 (prices 49 / 129 / 299).
 - 2026-11-06: Feedback rating logs a key (LoveIt / ItsOk / NotFun) in Custom Field 1: the label "IT'S OK" showed up as N/A in Creator Analytics (first numbers: 31 LOVE IT, 12 IT'S OK, 10 NOT FUN unique users).
+- 2026-11-06: Lucky pass R$ 99 -> 49 (Willem, on the dashboard; to see if it sells: 215 players tapped the Lucky sign in 7 days, nobody bought). The LOWER PRICE! ribbon already covers Lucky until 13 Nov.
