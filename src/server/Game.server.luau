@@ -165,7 +165,7 @@ local function syncAttributes(player: Player, data: any)
 	player:SetAttribute("CashMult", cashMult(data))
 	-- what one normal crush of the current object is worth (stats board)
 	player:SetAttribute("CrushValue", Config.Economy.ObjectValue(data.tier) * UPGRADE_BY_ID.Value.effect(data.levels.Value or 0) * cashMult(data)
-		* (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player))
+		* Store.cashPassMult(player) * FriendBoost.mult(player))
 	player:SetAttribute("Crushed", data.crushed)
 	player:SetAttribute("GoldenRush", data.goldenRush)
 	player:SetAttribute("AutoOn", data.autoCrush)
@@ -289,7 +289,7 @@ local function onCrush(player: Player)
 	end
 
 	local value = Config.Economy.ObjectValue(tier) * effect(data, "Value") * Config.VariantById[variant].mult * cashMult(data)
-		* (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player)
+		* Store.cashPassMult(player) * FriendBoost.mult(player)
 	-- no cash straight away: the object breaks into scrap to pick up and sell
 	Scrap.drop(player, slot.plot, pos, value, tier, variant)
 	data.crushed += 1
@@ -665,12 +665,12 @@ local function cashPerSecond(player: Player): number
 	local presses = math.ceil(Config.Economy.ObjectHp(tier) / effect(data, "Power"))
 	local seconds = presses * effect(data, "Speed") + Config.Economy.BeltSeconds + 0.4
 	local value = Config.Economy.ObjectValue(tier) * effect(data, "Value") * cashMult(data)
-		* (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player)
+		* Store.cashPassMult(player) * FriendBoost.mult(player)
 	local helpers = 0
 	for _, level in data.helpers do
 		helpers += Config.Helpers.Value(level, tier)
 	end
-	helpers *= cashMult(data) * (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player)
+	helpers *= cashMult(data) * Store.cashPassMult(player) * FriendBoost.mult(player)
 	return value / seconds + helpers / Config.Helpers.Tick
 end
 
@@ -687,7 +687,7 @@ Helpers.start({
 		Scrap.feed(player, data, plot, amount)
 	end,
 	mult = function(player: Player, data: any): number
-		return cashMult(data) * (if Store.hasPass(player, "DoubleCash") then 2 else 1) * FriendBoost.mult(player)
+		return cashMult(data) * Store.cashPassMult(player) * FriendBoost.mult(player)
 	end,
 })
 
