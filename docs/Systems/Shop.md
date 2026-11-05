@@ -356,3 +356,8 @@ quests; QuestRules keeps frenzies/goldenToys/turbos/gifts (they were wiped on lo
 - 5 Nov: red "LOWER PRICE!" ribbon (ShopPanel `lowerPrice`, `Store.PriceDrop`) on the four passes and the Starter Pack
   whose price Willem cut, hidden once owned, gone by itself on 13 Nov 00:00 Amsterdam. No "was" price shown.
   VIP went live at R$199 (new, so no ribbon).
+- 5 Nov (Willem's reference video; vault: "sections stacked in one scroll, featured first"): the shop is ONE scroll
+  (ShopPanel `scroll`): Featured (Starter Pack, Prism Mech) -> Crates (+ odds note) -> Boosts -> Passes + Roblox Plus
+  -> Cash. The tabs (FEATURED, CRATES, BOOSTS, PASSES, CASH) jump to their section and light up for the section in
+  view; the shop opens at the top. Cash: "Cash Pile / Cash Stack / Cash Vault" (10 min / 1 h / 4 h of earnings, the
+  Roblox names) and a "Time Skips" row (12H, 24H; vault art until Willem makes clock art).

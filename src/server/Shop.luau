@@ -85,7 +85,7 @@ for _, n in { "ShopButton", "QuickShopMore", "AutoButton", "DoubleCashOffer", "F
 	"OfferStarterPack", "OfflineX2", "OfflineX5", "OfferPrismMech", "OfferFactoryCrate", "OfferStarterPack" } do
 	SHOP_SOURCES[n] = true
 end
-for _, tab in { "FEATURED", "CRATES", "PACKS", "PASSES", "CASH" } do SHOP_SOURCES["Tab" .. tab] = true end
+for _, tab in { "FEATURED", "CRATES", "PACKS", "BOOSTS", "PASSES", "CASH" } do SHOP_SOURCES["Tab" .. tab] = true end
 for _, product in Store.Products do
 	SHOP_SOURCES["Moment" .. product.id] = true
 	SHOP_SOURCES["Offer" .. product.id] = true
