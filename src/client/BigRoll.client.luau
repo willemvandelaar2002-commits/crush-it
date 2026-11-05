@@ -137,7 +137,7 @@ local function cinematic(msg: any)
 	local flat = if machine then Vector3.new(P.X - machine.X, 0, P.Z - machine.Z)
 		else (function() local from = if look then look.Position else camera.CFrame.Position return Vector3.new(from.X - P.X, 0, from.Z - P.Z) end)()
 	flat = if flat.Magnitude > 1 then flat.Unit else Vector3.new(0, 0, 1)
-	local shot = CFrame.lookAt(P + flat * 26 + Vector3.new(0, 10, 0), P + Vector3.new(0, 7, 0))
+	local shot = CFrame.lookAt(P + flat * 23 + Vector3.new(0, 8, 0), P + Vector3.new(0, 7, 0))
 	camera.CameraType = Enum.CameraType.Scriptable
 	TweenService:Create(camera, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { CFrame = shot }):Play()
 	local shake = 0
@@ -223,7 +223,7 @@ local function cinematic(msg: any)
 		rod.Shape = Enum.PartType.Cylinder rod.Parent = press
 		press.PrimaryPart = head
 		-- it comes down into view during the count, hangs shaking over the pedestal, then slams
-		local hover = P + Vector3.new(0, 15, 0)
+		local hover = P + Vector3.new(0, 12, 0)
 		local value = Instance.new("CFrameValue") value.Value = CFrame.new(high) table.insert(trash, value)
 		local jitter = 0
 		value.Changed:Connect(function(cf) if press.Parent then press:PivotTo(cf) end end)
