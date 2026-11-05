@@ -6,7 +6,7 @@
 --   * floating text at the top, no box: a small cyan tag ("TUTORIAL 3/8",
 --     "GOAL 4 / 16"), one short order, and a line with the counter ("3 / 5")
 --     and the reward. The longer hint only shows for detours ("You need $50...")
---     or after 15 s on the same step;
+--     or after 8 s on the same step;
 --   * a thick glowing chevron trail from your feet to the target, a bobbing
 --     arrow and outline on it and a glowing disc on the floor under it; HUD
 --     buttons (Rewards, Index) get a bouncing arrow;
@@ -16,6 +16,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local GuiService = game:GetService("GuiService")
 local SoundService = game:GetService("SoundService")
 local Workspace = game:GetService("Workspace")
 
@@ -142,13 +143,15 @@ local state: any = nil
 local GOALS = C.Goals2
 local mode: string? = nil -- "tutorial" | "goals" | "finished" | nil (what the headline shows)
 local busy = false
--- hint timing: the long hint shows after 15 s on the same step
+-- hint timing: the long hint shows after HINT_AFTER s on the same step
+-- (5 Nov, vault V2 lihfolk-tutorial: "hints wait 6 to 10 s"; was 15)
+local HINT_AFTER = 8
 local stepKey, stepSince = "", 0
 local function sameStep(key: string)
 	if key ~= stepKey then stepKey = key stepSince = os.clock() end
 end
 local function showHint(default: string?, override: string?)
-	local text = override or (if os.clock() - stepSince > 15 then default else nil)
+	local text = override or (if os.clock() - stepSince > HINT_AFTER then default else nil)
 	hint.Text = if text then Style.controls(text) else ""
 	hint.Visible = text ~= nil
 end
@@ -568,7 +571,9 @@ local function guide(root: BasePart)
 	if target and not target:IsDescendantOf(Workspace) then target = nil end
 	local top = target and topOf(target)
 	path:update(root.Position, top, cached.text)
-	local pulse = 0.5 + 0.5 * math.sin(os.clock() * 5)
+	-- 5 Nov (vault V2: Reduced Motion): no pulsing or bobbing when the player turned motion down
+	local still = GuiService.ReducedMotionEnabled
+	local pulse = if still then 0.6 else 0.5 + 0.5 * math.sin(os.clock() * 5)
 	if top and target then
 		if outline.Parent ~= target then outline.Parent = target end
 		outline.Enabled = true
@@ -581,7 +586,7 @@ local function guide(root: BasePart)
 	local ui = cached.ui
 	if ui and ui.Visible then
 		uiArrow.Visible = true
-		uiArrow.Position = UDim2.fromOffset(ui.AbsolutePosition.X + ui.AbsoluteSize.X / 2, ui.AbsolutePosition.Y + ui.AbsoluteSize.Y + 4 + 8 * math.sin(os.clock() * 6))
+		uiArrow.Position = UDim2.fromOffset(ui.AbsolutePosition.X + ui.AbsoluteSize.X / 2, ui.AbsolutePosition.Y + ui.AbsoluteSize.Y + 4 + (if still then 4 else 8 * math.sin(os.clock() * 6)))
 	else uiArrow.Visible = false end
 end
 local function hideGuide()
