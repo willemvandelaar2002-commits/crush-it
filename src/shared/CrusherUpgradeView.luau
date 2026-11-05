@@ -60,7 +60,8 @@ function V.board(d,id,perks)
 		-- 5 Nov (Willem): from C.LuckBoardSecretFrom the Legendary+ odds barely move per level
 		-- ("1 in 10 > 1 in 10"), so the board shows Secret+ odds, which still change clearly
 		local secret=lv>=C.LuckBoardSecretFrom
-		local name,rank=if secret then "Secret+",5 else "Legendary+",4
+		local name=if secret then "Secret+" else "Legendary+"
+		local rank=if secret then 5 else 4
 		effect=if maxed then string.format("%s 1 in %d",name,topOdds(lv,lucky,rank)) else string.format("%s 1 in %d > 1 in %d",name,topOdds(lv,lucky,rank),topOdds(n,lucky,rank))
 	else
 		effect=if maxed then C.pedestals(lv).." choices / roll" else C.pedestals(lv).." > "..C.pedestals(n).." choices / roll"
