@@ -162,7 +162,7 @@ local function skipReward(p,d) return math.max(C.Goals.MinSkipReward,math.floor(
 -- Group membership (IsInGroup is cached for the session; GetGroupsAsync is fresh).
 local function checkGroup(p,fresh)
 	local ok,inGroup=pcall(function()
-		if not fresh then return p:IsInGroup(C.Goals.GroupId) end
+		if not fresh then return p:IsInGroupAsync(C.Goals.GroupId) end
 		for _,g in game:GetService("GroupService"):GetGroupsAsync(p.UserId) do if g.Id==C.Goals.GroupId then return true end end
 		return false
 	end)

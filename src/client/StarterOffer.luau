@@ -192,7 +192,7 @@ function Offer.build(gui: ScreenGui, deps: Deps)
 		if priceAsked or not product or product.productId == 0 then return end
 		priceAsked = true
 		task.spawn(function()
-			local ok, info = pcall(function() return MarketplaceService:GetProductInfo(product.productId, Enum.InfoType.Product) end)
+			local ok, info = pcall(function() return MarketplaceService:GetProductInfoAsync(product.productId, Enum.InfoType.Product) end)
 			if ok and info and type(info.PriceInRobux) == "number" then price = info.PriceInRobux else priceAsked = false end
 			paint()
 		end)

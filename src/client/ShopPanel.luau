@@ -114,7 +114,7 @@ local function priceOf(kind: string, id: number): number?
 		loading[key] = true
 		task.spawn(function()
 			local ok, info = pcall(function()
-				return MarketplaceService:GetProductInfo(id, if kind == "pass" then Enum.InfoType.GamePass else Enum.InfoType.Product)
+				return MarketplaceService:GetProductInfoAsync(id, if kind == "pass" then Enum.InfoType.GamePass else Enum.InfoType.Product)
 			end)
 			if ok and info and type(info.PriceInRobux) == "number" then
 				prices[key] = info.PriceInRobux
@@ -605,6 +605,24 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 
 	heading(pages.PASSES, "Gamepasses", 1)
 	passCards(pages.PASSES, 2)
+	-- 5 Nov (vault V2: Subscriptions and Premium Payouts, Roblox Plus): Roblox pays the
+	-- game 250 R$ a month for 3 months for every player who subscribes through this
+	-- button. Honest benefits only, no gameplay advantage, no pop-up: the player taps it.
+	heading(pages.PASSES, "Roblox Plus", 3)
+	do
+		local g = grid(pages.PASSES, 4)
+		local b = card(g, 1, "Roblox Plus", "Roblox's subscription: 10% off everything in this game, free private servers, and a [PLUS] tag in chat here.",
+			Color3.fromRGB(70, 150, 255), Icons.Trophy, function(button)
+				if player.HasRobloxSubscription then return end
+				local ok = pcall(function() MarketplaceService:PromptRobloxSubscriptionPurchase(player) end)
+				if not ok then shake(button) end
+			end)
+		local function update()
+			if player.HasRobloxSubscription then setCaption(b, "ACTIVE", GREY) else setCaption(b, "GET PLUS", Style.GREEN) end
+		end
+		player:GetPropertyChangedSignal("HasRobloxSubscription"):Connect(update)
+		table.insert(refreshers, update)
+	end
 
 	heading(pages.CASH, "Cash", 1)
 	productCards(pages.CASH, 2, Store.existing({ "CashSmall", "CashMedium", "CashLarge", "CashHuge", "CashMega" }))

@@ -142,7 +142,7 @@ function RobuxSigns.price(pass: any): number
 	if livePrice[id] == nil then
 		livePrice[id] = pass.price
 		task.spawn(function()
-			local ok, info = pcall(function() return MarketplaceService:GetProductInfo(id, Enum.InfoType.GamePass) end)
+			local ok, info = pcall(function() return MarketplaceService:GetProductInfoAsync(id, Enum.InfoType.GamePass) end)
 			if ok and info and type(info.PriceInRobux) == "number" then livePrice[id] = info.PriceInRobux end
 		end)
 	end
@@ -156,7 +156,7 @@ function RobuxSigns.productPrice(product: any): number
 	if liveProduct[id] == nil then
 		liveProduct[id] = product.price
 		task.spawn(function()
-			local ok, info = pcall(function() return MarketplaceService:GetProductInfo(id, Enum.InfoType.Product) end)
+			local ok, info = pcall(function() return MarketplaceService:GetProductInfoAsync(id, Enum.InfoType.Product) end)
 			if ok and info and type(info.PriceInRobux) == "number" then liveProduct[id] = info.PriceInRobux end
 		end)
 	end
