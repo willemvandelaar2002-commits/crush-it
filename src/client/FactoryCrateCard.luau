@@ -114,6 +114,7 @@ function Card.build(parent: Instance, o: any): Frame
 			Size = UDim2.fromOffset(150, 44), ZIndex = 16 }, body)
 		Style.button(price)
 		local corner = price:FindFirstChild("Corner") :: UICorner? if corner then corner.CornerRadius = UDim.new(0, 12) end
+		Style.buttonStuds(price)
 		make("UITextSizeConstraint", { MaxTextSize = 26 }, price)
 		make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) }, price)
 		price.Activated:Connect(function() Style.click() o.open() end)

@@ -373,6 +373,18 @@ function Style.button(btn: TextButton, color: Color3?)
 	Style.feedback(btn)
 end
 
+-- 5 Nov (Willem's reference shop): a faint stud texture on a button, like the
+-- studded price buttons there. Sits on the button under its caption child.
+function Style.buttonStuds(btn: GuiObject, tile: number?)
+	local st = Style.studsImage(btn, tile or 22, 0.82)
+	st.Name = "ButtonStuds"
+	st.ZIndex = btn.ZIndex
+	local corner = btn:FindFirstChild("Corner") :: UICorner?
+	local c = st:FindFirstChild("Corner") :: UICorner?
+	if corner and c then c.CornerRadius = corner.CornerRadius end
+	return st
+end
+
 -- Recolour a button made with Style.button.
 function Style.setButtonColor(btn: TextButton, c: Color3)
 	local fill = btn:FindFirstChild("Fill") :: UIGradient?

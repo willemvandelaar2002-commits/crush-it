@@ -102,6 +102,7 @@ function Card.build(parent: Instance, o: any): Frame
 		Size = UDim2.fromOffset(220, 42), ZIndex = 13 }, body)
 	Style.button(view)
 	local corner = view:FindFirstChild("Corner") :: UICorner? if corner then corner.CornerRadius = UDim.new(0, 12) end
+	Style.buttonStuds(view)
 	make("UITextSizeConstraint", { MaxTextSize = 26 }, view)
 	make("UIPadding", { PaddingTop = UDim.new(0, 5), PaddingBottom = UDim.new(0, 5) }, view)
 	-- 5 Nov (Willem: "the prices should be there as well"): with o.buyState the button
