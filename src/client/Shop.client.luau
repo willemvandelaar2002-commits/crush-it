@@ -451,7 +451,7 @@ local function priceText(id: string): string
 	local product = Store.productById(id)
 	if not product then return "" end
 	if product.productId == 0 then return "SOON" end
-	local ok, info = pcall(function() return MarketplaceService:GetProductInfo(product.productId, Enum.InfoType.Product) end)
+	local ok, info = pcall(function() return MarketplaceService:GetProductInfoAsync(product.productId, Enum.InfoType.Product) end)
 	return "R$ " .. tostring(if ok and info and info.PriceInRobux then info.PriceInRobux else product.price)
 end
 local x2Price = olabel(offlineCard, "", UDim2.fromOffset(40 + COL + 18, 422), UDim2.fromOffset(COL - 36, 30), Color3.fromRGB(150, 255, 120), 2.5)

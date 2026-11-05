@@ -324,3 +324,11 @@ from OfferConfig, live Robux price (GetProductInfo; id 0 = COMING SOON). Buy = O
 - server/ServerLuck (workspace ServerLuckEnds/ServerLuckBy; perks.lucky x2), server/Turbo.grantNow, Shop.grant handlers; VIP x1.5 in perks.mult and 12 h offline.
 - client/MomentOffer (one small card, max one unprompted offer per session with the starter offer: attribute AutoOfferShown), WeekendHud Server Luck pill, Turbo panel Instant Turbo strip, VipTag chat prefix.
 - RobuxSigns: product signs (CashSmall, CashMedium) with the plot owner's amount, at plot x 12 z 98.
+
+## 5 Nov: Roblox Plus card and V2 audit fixes
+- Shop > Passes ends with a Roblox Plus card (`PromptRobloxSubscriptionPurchase`, shows ACTIVE when
+  `player.HasRobloxSubscription`). Roblox pays 250 R$/month for a subscriber's first 3 months when they sign up
+  through it (vault V2, Subscriptions and Premium Payouts). Perk: [PLUS] chat tag (VipTag.client), cosmetic only.
+- `ShopOpened` analytics: only known source names (else "Other"), max one per 0.5 s per player.
+- Pass ownership at join: 4 tries with backoff.
+- See [[Vault audit 2026-11-05 code audit V2]].

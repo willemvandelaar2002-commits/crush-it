@@ -59,16 +59,44 @@ end
 local function checkPasses(player: Player)
 	for _, pass in Store.Passes do
 		if pass.gamePassId ~= 0 then
-			local ok, owns = pcall(function()
-				return MarketplaceService:UserOwnsGamePassAsync(player.UserId, pass.gamePassId)
-			end)
-			if ok and owns then
-				setPass(player, pass.perk, true)
+			-- 5 Nov (vault V2 audit): retry with backoff, so a short Roblox hiccup at
+			-- join doesn't switch off a paid pass for the whole session
+			for attempt = 1, 4 do
+				local ok, owns = pcall(function()
+					return MarketplaceService:UserOwnsGamePassAsync(player.UserId, pass.gamePassId)
+				end)
+				if ok then
+					if owns then setPass(player, pass.perk, true) end
+					break
+				end
+				if not player.Parent then return end
+				task.wait(2 * attempt)
 			end
 		end
 	end
 	passChecked[player] = true
 end
+
+-- 5 Nov (vault V2 audit; Analytics and Funnels: "no free text in custom fields", max
+-- 8,000 value combinations): the shop-opened analytics only accepts names the game
+-- itself sends; anything else is logged as "Other", at most one event per 0.5 s.
+local SHOP_SOURCES: { [string]: boolean } = {}
+for _, n in { "ShopButton", "QuickShopMore", "AutoButton", "DoubleCashOffer", "FeaturedOffer", "StarterOffer",
+	"OfferStarterPack", "OfflineX2", "OfflineX5", "OfferPrismMech", "OfferFactoryCrate", "OfferStarterPack" } do
+	SHOP_SOURCES[n] = true
+end
+for _, tab in { "FEATURED", "CRATES", "PACKS", "PASSES", "CASH" } do SHOP_SOURCES["Tab" .. tab] = true end
+for _, product in Store.Products do
+	SHOP_SOURCES["Moment" .. product.id] = true
+	SHOP_SOURCES["Offer" .. product.id] = true
+end
+local lastShopEvent: { [Player]: number } = {}
+local function shopSource(player: Player, tab: any): string?
+	if os.clock() - (lastShopEvent[player] or 0) < 0.5 then return nil end
+	lastShopEvent[player] = os.clock()
+	return if typeof(tab) == "string" and SHOP_SOURCES[tab] then tab else "Other"
+end
+Players.PlayerRemoving:Connect(function(p) lastShopEvent[p] = nil end)
 
 -- Offline earnings -----------------------------------------------------------
 
@@ -269,10 +297,12 @@ function Shop.start(gameApi: Api)
 	Net.event("OfflineAction").OnServerEvent:Connect(function(player, action)
 		if action == "Collect" then collectOffline(player) end
 	end)
-	Net.event("ShopOpened").OnServerEvent:Connect(function(player, tab)
-		Analytics.custom(player, "ShopOpened", 1, if typeof(tab) == "string" then tab:sub(1, 30) else nil)
+	Net.event("ShopOpened").OnServerEvent:Connect(function(player, raw)
+		local tab = shopSource(player, raw)
+		if not tab then return end
+		Analytics.custom(player, "ShopOpened", 1, tab)
 		-- tab switches ("Tab...") are the same visit
-		if not (typeof(tab) == "string" and tab:sub(1, 3) == "Tab") then shopStep(player, 1, "1 Opened the shop", true) end
+		if tab:sub(1, 3) ~= "Tab" then shopStep(player, 1, "1 Opened the shop", true) end
 	end)
 	-- every developer-product prompt that was shown (client or server prompted)
 	MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId: number)

@@ -400,7 +400,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if #ids==0 then return false,"Pick the crushers you want to trash first." end
 		if #ids>C.MaxInventory then return false,"Too many crushers in one go." end
 		local equipped={} for _,id in s.equipped do equipped[id]=true end
-		local want={} for _,id in ids do if type(id)=="string" then want[id]=true end end
+		local want={} for i=1,#ids do local id=ids[i] if type(id)=="string" then want[id]=true end end -- 5 Nov: only the counted list part
 		local gone=0
 		for _,item in s.owned do if want[item.id] and not equipped[item.id] then gone+=1 end end
 		if gone==0 then return false,"Those crushers are equipped. Take them out of their bay first." end

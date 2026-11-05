@@ -183,7 +183,7 @@ local function isFriend(p: Player): boolean
 		friendCache[p.UserId] = false
 		task.spawn(function()
 			local ok, yes = pcall(function()
-				return player:IsFriendsWith(p.UserId)
+				return player:IsFriendsWithAsync(p.UserId)
 			end)
 			friendCache[p.UserId] = ok and yes
 		end)

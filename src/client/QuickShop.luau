@@ -37,7 +37,7 @@ local function price(kind: string, id: number, done: () -> ()): number?
 		prices[key] = false
 		task.spawn(function()
 			local ok, info = pcall(function()
-				return MarketplaceService:GetProductInfo(id, if kind == "pass" then Enum.InfoType.GamePass else Enum.InfoType.Product)
+				return MarketplaceService:GetProductInfoAsync(id, if kind == "pass" then Enum.InfoType.GamePass else Enum.InfoType.Product)
 			end)
 			prices[key] = if ok and info and type(info.PriceInRobux) == "number" then info.PriceInRobux else false
 			done()

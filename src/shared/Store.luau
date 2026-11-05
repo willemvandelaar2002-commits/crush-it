@@ -129,7 +129,7 @@ function Store.livePrice(kind: string, id: number, fallback: number, onPrice: (n
 	if id == 0 or livePrices[kind .. id] then return end
 	task.spawn(function()
 		local ok, info = pcall(function()
-			return game:GetService("MarketplaceService"):GetProductInfo(id, if kind == "pass" then Enum.InfoType.GamePass else Enum.InfoType.Product)
+			return game:GetService("MarketplaceService"):GetProductInfoAsync(id, if kind == "pass" then Enum.InfoType.GamePass else Enum.InfoType.Product)
 		end)
 		if ok and info and type(info.PriceInRobux) == "number" then
 			livePrices[kind .. id] = info.PriceInRobux

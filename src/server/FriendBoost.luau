@@ -21,7 +21,7 @@ local function areFriends(a: Player, b: Player): boolean
 	local k = key(a, b)
 	if cache[k] == nil then
 		local ok, yes = pcall(function()
-			return a:IsFriendsWith(b.UserId)
+			return a:IsFriendsWithAsync(b.UserId)
 		end)
 		cache[k] = ok and yes == true
 	end
