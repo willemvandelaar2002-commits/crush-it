@@ -236,7 +236,6 @@ Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitOffe
 fitOffers()
 
 -- 2X CASH: rainbow tile with a dark outline, big text and "ONLY R$ 249" under it.
-local doublePass = Store.passByPerk("DoubleCash")
 local doubleHolder = make("Frame", { Size = UDim2.fromOffset(200, 96), BackgroundTransparency = 1, LayoutOrder = 1, Parent = offers })
 local doubleButton = make("TextButton", {
 	Name = "DoubleCashOffer", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.42), Size = UDim2.fromOffset(190, 66),
@@ -256,9 +255,13 @@ Style.text(doublePrice, 3)
 doublePrice.TextColor3 = Color3.fromRGB(150, 255, 110)
 Style.wobble(doubleButton, 4, 2.5)
 Style.feedback(doubleButton)
+-- 5 Nov (Willem): the button climbs the cash ladder: 2X -> 4X -> 8X -> 16X CASH
+-- (Store.CashLadder), always offering the next one; gone after 16x.
+local doubleNext: string? = nil
 doubleButton.Activated:Connect(function()
+	if not doubleNext then return end
 	Net.event("ShopOpened"):FireServer("DoubleCashOffer")
-	buyPass("DoubleCash")
+	buyPass(doubleNext)
 end)
 
 -- Featured pass card: gradient panel, "BEST!" ribbon, big icon, name and price.
@@ -312,10 +315,14 @@ featuredCard.Activated:Connect(function()
 end)
 
 local function refreshOffers()
-	doubleHolder.Visible = doublePass ~= nil and not Store.hasPass(player, "DoubleCash")
-	if doublePass then
-		local pass = doublePass
-		Store.livePrice("pass", pass.gamePassId, pass.price, function(n) doublePrice.Text = "ONLY R$ " .. n end)
+	local nextPass = Store.nextCashPass(player)
+	doubleNext = if nextPass then nextPass.perk else nil
+	doubleHolder.Visible = nextPass ~= nil
+	if nextPass then
+		doubleText.Text = string.upper(nextPass.title:sub(1, -6)) .. " Cash" -- "4X Cash"
+		Store.livePrice("pass", nextPass.gamePassId, nextPass.price, function(n)
+			if doubleNext == nextPass.perk then doublePrice.Text = "ONLY R$ " .. n end
+		end)
 	end
 	featuredPerk = nil
 	for _, f in FEATURED do

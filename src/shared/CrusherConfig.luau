@@ -26,7 +26,8 @@ local C = {
 		-- (31 Oct, later: Auto Collect beside the bin, 2x Cash beside Sell, Lucky
 		-- by the road; no Production Boost sign)
 		{ x = -58, z = 78, yaw = math.pi / 2, perks = { "AutoCollect" } },
-		{ x = -42, z = 96, yaw = math.pi, perks = { "DoubleCash" } },
+		-- (5 Nov: the 2x Cash sign beside Sell is gone: Willem; the cash passes are a
+		-- ladder now, sold from the button on the right)
 		{ x = 13, z = 74, yaw = -math.pi / 2, perks = { "Lucky" } },
 		-- (5 Nov: the time-skip signs are gone again: Willem didn't like them by the road;
 		-- RobuxSigns can still build product signs if a better spot comes up)

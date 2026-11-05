@@ -260,7 +260,9 @@ Custom events: ShopOpened (where from), PassPurchase, RobuxPurchase, Rebirth.
 first versions made from an in-game shot of a golden car in the press.
 
 ## Offer buttons (right side, Shop.client.luau)
-- Rainbow wobbling "2X Cash / ONLY R$ 249" button (DoubleCash pass); hidden once owned.
+- Rainbow wobbling "2X Cash / ONLY R$ x" button. 5 Nov: it climbs the cash pass ladder
+  (Store.CashLadder): 2X -> 4X -> 8X -> 16X CASH, always the next one up; gone after 16x
+  (or while the next pass has id 0).
 - Featured pass card under it with a "BEST!" ribbon: Auto Crush, then Lucky, then Offline Earnings (first one not owned); hidden when all owned.
 - Both fire ShopOpened analytics ("DoubleCashOffer" / "FeaturedOffer") and prompt the pass ("Coming soon!" while ids are 0).
 - SHOP is now a big icon button with a "!" badge until the shop is opened once per session; hidden offers while the book is open.
@@ -373,3 +375,11 @@ quests; QuestRules keeps frenzies/goldenToys/turbos/gifts (they were wiped on lo
   price/OWNED button) in cyan/blue, pink/purple or yellow/orange. Roblox Plus is one full-width row. The Starter
   Pack details show three big reward tiles (featured-card colours) and the live price on BUY. Icons bob 2.5 px
   (ShowcaseMotion, paused when the shop is hidden); Style.feedback press is now 0.97.
+
+## 5 Nov: cash pass ladder (Willem)
+Four game passes: `DoubleCash` 2x (R$ 19), `CashX4` 4x (R$ 49), `CashX8` 8x (R$ 129), `CashX16` 16x (R$ 299).
+You get the highest one you own (`Store.cashPassMult`), not all multiplied together, so 16x is 16x (with the
+VIP x1.5 and the timed boosts still on top, like before). The right-side button, the shop panel and the quick
+shop only offer the next step (`Store.nextCashPass`); the shop panel shows your top one as OWNED at the end.
+New passes have id 0 until Willem creates them (hidden until then). The 2x Cash sign beside Sell is gone
+(C.RobuxSignSpots). Owning a higher pass without the lower ones (bought from the game page) works fine.
