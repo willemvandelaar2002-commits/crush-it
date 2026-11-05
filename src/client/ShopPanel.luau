@@ -411,6 +411,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	end
 
 	-- Banners --------------------------------------------------------------------------
+	local lowerPrice: (GuiObject, string, number?) -> () -- defined with the cards below
 	local function starterBanner(page: ScrollingFrame, order: number)
 		-- 31 Oct: candy card (client/StarterPackCard); contents from OfferConfig/BoostConfig
 		local function cashText(): (string, string)
@@ -498,7 +499,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		return b, d
 	end
 	-- 5 Nov: the red "LOWER PRICE!" ribbon in a card's top-left corner (Store.PriceDrop)
-	local function lowerPrice(card: GuiObject, key: string, scale: number?)
+	lowerPrice = function(card: GuiObject, key: string, scale: number?)
 		if not Store.priceDropped(key) then return end
 		local s = scale or 1
 		local r = make("Frame", { Name = "LowerPrice", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromOffset(34 * s, 12 * s),
