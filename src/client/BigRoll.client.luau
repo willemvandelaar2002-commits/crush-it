@@ -95,6 +95,15 @@ local function cinematic(msg: any)
 	end
 	hideHud()
 	table.insert(conns, RunService.RenderStepped:Connect(hideHud))
+	-- world signs around the pedestal (LOCKED, ??? cards) would clutter the shot
+	local signs: { BillboardGui } = {}
+	for _, b in workspace:GetDescendants() do
+		if b:IsA("BillboardGui") and b.Enabled then
+			local adornee = b.Adornee or b.Parent
+			local at = if adornee and adornee:IsA("BasePart") then adornee.Position elseif adornee and adornee:IsA("Attachment") then adornee.WorldPosition else nil
+			if at and (at - P).Magnitude < 70 then b.Enabled = false table.insert(signs, b) end
+		end
+	end
 	local cc = Instance.new("ColorCorrectionEffect") cc.Name = "BigRollDim" cc.Parent = Lighting
 	TweenService:Create(cc, TweenInfo.new(0.6), { Brightness = -0.32, Saturation = -0.55, Contrast = 0.1, TintColor = WHITE:Lerp(color, 0.15) }):Play()
 	sound(Config.Sounds.BoomHit, 0.5, 0.6)
@@ -119,13 +128,14 @@ local function cinematic(msg: any)
 	local skip = Instance.new("TextButton") skip.Name = "Skip" skip.AnchorPoint = Vector2.new(1, 1) skip.Position = UDim2.new(1, -24, 1, -24)
 	skip.Size = UDim2.fromOffset(150, 52) skip.Text = "Skip" skip.Visible = canSkip skip.ZIndex = 6 skip.Parent = gui
 	Style.button(skip, Style.Colors.Gold)
+	skip.TextScaled = true Style.text(skip, 2)
 
 	-- the camera looks at the pedestal from the player's side
 	local look = me.Character and me.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
 	local from = if look then look.Position else camera.CFrame.Position
 	local flat = Vector3.new(from.X - P.X, 0, from.Z - P.Z)
 	flat = if flat.Magnitude > 1 then flat.Unit else Vector3.new(0, 0, 1)
-	local shot = CFrame.lookAt(P + flat * 22 + Vector3.new(0, 9, 0), P + Vector3.new(0, 4, 0))
+	local shot = CFrame.lookAt(P + flat * 26 + Vector3.new(0, 10, 0), P + Vector3.new(0, 7, 0))
 	camera.CameraType = Enum.CameraType.Scriptable
 	TweenService:Create(camera, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { CFrame = shot }):Play()
 	local shake = 0
@@ -210,17 +220,32 @@ local function cinematic(msg: any)
 		local rod = part("Rod", Vector3.new(60, 3.2, 3.2), CFrame.new(high + Vector3.new(0, 32, 0)) * CFrame.Angles(0, 0, math.pi / 2), Color3.fromRGB(150, 155, 165), Enum.Material.Metal)
 		rod.Shape = Enum.PartType.Cylinder rod.Parent = press
 		press.PrimaryPart = head
-		local drop = 0.42
+		-- it comes down into view during the count, hangs shaking over the pedestal, then slams
+		local hover = P + Vector3.new(0, 15, 0)
+		local value = Instance.new("CFrameValue") value.Value = CFrame.new(high) table.insert(trash, value)
+		local jitter = 0
+		value.Changed:Connect(function(cf) if press.Parent then press:PivotTo(cf) end end)
+		table.insert(conns, RunService.Heartbeat:Connect(function()
+			if jitter > 0 and press.Parent and not still then
+				press:PivotTo(value.Value * CFrame.new(math.random(-10, 10) / 100 * jitter, 0, math.random(-10, 10) / 100 * jitter))
+			end
+		end))
+		task.delay(0.8, function()
+			if finished then return end
+			TweenService:Create(value, TweenInfo.new(1.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Value = CFrame.new(hover) }):Play()
+			sound(Config.Sounds.Hiss, 0.6, 0.7)
+			task.delay(1.3, function() jitter = 1 end)
+		end)
+		local drop = 0.22
 		task.delay(math.max(0, impactIn - drop), function()
 			if finished then return end
+			jitter = 0
 			local landed = CFrame.new(P + Vector3.new(0, 2.6, 0))
-			local value = Instance.new("CFrameValue") value.Value = CFrame.new(high) table.insert(trash, value)
-			value.Changed:Connect(function(cf) if press.Parent then press:PivotTo(cf) end end)
 			TweenService:Create(value, TweenInfo.new(drop, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Value = landed }):Play()
 			task.delay(drop, function()
 				if finished then return end
 				impact()
-				task.delay(0.35, function()
+				task.delay(0.5, function()
 					if not press.Parent then return end
 					TweenService:Create(value, TweenInfo.new(0.9, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Value = CFrame.new(high) }):Play()
 				end)
@@ -257,6 +282,7 @@ local function cinematic(msg: any)
 		local hum = me.Character and me.Character:FindFirstChildOfClass("Humanoid")
 		if hum then camera.CameraSubject = hum end
 		for g in hidden do if g.Parent then g.Enabled = true end end
+		for _, b in signs do if b.Parent then b.Enabled = true end end
 		for _, x in trash do if x ~= gui then x:Destroy() end end
 		gui:Destroy()
 		playing = false
@@ -264,7 +290,7 @@ local function cinematic(msg: any)
 	skip.Activated:Connect(finish)
 	task.delay(impactIn + 0.25, function()
 		if finished then return end
-		odds.Text = "[ " .. final .. " ]" odds.TextColor3 = color
+		odds.Text = "[ " .. final .. " ]" odds.TextColor3 = color:Lerp(WHITE, 0.35)
 		local card = Instance.new("TextLabel") card.Name = "Card" card.BackgroundTransparency = 1 card.AnchorPoint = Vector2.new(0.5, 0.5)
 		card.Position = UDim2.fromScale(0.5, 0.78) card.Size = UDim2.fromScale(0.7, 0.09) card.TextScaled = true
 		card.Text = tostring(msg.name) card.TextColor3 = WHITE Style.text(card, 4) card.Parent = gui
