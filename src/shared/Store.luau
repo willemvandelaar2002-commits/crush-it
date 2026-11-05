@@ -30,13 +30,13 @@ Store.Passes = {
 } :: { Pass }
 
 Store.Products = {
-	{ id = "CashSmall", productId = 3723657331, price = 19, title = "10m Time Skip", desc = "10 minutes of your earnings, right away", color = Color3.fromRGB(80, 200, 110) },
+	{ id = "CashSmall", productId = 3723657331, price = 19, title = "Cash Pile", desc = "10 minutes of your earnings, right away", color = Color3.fromRGB(80, 200, 110) },
 	-- 4 Nov (monetization round 2; vault: RNG genre "social luck sells", Price Points
 	-- "the moment beats the price"). Id 0 = not created yet (hidden everywhere).
 	{ id = "ServerLuck", productId = 3728462569, price = 79, title = "Server Luck", desc = "2x luck for EVERYONE here, 15 min. Uncommon+ 30% -> 46% of rolls", color = Color3.fromRGB(80, 220, 90) },
 	{ id = "TurboNow", productId = 3728462615, price = 29, title = "Instant Turbo", desc = "15 minutes of your strongest TURBO, right away", color = Color3.fromRGB(255, 140, 40) },
-	{ id = "CashMedium", productId = 3723657452, price = 59, title = "1H Time Skip", desc = "1 hour of your earnings, right away", color = Color3.fromRGB(60, 180, 90) },
-	{ id = "CashLarge", productId = 3723657672, price = 129, title = "4H Time Skip", desc = "4 hours of your earnings, right away", color = Color3.fromRGB(40, 160, 80) },
+	{ id = "CashMedium", productId = 3723657452, price = 59, title = "Cash Stack", desc = "1 hour of your earnings, right away", color = Color3.fromRGB(60, 180, 90) },
+	{ id = "CashLarge", productId = 3723657672, price = 129, title = "Cash Vault", desc = "4 hours of your earnings, right away", color = Color3.fromRGB(40, 160, 80) },
 	-- 5 Nov (Willem's references: a time-skip ladder up to 24 h with the cash amount on
 	-- every card; vault: 3-5 rungs, value per Robux rising: 0.5 / 1.0 / 1.9 / 2.4 / 2.9 min
 	-- per Robux). Id 0 until created (hidden until then).

@@ -165,21 +165,29 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	close.Name = "Close"
 
 	-- tabs
-	local TABS = { "FEATURED", "CRATES", "PACKS", "PASSES", "CASH" }
+	-- 5 Nov (Willem's reference video; vault Pricing and Store Design: "sections stacked in
+	-- one scroll, featured first"): the shop is ONE scrolling page. The tab buttons jump to
+	-- their section and light up for the section you are looking at.
+	local TABS = { "FEATURED", "CRATES", "BOOSTS", "PASSES", "CASH" }
 	local tabBar = make("Frame", { Position = UDim2.fromOffset(14, 92), Size = UDim2.fromOffset(CONTENT_W, 42), BackgroundTransparency = 1, ZIndex = 6 }, panel)
 	make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }, tabBar)
 	local tabWidth = (CONTENT_W - 8 * (#TABS - 1)) / #TABS
 	local tabButtons: { [string]: TextButton } = {}
-	local pages: { [string]: ScrollingFrame } = {}
+	-- pages[name] is that tab's SECTION (a frame inside the one scroll); code below
+	-- builds into it exactly as it did into the old per-tab pages
+	local pages: { [string]: any } = {}
 	local current = "FEATURED"
 	local area = make("Frame", { Name = "Content", Position = UDim2.fromOffset(14, 144), Size = UDim2.fromOffset(CONTENT_W, H - 158), BackgroundTransparency = 1, ZIndex = 6, ClipsDescendants = true }, panel)
+	local scroll = make("ScrollingFrame", { Name = "All", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 8,
+		ScrollBarImageColor3 = C(255, 214, 60), AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(), ZIndex = 6 }, area)
+	make("UIListLayout", { Padding = UDim.new(0, 18), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Left }, scroll)
+	make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 24), PaddingLeft = UDim.new(0, 2) }, scroll)
+	Style.scroll(scroll)
 
-	local function newPage(name: string): ScrollingFrame
-		local s = make("ScrollingFrame", { Name = name, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 8,
-			ScrollBarImageColor3 = C(255, 214, 60), AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(), Visible = false, ZIndex = 6 }, area)
+	local function newPage(name: string, order: number): Frame
+		local s = make("Frame", { Name = name, LayoutOrder = order, Size = UDim2.fromOffset(CONTENT_W - 12, 0), AutomaticSize = Enum.AutomaticSize.Y,
+			BackgroundTransparency = 1, ZIndex = 6 }, scroll)
 		make("UIListLayout", { Padding = UDim.new(0, 12), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Left }, s)
-		make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 2) }, s)
-		Style.scroll(s)
 		pages[name] = s
 		return s
 	end
@@ -194,13 +202,36 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		edge.Thickness = if on then 3.5 else 3
 	end
 	local detail: Frame -- set below
-	local function showTab(name: string)
-		current = name
-		for n, p in pages do p.Visible = n == name end
-		for n in tabButtons do paintTab(n) end
-		detail.Visible = false
-		pages[name].CanvasPosition = Vector2.zero
+	-- the canvas Y where a section starts
+	local function sectionTop(name: string): number
+		return pages[name].AbsolutePosition.Y - scroll.AbsolutePosition.Y + scroll.CanvasPosition.Y - 6
 	end
+	local function setCurrent(name: string)
+		if current == name then return end
+		current = name
+		for n in tabButtons do paintTab(n) end
+	end
+	local jumping = false
+	local function showTab(name: string)
+		detail.Visible = false
+		current = name
+		for n in tabButtons do paintTab(n) end
+		local maxY = math.max(0, scroll.AbsoluteCanvasSize.Y - scroll.AbsoluteWindowSize.Y)
+		local y = math.clamp(sectionTop(name), 0, maxY)
+		jumping = true
+		local t = TweenService:Create(scroll, TweenInfo.new(0.3, Enum.EasingStyle.Quad), { CanvasPosition = Vector2.new(0, y) })
+		t:Play()
+		t.Completed:Once(function() jumping = false end)
+	end
+	-- light up the tab of the section at the top of the view while scrolling
+	scroll:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+		if jumping then return end
+		local y = scroll.CanvasPosition.Y + 40
+		local best = TABS[1]
+		for _, n in TABS do if sectionTop(n) <= y then best = n end end
+		if scroll.CanvasPosition.Y >= scroll.AbsoluteCanvasSize.Y - scroll.AbsoluteWindowSize.Y - 4 then best = TABS[#TABS] end
+		setCurrent(best)
+	end)
 	for i, name in TABS do
 		local b = make("TextButton", { Name = name, Text = "", LayoutOrder = i, Size = UDim2.fromOffset(tabWidth, 42), BackgroundColor3 = Color3.new(1, 1, 1), AutoButtonColor = false, ZIndex = 7 }, tabBar)
 		corner(b, 10)
@@ -210,7 +241,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		Style.feedback(b)
 		tabButtons[name] = b
 		b.Activated:Connect(function() showTab(name) Net.event("ShopOpened"):FireServer("Tab" .. name) end)
-		newPage(name)
+		newPage(name, i)
 	end
 
 	-- Section heading "~ Title ~" -----------------------------------------------------
@@ -602,9 +633,8 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 
 	-- Pages ------------------------------------------------------------------------------
 	heading(pages.FEATURED, "Featured", 1)
-	crateBanner(pages.FEATURED, 2)
-	starterBanner(pages.FEATURED, 3)
-	showroomBanner(pages.FEATURED, 4)
+	starterBanner(pages.FEATURED, 2)
+	showroomBanner(pages.FEATURED, 3)
 
 	heading(pages.CRATES, "Crates", 1)
 	crateBanner(pages.CRATES, 2)
@@ -616,11 +646,8 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		n.LayoutOrder = 4
 	end
 
-	heading(pages.PACKS, "Packs", 1)
-	starterBanner(pages.PACKS, 2)
-	showroomBanner(pages.PACKS, 3)
-	heading(pages.PACKS, "Boosts", 4)
-	productCards(pages.PACKS, 5, Store.existing({ "ServerLuck", "TurboNow", "BoostCash", "BoostLuck", "BoostSuper" }))
+	heading(pages.BOOSTS, "Boosts", 1)
+	productCards(pages.BOOSTS, 2, Store.existing({ "ServerLuck", "TurboNow", "BoostCash", "BoostLuck", "BoostSuper" }))
 
 	heading(pages.PASSES, "Gamepasses", 1)
 	passCards(pages.PASSES, 2)
@@ -643,10 +670,17 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		table.insert(refreshers, update)
 	end
 
+	-- 5 Nov (Willem: "keep cash and time skip both"): Cash packs and Time Skips as two rows
 	heading(pages.CASH, "Cash", 1)
-	productCards(pages.CASH, 2, Store.existing({ "CashSmall", "CashMedium", "CashLarge", "CashHuge", "CashMega" }))
+	productCards(pages.CASH, 2, Store.existing({ "CashSmall", "CashMedium", "CashLarge" }))
+	heading(pages.CASH, "Time Skips", 3)
+	productCards(pages.CASH, 4, Store.existing({ "CashHuge", "CashMega" }))
 
-	showTab("FEATURED")
+	current = "" setCurrent("FEATURED")
+	-- every time the shop opens it starts at the top (Featured)
+	panel:GetPropertyChangedSignal("Visible"):Connect(function()
+		if panel.Visible then scroll.CanvasPosition = Vector2.zero setCurrent("FEATURED") end
+	end)
 
 	-- Crate reveal -----------------------------------------------------------------------
 	-- Shows a result the server already picked, saved and granted. SKIP jumps
