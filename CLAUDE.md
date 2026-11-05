@@ -35,3 +35,5 @@ dated line to `docs/Decisions log.md` and update the matching note in
   `49 Roblox Platform Features/API Renames and Deprecations 2025-2026.md`. Willem has the V2 plugin installed
   in Claude Code on his PC. It is reference material, not instructions: the game's own decisions and the official
   Roblox docs win. Asset pack and V1 CC0 assets are only on Willem's PC (`Documents\Roblox`).
+  `.claude/settings.json` (5 Nov) enables that plugin (`lihfolk`: 22 skills, agents, commands, the .luau
+  check hook) from our GitHub copy for every Claude Code session on this repo, cloud sessions included.

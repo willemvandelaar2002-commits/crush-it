@@ -1,0 +1,10 @@
+{
+  "extraKnownMarketplaces": {
+    "lihfolk": {
+      "source": { "source": "github", "repo": "willemvandelaar2002-commits/roblox-vault" }
+    }
+  },
+  "enabledPlugins": {
+    "lihfolk@lihfolk": true
+  }
+}
