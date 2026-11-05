@@ -495,7 +495,7 @@ end)
 -- saved) replaces it; after 15 s it explains that it arrives by itself, even after a rejoin.
 -- (its own ScreenGui: the shop HUD is hidden early on, purchases can come from anywhere)
 local processingGui = make("ScreenGui", { Name = "PurchaseProcessing", ResetOnSpawn = false, DisplayOrder = 60, Parent = player.PlayerGui })
-local processing = make("Frame", { Name = "Processing", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0.2, 0),
+local processing = make("Frame", { Name = "Processing", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0.3, 0),
 	Size = UDim2.fromOffset(380, 46), BackgroundColor3 = Color3.fromRGB(24, 28, 46), BackgroundTransparency = 0.1, Visible = false, ZIndex = 60, Parent = processingGui },
 	{ make("UICorner", { CornerRadius = UDim.new(1, 0) }), make("UIStroke", { Color = GOLD, Thickness = 2.5, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }) })
 local processingIcon = make("ImageLabel", { Image = Icons.Robux, BackgroundTransparency = 1, Position = UDim2.fromOffset(10, 7), Size = UDim2.fromOffset(32, 32),
