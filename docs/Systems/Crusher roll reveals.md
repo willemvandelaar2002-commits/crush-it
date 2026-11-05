@@ -91,8 +91,8 @@ these top tiers. Nothing is faked: the server only fires `BigRoll` when the roll
 - **Divine aftershock** (Willem: Divine only, not Secret): x1.5 luck on rolls for everyone in the server for
   30 s (`ServerLuck.aftershock`, workspace attributes AftershockEnds/AftershockLuck/AftershockBy). It shows in the
   Server Luck pill and as a banner. Another Divine restarts the timer; it does not stack.
-- **Studio test:** `ServerStorage.DevCrusher:Invoke(player, "ForceRoll", "Secret")`, then roll. The first pedestal
-  gets that rarity.
+- **Studio test:** type `/bigroll` (Secret) or `/bigroll divine` in chat: it rolls at once with that rarity on the
+  first pedestal (Studio only). From a script: `ServerStorage.DevCrusher:Invoke(player, "ForceRoll", "Secret")`, then roll.
 - Tested in Studio: Secret and Divine on Plot1. Buying and rolling during the hold are refused, the aftershock
   is x1.5 for 30 s, the roll specs pass and there are no errors in Output. Not seen yet: phones, a second player
   watching the pillar, and the Server Luck pill with an aftershock after the tutorial (the HUD is hidden during it).

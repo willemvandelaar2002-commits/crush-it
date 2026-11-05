@@ -23,7 +23,8 @@ dated line to `docs/Decisions log.md` and update the matching note in
   script's `.Source` from raw.githubusercontent.com/<repo>/<sha>/<path>
   (toggle HttpService.HttpEnabled on and back off), start Play, use
   `ServerStorage.DevGiveCash/DevPass/DevProduct/DevOffline` or `/credits 1b`,
-  `/skip` (finish the tutorial) or `/skip goals` (also past the main goals),
+  `/skip` (finish the tutorial) or `/skip goals` (also past the main goals), `/bigroll` or
+  `/bigroll divine` (a roll with a Secret/Divine: the big roll cinematic),
   Since 2 Nov Studio plays on an in-memory TEST save by default (nothing is
   saved); set ServerStorage attribute `RealData = true` to play on the real save.
   screenshot with `screen_capture` camera_position/look_at_position.

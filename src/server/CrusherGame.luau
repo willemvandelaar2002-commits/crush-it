@@ -1073,6 +1073,20 @@ function G.start()
 			send(p,if goals then "Tutorial and main goals skipped (dev)" else "Tutorial skipped (dev)")
 		end)
 		skipCommand.Parent=TCS
+		-- 5 Nov (Willem): /bigroll [secret|divine] rolls at once with that rarity on the first
+		-- pedestal, to test the big roll cinematic (default: secret). Studio only.
+		local bigCommand=Instance.new("TextChatCommand") bigCommand.Name="BigRollCommand" bigCommand.PrimaryAlias="/bigroll"
+		bigCommand.Triggered:Connect(function(source,text)
+			local p=Players:GetPlayerByUserId(source.UserId) local ctx=p and sessions[p]
+			if not p or not ctx then return end
+			local arg=string.lower(string.split(text," ")[2] or "secret")
+			local rarity=if arg=="divine" then "Divine" else "Secret"
+			ctx.forceRarity=rarity
+			local ok,message=action(p,"Roll",{})
+			if not ok then ctx.forceRarity=nil end
+			Net.event("Notice"):FireClient(p,{text=if ok then "Big roll test: "..rarity.." (dev)" else "Big roll test: "..tostring(message)})
+		end)
+		bigCommand.Parent=TCS
 	end
 	if RunService:IsStudio() then
 		local dev=Instance.new("BindableFunction") dev.Name="DevCrusher"
