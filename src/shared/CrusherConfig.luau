@@ -392,7 +392,7 @@ C.SpecialBay = {
 	-- a shine sweeping over it and a glowing rim; seconds per slide / per shine
 	Plaque = {
 		Secret = { Color3.fromRGB(58, 18, 112), Color3.fromRGB(150, 40, 210), Color3.fromRGB(235, 60, 190), Color3.fromRGB(40, 170, 230), Color3.fromRGB(58, 18, 112) },
-		Divine = { Color3.fromRGB(235, 160, 40), Color3.fromRGB(255, 220, 110), Color3.fromRGB(255, 248, 215), Color3.fromRGB(110, 210, 255), Color3.fromRGB(235, 160, 40) },
+		Divine = { Color3.fromRGB(190, 110, 20), Color3.fromRGB(235, 165, 40), Color3.fromRGB(250, 205, 90), Color3.fromRGB(60, 150, 230), Color3.fromRGB(190, 110, 20) },
 		SlideSeconds = 4, ShineEvery = 3.2,
 	},
 }
