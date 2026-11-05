@@ -411,14 +411,13 @@ C.StarterScrap = 24 -- 1 Nov: scrap waiting in a new player's bin (three toys' w
 -- between the bay goals (they raise income the most). Since the plot split the
 -- starting factory has 12 bays, so the chain ends with "Fill 12 bays" and
 -- "Buy FACTORY II". "upgrades n" = total factory upgrade levels (Damage + Speed + Yield).
-C.Goals2Version = 9 -- 4 Nov: quiet goals after Factory II. 8: 3 Nov: the SMASH goal left the guide (30% churn on it; SMASH stays as a free extra)
+C.Goals2Version = 10 -- 5 Nov: the TURBO goal left the guide (17% churn on it; the pump stays). 9: 4 Nov: quiet goals after Factory II. 8: 3 Nov: the SMASH goal left the guide (30% churn on it; SMASH stays as a free extra)
 C.Goals2 = {
 	{ id="Fill3", check="fill", n=3, title="Fill 3 bays", text="Unlock bay 3, then roll a crusher and place it there.", target="NextBayOrEmpty", reward={cash=30,min=60} },
 	{ id="Upgrades3", check="upgrades", n=3, title="Upgrade your factory", text="The blue FACTORY UPGRADES board makes ALL crushers better.", target="Production", reward={cash=45,min=100} },
 	{ id="Fill5", check="fill", n=5, title="Fill 5 bays", text="Unlock more bays and put a crusher in each one.", target="NextBayOrEmpty", reward={cash=45,min=150} },
 	{ id="Golden", check="golden", title="Grab a golden toy", text="Golden toys land at your bays every half minute. Walk into one!", target="GoldenToy", reward={cash=45,min=150} },
 	{ id="Fill6", check="fill", n=6, title="Fill 6 bays", text="Unlock bay 6 and place a crusher. Prize: a FREE RARE crusher!", target="NextBayOrEmpty", reward={crusher="Rare"} },
-	{ id="Turbo", check="turbo", title="Fill up on TURBO", text="The orange TURBO pump doubles ALL your cash for 5 minutes.", target="TurboStation", reward={boost="Cash",minutes=5} },
 	{ id="Level5", check="level", n=5, title="Level a crusher to Lv 5", text="Press LEVEL UP on a crusher's plaque. Higher level = more scrap.", target="LevelBay", reward={cash=60,min=250} },
 	{ id="Upgrades8", check="upgrades", n=8, title="Upgrade your factory", text="Factory upgrades make every crusher earn more.", target="Production", reward={cash=60,min=300} },
 	{ id="Fill9", check="fill", n=9, title="Fill 9 bays", text="Keep growing your factory!", target="NextBayOrEmpty", reward={cash=90,min=600} },
@@ -448,6 +447,7 @@ C.Goals2History = {
 	{ "Bay3","Frenzy","Fill3","Upgrades3","Bay5","Fill5","Golden","Gift","Fill6","Turbo","Level5","Rolls10","Upgrades8","Bay9","Index","Level10","Upgrades12","Fill12","Level15","Factory2" },
 	{ "Frenzy","Fill3","Upgrades3","Fill5","Golden","Fill6","Turbo","Level5","Upgrades8","Fill9","Fill12","Factory2" },
 	{ "Fill3","Upgrades3","Fill5","Golden","Fill6","Turbo","Level5","Upgrades8","Fill9","Fill12","Factory2" },
+	{ "Fill3","Upgrades3","Fill5","Golden","Fill6","Turbo","Level5","Upgrades8","Fill9","Fill12","Factory2","Coat","Fill18","Upgrades20","Fill24","Factory3","RowSet","Fill36","Factory4","Fuse","Rebirth1" },
 }
 -- Onboarding funnel step names as they appear in the Creator Dashboard
 -- (Analytics > Funnels). 1 = join, 2-9 = the tutorial steps above in order,
