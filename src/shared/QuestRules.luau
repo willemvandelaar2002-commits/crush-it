@@ -5,7 +5,10 @@
 local Q = require(script.Parent.QuestConfig)
 local R = {}
 local DAY = 86400
-local STATS = { "play", "rolls", "crushed", "sells", "buys", "levels", "upgrades", "spins" }
+-- 5 Nov: frenzies, goldenToys, turbos and gifts added. R.migrate rebuilds d.stats from
+-- this list, so before this the goal counters for FRENZY, golden toys, TURBO and gifts
+-- were wiped on every load.
+local STATS = { "play", "rolls", "crushed", "sells", "buys", "levels", "upgrades", "spins", "frenzies", "goldenToys", "turbos", "gifts" }
 
 function R.stat(d: any, key: string): number
 	if key == "rolls" then return (d.crushers and d.crushers.rolls) or 0 end

@@ -343,3 +343,13 @@ from OfferConfig, live Robux price (GetProductInfo; id 0 = COMING SOON). Buy = O
   (the receipt waits) instead of falling through to the cash-pack branch.
 - Purchase processing pill (Shop.client, own ScreenGui): shows when Roblox's window closes with a buy, until the
   server's Purchased event; after 15 s "On its way: it arrives by itself, even if you rejoin."; gone after 25 s.
+
+## 5 Nov: live ids and Willem's price cut
+Product ids: Server Luck 3728462569 (R$79), Instant Turbo 3728462615 (R$29), 12H Time Skip 3728462797 (R$299),
+24H Time Skip 3728462818 (R$399); VIP pass 2072630333 (R$399). Willem lowered: Production Boost 199 -> 79,
+2x Cash 249 -> 59, Lucky 149 -> 99, Auto Collect 99 -> 69, Starter Pack 69 -> 49. Managed pricing on.
+The game shows Roblox's live price everywhere; `price` in Store.luau is only the fallback.
+No "was/now" sale label: the old prices were live for under a week (vault Limited-Time Offers: a reference price
+must have been the live price for 30+ days; Roblox: no permanent "sale").
+Quests (QuestConfig): "Start FRENZY 3 times!" (daily) and "Grab 50 golden toys!" (weekly) replace the Daily Spin
+quests; QuestRules keeps frenzies/goldenToys/turbos/gifts (they were wiped on load before).

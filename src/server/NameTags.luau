@@ -33,7 +33,7 @@ local function build(kind: string, head: BasePart): BillboardGui
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "StatusTag"
 	gui.Size = UDim2.fromOffset(84, 30)
-	gui.StudsOffsetWorldSpace = Vector3.new(0, 3.3, 0) -- above Roblox's own name
+	gui.StudsOffsetWorldSpace = Vector3.new(0, 2.8, 0) -- just above Roblox's own name
 	gui.MaxDistance = 70
 	gui.LightInfluence = 0
 	gui.ResetOnSpawn = false

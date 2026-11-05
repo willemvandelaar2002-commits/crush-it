@@ -2,7 +2,10 @@
 -- Quests (reference style): daily and weekly lists that pay Quest Tokens, and a
 -- token shop. Progress is "stat now - stat when the period started", so every
 -- stat is a plain counter in the profile (QuestRules.stat).
---   stat: play (seconds online), rolls, crushed, sells, buys, levels, upgrades, spins
+--   stat: play (seconds online), rolls, crushed, sells, buys, levels, upgrades, spins,
+--         frenzies, goldenToys, turbos, gifts
+-- 5 Nov (vault: "retire chore quests", quests should ask for the fun verbs): the
+-- "Spin the Daily Spin" quests became FRENZY and golden-toy quests.
 --   icon: a key of Shared/Icons; unit "time" shows minutes/hours
 local Q = {}
 
@@ -13,7 +16,7 @@ Q.Daily = {
 	{ id = "roll", title = "Roll 25 times!", stat = "rolls", goal = 25, reward = 5, icon = "Lucky" },
 	{ id = "crush", title = "Crush 250 toys!", stat = "crushed", goal = 250, reward = 5, icon = "Press" },
 	{ id = "sell", title = "Sell scrap 15 times!", stat = "sells", goal = 15, reward = 5, icon = "Cash" },
-	{ id = "spin", title = "Spin the Daily Spin!", stat = "spins", goal = 1, reward = 5, icon = "Rewards" },
+	{ id = "frenzy", title = "Start FRENZY 3 times!", stat = "frenzies", goal = 3, reward = 5, icon = "Speed" },
 	{ id = "level", title = "Level up crushers 5 times!", stat = "levels", goal = 5, reward = 5, icon = "Power" },
 }
 
@@ -22,7 +25,7 @@ Q.Weekly = {
 	{ id = "roll", title = "Roll 400 times!", stat = "rolls", goal = 400, reward = 25, icon = "Lucky" },
 	{ id = "crush", title = "Crush 5,000 toys!", stat = "crushed", goal = 5000, reward = 20, icon = "Press" },
 	{ id = "buy", title = "Buy 25 crushers!", stat = "buys", goal = 25, reward = 20, icon = "Rebirth" },
-	{ id = "spin", title = "Spin the Daily Spin 5 times!", stat = "spins", goal = 5, reward = 20, icon = "Rewards" },
+	{ id = "golden", title = "Grab 50 golden toys!", stat = "goldenToys", goal = 50, reward = 20, icon = "Golden" },
 	{ id = "level", title = "Level up crushers 50 times!", stat = "levels", goal = 50, reward = 20, icon = "Power" },
 	{ id = "upgrade", title = "Buy 10 factory upgrades!", stat = "upgrades", goal = 10, reward = 15, icon = "Speed" },
 }
