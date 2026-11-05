@@ -67,3 +67,33 @@ DataStore and asset 203785492 type warnings. No live saves were used.
 Actual multiplayer streaming/re-entry, device performance, human audio and
 complete visual review of every model/rarity remain manual checks. Phones are
 deferred. The previous Daily Spin live-persistence limitations still apply.
+
+## Big roll cinematic: Secret and Divine (5 Nov 2026)
+
+Rolling a Secret or better plays a cinematic for the roller (`client/BigRoll.client.luau`), following the vault's
+Reward Moments and Celebrations: each tier adds layers, and dimming the world and hiding the HUD is used only for
+these top tiers. Nothing is faked: the server only fires `BigRoll` when the roll really is Secret or better.
+
+- **Server** (`CrusherGame.rollShow`): that pedestal is held back for `C.BigRoll[rarity].Hold` seconds
+  (Secret 4.6, Divine 6.4) after the flicker. The next roll and buying wait as long ("Wait for the reveal"),
+  so a Secret can't be rolled away by accident. `BigRoll` goes to every client with the pedestal CFrame, the
+  roll machine position, the type odds and `revealAt`. The RarePull banner fires after the reveal.
+- **Roller:** lights dim (ColorCorrection), the HUD and the world signs within 70 studs are hidden, letterbox bars,
+  the camera films the pedestal from its outer side, and a glowing orb shakes on the pedestal. The odds count up:
+  "[ 1 in 32,502 ]", digits lock left to right, and the colour climbs Rare -> Epic -> Legendary -> Secret
+  (-> Divine) with a rising tick per tier. Then the rarity name pops in.
+  - Secret: a giant hydraulic press comes down into view, hangs shaking over the pedestal, and slams on `revealAt`.
+  - Divine: a beam of light comes down with a falling star that lands on `revealAt`.
+  - Both: impact flash, shockwave ring, sparks, camera shake, then the name card and everything restored.
+  - Skip appears from the second big roll of a rarity in a session, and on the name card.
+  - Reduced Motion: no flash, no shake, no jitter.
+- **Everyone:** a light pillar over that pedestal for `C.BigRoll.PillarSeconds` (30 s) and the RarePull banner.
+- **Divine aftershock** (Willem: Divine only, not Secret): x1.5 luck on rolls for everyone in the server for
+  30 s (`ServerLuck.aftershock`, workspace attributes AftershockEnds/AftershockLuck/AftershockBy). It shows in the
+  Server Luck pill and as a banner. Another Divine restarts the timer; it does not stack.
+- **Studio test:** `ServerStorage.DevCrusher:Invoke(player, "ForceRoll", "Secret")`, then roll. The first pedestal
+  gets that rarity.
+- Tested in Studio: Secret and Divine on Plot1. Buying and rolling during the hold are refused, the aftershock
+  is x1.5 for 30 s, the roll specs pass and there are no errors in Output. Not seen yet: phones, a second player
+  watching the pillar, and the Server Luck pill with an aftershock after the tutorial (the HUD is hidden during it).
+

@@ -82,10 +82,14 @@ task.spawn(function()
 		end
 		-- 4 Nov: Server Luck (someone bought 2x luck for this server), under the weekend pill
 		local luckLeft = ((workspace:GetAttribute("ServerLuckEnds") :: number?) or 0) - now
-		luck.Visible = luckLeft > 0
+		-- 5 Nov: a Divine roll's aftershock (server/ServerLuck.aftershock) uses the same pill
+		local shockLeft = ((workspace:GetAttribute("AftershockEnds") :: number?) or 0) - now
+		luck.Visible = luckLeft > 0 or shockLeft > 0
 		if luck.Visible then
 			local by = workspace:GetAttribute("ServerLuckBy")
-			luckText.Text = "x2 SERVER LUCK · " .. string.format("%d:%02d", math.floor(luckLeft) // 60, math.floor(luckLeft) % 60) .. (if type(by) == "string" then " · " .. by else "")
+			local shock = "+" .. math.floor((((workspace:GetAttribute("AftershockLuck") :: number?) or 1) - 1) * 100 + 0.5) .. "% DIVINE LUCK · " .. math.ceil(shockLeft) .. "s"
+			luckText.Text = if luckLeft > 0 then "x2 SERVER LUCK · " .. string.format("%d:%02d", math.floor(luckLeft) // 60, math.floor(luckLeft) % 60) .. (if shockLeft > 0 then " · " .. shock else if type(by) == "string" then " · " .. by else "")
+				else shock .. (if type(workspace:GetAttribute("AftershockBy")) == "string" then " · " .. workspace:GetAttribute("AftershockBy") else "")
 			local pos = pill.Position
 			if not pill.Visible then
 				local row = me.PlayerGui:FindFirstChild("EquipBest", true) :: GuiObject?

@@ -15,7 +15,16 @@ local function now(): number return workspace:GetServerTimeNow() end
 
 function M.mult(): number
 	local ends = (workspace:GetAttribute("ServerLuckEnds") :: number?) or 0
-	return if ends > now() then Store.ServerLuck.Mult else 1
+	local after = (workspace:GetAttribute("AftershockEnds") :: number?) or 0
+	return (if ends > now() then Store.ServerLuck.Mult else 1) * (if after > now() then ((workspace:GetAttribute("AftershockLuck") :: number?) or 1) else 1)
+end
+
+-- 5 Nov: someone rolled a Divine: everyone here gets extra luck for a short while
+-- (C.BigRoll.Divine). Rolling another one restarts the timer; it does not stack.
+function M.aftershock(roller: Player, mult: number, seconds: number)
+	workspace:SetAttribute("AftershockLuck", mult)
+	workspace:SetAttribute("AftershockEnds", now() + seconds)
+	workspace:SetAttribute("AftershockBy", roller.DisplayName)
 end
 
 function M.add(buyer: Player)

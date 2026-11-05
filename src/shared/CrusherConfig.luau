@@ -374,6 +374,12 @@ C.UpgradeMany = 10 -- 3 Nov: the x10 button on the FACTORY UPGRADES board
 -- pedestal of every roll shows a Legendary until you buy one. Base Legendary+ odds
 -- are about 1 in 480 per pedestal at Luck 0, so this only catches bad streaks.
 C.Pity = { Rolls = 200, Rarity = "Legendary", MinRank = 4 }
+-- 5 Nov: big roll cinematic (BigRoll.client) for Secret and up. Hold = seconds the
+-- pedestal waits after the flicker before the crusher appears (the cinematic's
+-- impact lands on it; buying and the next roll wait too). Divine also gives the
+-- whole server x AftershockLuck on rolls for AftershockSeconds (Willem: not Secret).
+C.BigRoll = { MinRank = 5, PillarSeconds = 30,
+	Secret = { Hold = 4.6 }, Divine = { Hold = 6.4, AftershockLuck = 1.5, AftershockSeconds = 30 } }
 C.IndividualBase = 16
 C.IndividualGrowth = 1.38
 -- Guided tutorial (client/Tutorial): one step at a time, each finished by the
