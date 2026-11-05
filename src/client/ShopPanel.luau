@@ -626,7 +626,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	local PASS_ICONS: { [string]: string } = { AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, Lucky = Icons.Lucky, OfflineEarnings = Icons.Offline, AutoCollect = Icons.Cash, VIP = Icons.Trophy }
 	-- the short, readable version of each pass / boost (the long text stays in Store)
 	local PASS_TEXT: { [string]: { benefit: string, sub: string, palette: string } } = {
-		AutoCrush = { benefit = "+25% DAMAGE", sub = "All your crushers, forever", palette = "Pink" },
+		AutoCrush = { benefit = "+25% POWER", sub = "+25% damage for all your crushers, forever", palette = "Pink" },
 		DoubleCash = { benefit = "2x CASH", sub = "Double cash from every crush, forever", palette = "Gold" },
 		Lucky = { benefit = "2x LUCK", sub = "Forever. Uncommon or better: 30% -> 46% of rolls", palette = "Cyan" },
 		AutoCollect = { benefit = "AUTO SELL", sub = "Scrap collects and sells itself", palette = "Gold" },
@@ -654,7 +654,10 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 			end)
 			if not Store.hasPass(player, pass.perk) then lowerPrice(b.Parent :: GuiObject, pass.perk) end
 			local function update()
-				if Store.hasPass(player, pass.perk) then setCaption(b, "OWNED", GREY)
+				if Store.hasPass(player, pass.perk) then
+					setCaption(b, "OWNED", GREY)
+					local ribbon = (b.Parent :: Instance):FindFirstChild("LowerPrice")
+					if ribbon then ribbon:Destroy() end
 				elseif pass.gamePassId == 0 then setCaption(b, "SOON", GREY)
 				else
 					local price = priceOf("pass", pass.gamePassId)
