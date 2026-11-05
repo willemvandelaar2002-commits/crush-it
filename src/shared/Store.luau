@@ -21,11 +21,11 @@ Store.Passes = {
 	{ perk = "AutoCrush", gamePassId = 2060699266, price = 79, title = "Production Boost", desc = "+25% damage for all your crushers, forever", color = Color3.fromRGB(230, 80, 70) },
 	-- 5 Nov (Willem): a cash pass ladder 2x -> 4x -> 8x -> 16x. Each is its own game pass;
 	-- you get the HIGHEST one you own (not multiplied together). 2x is R$ 19 now.
-	-- Ids 0 = not created yet: hidden until Willem fills them in (Store.CashLadder).
+	-- (ids from Willem's Creator Dashboard, 5 Nov)
 	{ perk = "DoubleCash", gamePassId = 2039584674, price = 19, title = "2x Cash", desc = "Double cash from every crush, forever", color = Color3.fromRGB(80, 200, 110) },
-	{ perk = "CashX4", gamePassId = 0, price = 49, title = "4x Cash", desc = "4x cash from every crush, forever (replaces 2x)", color = Color3.fromRGB(60, 190, 230) },
-	{ perk = "CashX8", gamePassId = 0, price = 129, title = "8x Cash", desc = "8x cash from every crush, forever (replaces 4x)", color = Color3.fromRGB(170, 80, 240) },
-	{ perk = "CashX16", gamePassId = 0, price = 299, title = "16x Cash", desc = "16x cash from every crush, forever (replaces 8x)", color = Color3.fromRGB(255, 190, 40) },
+	{ perk = "CashX4", gamePassId = 2070673080, price = 49, title = "4x Cash", desc = "4x cash from every crush, forever (replaces 2x)", color = Color3.fromRGB(60, 190, 230) },
+	{ perk = "CashX8", gamePassId = 2070092535, price = 129, title = "8x Cash", desc = "8x cash from every crush, forever (replaces 4x)", color = Color3.fromRGB(170, 80, 240) },
+	{ perk = "CashX16", gamePassId = 2071704684, price = 299, title = "16x Cash", desc = "16x cash from every crush, forever (replaces 8x)", color = Color3.fromRGB(255, 190, 40) },
 	{ perk = "Lucky", gamePassId = 2041580327, price = 99, title = "Lucky", desc = "2x luck on crusher rolls: Uncommon or better about 30% -> 46% of rolls", color = Color3.fromRGB(255, 200, 50) },
 	{ perk = "AutoCollect", gamePassId = 2057934074, price = 69, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
 	-- 4 Nov (monetization round 2, vault: Price Points "the 299-599 rung was empty"; Willem):
