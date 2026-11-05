@@ -567,13 +567,13 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		t.TextXAlignment = Enum.TextXAlignment.Left
 		t.TextColor3 = C(235, 244, 255)
 		local big = label(f, o.benefit, UDim2.fromOffset(118, 42), UDim2.new(1, -128, 0, 50), 3.5, 9)
-		big.TextWrapped = false -- one line, shrinks to fit
+		make("UITextSizeConstraint", { MaxTextSize = 40 }, big)
 		big.TextXAlignment = Enum.TextXAlignment.Left
 		big.TextColor3 = C(255, 246, 150)
 		-- the short line under the icon: one fixed size on every card (two lines max)
 		local sub = label(f, o.sub, UDim2.fromOffset(12, 112), UDim2.new(1, -24, 0, 40), 2, 9)
 		sub.TextScaled = false
-		sub.TextSize = 16
+		sub.TextSize = 18
 		sub.TextWrapped = true
 		sub.TextYAlignment = Enum.TextYAlignment.Center
 		local b = bigButton(f, "", UDim2.new(0, 12, 1, -56), UDim2.new(1, -24, 0, 44), nil, 10)
