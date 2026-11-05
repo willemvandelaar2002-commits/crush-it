@@ -419,7 +419,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 			local cash = Store.cashFor((player:GetAttribute("CashRate") :: number?) or 0, m * 60)
 			return if cash > 0 then Format.cash(cash) else span .. " OF CASH", span .. " EARNINGS"
 		end
-		StarterPackCard.build(page, {
+		local starterCard = StarterPackCard.build(page, {
 			width = BANNER_W, order = order, gate = panel,
 			enabled = function()
 				local reveal = gui:FindFirstChild("CrateReveal") :: GuiObject?
@@ -432,6 +432,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 			owned = function() return owns(starter.id) end,
 			onRefresh = function(f) table.insert(refreshers, f) f() end,
 		})
+		if not owns(starter.id) then lowerPrice(starterCard, "StarterPack", 1.4) end
 	end
 	local function crateArt(parent: Instance, pos: UDim2, size: number, z: number): Frame
 		-- the Factory Crate image (29 Oct; replaces the blue crate drawn in UI)
@@ -496,6 +497,22 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		b.Activated:Connect(function() onBuy(b) end)
 		return b, d
 	end
+	-- 5 Nov: the red "LOWER PRICE!" ribbon in a card's top-left corner (Store.PriceDrop)
+	local function lowerPrice(card: GuiObject, key: string, scale: number?)
+		if not Store.priceDropped(key) then return end
+		local s = scale or 1
+		local r = make("Frame", { Name = "LowerPrice", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromOffset(34 * s, 12 * s),
+			Size = UDim2.fromOffset(128 * s, 26 * s), Rotation = -12, BackgroundColor3 = C(235, 40, 60), ZIndex = 20 }, card)
+		make("UICorner", { CornerRadius = UDim.new(0, 6 * s) }, r)
+		make("UIStroke", { Color = C(255, 255, 255), Thickness = 2 * s, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, r)
+		make("UIGradient", { Rotation = 90, Color = ColorSequence.new(C(255, 90, 100), C(200, 20, 45)) }, r)
+		local t = label(r, "LOWER PRICE!", UDim2.fromOffset(6 * s, 3 * s), UDim2.new(1, -12 * s, 1, -6 * s), 2, 21)
+		t.TextScaled = true
+		task.spawn(function() -- gone by itself when the week is over
+			while r.Parent and Store.priceDropped(key) do task.wait(30) end
+			r:Destroy()
+		end)
+	end
 	local PASS_ICONS: { [string]: string } = { AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, Lucky = Icons.Lucky, OfflineEarnings = Icons.Offline, AutoCollect = Icons.Cash, VIP = Icons.Trophy }
 	local function passCards(page: ScrollingFrame, order: number)
 		local g = grid(page, order)
@@ -506,6 +523,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 				if pass.gamePassId == 0 then shake(button) end
 				deps.buyPass(pass.perk)
 			end)
+			if not Store.hasPass(player, pass.perk) then lowerPrice(b.Parent :: GuiObject, pass.perk) end
 			local function update()
 				if Store.hasPass(player, pass.perk) then setCaption(b, "OWNED", GREY)
 				elseif pass.gamePassId == 0 then setCaption(b, "SOON", GREY)
