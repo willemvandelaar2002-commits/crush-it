@@ -15,8 +15,20 @@ local active: { [Model]: { rarity: string, folder: Folder, plaque: Frame? } } = 
 local RunService = game:GetService("RunService")
 
 -- the plaque: a moving colour band behind the plaque text, a shine sweep, a glowing rim
+-- the plaque you see on your own plot is a SurfaceGui in PlayerGui adorned to the bay's
+-- Panel (so its buttons click); other plots show the Panel's own WorkshopControls
+local adorned: { [Instance]: SurfaceGui } = {}
+local function plaqueGui(bay: Model): Instance?
+	local panel = bay:FindFirstChild("Panel")
+	if not panel then return nil end
+	local own = adorned[panel]
+	if own and own.Parent and own.Enabled then return own end
+	local gui = panel:FindFirstChild("WorkshopControls")
+	if gui and gui:IsA("SurfaceGui") and gui.Enabled then return gui end
+	return own or gui
+end
 local function plaque(bay: Model, rarity: string): Frame?
-	local gui = bay:FindFirstChild("Panel") and (bay :: any).Panel:FindFirstChild("WorkshopControls")
+	local gui = plaqueGui(bay)
 	if not gui then return nil end
 	local colors = S.Plaque[rarity]
 	local keys = {}
@@ -138,7 +150,12 @@ local function want(bay: Model): string?
 end
 
 -- cheap scan once a second (bays change only on equip / unequip)
+local playerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 while true do
+	table.clear(adorned)
+	for _, g in playerGui:GetDescendants() do
+		if g:IsA("SurfaceGui") and g.Adornee then adorned[g.Adornee] = g end
+	end
 	for _, plot in plots:GetChildren() do
 		for _, bay in plot:GetChildren() do
 			if bay:IsA("Model") and bay.Name:match("^WorkingBay%d+$") then
@@ -149,6 +166,10 @@ while true do
 					active[bay] = { rarity = r, folder = build(bay, r), plaque = plaque(bay, r) }
 				elseif not r and entry then
 					clear(bay)
+				elseif r and entry and (not entry.plaque or entry.plaque.Parent ~= plaqueGui(bay)) then
+					-- the plaque gui was rebuilt or moved: put the moving background on the current one
+					if entry.plaque then entry.plaque:Destroy() end
+					entry.plaque = plaque(bay, r)
 				end
 			end
 		end
