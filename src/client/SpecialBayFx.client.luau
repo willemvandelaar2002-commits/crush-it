@@ -153,7 +153,7 @@ end
 local playerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 while true do
 	table.clear(adorned)
-	for _, g in playerGui:GetDescendants() do
+	for _, g in playerGui:GetChildren() do
 		if g:IsA("SurfaceGui") and g.Adornee then adorned[g.Adornee] = g end
 	end
 	for _, plot in plots:GetChildren() do
