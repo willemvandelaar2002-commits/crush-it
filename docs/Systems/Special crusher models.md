@@ -142,3 +142,10 @@ Willem's new eight replace the 29 Oct ones (same ids, odds, rarities, yields, sa
   pedestal offer use the new model; SpecialCrushers, CrusherRules and RollPresentation specs pass; no errors.
   Not done: the pack's optional effect pulses (tooth flash, impact ring...), phone check.
 
+## 5 Nov: Secret / Divine bays glow (client/SpecialBayFx.client.luau)
+A bay whose EquippedCrusher has Rarity Secret or Divine gets, on every plot: a pulsing light plate and a coloured
+rim on the pedestal, a colour wash up the back wall (fading towards the top), rising sparkles; Divine adds two soft
+light shafts from the top beam. Colours and amounts in `C.SpecialBay` (Secret neon purple/pink, Divine gold/cyan).
+Client-only, no lights, half the sparkles under `Style.lite()`, hidden while the factory event hides the plot,
+removed on unequip. Checked in Studio (all eight in bays 1-8, unequip clears it, no errors); not on a phone.
+
