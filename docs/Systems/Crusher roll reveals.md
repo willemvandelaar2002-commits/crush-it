@@ -86,7 +86,7 @@ these top tiers. Nothing is faked: the server only fires `BigRoll` when the roll
   - Secret: a giant hydraulic press comes down into view, hangs shaking over the pedestal, and slams on `revealAt`.
   - Divine: a beam of light comes down with a falling star that lands on `revealAt`.
   - Both: impact flash, shockwave ring, sparks, camera shake, then the name card and everything restored.
-  - Skip appears from the second big roll of a rarity in a session, and on the name card.
+  - Skip: from the second time you get that rarity, ever (saved in crushers.bigSeen, 5 Nov), and always on the name card.
   - Reduced Motion: no flash, no shake, no jitter.
 - **Everyone:** a light pillar over that pedestal for `C.BigRoll.PillarSeconds` (30 s) and the RarePull banner.
 - **Divine aftershock** (Willem: Divine only, not Secret): x1.5 luck on rolls for everyone in the server for
