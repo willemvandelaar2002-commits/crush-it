@@ -24,7 +24,7 @@ Store.Passes = {
 	{ perk = "AutoCollect", gamePassId = 2057934074, price = 99, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
 	-- 4 Nov (monetization round 2, vault: Price Points "the 299-599 rung was empty"; Willem):
 	-- VIP. Id 0 until Willem creates the pass (hidden in the shop until then).
-	{ perk = "VIP", gamePassId = 0, price = 399, title = "VIP", desc = "x1.5 cash forever, offline cash up to 12 h (not 6), a gold [VIP] tag in chat", color = Color3.fromRGB(255, 200, 40) },
+	{ perk = "VIP", gamePassId = 0, price = 399, title = "VIP", desc = "x1.5 cash forever, offline cash up to 12 h (not 6), a gold VIP tag above your head and in chat", color = Color3.fromRGB(255, 200, 40) },
 	-- (30 Oct: the Offline Earnings pass is gone: offline cash is free for everyone,
 	-- with paid 2x / 5x boosts on the welcome-back card, see Store.Offline)
 } :: { Pass }
