@@ -30,10 +30,12 @@ function CashHud.start(gui: ScreenGui)
 		return v
 	end
 	local cashLabel = make("TextLabel", {
-		Name = "Cash", AnchorPoint = if TOUCH or TABLET then Vector2.new(0, 0) else Vector2.new(0, 1),
+		Name = "Cash", AnchorPoint = if TABLET then Vector2.new(0, 0) else Vector2.new(0, 1),
 		-- 3 Nov: on touch screens the cash sits below the INDEX/SHOP/REWARDS labels and the
 		-- free-gift chip under REWARDS (it overlapped both)
-		Position = if TOUCH then UDim2.new(0, 12, 0, 124) elseif TABLET then UDim2.new(0, 14, 0, 160) else UDim2.new(0, 84, 1, -42),
+		-- 6 Nov (Willem): on phones cash + Friend Boost are bottom left (the buttons are a
+		-- column on the left now)
+		Position = if TOUCH then UDim2.new(0, 12, 1, -34) elseif TABLET then UDim2.new(0, 14, 0, 160) else UDim2.new(0, 84, 1, -42),
 		Size = UDim2.fromOffset(if TOUCH then 150 elseif TABLET then 260 else 320, height), BackgroundTransparency = 1, Font = Enum.Font.FredokaOne,
 		TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left,
 		TextColor3 = Color3.fromRGB(110, 255, 90), Text = "$0",
@@ -48,7 +50,7 @@ function CashHud.start(gui: ScreenGui)
 
 	-- Friend boost line; the + opens Roblox's invite dialog.
 	local row = make("Frame", { Name = "FriendBoost", AnchorPoint = Vector2.new(0, 1),
-		Position = if TOUCH then UDim2.new(0, 12, 0, 180) elseif TABLET then UDim2.new(0, 14, 0, 238) else UDim2.new(0, 14, 1, -10),
+		Position = if TOUCH then UDim2.new(0, 12, 1, -8) elseif TABLET then UDim2.new(0, 14, 0, 238) else UDim2.new(0, 14, 1, -10),
 		Size = UDim2.fromOffset(if TOUCH then 170 else 260, if TOUCH then 22 else 30), BackgroundTransparency = 1 }, gui)
 	local label = make("TextLabel", { Size = UDim2.new(1, -40, 1, 0), BackgroundTransparency = 1, TextScaled = true,
 		TextXAlignment = Enum.TextXAlignment.Left, Text = "Friend Boost: 0%" }, row)

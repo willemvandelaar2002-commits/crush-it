@@ -38,3 +38,14 @@ in Studio: check on a real phone.
   active weekend / Server Luck / Divine luck show as chips at the top of BoostsHud.ActiveBoosts (WeekendHud).
 - Goals on phones (Tutorial.placeHeadline): in the free part of Roblox's top bar (GuiService.TopbarInset), tag +
   title + counter only (no hint line), scaled to fit (needs at least 0.4); tutorial steps stay under the button row.
+
+## Phone HUD layout (6 Nov, Willem)
+- Style.hudSlotPosition: on phones the HudRow buttons are a vertical column (Style.PhoneHud: 42 px, gap 4, a
+  second column when the screen is short; `bottom` keeps room for cash). Buttons store their slot as attribute
+  HudSlot (placeAfterHudRow uses it).
+- CashHud: cash and Friend Boost bottom left on phones. Boost chips right of the column; FREE CASH GIFT right of
+  REWARDS. SMASH phone scale 0.58.
+- Style.topRightY: Equip Best / Mega Crusher (Travel Row) and the SETTINGS gear (icon only, far right) go up into
+  Roblox's top bar when its right end is free (GuiService.TopbarInset), else just under it. The goal in the top
+  bar stays left of them.
+- Studio: /nopasses (play as if you own no passes, this session) and /passes (back to your real passes).

@@ -60,7 +60,25 @@ applyVolumes()
 -- the panel -------------------------------------------------------------------------
 local gui = make("ScreenGui", { Name = "SettingsHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
 local button = Style.iconButton(gui, { name = "SettingsButton", icon = "⚙️", label = "SETTINGS", a = C(110, 170, 255), b = C(40, 80, 200) })
-local function place() Style.placeAfterHudRow(button) end
+-- 6 Nov (Willem): on phones the gear sits top right, next to Mega Crusher (icon only);
+-- on bigger screens it ends the top-left row
+local function place()
+	local label = button:FindFirstChild("Label") :: TextLabel?
+	if Style.compact() then
+		local size = Style.PhoneHud.size
+		button:SetAttribute("HudSlot", nil)
+		button.AnchorPoint = Vector2.new(1, 0)
+		button.Size = UDim2.fromOffset(size, size)
+		local tile = button:FindFirstChild("Tile") :: Frame
+		tile.Size = UDim2.fromOffset(size, size)
+		if label then label.Visible = false end
+		button.Position = UDim2.new(1, -8, 0, Style.topRightY(size))
+	else
+		button.AnchorPoint = Vector2.new(0, 0)
+		if label then label.Visible = true end
+		Style.placeAfterHudRow(button)
+	end
+end
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(place)
 task.spawn(function() while true do place() task.wait(2) end end) -- the row changes as buttons come and go
 -- (the HUD appears step by step in the tutorial: show the gear with the Shop button)

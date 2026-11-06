@@ -503,10 +503,42 @@ function Style.popScale(): number
 	return if Style.compact() then 0.6 else 1
 end
 
+-- 6 Nov (Willem, phone screenshot): on phones the buttons are a smaller VERTICAL column
+-- on the left (Index, Shop, Rewards, the deal...), cash and Friend Boost at the bottom
+-- left; a second column starts when the screen is too short. Desktop: the row as before.
+Style.PhoneHud = { size = 42, gap = 4, bottom = 72 } -- bottom: room kept for cash + Friend Boost
+function Style.hudSlotPosition(slot: number): (number, number, number)
+	if not Style.compact() then
+		local size = 84
+		return 12 + slot * (size + 10), 8, size
+	end
+	local P = Style.PhoneHud
+	local step = P.size + 14 + P.gap
+	local v = workspace.CurrentCamera.ViewportSize
+	local inset = game:GetService("GuiService"):GetGuiInset().Y
+	local perCol = math.max(1, math.floor((v.Y - inset - P.bottom - 8) / step))
+	local col, row = slot // perCol, slot % perCol
+	return 12 + col * (math.floor(P.size * 1.15) + 8), 8 + row * step, P.size
+end
+-- 6 Nov (Willem: Equip Best / Mega Crusher "a little higher", SETTINGS next to them):
+-- on phones the top-right buttons sit up in Roblox's top bar when its right end is free
+-- (GuiService.TopbarInset), else just under it. Returns the Y offset (in a ScreenGui
+-- that keeps the inset) for something `height` tall.
+function Style.topRightY(height: number): number
+	if not Style.compact() then return 6 end
+	local GuiService = game:GetService("GuiService")
+	local area = GuiService.TopbarInset
+	local v = workspace.CurrentCamera.ViewportSize
+	if area.Height >= height and area.Max.X >= v.X - 4 and area.Width > 300 then
+		return area.Min.Y - GuiService:GetGuiInset().Y + math.floor((area.Height - height) / 2)
+	end
+	return 6
+end
 function Style.placeHudButton(btn: TextButton, slot: number)
-	local size = if Style.compact() then 54 else 84
+	local x, y, size = Style.hudSlotPosition(slot)
+	btn:SetAttribute("HudSlot", slot)
 	btn.Size = UDim2.fromOffset(size, size + 14)
-	btn.Position = UDim2.fromOffset(12 + slot * (size + 10), 8)
+	btn.Position = UDim2.fromOffset(x, y)
 	local tile = btn:FindFirstChild("Tile") :: Frame
 	tile.Size = UDim2.fromOffset(size, size)
 	local label = btn:FindFirstChild("Label") :: TextLabel
@@ -518,7 +550,7 @@ end
 -- 6 Nov: the first free slot after the visible buttons of the top-left row (buttons
 -- that come and go: Rebirth appears later, the deal disappears once bought). `names`
 -- are the row's buttons that sit before `btn`, anywhere in the PlayerGui.
-Style.HudRow = { "BookButton", "ShopButton", "RewardsButton", "RebirthButton", "FirstBuyButton", "PhoneCashButton", "SettingsButton" }
+Style.HudRow = { "BookButton", "ShopButton", "RewardsButton", "RebirthButton", "FirstBuyButton", "SettingsButton" }
 
 -- 6 Nov: the SCREEN SHAKE setting (client/Settings); camera-shake code checks this
 function Style.shakeOn(): boolean
@@ -534,7 +566,8 @@ function Style.placeAfterHudRow(btn: TextButton)
 		local b = pg and pg:FindFirstChild(n, true)
 		local sg = b and b:FindFirstAncestorOfClass("ScreenGui")
 		if b and b:IsA("GuiObject") and b.Visible and sg and sg.Enabled then
-			slot = math.max(slot, math.floor(((b :: GuiObject).Position.X.Offset - 12) / (size + 10) + 0.5) + 1) -- (Offset, not AbsolutePosition: notch insets)
+			local at = b:GetAttribute("HudSlot")
+			slot = math.max(slot, (if type(at) == "number" then at else math.floor(((b :: GuiObject).Position.X.Offset - 12) / (size + 10) + 0.5)) + 1)
 		end
 	end
 	Style.placeHudButton(btn, slot)

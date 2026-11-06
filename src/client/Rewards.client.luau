@@ -121,8 +121,15 @@ giftTime.TextColor3 = C(255, 230, 90)
 local function placeGiftChip()
 	Style.placeHudButton(button, 2)
 	local compact = Style.compact()
-	giftChip.Size = if compact then UDim2.fromOffset(116, 36) else UDim2.fromOffset(150, 40)
-	giftChip.Position = UDim2.fromOffset(button.Position.X.Offset + button.Size.X.Offset / 2, button.Position.Y.Offset + button.Size.Y.Offset + 4)
+	giftChip.Size = if compact then UDim2.fromOffset(100, 32) else UDim2.fromOffset(150, 40)
+	if compact then
+		-- 6 Nov: the phone buttons are a column: the chip goes to the right of REWARDS
+		giftChip.AnchorPoint = Vector2.new(0, 0.5)
+		giftChip.Position = UDim2.fromOffset(button.Position.X.Offset + math.floor(button.Size.X.Offset * 1.15) + 8, button.Position.Y.Offset + button.Size.X.Offset / 2)
+	else
+		giftChip.AnchorPoint = Vector2.new(0.5, 0)
+		giftChip.Position = UDim2.fromOffset(button.Position.X.Offset + button.Size.X.Offset / 2, button.Position.Y.Offset + button.Size.Y.Offset + 4)
+	end
 end
 -- 3 Nov (vault: 44 px taps): an invisible 48 px tap pad over the chip on touch screens
 if game:GetService("UserInputService").TouchEnabled then

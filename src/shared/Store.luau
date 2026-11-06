@@ -10,7 +10,7 @@ local Config = require(script.Parent.Config)
 
 local Store = {}
 
-export type Pass = { perk: string, gamePassId: number, price: number, title: string, desc: string, color: Color3 }
+export type Pass = { perk: string, gamePassId: number, price: number, title: string, desc: string, color: Color3, hidden: boolean? }
 export type Product = { id: string, productId: number, price: number, title: string, desc: string, color: Color3, hidden: boolean?, mythic: string? }
 
 Store.Passes = {
@@ -26,6 +26,11 @@ Store.Passes = {
 	{ perk = "CashX4", gamePassId = 2070673080, price = 49, title = "4x Cash", desc = "4x cash from every crush, forever (replaces 2x)", color = Color3.fromRGB(60, 190, 230) },
 	{ perk = "CashX8", gamePassId = 2070092535, price = 129, title = "8x Cash", desc = "8x cash from every crush, forever (replaces 4x)", color = Color3.fromRGB(170, 80, 240) },
 	{ perk = "CashX16", gamePassId = 2071704684, price = 299, title = "16x Cash", desc = "16x cash from every crush, forever (replaces 8x)", color = Color3.fromRGB(255, 190, 40) },
+	-- 6 Nov (Willem: "something under 5 robux, very visible, to get people over the first
+	-- buy barrier"; vault Price Points: impulse rung). Willem made it a GAME PASS: owning it
+	-- grants the contents (Shared/OfferConfig FirstBuy) once, by server/Offers. Hidden from
+	-- the pass lists; sold by its own HUD button (client/FirstBuy).
+	{ perk = "FirstBuy", gamePassId = 2074832519, price = 5, title = "First Buy Deal", desc = "Gumball Gobbler (Epic crusher) + 15 min 2x Cash + 15 min 2x Luck. Only once!", color = Color3.fromRGB(255, 90, 200), hidden = true },
 	{ perk = "Lucky", gamePassId = 2041580327, price = 49, title = "Lucky", desc = "2x luck on crusher rolls: Uncommon or better about 30% -> 46% of rolls", color = Color3.fromRGB(255, 200, 50) },
 	{ perk = "AutoCollect", gamePassId = 2057934074, price = 69, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
 	-- 4 Nov (monetization round 2, vault: Price Points "the 299-599 rung was empty"; Willem):
@@ -63,10 +68,6 @@ Store.Products = {
 	{ id = "SkipRewards", productId = 3723658147, price = 99, title = "Skip All", desc = "Unlock every playtime gift now", color = Color3.fromRGB(255, 200, 40), hidden = true },
 	-- Shop offers (Shared/OfferConfig, server/Offers). price = 0: not approved
 	-- yet; once a productId is set the shop shows Roblox's own price.
-	-- 6 Nov (Willem: "something under 5 robux, very visible, to get people over the first
-	-- buy barrier"; vault Price Points: impulse rung): once per player. Id 0 until created
-	-- (the HUD button stays hidden until then). Contents: Shared/OfferConfig FirstBuy.
-	{ id = "FirstBuy", productId = 0, price = 5, title = "First Buy Deal", desc = "Gumball Gobbler (Epic crusher) + 15 min 2x Cash + 15 min 2x Luck. Only once!", color = Color3.fromRGB(255, 90, 200), hidden = true },
 	{ id = "StarterPack", productId = 3723658249, price = 49, title = "Starter Pack", desc = "Candy Colossus + cash + 2x Cash boost (once)", color = Color3.fromRGB(255, 80, 170), hidden = true },
 	{ id = "FactoryCrate1", productId = 3723658442, price = 39, title = "Factory Crate", desc = "One random crate crusher (Epic, Legendary or Mythic)", color = Color3.fromRGB(150, 70, 230), hidden = true },
 	-- Mythic crushers (exclusive: never rolled). productId 0 shows SOON.

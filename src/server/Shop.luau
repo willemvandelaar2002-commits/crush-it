@@ -368,6 +368,26 @@ function Shop.start(gameApi: Api)
 			return true
 		end
 		devPass.Parent = game:GetService("ServerStorage")
+		-- 6 Nov (Willem: "I can't test the 2x cash and stuff since I have the passes"):
+		-- Studio chat commands. /nopasses = play as if you own no game passes (this
+		-- session only, nothing is saved); /passes = your real passes again.
+		local TCS = game:GetService("TextChatService")
+		local function cmd(name: string, alias: string, run: (Player) -> ())
+			local c = Instance.new("TextChatCommand")
+			c.Name = name c.PrimaryAlias = alias
+			c.Triggered:Connect(function(source: TextSource)
+				local p = Players:GetPlayerByUserId(source.UserId)
+				if p then run(p) end
+			end)
+			c.Parent = TCS
+		end
+		cmd("NoPassesCommand", "/nopasses", function(p)
+			for _, pass in Store.Passes do setPass(p, pass.perk, false) end
+			Net.event("Notice"):FireClient(p, { text = "Testing without passes (Studio): /passes to undo" })
+		end)
+		cmd("PassesCommand", "/passes", function(p)
+			task.spawn(checkPasses, p)
+		end)
 		local devProduct = Instance.new("BindableFunction")
 		devProduct.Name = "DevProduct"
 		devProduct.OnInvoke = function(player: Player, productId: string)

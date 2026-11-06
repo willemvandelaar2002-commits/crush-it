@@ -204,3 +204,18 @@ end
 for _, b in row:GetChildren() do if b:IsA("TextButton") then b:GetPropertyChangedSignal("Visible"):Connect(phoneWidths) end end
 workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(phoneWidths)
 phoneWidths()
+-- 6 Nov (Willem): on phones the row goes up (into Roblox's top bar when its right end is
+-- free) and leaves room on the right for the SETTINGS gear
+local function phoneSpot()
+	if not Style.compact() then return end
+	local fit = row:FindFirstChild("PhoneFit") :: UIScale?
+	local h = 54 * (if fit then fit.Scale else 1)
+	row.AnchorPoint = Vector2.new(1, 0)
+	row.Position = UDim2.new(1, -(8 + Style.PhoneHud.size + 8), 0, Style.topRightY(h))
+end
+workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() task.defer(phoneSpot) end)
+row:GetPropertyChangedSignal("Size"):Connect(function() task.defer(phoneSpot) end)
+game:GetService("GuiService"):GetPropertyChangedSignal("TopbarInset"):Connect(function() task.defer(phoneSpot) end)
+-- (the top bar size and the phone switch can come late, e.g. Studio's device emulator)
+task.spawn(function() while true do task.wait(2) phoneSpot() end end)
+phoneSpot()
