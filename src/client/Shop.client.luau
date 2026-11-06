@@ -229,8 +229,12 @@ local offersScale = make("UIScale", { Parent = offers })
 local function fitOffers()
 	local viewport = Workspace.CurrentCamera.ViewportSize
 	local h = viewport.Y
-	offersScale.Scale = math.clamp((h - 380) / 480, 0.5, 1) -- stays between the leaderboard and the CRUSH button
-	offers:SetAttribute("FitsScreen", not Style.compact() and h >= (if Config.Crushers.Enabled then 560 else 650))
+	-- 6 Nov (Willem: "do the 2x cash on the right just like on pc, with that button"): on
+	-- phones the stack shows too, smaller, bottom right just left of Roblox's jump button
+	local compact = Style.compact()
+	offersScale.Scale = if compact then 0.55 else math.clamp((h - 380) / 480, 0.5, 1) -- stays between the leaderboard and the CRUSH button
+	offers.Position = if compact then UDim2.new(1, -112, 1, -10) else UDim2.new(1, -14, 1, if Config.Crushers.Enabled then -24 else -240)
+	offers:SetAttribute("FitsScreen", compact or h >= (if Config.Crushers.Enabled then 560 else 650))
 	local book = hud:FindFirstChild("Book") :: GuiObject?
 	offers.Visible = offers:GetAttribute("FitsScreen") == true and not panel.Visible and not (book and book.Visible)
 end
@@ -265,27 +269,6 @@ doubleButton.Activated:Connect(function()
 	Net.event("ShopOpened"):FireServer("DoubleCashOffer")
 	buyPass(doubleNext)
 end)
-
--- 6 Nov (Willem: phones): the offers above are hidden on phones (no room), so phone
--- players never saw the cash ladder. On small screens the next cash pass is a rainbow
--- icon button in the top-left row instead ("4X CASH"), after the R$ 5 deal.
-local phoneCash = Style.iconButton(gui, { name = "PhoneCashButton", image = Icons.DoubleCash, label = "2X CASH", a = Color3.fromRGB(120, 235, 100), b = Color3.fromRGB(40, 150, 60) })
-do
-	local tile = phoneCash:FindFirstChild("Tile") :: Frame
-	local fill = tile:FindFirstChild("PanelFill")
-	if fill then fill:Destroy() end
-	Style.rainbow(tile)
-	Style.wobble(tile, 5, 2.4)
-	local l = phoneCash:FindFirstChild("Label") :: TextLabel
-	l.TextColor3 = Color3.fromRGB(150, 255, 110)
-end
-phoneCash.Visible = false
-phoneCash.Activated:Connect(function()
-	if not doubleNext then return end
-	Net.event("ShopOpened"):FireServer("PhoneCashButton")
-	buyPass(doubleNext)
-end)
-task.spawn(function() while true do task.wait(2) if phoneCash.Visible then Style.placeAfterHudRow(phoneCash) end end end)
 
 -- Featured pass card: gradient panel, "BEST!" ribbon, big icon, name and price.
 -- 6 Nov (Willem: "remove that production boost button and just leave the 2x, 4x etc
@@ -339,9 +322,6 @@ local function refreshOffers()
 	local nextPass = Store.nextCashPass(player)
 	doubleNext = if nextPass then nextPass.perk else nil
 	doubleHolder.Visible = nextPass ~= nil
-	phoneCash.Visible = nextPass ~= nil and offers:GetAttribute("FitsScreen") ~= true
-	if nextPass then (phoneCash:FindFirstChild("Label") :: TextLabel).Text = string.upper(nextPass.title) end
-	if phoneCash.Visible then Style.placeAfterHudRow(phoneCash) end
 	if nextPass then
 		doubleText.Text = string.upper(nextPass.title:sub(1, -6)) .. " Cash" -- "4X Cash"
 		Store.livePrice("pass", nextPass.gamePassId, nextPass.price, function(n)

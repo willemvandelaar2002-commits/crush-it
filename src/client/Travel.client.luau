@@ -215,4 +215,7 @@ local function phoneSpot()
 end
 workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() task.defer(phoneSpot) end)
 row:GetPropertyChangedSignal("Size"):Connect(function() task.defer(phoneSpot) end)
+game:GetService("GuiService"):GetPropertyChangedSignal("TopbarInset"):Connect(function() task.defer(phoneSpot) end)
+-- (the top bar size and the phone switch can come late, e.g. Studio's device emulator)
+task.spawn(function() while true do task.wait(2) phoneSpot() end end)
 phoneSpot()
