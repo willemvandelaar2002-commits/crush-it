@@ -156,3 +156,7 @@ plaque's SurfaceGui: on your own plot that's the PlayerGui gui adorned to the ba
 WorkshopControls is disabled there), on other plots the Panel's WorkshopControls. A UIGradient slides through
 `C.SpecialBay.Plaque[rarity]` every `SlideSeconds`, a white shine sweeps across every `ShineEvery` (skipped on
 lite), and a UIStroke rim has a rotating gradient. Divine colours are kept deep enough that white text stays readable.
+
+## 6 Nov: Lucky Weekend pack
+Three more templates (CloverOverdrive, HorseshoeComet, JackpotFoundry) with motion in Shared/LimitedCrusherAssets;
+motions can now carry their own `keys` instead of a named curve. See Lucky Weekend crushers.
