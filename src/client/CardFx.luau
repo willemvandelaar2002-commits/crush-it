@@ -108,6 +108,11 @@ local LOOKS = {
 		fill = seq(rgb(255, 150, 20), rgb(255, 236, 90), rgb(255, 196, 40), rgb(230, 110, 10)), rim = GOLD, sparkles = 3,
 		rays = { count = 8, width = 0.08, alpha = 0.68, spin = 16 },
 	},
+	-- 6 Nov: Limited (Lucky Weekend): clover green with gold
+	Limited = {
+		fill = seq(rgb(20, 120, 50), rgb(90, 220, 110), rgb(255, 215, 80), rgb(20, 100, 45)), rim = GOLD, sparkles = 5,
+		rays = { count = 10, width = 0.1, alpha = 0.6, spin = 20, colors = { rgb(255, 235, 140), rgb(170, 255, 170) } },
+	},
 	Secret = {
 		fill = seq(rgb(30, 24, 90), rgb(120, 60, 230), rgb(40, 170, 230), rgb(20, 20, 70)), rim = SILVER, sparkles = 5,
 		rays = { count = 10, width = 0.1, alpha = 0.62, spin = 22, colors = { Color3.new(1, 1, 1), rgb(200, 170, 255) } },

@@ -1,0 +1,689 @@
+[
+  {
+    "id": "CloverOverdrive",
+    "title": "Clover Overdrive",
+    "rarity": "Limited",
+    "event": "Lucky Weekend",
+    "inputCenter": [
+      0,
+      -0.3,
+      2.13
+    ],
+    "bounds": [
+      [
+        -2.2899999618530273,
+        -1.562000036239624,
+        0.0
+      ],
+      [
+        2.2899999618530273,
+        1.4800000190734863,
+        3.7699999809265137
+      ]
+    ],
+    "size": [
+      4.579999923706055,
+      3.0420000553131104,
+      3.7699999809265137
+    ],
+    "assemblies": [
+      {
+        "name": "Frame",
+        "pivot": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          0,
+          0,
+          0
+        ],
+        "strikeRotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "previewKeys": [],
+        "triangles": 7776
+      },
+      {
+        "name": "Jaw_Top",
+        "pivot": [
+          0.0,
+          -0.2070000022649765,
+          2.809999942779541
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          -0.0,
+          0,
+          -0.18
+        ],
+        "strikeRotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "previewKeys": [
+          [
+            1,
+            0
+          ],
+          [
+            13,
+            0
+          ],
+          [
+            29,
+            1
+          ],
+          [
+            33,
+            1
+          ],
+          [
+            58,
+            0
+          ],
+          [
+            80,
+            0
+          ]
+        ],
+        "triangles": 460
+      },
+      {
+        "name": "Jaw_Right",
+        "pivot": [
+          0.6800000071525574,
+          -0.2070000022649765,
+          2.130000114440918
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          -0.18,
+          0,
+          -1.1021821192326179e-17
+        ],
+        "strikeRotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "previewKeys": [
+          [
+            1,
+            0
+          ],
+          [
+            13,
+            0
+          ],
+          [
+            29,
+            1
+          ],
+          [
+            33,
+            1
+          ],
+          [
+            58,
+            0
+          ],
+          [
+            80,
+            0
+          ]
+        ],
+        "triangles": 460
+      },
+      {
+        "name": "Jaw_Bottom",
+        "pivot": [
+          8.327598465230243e-17,
+          -0.2070000022649765,
+          1.4500000476837158
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          -2.2043642384652358e-17,
+          0,
+          0.18
+        ],
+        "strikeRotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "previewKeys": [
+          [
+            1,
+            0
+          ],
+          [
+            13,
+            0
+          ],
+          [
+            29,
+            1
+          ],
+          [
+            33,
+            1
+          ],
+          [
+            58,
+            0
+          ],
+          [
+            80,
+            0
+          ]
+        ],
+        "triangles": 460
+      },
+      {
+        "name": "Jaw_Left",
+        "pivot": [
+          -0.6800000071525574,
+          -0.2070000022649765,
+          2.130000114440918
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          0.18,
+          0,
+          3.306546357697853e-17
+        ],
+        "strikeRotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "previewKeys": [
+          [
+            1,
+            0
+          ],
+          [
+            13,
+            0
+          ],
+          [
+            29,
+            1
+          ],
+          [
+            33,
+            1
+          ],
+          [
+            58,
+            0
+          ],
+          [
+            80,
+            0
+          ]
+        ],
+        "triangles": 460
+      }
+    ]
+  },
+  {
+    "id": "HorseshoeComet",
+    "title": "Horseshoe Comet",
+    "rarity": "Limited",
+    "event": "Lucky Weekend",
+    "inputCenter": [
+      -0.59,
+      -0.38,
+      0.96
+    ],
+    "bounds": [
+      [
+        -2.2899999618530273,
+        -1.562000036239624,
+        0.0
+      ],
+      [
+        2.2899999618530273,
+        1.4800000190734863,
+        3.1748769283294678
+      ]
+    ],
+    "size": [
+      4.579999923706055,
+      3.0420000553131104,
+      3.1748769283294678
+    ],
+    "assemblies": [
+      {
+        "name": "Frame",
+        "pivot": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          0,
+          0,
+          0
+        ],
+        "strikeRotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "previewKeys": [],
+        "triangles": 3996
+      },
+      {
+        "name": "SwingArm",
+        "pivot": [
+          1.1699999570846558,
+          -0.18000000715255737,
+          1.7200000286102295
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          0,
+          0,
+          0
+        ],
+        "strikeRotationXYZDegrees": [
+          0.0,
+          -10.5,
+          0.0
+        ],
+        "previewKeys": [
+          [
+            1,
+            0
+          ],
+          [
+            12,
+            -0.34
+          ],
+          [
+            22,
+            1
+          ],
+          [
+            25,
+            1
+          ],
+          [
+            49,
+            0
+          ],
+          [
+            80,
+            0
+          ]
+        ],
+        "triangles": 2364
+      }
+    ]
+  },
+  {
+    "id": "JackpotFoundry",
+    "title": "Jackpot Foundry",
+    "rarity": "Limited",
+    "event": "Lucky Weekend",
+    "inputCenter": [
+      0,
+      -0.4,
+      1.03
+    ],
+    "bounds": [
+      [
+        -2.2899999618530273,
+        -1.562000036239624,
+        0.0
+      ],
+      [
+        2.2899999618530273,
+        1.4800000190734863,
+        3.6724462509155273
+      ]
+    ],
+    "size": [
+      4.579999923706055,
+      3.0420000553131104,
+      3.6724462509155273
+    ],
+    "assemblies": [
+      {
+        "name": "Frame",
+        "pivot": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          0,
+          0,
+          0
+        ],
+        "strikeRotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "previewKeys": [],
+        "triangles": 5832
+      },
+      {
+        "name": "Reel_1",
+        "pivot": [
+          -0.8399999737739563,
+          -0.08500000089406967,
+          2.49399995803833
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          0,
+          0,
+          0
+        ],
+        "strikeRotationXYZDegrees": [
+          360.0,
+          0.0,
+          0.0
+        ],
+        "previewKeys": [
+          [
+            1,
+            0
+          ],
+          [
+            10,
+            0
+          ],
+          [
+            26,
+            1
+          ],
+          [
+            80,
+            1
+          ]
+        ],
+        "triangles": 1152
+      },
+      {
+        "name": "Reel_2",
+        "pivot": [
+          0.0,
+          -0.08500000089406967,
+          2.49399995803833
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          0,
+          0,
+          0
+        ],
+        "strikeRotationXYZDegrees": [
+          810.0,
+          0.0,
+          0.0
+        ],
+        "previewKeys": [
+          [
+            1,
+            0
+          ],
+          [
+            11,
+            0
+          ],
+          [
+            28,
+            1
+          ],
+          [
+            80,
+            1
+          ]
+        ],
+        "triangles": 1152
+      },
+      {
+        "name": "Reel_3",
+        "pivot": [
+          0.8399999737739563,
+          -0.08500000089406967,
+          2.49399995803833
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          0,
+          0,
+          0
+        ],
+        "strikeRotationXYZDegrees": [
+          1080.0,
+          0.0,
+          0.0
+        ],
+        "previewKeys": [
+          [
+            1,
+            0
+          ],
+          [
+            12,
+            0
+          ],
+          [
+            30,
+            1
+          ],
+          [
+            80,
+            1
+          ]
+        ],
+        "triangles": 1152
+      },
+      {
+        "name": "StarRam",
+        "pivot": [
+          0.0,
+          -0.4099999964237213,
+          1.600000023841858
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          0,
+          0,
+          -0.54
+        ],
+        "strikeRotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "previewKeys": [
+          [
+            1,
+            0
+          ],
+          [
+            30,
+            0
+          ],
+          [
+            39,
+            1
+          ],
+          [
+            42,
+            1
+          ],
+          [
+            61,
+            0
+          ],
+          [
+            80,
+            0
+          ]
+        ],
+        "triangles": 544
+      },
+      {
+        "name": "RamShaft",
+        "pivot": [
+          0.0,
+          -0.4099999964237213,
+          1.8300000429153442
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          0,
+          0,
+          -0.27
+        ],
+        "strikeRotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "previewKeys": [
+          [
+            1,
+            0
+          ],
+          [
+            30,
+            0
+          ],
+          [
+            39,
+            1
+          ],
+          [
+            42,
+            1
+          ],
+          [
+            61,
+            0
+          ],
+          [
+            80,
+            0
+          ]
+        ],
+        "triangles": 156
+      },
+      {
+        "name": "Lever",
+        "pivot": [
+          1.9700000286102295,
+          0.2199999988079071,
+          1.2899999618530273
+        ],
+        "rotationXYZDegrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strikeTranslation": [
+          0,
+          0,
+          0
+        ],
+        "strikeRotationXYZDegrees": [
+          42.0,
+          0.0,
+          0.0
+        ],
+        "previewKeys": [
+          [
+            1,
+            0
+          ],
+          [
+            9,
+            1
+          ],
+          [
+            15,
+            1
+          ],
+          [
+            37,
+            0
+          ],
+          [
+            80,
+            0
+          ]
+        ],
+        "triangles": 756
+      }
+    ]
+  }
+]

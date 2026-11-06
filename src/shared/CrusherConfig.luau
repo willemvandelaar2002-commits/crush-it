@@ -40,7 +40,7 @@ local C = {
 	CashPacks = { CashSmall = 60, CashMedium = 300, CashLarge = 1200 },
 	-- Complete one physical six-bay row with a single rarity. Scrap only;
 	-- applies to that row, never stacks across rows or changes roll odds.
-	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40, Secret=.48, Divine=.54, Mythic=.60 },
+	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40, Limited=.48, Secret=.48, Divine=.54, Mythic=.60 }, -- (6 Nov: Limited like Secret)
 }
 -- Stadium banks: ground bays open to the plaza, the upper row steps back on
 -- top of them (its walkway is the ground bays' roof). Local plot coordinates,
@@ -242,6 +242,13 @@ C.Rarities = {
 	{ name = "Rare", price = 900, weight = 6, rank = 2, types = { "Mega", "Magnetron" }, mult = 1.35, color = Color3.fromRGB(75, 148, 255) },
 	{ name = "Epic", price = 6000, weight = 1.8, rank = 3, types = { "Titan", "TwinTitan" }, mult = 1.65, color = Color3.fromRGB(187, 105, 246) },
 	{ name = "Legendary", price = 60000, weight = 0.2, rank = 4, types = { "Quantum", "GoldenKing", "Toyzilla" }, mult = 2, color = Color3.fromRGB(255, 200, 55) },
+	-- 6 Nov (Willem's Lucky Weekend pack): LIMITED. Only rollable while the LUCKY WEEKEND
+	-- is on (Shared/WeekendConfig; the roll passes `limited`): then eventWeight gives
+	-- about 1 in 5,000 rolls for one of its three crushers (1 in 15,000 per crusher),
+	-- before luck. Willem: as strong as a Secret (C.LimitedTypes). rank 4.5: between
+	-- Legendary and Secret for luck and pity, no big-roll cinematic. Once owned they
+	-- stay (ownership, equipping and production don't care about the weekend).
+	{ name = "Limited", price = 750000, weight = 0, eventWeight = 0.02, event = "LuckyWeekend", rank = 4.5, types = {}, mult = 2.2, color = Color3.fromRGB(70, 215, 95) },
 	-- Chase tiers above Legendary (29 Oct): rollable but very rare, and luck helps
 	-- them most (luck scales with rank). Weights give 1 in 50,000 (Secret) and
 	-- 1 in 500,000 (Divine) per crusher with four crushers each; Common was
@@ -327,6 +334,25 @@ do
 		for _, rarity in C.Rarities do if rarity.name == entry.rarity then table.insert(rarity.types, entry.id) break end end
 	end
 end
+-- 6 Nov: the three LIMITED Lucky Weekend crushers (Willem's Blender pack, models in
+-- ServerStorage.SpecialCrusherMeshes, motion in Shared/LimitedCrusherAssets). Production
+-- like a Secret (Willem: "same as Secret").
+C.LimitedTypes = {
+	{ id = "CloverOverdrive", name = "Clover Overdrive", template = "CloverOverdrive" },
+	{ id = "HorseshoeComet", name = "Horseshoe Comet", template = "HorseshoeComet" },
+	{ id = "JackpotFoundry", name = "Jackpot Foundry", template = "JackpotFoundry" },
+}
+do
+	local band
+	for _, existing in C.Types do if existing.id == "Quantum" then band = existing break end end
+	for _, entry in C.LimitedTypes do
+		local def = table.clone(band)
+		def.id = entry.id def.name = entry.name def.design = nil def.template = entry.template
+		def.value = C.ChaseValue.Secret def.event = "LuckyWeekend"
+		table.insert(C.Types, def)
+		for _, rarity in C.Rarities do if rarity.name == "Limited" then table.insert(rarity.types, entry.id) break end end
+	end
+end
 -- What a crusher crushes, by its rarity (29 Oct): the toy objects in
 -- Config.Objects (meshes in ReplicatedStorage.ObjectMeshes). Rarer crushers get
 -- bigger, cooler things; a tier with two picks one at random for each input.
@@ -338,6 +364,7 @@ C.RarityObjects = {
 	Epic = { "Car", "Truck" },
 	Legendary = { "Tank" },
 	Secret = { "House", "Statue" },
+	Limited = { "House", "Statue" },
 	Divine = { "Plane", "Ship" },
 	Mythic = { "Planet" },
 }
@@ -381,19 +408,22 @@ C.Pity = { Rolls = 200, Rarity = "Legendary", MinRank = 4 }
 -- whole server x AftershockLuck on rolls for AftershockSeconds (Willem: not Secret).
 C.BigRoll = { MinRank = 5, PillarSeconds = 30,
 	Secret = { Hold = 4.6 }, Divine = { Hold = 6.4, AftershockLuck = 1.5, AftershockSeconds = 30 } }
--- 5 Nov (Willem): a bay holding a Secret or Divine crusher glows (client/SpecialBayFx):
+-- 5 Nov (Willem): a bay holding a Secret or Divine crusher glows (client/SpecialBayFx; 6 Nov: Limited too):
 -- a light plate on the pedestal, a colour wash up the back wall, rising sparkles;
 -- Divine adds two soft light shafts. Colours match the models (Secret neon purple/pink,
 -- Divine gold/cyan). Phones and low graphics get half the sparkles.
 C.SpecialBay = {
 	Secret = { main = Color3.fromRGB(176, 70, 255), accent = Color3.fromRGB(255, 70, 200), sparkles = 7, shafts = false },
 	Divine = { main = Color3.fromRGB(255, 205, 80), accent = Color3.fromRGB(120, 235, 255), sparkles = 9, shafts = true },
+	-- 6 Nov: Limited (Lucky Weekend): clover green and gold
+	Limited = { main = Color3.fromRGB(70, 225, 100), accent = Color3.fromRGB(255, 205, 60), sparkles = 7, shafts = false },
 	PlateTransparency = { 0.5, 0.75 }, PulseSeconds = 1.6, WallHeight = 9,
 	-- the bay plaque (Willem: "this stuff that changes"): a colour band sliding across,
 	-- a shine sweeping over it and a glowing rim; seconds per slide / per shine
 	Plaque = {
 		Secret = { Color3.fromRGB(58, 18, 112), Color3.fromRGB(150, 40, 210), Color3.fromRGB(235, 60, 190), Color3.fromRGB(40, 170, 230), Color3.fromRGB(58, 18, 112) },
 		Divine = { Color3.fromRGB(190, 110, 20), Color3.fromRGB(235, 165, 40), Color3.fromRGB(250, 205, 90), Color3.fromRGB(60, 150, 230), Color3.fromRGB(190, 110, 20) },
+		Limited = { Color3.fromRGB(20, 110, 50), Color3.fromRGB(40, 170, 70), Color3.fromRGB(200, 160, 30), Color3.fromRGB(40, 170, 70), Color3.fromRGB(20, 110, 50) },
 		SlideSeconds = 4, ShineEvery = 3.2,
 	},
 }
@@ -490,14 +520,24 @@ C.Goals = { GroupId = 264438399, SkipMinutes = 5, SkipCooldownHours = 24, MinSki
 -- board all use this). luck = Luck upgrade level; lucky = luck multiplier on
 -- every non-Common rarity (true = 2: Lucky pass OR 2x Luck boost; 4 = both);
 -- bonus = permanent Index luck (0.1 = +10%).
-function C.rollWeights(luck,lucky,bonus)
+-- limited: the LUCKY WEEKEND is on, so event rarities (Limited) can roll (C.limitedOn)
+function C.rollWeights(luck,lucky,bonus,limited)
 	local mult=if type(lucky)=="number" then lucky elseif lucky then 2 else 1
-	local out={} for i,v in C.Rarities do out[i]=v.weight*C.luckFactor(luck or 0,v.rank)*(if v.rank>0 then mult*(1+(bonus or 0)) else 1) end
+	local out={} for i,v in C.Rarities do
+		local base=if v.event then (if limited then v.eventWeight or 0 else 0) else v.weight
+		out[i]=base*C.luckFactor(luck or 0,v.rank)*(if v.rank>0 then mult*(1+(bonus or 0)) else 1)
+	end
 	return out
 end
+-- 6 Nov: is the LUCKY WEEKEND on (so Limited crushers roll)? Same clock as the 2x weekend
+-- luck. Studio: workspace attribute WeekendTest = "active" forces it (as the HUD preview).
+function C.limitedOn(): boolean
+	if game:GetService("RunService"):IsStudio() and workspace:GetAttribute("WeekendTest") == "active" then return true end
+	return require(script.Parent.WeekendConfig).on(os.time())
+end
 -- "1 in N" for one crusher type with your luck (nil luck = base odds)
-function C.effectiveOdds(typeId,luck,lucky,bonus)
-	local w=C.rollWeights(luck,lucky,bonus) local total=0 for _,x in w do total+=x end
+function C.effectiveOdds(typeId,luck,lucky,bonus,limited)
+	local w=C.rollWeights(luck,lucky,bonus,limited) local total=0 for _,x in w do total+=x end
 	for i,r in C.Rarities do for _,t in r.types do if t==typeId then
 		if w[i]<=0 then return math.huge end
 		return math.max(1,math.floor(total/w[i]*#r.types+.5))
@@ -507,6 +547,8 @@ end
 function C.oddsFor(typeId)
 	local total=0 for _,r in C.Rarities do total+=r.weight end
 	for _,r in C.Rarities do for _,t in r.types do if t==typeId then
+		-- (event rarities: their odds while the event is on)
+		if r.event and (r.eventWeight or 0)>0 then return math.max(1,math.floor((total+r.eventWeight)/r.eventWeight*#r.types+.5)) end
 		if r.weight<=0 then return math.huge end -- Mythic: can't be rolled
 		return math.max(1,math.floor(total/r.weight*#r.types+.5))
 	end end end

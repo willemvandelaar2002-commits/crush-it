@@ -8,6 +8,7 @@ return function()
 		local weights=R.weights(luck,lucky,bonus) local total=0 for _,w in weights do total+=w end
 		local sum=0
 		for rank,rarity in C.Rarities do for _,id in rarity.types do
+			if rarity.event then continue end -- (Limited: only during its event, checked below)
 			if rarity.weight<=0 then check(P.odds(id,luck,lucky,false,bonus)==0,"exclusive types have no roll odds") continue end
 			local odds=P.odds(id,luck,lucky,false,bonus)
 			-- 2 Nov: the Index shows the same odds, rounded
@@ -18,6 +19,15 @@ return function()
 		end end
 		check(math.abs(sum-1)<1e-9,"all type probabilities sum to one")
 	end end end
+	-- 6 Nov: Limited (Lucky Weekend) odds use the weights with the event on
+	local lim=C.rarity("Limited")
+	for _,luck in {0,10,40} do
+		local w=R.weights(luck,2,0,true) local total=0 local at=0 for i,x in w do total+=x if C.Rarities[i]==lim then at=x end end
+		for _,id in lim.types do
+			check(math.abs(P.odds(id,luck,2,false,0)-total/at*#lim.types)<1e-6,"Limited roll odds = weekend weights")
+			check(C.effectiveOdds(id,luck,2,0,true)==math.max(1,math.floor(total/at*#lim.types+.5)),"Index weekend odds match")
+		end
+	end
 	-- Lucky pass and 2x Luck boost stack: 4x weight on every non-Common rarity
 	local base,both=R.weights(0,1),R.weights(0,4)
 	check(both[1]==base[1] and math.abs(both[2]-4*base[2])<1e-9,"pass + boost = 4x non-Common weight")
