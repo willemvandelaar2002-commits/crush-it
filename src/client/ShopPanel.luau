@@ -179,6 +179,23 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	local pages: { [string]: any } = {}
 	local current = "FEATURED"
 	local area = make("Frame", { Name = "Content", Position = UDim2.fromOffset(14, 144), Size = UDim2.fromOffset(CONTENT_W, H - 158), BackgroundTransparency = 1, ZIndex = 6, ClipsDescendants = true }, panel)
+	-- 6 Nov (phone check: on an iPhone SE the whole 860 x 590 window shrank to half size,
+	-- 68 texts under 12 px): the shop is one scrolling page, so on phones it is scaled by
+	-- its WIDTH only and made shorter instead; the page scrolls. Text ends up ~40% bigger.
+	local function fitPhone()
+		local h = H
+		if Style.compact() then
+			local v = Workspace.CurrentCamera.ViewportSize
+			local inset = game:GetService("GuiService"):GetGuiInset().Y
+			local s = math.clamp((v.X - 24) / (W / 0.94), 0.3, 1)
+			h = math.clamp(math.floor((v.Y - inset - 12) / s * 0.92), 300, H)
+		end
+		panel.Size = UDim2.fromOffset(W, h)
+		area.Size = UDim2.fromOffset(CONTENT_W, h - 158)
+		panel:SetAttribute("FitHeight", h / 0.92)
+	end
+	fitPhone()
+	Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitPhone)
 	local scroll = make("ScrollingFrame", { Name = "All", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 8,
 		ScrollBarImageColor3 = C(255, 214, 60), AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(), ZIndex = 6 }, area)
 	make("UIListLayout", { Padding = UDim.new(0, 18), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Left }, scroll)

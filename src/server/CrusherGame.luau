@@ -1028,6 +1028,7 @@ function G.start()
 	require(script.Parent.WhatsNew).start(api)
 	require(script.Parent.Referral).start(api) -- 4 Nov: invite a friend -> both get a Legendary
 	require(script.Parent.Feedback).start(api) -- 5 Nov: the one-tap survey
+	require(script.Parent.Settings).start(api) -- 6 Nov: the SETTINGS menu (music, sounds, shake, effects, vibration)
 	require(script.Parent.NameTags).start() -- 5 Nov: VIP / PLUS tag above the head
 	-- /credits <amount> (or /cash): test cash, e.g. "/credits 5m". Studio, or the
 	-- place owner in live servers. No amount gives 1M.

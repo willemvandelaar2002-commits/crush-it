@@ -316,7 +316,7 @@ local function introStep(now)
 	local cf=CFrame.lookAt(at,shot.look)
 	-- shake: the landing (2.6-3.4) and the roar (5.2-7)
 	local shake=(if age>=2.6 and age<3.4 then 1-(age-2.6)/.8 else 0)+(if age>=5.2 and age<7 then .7 else 0)
-	if shake>0 then cf*=CFrame.Angles(math.sin(now*47)*.012*shake,math.sin(now*39)*.012*shake,0) end
+	if shake>0 and Style.shakeOn() then cf*=CFrame.Angles(math.sin(now*47)*.012*shake,math.sin(now*39)*.012*shake,0) end
 	s.camera.CFrame=cf s.camera.FieldOfView=shot.fov
 	if age>INTRO_LENGTH-.4 then fade.BackgroundTransparency=math.clamp((INTRO_LENGTH-age)/.4,0,1) end
 end

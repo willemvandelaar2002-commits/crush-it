@@ -146,7 +146,7 @@ local function cinematic(msg: any)
 	TweenService:Create(camera, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { CFrame = shot }):Play()
 	local shake = 0
 	table.insert(conns, RunService.RenderStepped:Connect(function()
-		if shake > 0.02 and not still and camera.CameraType == Enum.CameraType.Scriptable then
+		if shake > 0.02 and not still and camera.CameraType == Enum.CameraType.Scriptable and Style.shakeOn() then
 			local t = os.clock() * 40
 			camera.CFrame = shot * CFrame.new(math.sin(t) * shake, math.cos(t * 1.3) * shake, 0)
 			shake *= 0.9

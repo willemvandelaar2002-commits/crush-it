@@ -488,6 +488,10 @@ end
 -- Client effects use it to skip outlines and thin out particles.
 function Style.lite(): boolean
 	local input = game:GetService("UserInputService")
+	-- 6 Nov: the EFFECTS setting (client/Settings) wins over the device guess
+	local me = game:GetService("Players").LocalPlayer
+	local setting = me and me:GetAttribute("Set_Effects")
+	if setting == "Low" then return true elseif setting == "High" then return false end
 	if input.TouchEnabled and not input.KeyboardEnabled then return true end
 	local ok, level = pcall(function() return UserSettings().GameSettings.SavedQualityLevel end)
 	return ok and level ~= Enum.SavedQualitySetting.Automatic and level.Value <= 3
@@ -509,6 +513,31 @@ function Style.placeHudButton(btn: TextButton, slot: number)
 	label.Size = UDim2.new(1.15, 0, 0, size * 0.34)
 	local badge = btn:FindFirstChild("Badge") :: Frame
 	badge.Size = UDim2.fromOffset(size * 0.36, size * 0.36)
+end
+
+-- 6 Nov: the first free slot after the visible buttons of the top-left row (buttons
+-- that come and go: Rebirth appears later, the deal disappears once bought). `names`
+-- are the row's buttons that sit before `btn`, anywhere in the PlayerGui.
+Style.HudRow = { "BookButton", "ShopButton", "RewardsButton", "RebirthButton", "FirstBuyButton", "PhoneCashButton", "SettingsButton" }
+
+-- 6 Nov: the SCREEN SHAKE setting (client/Settings); camera-shake code checks this
+function Style.shakeOn(): boolean
+	local me = game:GetService("Players").LocalPlayer
+	return not (me and me:GetAttribute("Set_Shake") == false)
+end
+function Style.placeAfterHudRow(btn: TextButton)
+	local pg = btn:FindFirstAncestorOfClass("PlayerGui")
+	local size = if Style.compact() then 54 else 84
+	local slot = 0
+	for _, n in Style.HudRow do
+		if n == btn.Name then break end
+		local b = pg and pg:FindFirstChild(n, true)
+		local sg = b and b:FindFirstAncestorOfClass("ScreenGui")
+		if b and b:IsA("GuiObject") and b.Visible and sg and sg.Enabled then
+			slot = math.max(slot, math.floor(((b :: GuiObject).Position.X.Offset - 12) / (size + 10) + 0.5) + 1) -- (Offset, not AbsolutePosition: notch insets)
+		end
+	end
+	Style.placeHudButton(btn, slot)
 end
 
 -- Reflow columns to use the available width, including narrow portrait phones.

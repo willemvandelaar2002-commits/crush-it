@@ -116,13 +116,7 @@ function M.build(gui: ScreenGui)
 	end
 
 	-- where the button sits: right after the last visible button of the row
-	local function place()
-		local slot = 3
-		local rebirth = gui.Parent and (gui.Parent :: Instance):FindFirstChild("RebirthButton", true) :: GuiObject?
-		local rebirthGui = rebirth and rebirth:FindFirstAncestorOfClass("ScreenGui")
-		if rebirth and rebirth:IsA("GuiObject") and rebirth.Visible and rebirthGui and rebirthGui.Enabled then slot = 4 end
-		Style.placeHudButton(button, slot)
-	end
+	local function place() Style.placeAfterHudRow(button) end
 	local function refresh()
 		local owned = me:GetAttribute("Offer_" .. offer.id) == true
 		button.Visible = product.productId ~= 0 and not owned

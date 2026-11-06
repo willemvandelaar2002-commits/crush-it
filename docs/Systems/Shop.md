@@ -393,3 +393,8 @@ when the shop does; opens Willem's empty card board (image 77919314377312, First
 and name, the two boost tiles, a close sprite, a BUY R$ 5 button (live price) and "Only once per player!" laid out on it
 like his reference picture. Hidden while the
 product id is 0 and once owned. Shop funnel source "FirstBuyButton".
+
+## 6 Nov: phones
+The right-side offers are hidden on phones (FitsScreen false), so the next cash pass is a rainbow icon button
+"PhoneCashButton" in the top-left row there (same ladder, same buyPass; ShopOpened source "PhoneCashButton").
+The shop window on phones is scaled by width only and made shorter (fitPhone in ShopPanel); the page scrolls.

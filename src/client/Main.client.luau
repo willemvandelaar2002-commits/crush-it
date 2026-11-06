@@ -637,6 +637,7 @@ end
 
 local shake = 0
 RunService:BindToRenderStep("CrushShake", Enum.RenderPriority.Camera.Value + 1, function(dt)
+	if shake > 0.01 and not Style.shakeOn() then shake = 0 end -- 6 Nov: SCREEN SHAKE off
 	if shake > 0.01 then
 		local cam = Workspace.CurrentCamera
 		local r = shake

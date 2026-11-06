@@ -266,6 +266,27 @@ doubleButton.Activated:Connect(function()
 	buyPass(doubleNext)
 end)
 
+-- 6 Nov (Willem: phones): the offers above are hidden on phones (no room), so phone
+-- players never saw the cash ladder. On small screens the next cash pass is a rainbow
+-- icon button in the top-left row instead ("4X CASH"), after the R$ 5 deal.
+local phoneCash = Style.iconButton(gui, { name = "PhoneCashButton", image = Icons.DoubleCash, label = "2X CASH", a = Color3.fromRGB(120, 235, 100), b = Color3.fromRGB(40, 150, 60) })
+do
+	local tile = phoneCash:FindFirstChild("Tile") :: Frame
+	local fill = tile:FindFirstChild("PanelFill")
+	if fill then fill:Destroy() end
+	Style.rainbow(tile)
+	Style.wobble(tile, 5, 2.4)
+	local l = phoneCash:FindFirstChild("Label") :: TextLabel
+	l.TextColor3 = Color3.fromRGB(150, 255, 110)
+end
+phoneCash.Visible = false
+phoneCash.Activated:Connect(function()
+	if not doubleNext then return end
+	Net.event("ShopOpened"):FireServer("PhoneCashButton")
+	buyPass(doubleNext)
+end)
+task.spawn(function() while true do task.wait(2) if phoneCash.Visible then Style.placeAfterHudRow(phoneCash) end end end)
+
 -- Featured pass card: gradient panel, "BEST!" ribbon, big icon, name and price.
 local FEATURED = {
 	{ perk = "AutoCrush", icon = Icons.AutoCrush, a = Color3.fromRGB(255, 120, 90), b = Color3.fromRGB(200, 40, 70) },
@@ -320,6 +341,9 @@ local function refreshOffers()
 	local nextPass = Store.nextCashPass(player)
 	doubleNext = if nextPass then nextPass.perk else nil
 	doubleHolder.Visible = nextPass ~= nil
+	phoneCash.Visible = nextPass ~= nil and offers:GetAttribute("FitsScreen") ~= true
+	if nextPass then (phoneCash:FindFirstChild("Label") :: TextLabel).Text = string.upper(nextPass.title) end
+	if phoneCash.Visible then Style.placeAfterHudRow(phoneCash) end
 	if nextPass then
 		doubleText.Text = string.upper(nextPass.title:sub(1, -6)) .. " Cash" -- "4X Cash"
 		Store.livePrice("pass", nextPass.gamePassId, nextPass.price, function(n)
@@ -342,6 +366,7 @@ end
 for _, pass in Store.Passes do
 	player:GetAttributeChangedSignal(Store.passAttr(pass.perk)):Connect(refreshOffers)
 end
+offers:GetAttributeChangedSignal("FitsScreen"):Connect(refreshOffers) -- 6 Nov: phone <-> desktop layout
 refreshOffers()
 -- The book lives in the HUD below this ScreenGui: hide the offers while it's open.
 local bookPanel = hud:WaitForChild("Book", 10) :: GuiObject?
