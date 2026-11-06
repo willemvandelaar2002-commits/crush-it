@@ -511,6 +511,25 @@ function Style.placeHudButton(btn: TextButton, slot: number)
 	badge.Size = UDim2.fromOffset(size * 0.36, size * 0.36)
 end
 
+-- 6 Nov: the first free slot after the visible buttons of the top-left row (buttons
+-- that come and go: Rebirth appears later, the deal disappears once bought). `names`
+-- are the row's buttons that sit before `btn`, anywhere in the PlayerGui.
+Style.HudRow = { "BookButton", "ShopButton", "RewardsButton", "RebirthButton", "FirstBuyButton", "PhoneCashButton" }
+function Style.placeAfterHudRow(btn: TextButton)
+	local pg = btn:FindFirstAncestorOfClass("PlayerGui")
+	local size = if Style.compact() then 54 else 84
+	local slot = 0
+	for _, n in Style.HudRow do
+		if n == btn.Name then break end
+		local b = pg and pg:FindFirstChild(n, true)
+		local sg = b and b:FindFirstAncestorOfClass("ScreenGui")
+		if b and b:IsA("GuiObject") and b.Visible and sg and sg.Enabled then
+			slot = math.max(slot, math.floor(((b :: GuiObject).Position.X.Offset - 12) / (size + 10) + 0.5) + 1) -- (Offset, not AbsolutePosition: notch insets)
+		end
+	end
+	Style.placeHudButton(btn, slot)
+end
+
 -- Reflow columns to use the available width, including narrow portrait phones.
 function Style.grid(container: GuiObject, minWidth: number, height: number, gap: number?)
 	local layout = container:FindFirstChildOfClass("UIGridLayout")
