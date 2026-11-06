@@ -106,6 +106,7 @@ end
 
 local shakeUntil, shakeStrength = 0, 0
 local function shake(distance: number)
+	if not Style.shakeOn() then return end -- 6 Nov: SCREEN SHAKE off
 	shakeStrength = math.clamp(1.2 - distance / 90, 0, 1) * 0.9
 	shakeUntil = os.clock() + 0.35
 end

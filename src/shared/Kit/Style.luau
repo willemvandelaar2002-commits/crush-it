@@ -488,6 +488,10 @@ end
 -- Client effects use it to skip outlines and thin out particles.
 function Style.lite(): boolean
 	local input = game:GetService("UserInputService")
+	-- 6 Nov: the EFFECTS setting (client/Settings) wins over the device guess
+	local me = game:GetService("Players").LocalPlayer
+	local setting = me and me:GetAttribute("Set_Effects")
+	if setting == "Low" then return true elseif setting == "High" then return false end
 	if input.TouchEnabled and not input.KeyboardEnabled then return true end
 	local ok, level = pcall(function() return UserSettings().GameSettings.SavedQualityLevel end)
 	return ok and level ~= Enum.SavedQualitySetting.Automatic and level.Value <= 3
@@ -514,7 +518,13 @@ end
 -- 6 Nov: the first free slot after the visible buttons of the top-left row (buttons
 -- that come and go: Rebirth appears later, the deal disappears once bought). `names`
 -- are the row's buttons that sit before `btn`, anywhere in the PlayerGui.
-Style.HudRow = { "BookButton", "ShopButton", "RewardsButton", "RebirthButton", "FirstBuyButton", "PhoneCashButton" }
+Style.HudRow = { "BookButton", "ShopButton", "RewardsButton", "RebirthButton", "FirstBuyButton", "PhoneCashButton", "SettingsButton" }
+
+-- 6 Nov: the SCREEN SHAKE setting (client/Settings); camera-shake code checks this
+function Style.shakeOn(): boolean
+	local me = game:GetService("Players").LocalPlayer
+	return not (me and me:GetAttribute("Set_Shake") == false)
+end
 function Style.placeAfterHudRow(btn: TextButton)
 	local pg = btn:FindFirstAncestorOfClass("PlayerGui")
 	local size = if Style.compact() then 54 else 84
