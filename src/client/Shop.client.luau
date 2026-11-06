@@ -233,7 +233,9 @@ local function fitOffers()
 	-- phones the stack shows too, smaller, bottom right just left of Roblox's jump button
 	local compact = Style.compact()
 	offersScale.Scale = if compact then 0.55 else math.clamp((h - 380) / 480, 0.5, 1) -- stays between the leaderboard and the CRUSH button
-	offers.Position = if compact then UDim2.new(1, -112, 1, -10) else UDim2.new(1, -14, 1, if Config.Crushers.Enabled then -24 else -240)
+	-- (phones: under the SMASH button on the right, Willem; SMASH is centred at 36% height)
+	offers.AnchorPoint = if compact then Vector2.new(1, 0) else Vector2.new(1, 1)
+	offers.Position = if compact then UDim2.new(1, -6, 0.36, 54) else UDim2.new(1, -14, 1, if Config.Crushers.Enabled then -24 else -240)
 	offers:SetAttribute("FitsScreen", compact or h >= (if Config.Crushers.Enabled then 560 else 650))
 	local book = hud:FindFirstChild("Book") :: GuiObject?
 	offers.Visible = offers:GetAttribute("FitsScreen") == true and not panel.Visible and not (book and book.Visible)
