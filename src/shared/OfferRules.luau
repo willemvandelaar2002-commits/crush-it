@@ -42,6 +42,7 @@ function R.fulfil(d: any, product: string, purchaseId: string, hooks: any): (boo
 	if entry.kind == "starter" or entry.kind == "showroom" then
 		if not validType(offer.rarity, offer.crusher) then return false, "bad offer crusher" end
 		if entry.kind == "starter" and offer.boost and offer.boost.minutes <= 0 then return false, "bad boost" end
+		for _, b in offer.boosts or {} do if b.minutes <= 0 then return false, "bad boost" end end
 		-- A second paid receipt for a one-time offer (two servers racing a
 		-- prompt) still delivers what was paid for; it is only logged.
 		local again = offers.owned[offer.id] == true
@@ -51,6 +52,7 @@ function R.fulfil(d: any, product: string, purchaseId: string, hooks: any): (boo
 		if entry.kind == "starter" then
 			if (offer.cashMinutes or 0) > 0 then hooks.addCash(hooks.cashFor(offer.cashMinutes * 60)) table.insert(parts, "cash") end
 			if offer.boost then hooks.addBoost(offer.boost.id, offer.boost.minutes) table.insert(parts, "boost") end
+			for _, b in offer.boosts or {} do hooks.addBoost(b.id, b.minutes) table.insert(parts, "2x " .. b.id .. " " .. b.minutes .. " min") end
 		end
 		offers.owned[offer.id] = true
 		return true, { text = offer.title .. ": " .. table.concat(parts, " + ") .. "!", repeatOnce = again }

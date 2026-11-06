@@ -82,7 +82,7 @@ end
 -- itself sends; anything else is logged as "Other", at most one event per 0.5 s.
 local SHOP_SOURCES: { [string]: boolean } = {}
 for _, n in { "ShopButton", "QuickShopMore", "AutoButton", "DoubleCashOffer", "FeaturedOffer", "StarterOffer",
-	"OfferStarterPack", "OfflineX2", "OfflineX5", "OfferPrismMech", "OfferFactoryCrate", "OfferStarterPack" } do
+	"OfferStarterPack", "OfflineX2", "OfflineX5", "OfferPrismMech", "OfferFactoryCrate", "OfferStarterPack", "FirstBuyButton" } do
 	SHOP_SOURCES[n] = true
 end
 for _, tab in { "FEATURED", "CRATES", "PACKS", "BOOSTS", "PASSES", "CASH" } do SHOP_SOURCES["Tab" .. tab] = true end

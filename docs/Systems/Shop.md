@@ -383,3 +383,11 @@ VIP x1.5 and the timed boosts still on top, like before). The right-side button,
 shop only offer the next step (`Store.nextCashPass`); the shop panel shows your top one as OWNED at the end.
 New passes have id 0 until Willem creates them (hidden until then). The 2x Cash sign beside Sell is gone
 (C.RobuxSignSpots). Owning a higher pass without the lower ones (bought from the game page) works fine.
+
+## 6 Nov: First Buy Deal (R$ 5)
+Product `FirstBuy` (Store), contents `O.FirstBuy` (OfferConfig): Gumball Gobbler (Epic) + 15 min 2x Cash + 15 min
+2x Luck, once per player (d.offers.owned.FirstBuy, attribute Offer_FirstBuy). Granted by server/Offers via the one
+ProcessReceipt (OfferRules handles `boosts`, a list). client/FirstBuy: a rainbow wobbling "R$ 5 DEAL" icon button
+after the last visible button of the top-left row (Index / Shop / Rewards / Rebirth), in the Shop gui, so it shows
+when the shop does; opens a card (crusher + 2 boost tiles, BUY R$ 5, "Only once per player!"). Hidden while the
+product id is 0 and once owned. Shop funnel source "FirstBuyButton".

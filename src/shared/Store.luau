@@ -63,6 +63,10 @@ Store.Products = {
 	{ id = "SkipRewards", productId = 3723658147, price = 99, title = "Skip All", desc = "Unlock every playtime gift now", color = Color3.fromRGB(255, 200, 40), hidden = true },
 	-- Shop offers (Shared/OfferConfig, server/Offers). price = 0: not approved
 	-- yet; once a productId is set the shop shows Roblox's own price.
+	-- 6 Nov (Willem: "something under 5 robux, very visible, to get people over the first
+	-- buy barrier"; vault Price Points: impulse rung): once per player. Id 0 until created
+	-- (the HUD button stays hidden until then). Contents: Shared/OfferConfig FirstBuy.
+	{ id = "FirstBuy", productId = 0, price = 5, title = "First Buy Deal", desc = "Gumball Gobbler (Epic crusher) + 15 min 2x Cash + 15 min 2x Luck. Only once!", color = Color3.fromRGB(255, 90, 200), hidden = true },
 	{ id = "StarterPack", productId = 3723658249, price = 49, title = "Starter Pack", desc = "Candy Colossus + cash + 2x Cash boost (once)", color = Color3.fromRGB(255, 80, 170), hidden = true },
 	{ id = "FactoryCrate1", productId = 3723658442, price = 39, title = "Factory Crate", desc = "One random crate crusher (Epic, Legendary or Mythic)", color = Color3.fromRGB(150, 70, 230), hidden = true },
 	-- Mythic crushers (exclusive: never rolled). productId 0 shows SOON.

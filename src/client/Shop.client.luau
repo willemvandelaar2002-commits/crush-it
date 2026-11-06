@@ -160,6 +160,8 @@ local function openFullShop(from: string)
 	Style.setOpen(panel, true)
 	Net.event("ShopOpened"):FireServer(from)
 end
+-- 6 Nov: the R$ 5 First Buy Deal button + card (client/FirstBuy)
+require(script.Parent.FirstBuy).build(gui)
 -- QuickShop (3 Nov) now only hosts the pushed Starter Pack offer card.
 local quick = require(script.Parent.QuickShop).build(gui, { buyPass = buyPass, buyProduct = buyProduct, notice = notice,
 	openFull = function() openFullShop("QuickShopMore") end })
