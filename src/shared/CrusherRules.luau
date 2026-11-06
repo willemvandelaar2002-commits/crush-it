@@ -236,7 +236,7 @@ function R.stats(d,item,perks,rows)
 	return {damage=damage,cycle=cycle,hp=t.hp,value=C.money(value),cps=value/(math.ceil(t.hp/damage)*cycle+delay),rowBonus=multiplier-1,overkill=overkill,delay=delay}
 end
 -- bonus: permanent Index-milestone luck (0.1 = +10% weight on every non-Common rarity)
-function R.weights(luck,lucky,bonus) return C.rollWeights(luck,lucky,bonus) end
+function R.weights(luck,lucky,bonus,limited) return C.rollWeights(luck,lucky,bonus,limited) end
 -- Remember every type the save owns now (and the one inside the fuser).
 function R.markSeen(s)
 	if type(s.seen)~="table" then s.seen={} end
@@ -264,7 +264,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		-- pity: one pedestal is a guaranteed Legendary once the counter is full
 		local pitySlot=if not first and (s.pity or 0)+1>=C.Pity.Rolls then math.min(count,math.floor(random()*count)+1) else nil
 		for i=1,count do
-			local rarity=if first then C.Rarities[1] else C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky,perks and perks.indexLuck),random)]
+			local rarity=if first then C.Rarities[1] else C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky,perks and perks.indexLuck,perks and perks.limited),random)]
 			if i==pitySlot and rarity.rank<C.Pity.MinRank then rarity=C.rarity(C.Pity.Rarity) end
 			local mod=if first then C.Modifiers[1] else C.Modifiers[choose(weights,random)]
 			offers[i]={type=rarity.types[math.min(#rarity.types,math.floor(random()*#rarity.types)+1)],rarity=rarity.name,modifier=mod.name,level=1}

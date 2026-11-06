@@ -68,7 +68,8 @@ local function perks(p)
 			*(function() local d=Data.get(p) return C.rebirthLuck(d and d.crushers.rebirths or 0) end)(),
 		mult=Store.cashPassMult(p)*(if Store.hasPass(p,"VIP") then Store.Vip.Mult else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now))
 			*(function() local d=Data.get(p) return C.rebirthMult(d and d.crushers.rebirths or 0) end)(), -- 2 Nov evening: rebirth bonus
-		indexLuck=(function() local d=Data.get(p) return if d then IndexRewards.luck(d.crushers) else 0 end)()}
+		indexLuck=(function() local d=Data.get(p) return if d then IndexRewards.luck(d.crushers) else 0 end)(),
+		limited=C.limitedOn()} -- 6 Nov: Limited (Lucky Weekend) crushers roll while the weekend is on
 end
 local function cps(p,d)
 	local rows=Rows.snapshot(d) local buffs=perks(p)

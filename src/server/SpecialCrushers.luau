@@ -83,8 +83,11 @@ local CURVES={ -- (frame-1)/71 -> amount, from the pack's build.py
 	wind={{0,0},{11/71,.18},{24/71,.76},{33/71,1},{43/71,1},{62/71,0},{1,0}},
 	spin={{0,0},{1,1}}, -- 5 Nov: rollers / rings turn one full circle per strike (ends where it started)
 }
+-- 6 Nov: a motion can carry its own keys ({t, amount} on the same 0..1 timeline, contact
+-- at 33/71) instead of a named curve: the Lucky Weekend pack's per-part timings (backswing,
+-- reels stopping one after another, the lever pull before the ram).
 local function amount(curve,t)
-	local keys=CURVES[curve] or CURVES.press
+	local keys=if type(curve)=="table" then curve else CURVES[curve] or CURVES.press
 	for i=2,#keys do local a,b=keys[i-1],keys[i]
 		if t<=b[1] then return a[2]+(b[2]-a[2])*(t-a[1])/math.max(1e-6,b[1]-a[1]) end
 	end
@@ -117,12 +120,13 @@ function B.rig(model,metadata,fit)
 	for name in moving do if Pm[name].parent and not rest[Pm[name].parent] then local q=component(model,Pm[name].parent) rest[Pm[name].parent]={part=q,cf=q.CFrame,size=q.Size} end end
 	local times,seen={}, {}
 	for _,keys in CURVES do for _,k in keys do if not seen[k[1]] then seen[k[1]]=true table.insert(times,k[1]) end end end
+	for _,m in metadata.motion do for _,k in m.keys or {} do if not seen[k[1]] then seen[k[1]]=true table.insert(times,k[1]) end end end
 	table.sort(times)
 	local function pose(name,t)
 		local r=rest[name] local cf,size=r.cf,r.size
 		local o=point(Pm[name].origin)
 		for _,m in motions[name] or {} do
-			local a=amount(m.curve,t)
+			local a=amount(m.keys or m.curve,t)
 			if m.kind=="move" then
 				local d=vector(m.vector)*a cf=cf+d o+=d
 			elseif m.kind=="rotate" then

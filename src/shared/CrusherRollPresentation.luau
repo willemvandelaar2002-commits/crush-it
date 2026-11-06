@@ -8,6 +8,7 @@ local profiles={
 	Rare={rank=2,duration=.7,lift=.7,pitch=1.05},
 	Epic={rank=3,duration=1.0,lift=1.0,pitch=.98},
 	Legendary={rank=4,duration=1.35,lift=1.3,pitch=.9},
+	Limited={rank=4.5,duration=1.5,lift=1.4,pitch=.87},
 	Secret={rank=5,duration=1.6,lift=1.5,pitch=.84},
 	Divine={rank=6,duration=1.85,lift=1.7,pitch=.8},
 	Mythic={rank=7,duration=1.9,lift=1.7,pitch=.78},
@@ -17,11 +18,13 @@ function P.owns(items,id)
 	for _,item in items do if item.type==id then return true end end return false
 end
 function P.odds(id,luck,lucky,first,bonus)
-	local wanted=C.rarityOf(id) if not wanted or wanted.weight<=0 then return 0 end
+	local wanted=C.rarityOf(id) if not wanted or (wanted.weight<=0 and not wanted.event) then return 0 end
 	if first then return if wanted.name=="Common" then #wanted.types else 0 end
-	-- 2 Nov: the same weights as the server roll (now including Index luck)
-	local w=C.rollWeights(luck,lucky,bonus) local total=0 local weight=0
+	-- 2 Nov: the same weights as the server roll (now including Index luck); 6 Nov: and
+	-- the Lucky Weekend's Limited rarity (a rolled Limited always shows its weekend odds)
+	local w=C.rollWeights(luck,lucky,bonus,wanted.event~=nil or C.limitedOn()) local total=0 local weight=0
 	for i,r in C.Rarities do total+=w[i] if r==wanted then weight=w[i] end end
+	if weight<=0 then return 0 end
 	return total/weight*#wanted.types
 end
 function P.oddsText(n)

@@ -149,4 +149,8 @@ local Assets = {
 for id, entry in require(script.Parent.ChaseCrusherAssets) do
 	Assets[id] = entry
 end
+-- 6 Nov: the Limited (Lucky Weekend) crushers: motion metadata in LimitedCrusherAssets.
+for id, entry in require(script.Parent.LimitedCrusherAssets) do
+	Assets[id] = entry
+end
 return Assets
