@@ -398,3 +398,8 @@ product id is 0 and once owned. Shop funnel source "FirstBuyButton".
 The right-side offers are hidden on phones (FitsScreen false), so the next cash pass is a rainbow icon button
 "PhoneCashButton" in the top-left row there (same ladder, same buyPass; ShopOpened source "PhoneCashButton").
 The shop window on phones is scaled by width only and made shorter (fitPhone in ShopPanel); the page scrolls.
+
+## 6 Nov: no featured pass card
+The featured pass card under the cash button (Auto Crush / Auto Collect / Lucky / Offline) is gone (Willem); the
+right side only has the cash ladder button. First Buy Deal: now game pass `FirstBuy` (2074832519), hidden from pass
+lists; server/Offers grants O.FirstBuy once when it sees the pass owned.
