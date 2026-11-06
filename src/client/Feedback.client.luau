@@ -63,7 +63,9 @@ local sure, _s = button(page3, F.LikeAsk.Button, UDim2.new(0.5, -90, 1, -58), UD
 local thanks = words(panel, "", UDim2.fromOffset(30, H - 44), UDim2.new(1, -60, 0, 30), 24)
 thanks.TextColor3 = C(150, 255, 140)
 
+local pageShown = 0
 local function showPage(n: number)
+	pageShown = os.clock()
 	page1.Visible = n == 1
 	page2.Visible = n == 2
 	page3.Visible = n == 3
@@ -113,7 +115,9 @@ local function open()
 end
 local function shut() Style.setOpen(panel, false) end
 close.Activated:Connect(shut)
-done.Activated:Connect(shut)
+-- (6 Nov: SURE! on the like page sits where DONE appears; ignore DONE for a moment so
+-- the same tap doesn't close the survey)
+done.Activated:Connect(function() if os.clock() - pageShown > 0.4 then shut() end end)
 local opener = make("BindableEvent", { Name = "OpenFeedback" }, gui)
 opener.Event:Connect(open)
 
