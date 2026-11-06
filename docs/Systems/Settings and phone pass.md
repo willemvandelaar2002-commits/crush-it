@@ -36,3 +36,5 @@ in Studio: check on a real phone.
 
 - Lucky Weekend / Server Luck pills (top right, in the way on phones): on phones the countdown is hidden and the
   active weekend / Server Luck / Divine luck show as chips at the top of BoostsHud.ActiveBoosts (WeekendHud).
+- Goals on phones (Tutorial.placeHeadline): in the free part of Roblox's top bar (GuiService.TopbarInset), tag +
+  title + counter only (no hint line), scaled to fit (needs at least 0.4); tutorial steps stay under the button row.

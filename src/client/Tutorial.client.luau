@@ -162,10 +162,34 @@ yes.Activated:Connect(function()
 end)
 
 -- the headline sits under the top button row (Equip Best / Mega Crusher / My Factory)
+local topScale: number? = nil
 local function placeHeadline()
 	local row = me.PlayerGui:FindFirstChild("EquipBest", true) :: GuiObject?
 	local y = 64
 	quietScale = 0.72
+	topScale = nil
+	-- 6 Nov (Willem, phone screenshot: "can't we put goals all the way to the top?"): on
+	-- phones a GOAL (not a tutorial step) goes up into the free part of Roblox's top bar
+	-- (GuiService.TopbarInset: the strip right of Roblox's own buttons), scaled to fit
+	-- its height, so the middle of the screen stays free.
+	if Style.compact() and not string.find(tag.Text, "TUTORIAL") then
+		local area = game:GetService("GuiService").TopbarInset
+		if area.Height > 20 and area.Width > 120 then
+			local ps = math.max(0.05, popScale.Scale)
+			-- (the long hint line under it is left out up there: tag + title + counter only)
+			local wu = math.max(title.TextBounds.X, sub.TextBounds.X, tag.TextBounds.X) / ps -- width at scale 1
+			local s = math.min((area.Height - 2) / 116, (area.Width - 12) / math.max(1, wu))
+			if s >= 0.4 then
+				topScale = s / phoneFit.Scale
+				hint.Visible = false
+				local origin = gui.AbsolutePosition
+				local half = wu * s / 2
+				local cx = math.clamp(gui.AbsoluteSize.X / 2, area.Min.X - origin.X + half + 6, area.Max.X - origin.X - half - 6)
+				headline.Position = UDim2.new(0, cx, 0, area.Min.Y - origin.Y + 1)
+				return
+			end
+		end
+	end
 	if quiet and row and row:IsA("GuiObject") and row.AbsoluteSize.Y > 0 then
 		-- the gap between the left buttons (Index/Shop/Rewards) and the top row
 		local left = 0
@@ -208,7 +232,7 @@ local function setHeadline(tagText: string, titleText: string)
 	title.TextColor3 = Color3.new(1, 1, 1)
 end
 local shownOn = false
-local function headScale(): number return phoneFit.Scale * (if quiet then quietScale else 1) end
+local function headScale(): number return phoneFit.Scale * (topScale or (if quiet then quietScale else 1)) end
 local poppedAt = 0
 local function fadeIn()
 	poppedAt = os.clock()
@@ -240,7 +264,7 @@ end
 local function showHint(default: string?, override: string?)
 	local text = override or (if os.clock() - stepSince > HINT_AFTER then default else nil)
 	hint.Text = if text then Style.controls(text) else ""
-	hint.Visible = text ~= nil
+	hint.Visible = text ~= nil and topScale == nil -- (6 Nov: not in the phone top-bar spot)
 end
 
 -- Effects -----------------------------------------------------------------------
