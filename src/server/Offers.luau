@@ -42,7 +42,7 @@ end
 
 local function mirror(p: Player, d: any)
 	R.migrate(d)
-	for _, offer in { O.StarterPack, O.Showroom } do
+	for _, offer in { O.StarterPack, O.Showroom, O.FirstBuy } do
 		p:SetAttribute("Offer_" .. offer.id, if R.owns(d, offer.id) then true else nil)
 	end
 end
