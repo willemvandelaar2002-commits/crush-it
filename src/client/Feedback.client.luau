@@ -38,7 +38,7 @@ local function button(parent: Instance, text: string, pos: UDim2, size: UDim2, c
 end
 
 local gui = make("ScreenGui", { Name = "FeedbackHud", ResetOnSpawn = false, DisplayOrder = 7, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
-local W, H = 600, 360
+local W, H = 600, 400 -- (6 Nov: was 360; the thanks line overlapped DONE)
 local panel = make("Frame", { Name = "FeedbackPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(W, H),
 	BackgroundColor3 = C(52, 44, 140), Visible = false, ZIndex = 5 }, gui)
 make("UICorner", { CornerRadius = UDim.new(0, 20) }, panel)
@@ -60,7 +60,7 @@ local thumb = make("TextLabel", { Text = "👍", Position = UDim2.new(0.5, -60, 
 local _ = thumb
 words(page3, F.LikeAsk.Text, UDim2.fromOffset(10, 112), UDim2.new(1, -20, 0, 66), 28)
 local sure, _s = button(page3, F.LikeAsk.Button, UDim2.new(0.5, -90, 1, -58), UDim2.fromOffset(180, 54), C(60, 190, 80), 30)
-local thanks = words(panel, "", UDim2.fromOffset(30, H - 44), UDim2.new(1, -60, 0, 30), 24)
+local thanks = words(panel, "", UDim2.fromOffset(30, H - 42), UDim2.new(1, -60, 0, 28), 24)
 thanks.TextColor3 = C(150, 255, 140)
 
 local pageShown = 0
