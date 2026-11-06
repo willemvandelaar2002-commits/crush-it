@@ -389,6 +389,7 @@ Product `FirstBuy` (Store), contents `O.FirstBuy` (OfferConfig): Gumball Gobbler
 2x Luck, once per player (d.offers.owned.FirstBuy, attribute Offer_FirstBuy). Granted by server/Offers via the one
 ProcessReceipt (OfferRules handles `boosts`, a list). client/FirstBuy: a rainbow wobbling "R$ 5 DEAL" icon button
 after the last visible button of the top-left row (Index / Shop / Rewards / Rebirth), in the Shop gui, so it shows
-when the shop does; opens Willem's card art (image 77919314377312, FirstBuy.Art) with invisible tap areas on its X
-and BUY buttons (the R$ 5 price is part of the art). Hidden while the
+when the shop does; opens Willem's empty card board (image 77919314377312, FirstBuy.Art) with the title, crusher icon
+and name, the two boost tiles, a close sprite, a BUY R$ 5 button (live price) and "Only once per player!" laid out on it
+like his reference picture. Hidden while the
 product id is 0 and once owned. Shop funnel source "FirstBuyButton".
