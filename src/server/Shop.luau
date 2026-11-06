@@ -383,6 +383,7 @@ function Shop.start(gameApi: Api)
 		end
 		cmd("NoPassesCommand", "/nopasses", function(p)
 			for _, pass in Store.Passes do setPass(p, pass.perk, false) end
+			p:SetAttribute("Offer_FirstBuy", nil) -- (shows the R$ 5 deal again; nothing is granted or saved)
 			Net.event("Notice"):FireClient(p, { text = "Testing without passes (Studio): /passes to undo" })
 		end)
 		cmd("PassesCommand", "/passes", function(p)
