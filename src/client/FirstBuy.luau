@@ -78,7 +78,7 @@ function M.build(gui: ScreenGui)
 	local typeDef = CrusherConfig.typeById(offer.crusher)
 	text("FIRST BUY DEAL", 0.5, 0.11, 0.6, 0.13, 46, nil, 4)
 	-- left panel: the crusher
-	image(CrusherIcons.image(offer.crusher) or Icons.Press, 0.272, 0.39, 0.3, 0.3)
+	image(CrusherIcons.image(offer.crusher) or Icons.Press, 0.272, 0.38, 0.36, 0.34)
 	text(if typeDef then typeDef.name else offer.crusher, 0.272, 0.6, 0.38, 0.075, 30)
 	pill(string.upper(offer.rarity) .. " CRUSHER", 0.272, 0.68, 0.27, 0.06, C(110, 40, 170))
 	-- right panels: the boosts (orange = cash, green = luck)
@@ -98,6 +98,9 @@ function M.build(gui: ScreenGui)
 	end
 	local close = hit("Close", 0.92, 0.1, 0.085, 0.13)
 	make("ImageLabel", { Image = M.CloseArt, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 8 }, close)
+	local x = make("TextLabel", { Text = "X", Position = UDim2.fromScale(0.18, 0.12), Size = UDim2.fromScale(0.64, 0.7), BackgroundTransparency = 1,
+		TextScaled = true, ZIndex = 9 }, close) -- (the sprite is a plain red button, like on the Rebirth card)
+	Style.text(x, 4)
 	local buy = hit("Buy", 0.5, 0.845, 0.46, 0.13)
 	buy.BackgroundTransparency = 0
 	Style.button(buy, C(70, 210, 70))
