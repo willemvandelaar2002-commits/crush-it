@@ -1,10 +1,11 @@
 --!strict
 -- 6 Nov (Willem: "something under 5 robux that is very visible, to get people over the
--- first buy barrier"): the R$ 5 First Buy Deal (Shared/OfferConfig FirstBuy, granted by
--- server/Offers through Shop's receipt handler).
+-- first buy barrier"): the R$ 5 First Buy Deal (Shared/OfferConfig FirstBuy). Willem
+-- made it a GAME PASS (Store pass "FirstBuy"); server/Offers grants the contents once
+-- when it sees the pass owned.
 --   * A wobbling rainbow "R$ 5 DEAL" button in the top-left button row (after Index /
 --     Shop / Rewards / Rebirth), on phones too, in the Shop gui (so it appears when the
---     shop does). Gone once bought (attribute Offer_FirstBuy) or while the product id is 0.
+--     shop does). Gone once owned (Pass_FirstBuy / Offer_FirstBuy).
 --   * Tapping it opens Willem's card art (what you get, BUY R$ 5) with tap areas on X and BUY.
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
@@ -29,12 +30,12 @@ local function make(class: string, props: { [string]: any }, parent: Instance?):
 	return n
 end
 
-function M.build(gui: ScreenGui)
+function M.build(gui: ScreenGui, buyPass: (string) -> ())
 	local me = Players.LocalPlayer
 	local offer = O.FirstBuy
-	local product = Store.productById(offer.product)
-	if not product then return end
-	local priceText = "R$ " .. product.price
+	local pass = Store.passByPerk("FirstBuy")
+	if not pass then return end
+	local priceText = "R$ " .. pass.price
 
 	-- the HUD button
 	local button = Style.iconButton(gui, { name = "FirstBuyButton", icon = "🎁", label = priceText .. " DEAL", a = C(255, 120, 220), b = C(150, 50, 230) })
@@ -118,16 +119,17 @@ function M.build(gui: ScreenGui)
 	-- where the button sits: right after the last visible button of the row
 	local function place() Style.placeAfterHudRow(button) end
 	local function refresh()
-		local owned = me:GetAttribute("Offer_" .. offer.id) == true
-		button.Visible = product.productId ~= 0 and not owned
+		local owned = me:GetAttribute("Offer_" .. offer.id) == true or Store.hasPass(me, "FirstBuy")
+		button.Visible = pass.gamePassId ~= 0 and not owned
 		if owned and card.Visible then Style.setOpen(card, false) end
 		place()
 	end
 	me:GetAttributeChangedSignal("Offer_" .. offer.id):Connect(refresh)
+	me:GetAttributeChangedSignal(Store.passAttr("FirstBuy")):Connect(refresh)
 	Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(place)
 	task.spawn(function() while true do task.wait(2) place() end end) -- the Rebirth button can appear later
 	refresh()
-	if product.productId ~= 0 then Store.livePrice("product", product.productId, product.price, setPrice) end
+	if pass.gamePassId ~= 0 then Store.livePrice("pass", pass.gamePassId, pass.price, setPrice) end
 
 	button.Activated:Connect(function()
 		Net.event("ShopOpened"):FireServer("FirstBuyButton")
@@ -135,7 +137,7 @@ function M.build(gui: ScreenGui)
 	end)
 	close.Activated:Connect(function() Style.setOpen(card, false) end)
 	buy.Activated:Connect(function()
-		Net.event("OfferAction"):FireServer("Prompt", offer.product)
+		buyPass("FirstBuy")
 	end)
 end
 

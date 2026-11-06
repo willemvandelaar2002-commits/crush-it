@@ -178,13 +178,22 @@ local function placeHeadline()
 			local ps = math.max(0.05, popScale.Scale)
 			-- (the long hint line under it is left out up there: tag + title + counter only)
 			local wu = math.max(title.TextBounds.X, sub.TextBounds.X, tag.TextBounds.X) / ps -- width at scale 1
-			local s = math.min((area.Height - 2) / 116, (area.Width - 12) / math.max(1, wu))
+			-- the top-right buttons may sit in the top bar too (phones): stay left of them
+			local maxX = area.Max.X
+			local travel = me.PlayerGui:FindFirstChild("TravelButtons")
+			local settings = me.PlayerGui:FindFirstChild("SettingsButton", true)
+			for _, o in { travel and travel:FindFirstChild("Row"), settings } do
+				if o and o:IsA("GuiObject") and o.Visible and o.AbsoluteSize.X > 0 and o.AbsolutePosition.Y < area.Max.Y then
+					maxX = math.min(maxX, o.AbsolutePosition.X - 6)
+				end
+			end
+			local s = math.min((area.Height - 2) / 116, (maxX - area.Min.X - 12) / math.max(1, wu))
 			if s >= 0.4 then
 				topScale = s / phoneFit.Scale
 				hint.Visible = false
 				local origin = gui.AbsolutePosition
 				local half = wu * s / 2
-				local cx = math.clamp(gui.AbsoluteSize.X / 2, area.Min.X - origin.X + half + 6, area.Max.X - origin.X - half - 6)
+				local cx = math.clamp(gui.AbsoluteSize.X / 2, area.Min.X - origin.X + half + 6, maxX - origin.X - half - 6)
 				headline.Position = UDim2.new(0, cx, 0, area.Min.Y - origin.Y + 1)
 				return
 			end

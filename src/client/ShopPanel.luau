@@ -666,6 +666,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		local g = grid(page, order)
 		for i, pass in Store.Passes do
 			if pass.gamePassId == 0 and pass.perk == "VIP" then continue end -- 4 Nov: VIP shows once its pass exists
+			if pass.hidden then continue end -- 6 Nov: the First Buy Deal has its own button
 			if pass.gamePassId == 0 and Store.isCashLadder(pass.perk) then continue end -- 5 Nov: ladder passes show once created
 			local txt = PASS_TEXT[pass.perk] or { benefit = pass.title, sub = pass.desc, palette = "Gold" }
 			local b = benefitCard(g, i, { title = pass.title, benefit = txt.benefit, sub = txt.sub, palette = txt.palette, image = PASS_ICONS[pass.perk] or Icons.Shop }, function(button)

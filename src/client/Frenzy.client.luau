@@ -35,7 +35,7 @@ local gui = make("ScreenGui", { Name = "FrenzyHud", ResetOnSpawn = false, Displa
 -- the SMASH button: right side, a little above the middle
 local holder = make("Frame", { Name = "SmashHolder", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -16, 0.5, 30),
 	Size = UDim2.fromOffset(150, 190), BackgroundTransparency = 1 }, gui)
-Style.phoneFit(holder, { scale = 0.72, anchor = Vector2.new(1, 0.5), position = UDim2.new(1, -8, 0.42, 0) })
+Style.phoneFit(holder, { scale = 0.58, anchor = Vector2.new(1, 0.5), position = UDim2.new(1, -8, 0.42, 0) }) -- 6 Nov: 0.72 -> 0.58 (Willem: a little smaller on phones)
 local button = make("TextButton", { Name = "Smash", Size = UDim2.fromOffset(150, 150), Text = "", AutoButtonColor = false,
 	BackgroundColor3 = Color3.fromRGB(235, 60, 50), ZIndex = 3 }, holder)
 make("UICorner", { CornerRadius = UDim.new(1, 0) }, button)

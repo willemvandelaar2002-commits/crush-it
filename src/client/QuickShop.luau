@@ -174,7 +174,7 @@ function Quick.build(gui: ScreenGui, deps: Deps)
 			-- (4 Nov: a pass without an id yet, like VIP before it's created, is hidden)
 			local nextCash = Store.nextCashPass(player)
 			local ladderSkip = Store.isCashLadder(pass.perk) and not (nextCash and nextCash.perk == pass.perk) -- 5 Nov: only the next cash step
-			if not ladderSkip and not Store.hasPass(player, pass.perk) and pass.gamePassId ~= 0 then
+			if not ladderSkip and not pass.hidden and not Store.hasPass(player, pass.perk) and pass.gamePassId ~= 0 then
 				if firstPass then section(nextOrder(), "FOREVER (GAME PASSES)") firstPass = false end
 				local p = price("pass", pass.gamePassId, function() if panel.Visible then rebuild() end end)
 				local icon = ({ AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, CashX4 = Icons.DoubleCash, CashX8 = Icons.DoubleCash, CashX16 = Icons.DoubleCash, Lucky = Icons.Lucky, AutoCollect = Icons.Cash, VIP = Icons.Trophy } :: any)[pass.perk] or Icons.Shop
