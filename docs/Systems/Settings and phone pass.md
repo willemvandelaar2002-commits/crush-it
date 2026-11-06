@@ -33,3 +33,6 @@ in Studio: check on a real phone.
 - Other windows at iPhone SE size: all fit; smallest texts Rebirth 10.7 px, Starter Pack and Boosts 11.5 px, Index
   11.8 px (12 small "CRATE ONLY" tags). Left as is.
 - Not checked: real-device feel, Roblox's own touch controls (jump button, thumbstick) over our HUD, notch insets.
+
+- Lucky Weekend / Server Luck pills (top right, in the way on phones): on phones the countdown is hidden and the
+  active weekend / Server Luck / Divine luck show as chips at the top of BoostsHud.ActiveBoosts (WeekendHud).
