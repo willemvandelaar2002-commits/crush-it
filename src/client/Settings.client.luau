@@ -59,7 +59,7 @@ applyVolumes()
 
 -- the panel -------------------------------------------------------------------------
 local gui = make("ScreenGui", { Name = "SettingsHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
-local button = Style.iconButton(gui, { name = "SettingsButton", icon = "⚙️", label = "SETTINGS", a = C(150, 160, 180), b = C(80, 90, 115) })
+local button = Style.iconButton(gui, { name = "SettingsButton", icon = "⚙️", label = "SETTINGS", a = C(110, 170, 255), b = C(40, 80, 200) })
 local function place() Style.placeAfterHudRow(button) end
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(place)
 task.spawn(function() while true do place() task.wait(2) end end) -- the row changes as buttons come and go
