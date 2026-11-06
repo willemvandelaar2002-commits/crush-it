@@ -40,7 +40,7 @@ local C = {
 	CashPacks = { CashSmall = 60, CashMedium = 300, CashLarge = 1200 },
 	-- Complete one physical six-bay row with a single rarity. Scrap only;
 	-- applies to that row, never stacks across rows or changes roll odds.
-	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40, Secret=.48, Divine=.54, Mythic=.60 },
+	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40, Limited=.48, Secret=.48, Divine=.54, Mythic=.60 }, -- (6 Nov: Limited like Secret)
 }
 -- Stadium banks: ground bays open to the plaza, the upper row steps back on
 -- top of them (its walkway is the ground bays' roof). Local plot coordinates,
