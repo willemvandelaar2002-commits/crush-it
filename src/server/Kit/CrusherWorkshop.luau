@@ -437,6 +437,19 @@ function W.station(parent,cf,kind)
 		local die=W.die(m,cf*CFrame.new(6.5,13,-3)*CFrame.Angles(.35,.6,.2),5.2)
 		W.beacon(m,cf*CFrame.new(-10,8,6)) W.beacon(m,cf*CFrame.new(10,8,6))
 		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.3,7.4),W.Purple,"ROLL A CRUSHER","ROLL")
+		-- 7 Nov (Willem: "a physical button next to the normal rolling"): the AUTO ROLL
+		-- console beside the roll machine; its button opens the Auto Roller window
+		-- (client/AutoRoll, through CrusherHud's "AutoRoll" action).
+		local acf=cf*CFrame.new(C.AutoRollConsole.X,0,C.AutoRollConsole.Z)
+		studs(W.part(m,"AutoRollFoot",V(11,1,7),acf*CFrame.new(0,.5,0),W.Navy,true))
+		studs(W.part(m,"AutoRollBody",V(10,6.4,5),acf*CFrame.new(0,4.2,-.6),W.Green,true))
+		W.hazard(m,acf*CFrame.new(0,7.55,1.95),10,.4,.4)
+		studs(W.part(m,"AutoRollTop",V(10.6,.8,5.6),acf*CFrame.new(0,7.8,-.6),W.Navy))
+		W.die(m,acf*CFrame.new(-2.4,9.9,-.8)*CFrame.Angles(.4,.5,.15),3.2)
+		W.die(m,acf*CFrame.new(2.4,9.9,-.8)*CFrame.Angles(-.3,1.1,.35),3.2)
+		local aface,alabel,abutton=stationPanel(m,acf*CFrame.new(0,4.3,2.6),W.Green,"AUTO ROLL","AUTO",9)
+		alabel.Text="Rolls until it hits your targets"
+		abutton:SetAttribute("Action","AutoRoll")
 		-- Pedestals in an arc in front of the machine (like the reference): a roll
 		-- fills every unlocked one with an offer; each has a card and a Buy prompt.
 		-- Listed in unlock order: centre first, then outwards.
@@ -462,7 +475,7 @@ function W.station(parent,cf,kind)
 			prompt.Enabled=false prompt.Parent=plinth
 			pedestals[i]={top=pcf*CFrame.new(0,3.2,0),part=plinth,base=base,card=lines,prompt=prompt}
 		end
-		station={part=face,label=label,button=button,die=die,rollers=rollers,pedestals=pedestals}
+		station={part=face,label=label,button=button,die=die,rollers=rollers,pedestals=pedestals,auto={part=aface,label=alabel,button=abutton}}
 	end
 	return station
 end
