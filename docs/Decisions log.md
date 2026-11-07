@@ -426,3 +426,4 @@
 - 2026-11-07: Auto Roll bar on Willem's art (bar 140479169859430, OFF button 118340677613688, ON button 111686894944891), live text, positions measured from the image pixels.
 - 2026-11-07: Auto Roller window (Willem's reference video): tick rarities (Legendary and up by default) instead of one 'and up' rarity, crushers + odds per rarity, START/STOP, Auto Buy box. No speed upgrade (Willem). Built in the panel style; art to be swapped in.
 - 2026-11-07: AUTO ROLL button moved from above the hotbar to its left (it covered notices); Limited cards show a 🍀 + WEEKEND tag until Willem's icons exist.
+- 2026-11-07: Auto Roller on Willem's art (backplate, tabs, cards, START/STOP, Auto Buy panel) and single crushers targetable by tapping their card (Willem), next to the rarity tick boxes. No speed upgrade. See Systems/Auto Roll.
