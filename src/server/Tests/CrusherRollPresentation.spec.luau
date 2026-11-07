@@ -11,7 +11,7 @@ return function()
 		local sum=0
 		for rank,rarity in C.Rarities do for _,id in rarity.types do
 			if rarity.event and not weekend then continue end -- (Limited: only during its event, checked below)
-			if rarity.weight<=0 then check(P.odds(id,luck,lucky,false,bonus)==0,"exclusive types have no roll odds") continue end
+			if rarity.weight<=0 and not rarity.event then check(P.odds(id,luck,lucky,false,bonus)==0,"exclusive types have no roll odds") continue end
 			local odds=P.odds(id,luck,lucky,false,bonus)
 			-- 2 Nov: the Index shows the same odds, rounded
 			check(C.effectiveOdds(id,luck,lucky,bonus,weekend)==math.max(1,math.floor(odds+.5)),"Index odds match the roll")
