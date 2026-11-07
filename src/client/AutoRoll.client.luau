@@ -155,7 +155,14 @@ local grid = make("ScrollingFrame", { Name = "Grid", Position = UDim2.fromScale(
 	BorderSizePixel = 0, ScrollBarThickness = 6, ScrollBarImageColor3 = rgb(120, 230, 255), CanvasSize = UDim2.new(), AutomaticCanvasSize = Enum.AutomaticSize.Y, ZIndex = 7 }, panel)
 make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 10), PaddingBottom = UDim.new(0, 6) }, grid)
 make("UIGridLayout", { CellSize = UDim2.new(1 / 3, -8, 0, 136), CellPadding = UDim2.fromOffset(8, 8), SortOrder = Enum.SortOrder.LayoutOrder }, grid)
-local status = words(panel, "", UDim2.fromScale(0.25, 0.75), UDim2.fromScale(0.69, 0.045), 24, 3, 8)
+-- "N TARGETS SELECTED" between two cyan lines (like the design reference), what it stops on below
+local status = words(panel, "", UDim2.fromScale(0.36, 0.742), UDim2.fromScale(0.47, 0.042), 30, 3, 8)
+for _, x in { 0.255, 0.835 } do
+	local line = make("Frame", { Position = UDim2.fromScale(x, 0.759), Size = UDim2.fromScale(0.1, 0.008), BackgroundColor3 = rgb(70, 225, 255), BorderSizePixel = 0, ZIndex = 8 }, panel)
+	make("UICorner", { CornerRadius = UDim.new(1, 0) }, line)
+end
+local stopsOn = words(panel, "", UDim2.fromScale(0.25, 0.784), UDim2.fromScale(0.69, 0.022), 16, 2, 8)
+stopsOn.TextColor3 = rgb(200, 240, 255)
 
 -- picks: rarity names (whole rarity) and crusher ids (just that crusher)
 local function typesOf(name: string): { string }
@@ -245,12 +252,12 @@ local function showGrid()
 			local tag = words(card, "WEEKEND", UDim2.fromScale(0.06, 0.05), UDim2.fromScale(0.4, 0.12), 16, 2, 11)
 			tag.TextColor3 = rgb(140, 255, 150) tag.TextXAlignment = Enum.TextXAlignment.Left
 		end
-		words(card, if known and def then def.name else "???", UDim2.fromScale(0.05, 0.6), UDim2.fromScale(0.9, 0.17), 24, 3, 10)
+		words(card, if known and def then def.name else "???", UDim2.fromScale(0.04, 0.58), UDim2.fromScale(0.92, 0.2), 30, 3, 10)
 		local pill = make("Frame", { AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.fromScale(0.5, 0.79), Size = UDim2.fromScale(0.7, 0.14),
 			BackgroundColor3 = rgb(20, 24, 70), BackgroundTransparency = 0.15, ZIndex = 9 }, card)
 		make("UICorner", { CornerRadius = UDim.new(1, 0) }, pill)
 		local odds = if state and state.upgrades then C.effectiveOdds(id, state.upgrades.Luck, state.rollLucky, state.index and state.index.luck, r.event ~= nil) else C.oddsFor(id)
-		local o = words(pill, "1 in " .. commas(odds), UDim2.fromScale(0.06, 0.1), UDim2.fromScale(0.88, 0.8), 18, 2, 10)
+		local o = words(pill, "1 in " .. commas(odds), UDim2.fromScale(0.06, 0.08), UDim2.fromScale(0.88, 0.84), 22, 2, 10)
 		o.TextColor3 = rgb(255, 230, 120)
 		-- target state: green outline + tick (the outline sits over the art, it doesn't change it)
 		local sel = make("Frame", { Name = "Selected", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = false, ZIndex = 11 }, frame)
@@ -298,26 +305,27 @@ end
 
 -- START / STOP (Willem's buttons; the label and icon are live text on top)
 local start = artButton("Start", ART.Start, Vector2.new(6, 51), Vector2.new(1011, 398), UDim2.fromScale(0.237, 0.835), UDim2.fromScale(0.175, 0.115), panel, 7)
-words(start, "▶ START", UDim2.fromScale(0.08, 0.16), UDim2.fromScale(0.84, 0.62), 40, 4, 9)
+local startText = words(start, "▶ START", UDim2.fromScale(0.08, 0.16), UDim2.fromScale(0.84, 0.62), 40, 4, 9)
 local stop = artButton("Stop", ART.Stop, Vector2.new(0, 37), Vector2.new(1021, 424), UDim2.fromScale(0.425, 0.835), UDim2.fromScale(0.175, 0.115), panel, 7)
 words(stop, "■ STOP", UDim2.fromScale(0.08, 0.16), UDim2.fromScale(0.84, 0.62), 40, 4, 9)
 
 -- AUTO BUY panel
 local box = make("ImageLabel", { Name = "AutoBuyBox", Image = ART.AutoBuy, ImageRectOffset = Vector2.new(9, 19), ImageRectSize = Vector2.new(1003, 584),
 	Position = UDim2.fromScale(0.635, 0.818), Size = UDim2.fromScale(0.305, 0.148), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Stretch, ZIndex = 7 }, panel)
-local boxTitle = words(box, "🔒 AUTO BUY", UDim2.fromScale(0.1, 0.1), UDim2.fromScale(0.8, 0.3), 28, 3, 9)
-words(box, "Buys your targets, keeps rolling", UDim2.fromScale(0.1, 0.38), UDim2.fromScale(0.8, 0.16), 16, 2, 9)
+local boxTitle = words(box, "🔒 AUTO BUY", UDim2.fromScale(0.1, 0.08), UDim2.fromScale(0.8, 0.32), 34, 3, 9)
+boxTitle.TextColor3 = rgb(255, 220, 70)
+words(box, "Buys your targets, keeps rolling", UDim2.fromScale(0.1, 0.38), UDim2.fromScale(0.8, 0.17), 18, 2, 9)
 local buy = artButton("Buy", ART.Tab, Vector2.new(0, 22), Vector2.new(1023, 299), UDim2.fromScale(0.2, 0.56), UDim2.fromScale(0.6, 0.32), box, 9)
 local buyText = words(buy, "", UDim2.fromScale(0.1, 0.12), UDim2.fromScale(0.8, 0.72), 26, 3, 10)
 
 local livePrice: number? = nil
-local GREEN, GREY = rgb(70, 220, 70), rgb(120, 124, 140)
+local GREEN, GREY, GOLD = rgb(70, 220, 70), rgb(120, 124, 140), rgb(255, 185, 30)
 local function refresh()
 	local on = running()
 	hud.Image = if on then ART.On else ART.Off
 	hudText.Text = if on then "AUTO: ON" else "AUTO ROLL"
-	start.ImageColor3 = if on then rgb(150, 150, 150) else WHITE
-	stop.ImageColor3 = if on then WHITE else rgb(150, 150, 150)
+	-- (both buttons stay in full colour, Willem: "more colourful"; START says it's rolling)
+	startText.Text = if on then "ROLLING..." else "▶ START"
 	local set = picks()
 	local n = targetCount(set)
 	local names = {}
@@ -326,7 +334,8 @@ local function refresh()
 		else for _, id in typesOf(name) do if set[id] then local d = C.typeById(id) table.insert(names, if d then d.name else id) end end end
 	end
 	local what = if #names > 0 then table.concat(names, ", ") else "tick a rarity or tap a crusher"
-	status.Text = (if on then "ROLLING... stops on " else n .. (if n == 1 then " TARGET · stops on " else " TARGETS · stops on ")) .. what
+	status.Text = n .. (if n == 1 then " TARGET SELECTED" else " TARGETS SELECTED")
+	stopsOn.Text = (if on then "Rolling... stops on " else "Stops on ") .. what
 	local pass = Store.passByPerk("AutoBuy")
 	if Store.hasPass(me, "AutoBuy") then
 		boxTitle.Text = "🤖 AUTO BUY"
@@ -337,7 +346,7 @@ local function refresh()
 		tabArt(buy, ART.BuyOn, GREEN)
 	else
 		buyText.Text = "SOON"
-		tabArt(buy, ART.BuyOff, GREY)
+		tabArt(buy, ART.BuyOn, GOLD) -- SOON in gold, not a dead grey
 	end
 	refreshTabs()
 	refreshCards()
