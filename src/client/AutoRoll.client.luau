@@ -42,9 +42,28 @@ local ART = {
 	-- rarity (assets/autoroller, made from the grey art by tint.py; 640x187 tabs, 400x500
 	-- cards). Tinting the grey art in Roblox only darkens it, so until an id is filled in
 	-- the grey art + a tint is the fallback.
-	Tabs = {} :: { [string]: string },
-	Cards = {} :: { [string]: string },
-	BuyOn = "", BuyOff = "",
+	-- (7 Nov: Willem uploaded them; these are the IMAGE ids behind his decal uploads)
+	Tabs = {
+		Common = "rbxassetid://112292625843136",
+		Uncommon = "rbxassetid://128792621316060",
+		Rare = "rbxassetid://92204123846578",
+		Epic = "rbxassetid://73045159062832",
+		Legendary = "rbxassetid://70648593064896",
+		Limited = "rbxassetid://88061051727556",
+		Secret = "rbxassetid://129562125725785",
+		Divine = "rbxassetid://88929238060612",
+	} :: { [string]: string },
+	Cards = {
+		Common = "rbxassetid://119036011286012",
+		Uncommon = "rbxassetid://130893599952030",
+		Rare = "rbxassetid://100137479733444",
+		Epic = "rbxassetid://136544887964168",
+		Legendary = "rbxassetid://123457031697636",
+		Limited = "rbxassetid://127308303068472",
+		Secret = "rbxassetid://108861226241049",
+		Divine = "rbxassetid://122211097534664",
+	} :: { [string]: string },
+	BuyOn = "rbxassetid://120604814246237", BuyOff = "rbxassetid://109824145808331",
 }
 -- art + rect + tint for a rarity tab / card / the Auto Buy button
 local TAB_RECT = { Vector2.new(0, 22), Vector2.new(1023, 299) }
@@ -346,7 +365,7 @@ local function refresh()
 		tabArt(buy, ART.BuyOn, GREEN)
 	else
 		buyText.Text = "SOON"
-		tabArt(buy, ART.BuyOn, GOLD) -- SOON in gold, not a dead grey
+		tabArt(buy, ART.Tabs.Legendary, GOLD) -- SOON in gold (the Legendary tab art), not a dead grey
 	end
 	refreshTabs()
 	refreshCards()
