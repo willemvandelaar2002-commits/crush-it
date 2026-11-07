@@ -16,3 +16,5 @@ One-tap survey (client/Feedback.client.luau, server/Feedback.luau, Shared/Feedba
   faster progress 10, more crushers 10.
 
 Read it in Creator Analytics > Explore > Custom events, aggregation Count Unique Users, breakdown Custom field 1.
+
+- 2026-11-08 (Willem, "impatient kid" playtest): asked AskAfterUpgradeSeconds (4) after the FACTORY II plot upgrade (cutscene over), a happy moment; players who don't get there are asked after AskAfterMinutes = 25 (was 10).

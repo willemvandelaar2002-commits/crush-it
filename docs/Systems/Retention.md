@@ -53,3 +53,5 @@ Levers: the daily reward + notifications (open us first), a first session past 1
   still logs the skipped steps as done (so the goal steps stay in order): subtract TutorialSkipped when reading
   steps 3-9.
 - Also 5 Nov: stuck hints after 8 s (was 15); tutorial guidance stops pulsing with Reduced Motion.
+
+- 2026-11-08 (Willem, "impatient kid" playtest): HUD badges: the Rewards "!" goes once the panel was opened and comes back only when something NEW can be claimed; the Index "!" likewise. Shop "!" unchanged (until opened once per session).

@@ -99,3 +99,5 @@ these top tiers. Nothing is faked: the server only fires `BigRoll` when the roll
   watching the pillar, and the Server Luck pill with an aftershock after the tutorial (the HUD is hidden during it).
 
 5 Nov: the cinematic's odds counter uses the type's base odds (RollLook.odds with luck 0, no pass, no Index bonus); the pedestal card still shows the player's own odds.
+
+- 2026-11-08 (Willem, "impatient kid" playtest): the tutorial's first roll is ONE Rare (C.FirstRoll) with the big cinematic for that player only (no server announcement), priced C.FirstRoll.Price ($100) or all their cash if less, so it can always be bought at once. Offers can carry their own price (C.offerPrice).

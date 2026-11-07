@@ -403,3 +403,5 @@ The shop window on phones is scaled by width only and made shorter (fitPhone in 
 The featured pass card under the cash button (Auto Crush / Auto Collect / Lucky / Offline) is gone (Willem); the
 right side only has the cash ladder button. First Buy Deal: now game pass `FirstBuy` (2074832519), hidden from pass
 lists; server/Offers grants O.FirstBuy once when it sees the pass owned.
+
+- 2026-11-08 (Willem, "impatient kid" playtest): the R$ 5 deal and the 2x/4x/8x/16x cash button show from goal C.RobuxButtonsGoal (5), read from the HudStage attribute (client/HudReveal). The starter pack no longer pops up 3 minutes in: only once all main goals are done (after Factory II), still once per session.
