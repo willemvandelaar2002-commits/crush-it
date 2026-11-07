@@ -13,7 +13,10 @@ Willem's pack of 6 Nov (CrusherIncremental-Lucky-Weekend-Crushers; data in asset
   "WEEKEND · 1 in N" with your luck). Luck helps it like rank 4.5. Pity (Legendary+) resets on it.
 - Willem: as strong as a Secret: `value = C.ChaseValue.Secret` (330) on the Quantum band; row bonus .48.
 - Once owned they stay: ownership, equipping, upgrades and production don't check the weekend.
-- No big-roll cinematic (that's rank 5+); the roll reveal profile sits between Legendary and Secret.
+- 7 Nov: its own big-roll cinematic (C.BigRoll.Limited, Hold 5.2 s; client/BigRoll): lights out, odds count-up
+  (Rare -> Epic -> Legendary -> Limited colours), three giant slot reels that stop on clovers one by one, a burst
+  and a rain of gold/green sparkles, the name card; a green pillar for everyone; the server-wide banner.
+  Skippable after the first time. Studio: `/bigroll limited`.
 
 ## Models
 - Templates in ServerStorage.SpecialCrusherMeshes (NOT in Git, saved in the place: Willem must publish), named

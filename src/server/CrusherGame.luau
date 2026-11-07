@@ -569,7 +569,7 @@ local function rollShow(p,offers)
 	-- 5 Nov: Secret and up get the big cinematic (BigRoll.client): that pedestal is
 	-- held back for C.BigRoll[rarity].Hold seconds so the impact lands on the reveal;
 	-- the next roll and buying wait as long (no rolling a Secret away by accident)
-	local big=if best and best.rank>=C.BigRoll.MinRank then C.BigRoll[best.name] else nil
+	local big=if best and (best.rank>=C.BigRoll.MinRank or best.name=="Limited") then C.BigRoll[best.name] else nil
 	local hold=if big then big.Hold else 0
 	if big then
 		ctx.nextRoll=(ctx.nextRoll or 0)+hold
@@ -1085,14 +1085,14 @@ function G.start()
 			send(p,if goals then "Tutorial and main goals skipped (dev)" else "Tutorial skipped (dev)")
 		end)
 		skipCommand.Parent=TCS
-		-- 5 Nov (Willem): /bigroll [secret|divine] rolls at once with that rarity on the first
+		-- 5 Nov (Willem): /bigroll [secret|divine|limited] rolls at once with that rarity on the first
 		-- pedestal, to test the big roll cinematic (default: secret). Studio only.
 		local bigCommand=Instance.new("TextChatCommand") bigCommand.Name="BigRollCommand" bigCommand.PrimaryAlias="/bigroll"
 		bigCommand.Triggered:Connect(function(source,text)
 			local p=Players:GetPlayerByUserId(source.UserId) local ctx=p and sessions[p]
 			if not p or not ctx then return end
 			local arg=string.lower(string.split(text," ")[2] or "secret")
-			local rarity=if arg=="divine" then "Divine" else "Secret"
+			local rarity=if arg=="divine" then "Divine" elseif arg=="limited" then "Limited" else "Secret"
 			ctx.forceRarity=rarity
 			local ok,message=action(p,"Roll",{})
 			if not ok then ctx.forceRarity=nil end
