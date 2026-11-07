@@ -256,7 +256,7 @@ task.spawn(function()
 		bar = bar and bar:FindFirstChild("Bar")
 		local y = if Style.compact() then -8 else -12
 		if bar and (bar :: GuiObject).Visible then
-			hud.Position = UDim2.new(0, math.max((bar :: GuiObject).AbsolutePosition.X - 8, 4), 1, y)
+			hud.Position = UDim2.new(0, math.max((bar :: GuiObject).AbsolutePosition.X - 8, hud.AbsoluteSize.X + 4), 1, y)
 		end
 		task.wait(0.5)
 	end
