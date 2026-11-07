@@ -11,6 +11,9 @@
 --   goal 3                  Shop, Index, Boosts, Quests    (starter offer waits for this)
 --   goal 5                  Leaderboard, Rebirth, event countdown, Lucky Weekend
 --   goal 6                  Turbo                          (its goal)
+-- 8 Nov: the R$ 5 deal and the 2x cash button show from C.RobuxButtonsGoal (5); they
+-- read the attribute HudStage that this script sets (their own scripts hide them when
+-- owned, so they are not in BUTTONS).
 -- One rule, from the server's state. Returning players (all goals done, or an older
 -- save without goals) see everything at once.
 local Players = game:GetService("Players")
@@ -75,5 +78,7 @@ Net.event("CrusherState").OnClientEvent:Connect(function(v: any)
 	-- (stages only go up within a session: a goal list change never hides things again)
 	if now <= stage then return end
 	stage = now
+	-- 8 Nov: other scripts read the stage (Robux buttons wait for C.RobuxButtonsGoal)
+	me:SetAttribute("HudStage", if now == math.huge then 1e6 else now)
 	applyAll()
 end)

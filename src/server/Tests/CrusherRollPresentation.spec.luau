@@ -32,7 +32,7 @@ return function()
 	local base,both=R.weights(0,1),R.weights(0,4)
 	check(both[1]==base[1] and math.abs(both[2]-4*base[2])<1e-9,"pass + boost = 4x non-Common weight")
 	for _,rarity in C.Rarities do
-		for _,id in rarity.types do check(P.odds(id,20,true,true)==(if rarity.name=="Common" then 8 else 0),"first roll is Common only") end
+		for _,id in rarity.types do check((P.odds(id,20,true,true)>0)==(rarity.name==C.FirstRoll.Rarity),"first roll is the C.FirstRoll rarity only") end
 		local p=P.profile(rarity.name)
 		check(P.lift(rarity.name,0)==0 and math.abs(P.lift(rarity.name,p.duration))<1e-8,"reveal lift starts and finishes on pedestal")
 		for i=0,40 do check(P.lift(rarity.name,p.duration*i/40)>=0,"lift never sinks into pedestal") end

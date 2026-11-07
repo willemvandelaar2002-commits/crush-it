@@ -198,7 +198,9 @@ do
 			task.wait(5)
 			local C2 = Config.Crushers
 			-- 4 Nov: from goal 3, when the shop itself appears (HudReveal); gui.Enabled = shown
-			local ready = tutorial > #C2.TutorialSteps and goal >= 3 and gui.Enabled and os.clock() - joinedAt >= 180
+			-- 8 Nov (kid playtest: it popped up 3 minutes in, right after the tutorial): only
+			-- once all the main goals are done (Factory II); goal 0 / nil = an older save
+			local ready = tutorial > #C2.TutorialSteps and (goal > C2.MainGoals or goal == 0) and gui.Enabled and os.clock() - joinedAt >= 180
 			local calm = not Style.hasModal() and not quick.panel.Visible and not panel.Visible
 				and player:GetAttribute("CutscenePlaying") ~= true and player:GetAttribute("SaveOff") ~= true
 			-- (4 Nov: one unprompted offer per session: not after a moment offer, client/MomentOffer)
@@ -323,7 +325,8 @@ end)
 local function refreshOffers()
 	local nextPass = Store.nextCashPass(player)
 	doubleNext = if nextPass then nextPass.perk else nil
-	doubleHolder.Visible = nextPass ~= nil
+	-- 8 Nov (kid playtest): from goal C.RobuxButtonsGoal, not right after the tutorial
+	doubleHolder.Visible = nextPass ~= nil and (tonumber(player:GetAttribute("HudStage")) or 0) >= Config.Crushers.RobuxButtonsGoal
 	if nextPass then
 		doubleText.Text = string.upper(nextPass.title:sub(1, -6)) .. " Cash" -- "4X Cash"
 		Store.livePrice("pass", nextPass.gamePassId, nextPass.price, function(n)
@@ -347,6 +350,7 @@ for _, pass in Store.Passes do
 	player:GetAttributeChangedSignal(Store.passAttr(pass.perk)):Connect(refreshOffers)
 end
 offers:GetAttributeChangedSignal("FitsScreen"):Connect(refreshOffers) -- 6 Nov: phone <-> desktop layout
+player:GetAttributeChangedSignal("HudStage"):Connect(refreshOffers)
 refreshOffers()
 -- The book lives in the HUD below this ScreenGui: hide the offers while it's open.
 local bookPanel = hud:WaitForChild("Book", 10) :: GuiObject?

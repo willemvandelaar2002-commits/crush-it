@@ -19,7 +19,8 @@ function P.owns(items,id)
 end
 function P.odds(id,luck,lucky,first,bonus)
 	local wanted=C.rarityOf(id) if not wanted or (wanted.weight<=0 and not wanted.event) then return 0 end
-	if first then return if wanted.name=="Common" then #wanted.types else 0 end
+	-- (8 Nov: the first roll is one Rare, C.FirstRoll; it shows that Rare's real odds)
+	if first and wanted.name~=C.FirstRoll.Rarity then return 0 end
 	-- 2 Nov: the same weights as the server roll (now including Index luck); 6 Nov: and
 	-- the Lucky Weekend's Limited rarity (a rolled Limited always shows its weekend odds)
 	local w=C.rollWeights(luck,lucky,bonus,wanted.event~=nil or C.limitedOn()) local total=0 local weight=0

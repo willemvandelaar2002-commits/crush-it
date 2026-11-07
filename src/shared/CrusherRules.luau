@@ -258,16 +258,18 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if now<(session.nextRoll or 0) then return false,"Roll is cooling down." end
 		local weights={} for i,v in C.Modifiers do weights[i]=v.weight end
 		local offers={}
-		-- the very first roll only offers plain Commons, so it is cheap to buy
+		-- the very first roll (8 Nov): one plain Rare (C.FirstRoll), priced so it can be
+		-- bought at once - the player's first "wow"
 		local first=s.rolls==0
 		local count=C.pedestals(s.upgrades.Pedestals)
 		-- pity: one pedestal is a guaranteed Legendary once the counter is full
 		local pitySlot=if not first and (s.pity or 0)+1>=C.Pity.Rolls then math.min(count,math.floor(random()*count)+1) else nil
 		for i=1,count do
-			local rarity=if first then C.Rarities[1] else C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky,perks and perks.indexLuck,perks and perks.limited),random)]
+			local rarity=if first then C.rarity(C.FirstRoll.Rarity) else C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky,perks and perks.indexLuck,perks and perks.limited),random)]
 			if i==pitySlot and rarity.rank<C.Pity.MinRank then rarity=C.rarity(C.Pity.Rarity) end
 			local mod=if first then C.Modifiers[1] else C.Modifiers[choose(weights,random)]
 			offers[i]={type=rarity.types[math.min(#rarity.types,math.floor(random()*#rarity.types)+1)],rarity=rarity.name,modifier=mod.name,level=1}
+			if first then offers[i].price=math.max(0,math.min(C.FirstRoll.Price,math.floor(d.cash))) end
 		end
 		session.offers=offers session.nextRoll=now+C.rollSeconds() s.rolls+=1
 		if not first then s.pity=math.min((s.pity or 0)+1,C.Pity.Rolls) end

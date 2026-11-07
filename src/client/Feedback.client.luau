@@ -126,12 +126,16 @@ local tutorialDone = false
 Net.event("CrusherState").OnClientEvent:Connect(function(v: any)
 	if type(v) == "table" and type(v.tutorial) == "number" then tutorialDone = v.tutorial > #Config.Crushers.TutorialSteps end
 end)
+local upgradedAt: number? = nil
+Net.event("PlotUpgraded").OnClientEvent:Connect(function() upgradedAt = upgradedAt or os.clock() end)
 task.spawn(function()
 	local joined = os.clock()
 	while true do
-		task.wait(5)
+		task.wait(2)
 		if me:GetAttribute("FeedbackAsked") == true then return end
-		local calm = tutorialDone and os.clock() - joined >= F.AskAfterMinutes * 60 and not Style.hasModal()
+		-- 8 Nov: right after the plot upgrade (once its cutscene is over), else after a while
+		local happy = upgradedAt ~= nil and os.clock() - upgradedAt >= F.AskAfterUpgradeSeconds
+		local calm = tutorialDone and (happy or os.clock() - joined >= F.AskAfterMinutes * 60) and not Style.hasModal()
 			and me:GetAttribute("CutscenePlaying") ~= true and me:GetAttribute("FactoryEventRunning") ~= true
 		if calm and me:GetAttribute("FeedbackAsked") == false then
 			remote:FireServer("Shown")

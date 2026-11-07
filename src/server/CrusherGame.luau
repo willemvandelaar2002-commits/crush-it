@@ -570,6 +570,13 @@ local function rollShow(p,offers)
 	-- held back for C.BigRoll[rarity].Hold seconds so the impact lands on the reveal;
 	-- the next roll and buying wait as long (no rolling a Secret away by accident)
 	local big=if best and (best.rank>=C.BigRoll.MinRank or best.name=="Limited") then C.BigRoll[best.name] else nil
+	-- 8 Nov: the tutorial's first roll (one Rare, C.FirstRoll) gets the big cinematic too,
+	-- only for this player (no server-wide announcement for a Rare)
+	local firstShow=false
+	if first and not best then
+		for slot,item in offers do local r=item and C.rarity(item.rarity) if r and r.name==C.FirstRoll.Rarity then best=table.clone(r) best.item=item bestSlot=slot end end
+		if best then big={Hold=C.FirstRoll.Hold} firstShow=true end
+	end
 	local hold=if big then big.Hold else 0
 	if big then
 		ctx.nextRoll=(ctx.nextRoll or 0)+hold
@@ -583,12 +590,13 @@ local function rollShow(p,offers)
 			-- 5 Nov (Willem): skippable once you have watched this rarity's cinematic before (saved)
 			local cs=rollData.crushers if type(cs.bigSeen)~="table" then cs.bigSeen={} end
 			local canSkip=cs.bigSeen[best.name]==true cs.bigSeen[best.name]=true
-			Net.event("BigRoll"):FireAllClients({canSkip=canSkip,userId=p.UserId,player=p.DisplayName,rarity=best.name,rank=best.rank,color=best.color,
+			local fire=if firstShow then function(t) Net.event("BigRoll"):FireClient(p,t) end else function(t) Net.event("BigRoll"):FireAllClients(t) end
+			fire({canSkip=canSkip,userId=p.UserId,player=p.DisplayName,rarity=best.name,rank=best.rank,color=best.color,
 				name=def and def.name or best.item.type,type=best.item.type,odds=odds,slot=bestSlot,at=ped.top,machine=st.die:GetPivot().Position,hold=hold,
 				revealAt=workspace:GetServerTimeNow()+hold,aftershock=big.AftershockLuck,aftershockSeconds=big.AftershockSeconds})
 		end)
 	end
-	if best then
+	if best and not firstShow then
 		local def=C.typeById(best.item.type)
 		task.delay(seconds+hold+0.4,function()
 			if ctx.rollToken~=token then return end

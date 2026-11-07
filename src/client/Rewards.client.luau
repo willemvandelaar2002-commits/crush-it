@@ -611,6 +611,7 @@ RunService.RenderStepped:Connect(function()
 	end
 end)
 
+local seenCount = 0 -- claimable tiles when the panel was last open
 local function refresh()
 	if not state then
 		return
@@ -622,6 +623,7 @@ local function refresh()
 		claimed[i] = true
 	end
 	local anyPlay, anyDaily = false, false
+	local readyN = 0 -- claimable tiles (8 Nov: the HUD badge)
 	-- the countdown chip: the first gift not claimed yet
 	local nextGift, nextLeft = nil, 0
 	for i, r in Config.Rewards.Playtime do
@@ -642,6 +644,7 @@ local function refresh()
 		elseif left <= 0 then
 			set(playTiles[i], title, sub, "ready", "")
 			anyPlay = true
+			readyN += 1
 		else
 			set(playTiles[i], title, sub, "wait", clock(left))
 		end
@@ -652,6 +655,7 @@ local function refresh()
 		if i == d.day and d.canClaim then
 			set(dailyTiles[i], title, sub, "ready", "", true)
 			anyDaily = true
+			readyN += 1
 		elseif not d.canClaim and i == d.tomorrowDay and i ~= d.day then
 			-- 4 Nov: tomorrow's tile counts down (the D1 "come back tomorrow" hook)
 			set(dailyTiles[i], title, sub, "wait", "TOMORROW " .. clock(d.nextAt - now), true)
@@ -675,7 +679,12 @@ local function refresh()
 		end
 		(mark :: Frame).Visible = has
 	end
-	badge.Visible = anyPlay or anyDaily
+	-- 8 Nov (kid playtest): the HUD "!" goes once the panel was opened, and comes back
+	-- when something NEW can be claimed (the tabs inside keep their own "!")
+	local count = readyN
+	if panel.Visible then seenCount = count end
+	if count < seenCount then seenCount = count end
+	badge.Visible = count > seenCount
 end
 
 local function claimedSet(s: any): { [number]: boolean }
