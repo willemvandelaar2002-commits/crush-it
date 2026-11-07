@@ -1,14 +1,14 @@
 --!strict
 -- 7 Nov (Willem: "lets add autoroll now as well for the event"; free for everyone,
--- stops on a rarity the player picks, auto buy is paid).
+-- stops on the rarities the player ticks, auto buy is paid).
 -- AUTO ROLL runs here on the server, so it keeps going wherever you walk on your plot:
 --   roll -> wait for the reveal (and a big-roll cinematic) -> look at the pedestals:
---   * nothing at or above the chosen rarity: roll again
---   * something that rare: STOP (a notice says what), so you can buy it yourself
+--   * none of the ticked rarities: roll again
+--   * a ticked rarity: STOP (a notice says what), so you can buy it yourself
 --   * with the AUTO BUY pass (Store "AutoBuy"): buy the best one and keep rolling;
 --     if it can't (cash, full inventory) it stops and says why
--- Only after the tutorial. State: attributes AutoRoll / AutoRollMin / AutoBuy for the HUD
--- (client/AutoRoll). Remote "AutoRoll"(on, min, buy).
+-- Only after the tutorial. State: attributes AutoRoll / AutoRollPicks ("Legendary,Secret")
+-- / AutoBuy for the window (client/AutoRoll). Remote "AutoRoll"(on, picks, buy).
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
 local Net = require(RS.Shared.Net)
@@ -16,7 +16,7 @@ local C = require(RS.Shared.CrusherConfig)
 local Store = require(RS.Shared.Store)
 
 local M = {}
-type State = { on: boolean, min: string, buy: boolean, token: number }
+type State = { on: boolean, picks: { [string]: boolean }, buy: boolean, token: number }
 
 function M.start(api: any)
 	-- api.action(p, name, args) -> ok, message; api.session(p) -> ctx; api.getData(p) -> d
@@ -26,7 +26,8 @@ function M.start(api: any)
 
 	local function mirror(p: Player, s: State)
 		p:SetAttribute("AutoRoll", s.on)
-		p:SetAttribute("AutoRollMin", s.min)
+		local list = {} for _, name in C.AutoRoll.Rarities do if s.picks[name] then table.insert(list, name) end end
+		p:SetAttribute("AutoRollPicks", table.concat(list, ","))
 		p:SetAttribute("AutoBuy", s.buy)
 	end
 	local function stop(p: Player, s: State, text: string?)
@@ -36,7 +37,7 @@ function M.start(api: any)
 	end
 	local function rankOf(name: string): number
 		local r = C.rarity(name)
-		return if r then r.rank else math.huge
+		return if r then r.rank else -1
 	end
 
 	local function run(p: Player, s: State, token: number)
@@ -60,12 +61,12 @@ function M.start(api: any)
 			if not waitReveal() then break end
 			local ctx = api.session(p)
 			if not ctx or not ctx.offers then continue end
-			-- the best offer on the pedestals
+			-- the rarest offer of a ticked rarity on the pedestals
 			local bestSlot, bestRank, best = nil, -1, nil
 			for slot, offer in ctx.offers do
-				if offer then local rank = rankOf(offer.rarity) if rank > bestRank then bestSlot, bestRank, best = slot, rank, offer end end
+				if offer and s.picks[offer.rarity] then local rank = rankOf(offer.rarity) if rank > bestRank then bestSlot, bestRank, best = slot, rank, offer end end
 			end
-			if best and bestRank >= rankOf(s.min) then
+			if best then
 				local def = C.typeById(best.type)
 				local name = (if def then def.name else best.type) :: string
 				if s.buy and Store.hasPass(p, "AutoBuy") then
@@ -80,16 +81,21 @@ function M.start(api: any)
 		end
 	end
 
-	remote.OnServerEvent:Connect(function(p: Player, on: any, min: any, buy: any)
+	remote.OnServerEvent:Connect(function(p: Player, on: any, picks: any, buy: any)
 		local s = states[p]
 		if not s then return end
-		if type(min) == "string" and table.find(C.AutoRoll.Choices, min) then s.min = min end
+		if type(picks) == "table" then
+			local set = {}
+			for _, name in picks do if type(name) == "string" and table.find(C.AutoRoll.Rarities, name) then set[name] = true end end
+			s.picks = set
+		end
 		s.buy = buy == true and Store.hasPass(p, "AutoBuy")
 		if on == true and not s.on then
 			local d = api.getData(p)
 			if not d or (d.crushers.tutorial or 1) <= #C.TutorialSteps then
 				notice:FireClient(p, { text = "Finish the tutorial first." }) mirror(p, s) return
 			end
+			if next(s.picks) == nil then notice:FireClient(p, { text = "Tick at least one rarity to stop on." }) mirror(p, s) return end
 			s.on = true s.token += 1
 			mirror(p, s)
 			task.spawn(run, p, s, s.token)
@@ -100,7 +106,8 @@ function M.start(api: any)
 		end
 	end)
 	local function join(p: Player)
-		local s: State = { on = false, min = C.AutoRoll.Default, buy = false, token = 0 }
+		local picks = {} for _, name in C.AutoRoll.Default do picks[name] = true end
+		local s: State = { on = false, picks = picks, buy = false, token = 0 }
 		states[p] = s
 		mirror(p, s)
 		-- losing the pass (refund) turns auto buy off

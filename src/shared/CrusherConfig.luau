@@ -407,9 +407,10 @@ C.Pity = { Rolls = 200, Rarity = "Legendary", MinRank = 4 }
 -- impact lands on it; buying and the next roll wait too). Divine also gives the
 -- whole server x AftershockLuck on rolls for AftershockSeconds (Willem: not Secret).
 -- 7 Nov (Willem): AUTO ROLL, free for everyone after the tutorial (server/AutoRoll): it
--- stops when a pedestal shows this rarity or better; with the AUTO BUY pass it buys it
--- and keeps going. Choices in this order (Limited+ also stops on Secret and Divine).
-C.AutoRoll = { Default = "Legendary", Choices = { "Rare", "Epic", "Legendary", "Limited", "Secret" } }
+-- stops when a pedestal shows one of the TICKED rarities (the Auto Roller window); with
+-- the AUTO BUY pass it buys it and keeps going. Rarities: the rollable ones, in order.
+C.AutoRoll = { Default = { "Legendary", "Limited", "Secret", "Divine" },
+	Rarities = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Limited", "Secret", "Divine" } }
 -- 7 Nov (Willem: "should be special luck animation"): Limited (rank 4.5, under MinRank)
 -- gets its own cinematic too: three giant slot reels stop on clovers (client/BigRoll).
 C.BigRoll = { MinRank = 5, PillarSeconds = 30,
