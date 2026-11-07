@@ -42,9 +42,28 @@ local ART = {
 	-- rarity (assets/autoroller, made from the grey art by tint.py; 640x187 tabs, 400x500
 	-- cards). Tinting the grey art in Roblox only darkens it, so until an id is filled in
 	-- the grey art + a tint is the fallback.
-	Tabs = {} :: { [string]: string },
-	Cards = {} :: { [string]: string },
-	BuyOn = "", BuyOff = "",
+	-- (7 Nov: Willem uploaded them)
+	Tabs = {
+		Common = "rbxassetid://84692536390995",
+		Uncommon = "rbxassetid://108184639436285",
+		Rare = "rbxassetid://96254134638578",
+		Epic = "rbxassetid://82336962767623",
+		Legendary = "rbxassetid://115996751372375",
+		Limited = "rbxassetid://81756257397649",
+		Secret = "rbxassetid://121662311267520",
+		Divine = "rbxassetid://98527372045261",
+	} :: { [string]: string },
+	Cards = {
+		Common = "rbxassetid://114431128162298",
+		Uncommon = "rbxassetid://128385092581638",
+		Rare = "rbxassetid://119690543633281",
+		Epic = "rbxassetid://137694601356857",
+		Legendary = "rbxassetid://136715998222028",
+		Limited = "rbxassetid://121894601287491",
+		Secret = "rbxassetid://139637565880520",
+		Divine = "rbxassetid://138553644073767",
+	} :: { [string]: string },
+	BuyOn = "rbxassetid://78196558078809", BuyOff = "rbxassetid://120920550853882",
 }
 -- art + rect + tint for a rarity tab / card / the Auto Buy button
 local TAB_RECT = { Vector2.new(0, 22), Vector2.new(1023, 299) }
