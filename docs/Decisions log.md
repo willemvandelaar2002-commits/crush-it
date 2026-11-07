@@ -431,3 +431,4 @@
 - 2026-11-07: Auto Roller brighter: START/STOP always in full colour (START says ROLLING...), big 'N TARGETS SELECTED' line between cyan lines like the reference, bigger card names/odds, gold SOON on Auto Buy.
 - 2026-11-07: Auto Roller uses Willem's uploaded coloured tabs/cards/Auto Buy buttons. His uploads were Decals; the window uses the image ids behind them (InsertService: Decal.Texture).
 - 2026-11-07: AUTO ROLL console in the world beside the roll machine (Willem); its AUTO button opens the Auto Roller window. HUD button stays.
+- 2026-11-08: After an "impatient kid" playtest (Willem: likes down to 43%): first roll = one buyable Rare with the big reveal; R$ 5 deal and 2x cash button from goal 5; starter pack pops up only after Factory II; survey right after the Factory II upgrade (else 25 min); Rewards/Index "!" clear once opened. Specs fixed to pass during a Lucky Weekend.

@@ -43,8 +43,11 @@ function H.start()
  local indexView=require(script.Parent.CrusherIndex).new(gui,act)
  local trashView=require(script.Parent.TrashPanel).new(gui,act) -- the trash can on the plot
  local book,bookBadge=Style.iconButton(gui,{name="BookButton",image=Icons.Book,label="INDEX",a=blue,b=navy})
- indexView.onReady=function(ready) bookBadge.Visible=ready end -- "!" when an Index reward can be claimed
- Style.placeHudButton(book,0) book.Activated:Connect(indexView.toggle)
+ -- "!" when an Index reward can be claimed; 8 Nov (kid playtest): gone once the Index was
+ -- opened, back when a NEW reward becomes claimable
+ local indexReady,indexSeen=false,false
+ indexView.onReady=function(ready) if ready and not indexReady then indexSeen=false end indexReady=ready bookBadge.Visible=ready and not indexSeen end
+ Style.placeHudButton(book,0) book.Activated:Connect(function() indexSeen=true bookBadge.Visible=false indexView.toggle() end)
  -- the crusher you're holding from the backpack (hotbar), if any
  local function heldId()
   local tool=p.Character and p.Character:FindFirstChildOfClass("Tool")

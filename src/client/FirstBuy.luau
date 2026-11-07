@@ -120,12 +120,15 @@ function M.build(gui: ScreenGui, buyPass: (string) -> ())
 	local function place() Style.placeAfterHudRow(button) end
 	local function refresh()
 		local owned = me:GetAttribute("Offer_" .. offer.id) == true or Store.hasPass(me, "FirstBuy")
-		button.Visible = pass.gamePassId ~= 0 and not owned
+		-- 8 Nov (kid playtest): from goal C.RobuxButtonsGoal, not right after the tutorial
+		local stageOk = (tonumber(me:GetAttribute("HudStage")) or 0) >= CrusherConfig.RobuxButtonsGoal
+		button.Visible = pass.gamePassId ~= 0 and not owned and stageOk
 		if owned and card.Visible then Style.setOpen(card, false) end
 		place()
 	end
 	me:GetAttributeChangedSignal("Offer_" .. offer.id):Connect(refresh)
 	me:GetAttributeChangedSignal(Store.passAttr("FirstBuy")):Connect(refresh)
+	me:GetAttributeChangedSignal("HudStage"):Connect(refresh)
 	Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(place)
 	task.spawn(function() while true do task.wait(2) place() end end) -- the Rebirth button can appear later
 	refresh()

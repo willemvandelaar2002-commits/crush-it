@@ -412,6 +412,13 @@ C.Pity = { Rolls = 200, Rarity = "Legendary", MinRank = 4 }
 -- 7 Nov: the AUTO ROLL console beside the roll machine (machine-local studs: X left/right,
 -- Z toward the front; the machine is 24 wide, the outer pedestals sit at x +-20.5, z 15.5)
 C.AutoRollConsole = { X = -18, Z = 3 }
+-- 8 Nov (Willem, after an "impatient kid" playtest: the first roll was a Common, no wow):
+-- the very first roll (tutorial) puts ONE Rare on the pedestal with the big cinematic,
+-- priced so the player can always buy it right away (Price, or all their cash if less).
+C.FirstRoll = { Rarity = "Rare", Price = 100, Hold = 3.6 }
+-- 8 Nov (same playtest): the Robux buttons on the HUD (R$ 5 deal, 2x cash ladder) wait
+-- until this goal; the starter pack only pops up by itself after Factory II (C.MainGoals).
+C.RobuxButtonsGoal = 5
 C.AutoRoll = { Default = { "Legendary", "Limited", "Secret", "Divine" },
 	Rarities = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Limited", "Secret", "Divine" } }
 -- 7 Nov (Willem: "should be special luck animation"): Limited (rank 4.5, under MinRank)
@@ -605,5 +612,9 @@ function C.topLevelCap() return C.levelCap(C.PlotUpgrade.MaxLevel) end
 function C.topUpgradeMax(id) return C.upgradeMax(id,C.PlotUpgrade.MaxLevel) end
 function C.pedestals(level) return math.clamp(C.StartPedestals + (level or 0), 1, C.MaxPedestals) end
 -- Price of a rolled offer on a pedestal (rarity price x modifier multiplier).
-function C.offerPrice(item) return math.floor(C.rarity(item.rarity).price * C.modifier(item.modifier).mult) end
+-- (8 Nov: an offer can carry its own price - the tutorial's first Rare, C.FirstRoll)
+function C.offerPrice(item)
+	if type(item.price)=="number" then return item.price end
+	return math.floor(C.rarity(item.rarity).price * C.modifier(item.modifier).mult)
+end
 return C

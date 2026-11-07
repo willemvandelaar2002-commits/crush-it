@@ -7,7 +7,11 @@
 -- Shown once per save after AskAfterMinutes of play (tutorial done, nothing else open);
 -- the FEEDBACK button on the Codes tab of Rewards opens it again any time.
 return {
-	AskAfterMinutes = 10,
+	-- 8 Nov (kid playtest): asked right after the FACTORY II upgrade (a happy moment),
+	-- AskAfterUpgradeSeconds after its cutscene ends; players who don't get there are
+	-- asked after AskAfterMinutes of play (was 10).
+	AskAfterMinutes = 25,
+	AskAfterUpgradeSeconds = 4,
 	-- 6 Nov (Willem: 59% likes): after LOVE IT, one friendly page asks for a 👍 on the game
 	-- page. No reward (vault Community Building: don't reward likes; a reminder is fine),
 	-- only to players who just said they love it. Logged as FeedbackLikeAsk.
