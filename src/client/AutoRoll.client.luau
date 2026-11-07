@@ -365,7 +365,7 @@ local function refresh()
 		tabArt(buy, ART.BuyOn, GREEN)
 	else
 		buyText.Text = "SOON"
-		tabArt(buy, ART.BuyOn, GOLD) -- SOON in gold, not a dead grey
+		tabArt(buy, ART.Tabs.Legendary, GOLD) -- SOON in gold (the Legendary tab art), not a dead grey
 	end
 	refreshTabs()
 	refreshCards()

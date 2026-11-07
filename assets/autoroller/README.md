@@ -7,4 +7,4 @@ looks dull; these are coloured beforehand.
 
 Upload all 18 PNGs (Creator Hub / Asset Manager bulk import) and put the ids in
 `src/client/AutoRoll.client.luau` → `ART.Tabs`, `ART.Cards`, `ART.BuyOn` (Tab-Buy), `ART.BuyOff` (Tab-Off).
-Until then the window uses the grey art with a tint.
+Done 7 Nov: the ids in ART are the IMAGE ids behind the decal uploads (a decal id shows nothing in an ImageLabel).
