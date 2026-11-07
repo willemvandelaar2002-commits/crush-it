@@ -192,6 +192,10 @@ function H.start()
      -- 3 Nov: the FILL ROW board at a row sign opens the rarity picker (client/Travel)
      local open=p.PlayerGui:FindFirstChild("TravelButtons") and p.PlayerGui.TravelButtons:FindFirstChild("OpenFillRow")
      if open then (open :: BindableEvent):Fire(v:GetAttribute("Row")) end
+    elseif action=="AutoRoll" then
+     -- 7 Nov: the AUTO ROLL console by the roll machine opens the Auto Roller window
+     local hud=p.PlayerGui:FindFirstChild("AutoRollHud") local open=hud and hud:FindFirstChild("Open")
+     if open then (open :: BindableEvent):Fire() end
     elseif action=="TimeSkip" then
      purchase("TimeSkip",{})
     else act(action,{id=v:GetAttribute("UpgradeId")}) end

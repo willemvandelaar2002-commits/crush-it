@@ -430,3 +430,4 @@
 - 2026-11-07: Auto Roller 'more colourful' (Willem): ready-coloured tab and card art per rarity (assets/autoroller, tint.py) because ImageColor3 on the grey art only darkens it; slots ART.Tabs/Cards/BuyOn/BuyOff wait for Willem's upload ids (the Studio upload tool refused GitHub URLs). Cards use the same crusher pictures as the Index (black until discovered).
 - 2026-11-07: Auto Roller brighter: START/STOP always in full colour (START says ROLLING...), big 'N TARGETS SELECTED' line between cyan lines like the reference, bigger card names/odds, gold SOON on Auto Buy.
 - 2026-11-07: Auto Roller uses Willem's uploaded coloured tabs/cards/Auto Buy buttons. His uploads were Decals; the window uses the image ids behind them (InsertService: Decal.Texture).
+- 2026-11-07: AUTO ROLL console in the world beside the roll machine (Willem); its AUTO button opens the Auto Roller window. HUD button stays.

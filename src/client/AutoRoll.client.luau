@@ -376,11 +376,17 @@ do
 end
 for _, a in { "AutoRoll", "AutoRollPicks", "AutoBuy", Store.passAttr("AutoBuy") } do me:GetAttributeChangedSignal(a):Connect(refresh) end
 
-hud.Activated:Connect(function()
-	if panel.Visible then Style.setOpen(panel, false) return end
+local function open()
 	showGrid() refresh()
 	Style.setOpen(panel, true)
+end
+hud.Activated:Connect(function()
+	if panel.Visible then Style.setOpen(panel, false) return end
+	open()
 end)
+-- 7 Nov: the AUTO ROLL console in the world (beside the roll machine) opens it too
+local openEvent = make("BindableEvent", { Name = "Open" }, gui)
+openEvent.Event:Connect(function() if not panel.Visible then open() end end)
 close.Activated:Connect(function() Style.setOpen(panel, false) end)
 start.Activated:Connect(function()
 	if running() then return end
