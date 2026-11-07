@@ -406,7 +406,10 @@ C.Pity = { Rolls = 200, Rarity = "Legendary", MinRank = 4 }
 -- pedestal waits after the flicker before the crusher appears (the cinematic's
 -- impact lands on it; buying and the next roll wait too). Divine also gives the
 -- whole server x AftershockLuck on rolls for AftershockSeconds (Willem: not Secret).
+-- 7 Nov (Willem: "should be special luck animation"): Limited (rank 4.5, under MinRank)
+-- gets its own cinematic too: three giant slot reels stop on clovers (client/BigRoll).
 C.BigRoll = { MinRank = 5, PillarSeconds = 30,
+	Limited = { Hold = 5.2 },
 	Secret = { Hold = 4.6 }, Divine = { Hold = 6.4, AftershockLuck = 1.5, AftershockSeconds = 30 } }
 -- 5 Nov (Willem): a bay holding a Secret or Divine crusher glows (client/SpecialBayFx; 6 Nov: Limited too):
 -- a light plate on the pedestal, a colour wash up the back wall, rising sparkles;

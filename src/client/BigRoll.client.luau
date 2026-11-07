@@ -8,6 +8,9 @@
 --   Roller: lights out + HUD away -> the odds count up and climb the rarity
 --   colours -> Secret: a giant press slams onto the pedestal; Divine: a beam
 --   of light comes down with a falling star -> flash, name card, light pillar.
+--   7 Nov (Willem: "should be special luck animation"): Limited (Lucky Weekend) gets
+--   three giant slot reels over the pedestal that stop one by one on clovers, then
+--   a burst and a rain of gold and clover-green sparkles.
 --   Everyone else: a light pillar over that pedestal (and the RarePull banner).
 -- Skip: from the second big roll in a session. Reduced Motion: no flash, no shake.
 local Players = game:GetService("Players")
@@ -77,6 +80,7 @@ local function cinematic(msg: any)
 	local rarity: string = msg.rarity
 	local color = colorOf(rarity)
 	local divine = rarity == "Divine"
+	local limited = rarity == "Limited"
 	-- 5 Nov (Willem): skippable once you've watched this rarity's cinematic before (the server
 	-- remembers it in your save); the session table also covers older servers
 	local canSkip = msg.canSkip == true or seen[rarity] == true
@@ -169,8 +173,9 @@ local function cinematic(msg: any)
 	-- 2. The odds count up, locking digits left to right, climbing the rarity colours
 	local number = commas(tonumber(msg.odds) or 0)
 	local final = "1 in " .. number
-	local top = table.find(LADDER, rarity) or #LADDER
-	local countFrom, countTo = 0.7, math.max(1.4, impactIn - (if divine then 2.6 else 0.9))
+	local ladder = if limited then { "Rare", "Epic", "Legendary", "Limited" } else LADDER
+	local top = table.find(ladder, rarity) or #ladder
+	local countFrom, countTo = 0.7, math.max(1.4, impactIn - (if divine then 2.6 elseif limited then 2.2 else 0.9))
 	local tier = 0
 	table.insert(conns, RunService.RenderStepped:Connect(function()
 		local t = os.clock() - started
@@ -186,7 +191,7 @@ local function cinematic(msg: any)
 		local nowTier = math.clamp(1 + math.floor(p * top), 1, top)
 		if nowTier ~= tier then
 			tier = nowTier
-			odds.TextColor3 = colorOf(LADDER[tier]):Lerp(WHITE, 0.2)
+			odds.TextColor3 = colorOf(ladder[tier]):Lerp(WHITE, 0.2)
 			sound(Config.Sounds.RevealTick, 0.6, 0.8 + tier * 0.15)
 		end
 		if p >= 1 and title.TextTransparency == 1 then
@@ -213,12 +218,97 @@ local function cinematic(msg: any)
 		sparks.Speed = NumberRange.new(18, 34) sparks.SpreadAngle = Vector2.new(180, 180) sparks.Lifetime = NumberRange.new(0.6, 1.2)
 		sparks.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1.1), NumberSequenceKeypoint.new(1, 0) }) sparks.Drag = 3
 		sparks.Parent = at sparks:Emit(if still then 30 else 90)
+		if limited then
+			-- a rain of gold and clover-green sparkles over the pedestal for a few seconds
+			local sky = Instance.new("Attachment") sky.WorldPosition = P + Vector3.new(0, 26, 0) sky.Parent = workspace.Terrain table.insert(trash, sky)
+			for _, c in { Color3.fromRGB(255, 210, 60), Color3.fromRGB(90, 235, 110) } do
+				local rain = Instance.new("ParticleEmitter") rain.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+				rain.Color = ColorSequence.new(c:Lerp(WHITE, 0.3), c) rain.LightEmission = 0.8
+				rain.Rate = if still then 15 else 45 rain.Speed = NumberRange.new(2, 6) rain.SpreadAngle = Vector2.new(70, 70)
+				rain.Acceleration = Vector3.new(0, -22, 0) rain.Lifetime = NumberRange.new(1.6, 2.4)
+				rain.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.9), NumberSequenceKeypoint.new(1, 0.4) })
+				rain.Rotation = NumberRange.new(0, 360) rain.RotSpeed = NumberRange.new(-180, 180) rain.Parent = sky
+				task.delay(2.6, function() if rain.Parent then rain.Enabled = false end end)
+			end
+		end
 	end
 
 	-- 3a. Secret: a giant hydraulic press drops from above and slams onto the pedestal
 	-- 3b. Divine: a beam of light breaks through, a star falls down it
 	local slamAt = started + impactIn
-	if not divine then
+	if limited then
+		-- 3c. Limited: three giant slot reels come down over the pedestal, spin, and stop
+		-- one by one on a clover (facing the camera), the last one on the impact
+		local face = flat -- towards the camera
+		local center = P + Vector3.new(0, 11, 0)
+		local right = Vector3.yAxis:Cross(face).Unit
+		local box = Instance.new("Model") box.Name = "BigRollReels" box.Parent = workspace table.insert(trash, box)
+		local frame = part("ReelFrame", Vector3.new(20, 8.6, 1.2), CFrame.lookAt(center - face * 3.2, center - face * 4.2), Color3.fromRGB(255, 200, 60), Enum.Material.Neon)
+		frame.Parent = box
+		local SYMBOLS = { Enum.NormalId.Front, Enum.NormalId.Top, Enum.NormalId.Back, Enum.NormalId.Bottom }
+		local OTHER = { "⭐", "🍒", "7" }
+		local reels = {}
+		for i = 1, 3 do
+			local at = center + right * ((i - 2) * 6.4)
+			local cube = part("Reel" .. i, Vector3.new(5.6, 6, 6), CFrame.lookAt(at, at + face), Color3.fromRGB(255, 248, 230), Enum.Material.SmoothPlastic)
+			cube.Parent = box
+			for k, normal in SYMBOLS do
+				local sg = Instance.new("SurfaceGui") sg.Face = normal sg.CanvasSize = Vector2.new(200, 200) sg.LightInfluence = 0 sg.Parent = cube
+				local t = Instance.new("TextLabel") t.Size = UDim2.fromScale(1, 1) t.BackgroundTransparency = 1 t.TextScaled = true
+				t.Text = if k == 1 then "🍀" else OTHER[(k + i) % 3 + 1] t.TextColor3 = Color3.fromRGB(220, 40, 40) t.Font = Enum.Font.FredokaOne t.Parent = sg
+			end
+			reels[i] = { cube = cube, base = cube.CFrame, angle = 0, speed = 0, stopped = false }
+		end
+		-- they slide down into view during the count, then spin
+		local drop = Vector3.new(0, 40, 0)
+		for _, r in reels do r.cube.CFrame = r.base + drop end
+		frame.CFrame = frame.CFrame + drop
+		task.delay(0.6, function()
+			if finished then return end
+			for _, x in box:GetChildren() do
+				TweenService:Create(x, TweenInfo.new(0.9, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { CFrame = (x :: BasePart).CFrame - drop }):Play()
+			end
+			task.delay(0.9, function() for _, r in reels do r.speed = if still then 6 else 22 end end)
+		end)
+		table.insert(conns, RunService.Heartbeat:Connect(function(dt)
+			for _, r in reels do
+				if not r.stopped and r.speed > 0 and r.cube.Parent then
+					r.angle += r.speed * dt
+					r.cube.CFrame = r.base * CFrame.Angles(r.angle, 0, 0)
+				end
+			end
+		end))
+		local function stop(i: number, delay: number)
+			task.delay(math.max(0, delay), function()
+				if finished then return end
+				local r = reels[i] r.stopped = true
+				-- land on the next whole turn plus one (the clover side faces the camera again)
+				local target = (math.floor(r.angle / (2 * math.pi)) + 2) * 2 * math.pi
+				local value = Instance.new("NumberValue") value.Value = r.angle table.insert(trash, value)
+				value.Changed:Connect(function(a) if r.cube.Parent then r.cube.CFrame = r.base * CFrame.Angles(a, 0, 0) end end)
+				TweenService:Create(value, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Value = target }):Play()
+				task.delay(0.42, function()
+					if finished then return end
+					sound(Config.Sounds.RevealTick, 0.8, 0.9 + i * 0.12)
+					local pop = part("ReelPop", r.cube.Size * 1.08, r.cube.CFrame, Color3.fromRGB(110, 255, 130)) pop.Transparency = 0.3 pop.Parent = workspace
+					table.insert(trash, pop)
+					TweenService:Create(pop, TweenInfo.new(0.35), { Size = r.cube.Size * 1.5, Transparency = 1 }):Play()
+				end)
+			end)
+		end
+		stop(1, impactIn - 1.95) stop(2, impactIn - 1.35) stop(3, impactIn - 0.75)
+		task.delay(impactIn, function()
+			if finished then return end
+			impact()
+			-- the reels fly apart and fade
+			for i, r in reels do
+				local out = r.base.Position + right * ((i - 2) * 9) + Vector3.new(0, 10, 0)
+				TweenService:Create(r.cube, TweenInfo.new(0.8, Enum.EasingStyle.Quad), { CFrame = CFrame.new(out) * CFrame.Angles(math.random() * 3, math.random() * 3, 0), Transparency = 1 }):Play()
+				for _, sg in r.cube:GetChildren() do if sg:IsA("SurfaceGui") then sg.Enabled = false end end
+			end
+			TweenService:Create(frame, TweenInfo.new(0.6), { Transparency = 1 }):Play()
+		end)
+	elseif not divine then
 		local press = Instance.new("Model") press.Name = "BigRollPress" press.Parent = workspace table.insert(trash, press)
 		local high = P + Vector3.new(0, 70, 0)
 		local head = part("Head", Vector3.new(13, 4, 13), CFrame.new(high), Color3.fromRGB(96, 100, 116), Enum.Material.DiamondPlate) head.Parent = press
