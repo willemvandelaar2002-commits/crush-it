@@ -71,7 +71,7 @@ end
 local function refresh()
 	local on, min, buying = state()
 	face.Image = if on then ART.On else ART.Off
-	toggleText.Text = if on then "AUTO ROLL\nON" else "AUTO ROLL"
+	toggleText.Text = if on then "AUTO: ON" else "AUTO ROLL" -- (one line: readable on phones)
 	stopText.Text = string.upper(min) .. "+"
 	local r = C.rarity(min)
 	stopText.TextColor3 = if r then r.color else Color3.new(1, 1, 1)
