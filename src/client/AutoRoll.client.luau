@@ -1,8 +1,8 @@
 --!strict
 -- 7 Nov (Willem, reference video of an "Auto Roller" window; "without clicking specific
 -- crushers"): AUTO ROLL is an Auto Roller window.
---   HUD: Willem's AUTO ROLL button (blue = off, glowing green = running), bottom middle
---        above the crusher hotbar; it opens the window.
+--   HUD: Willem's AUTO ROLL button (blue = off, glowing green = running), bottom, just
+--        left of the crusher hotbar; it opens the window.
 --   Window: title bar (dice, "Auto Roller", X); rarity tabs on the left, each with a TICK
 --        box (Auto Roll stops on / Auto Buy buys any ticked rarity; Legendary and up by
 --        default); tapping a tab shows that rarity's crushers with their odds (??? for
@@ -71,10 +71,11 @@ local function send(on: boolean, set: { [string]: boolean }, buy: boolean) remot
 local gui = make("ScreenGui", { Name = "AutoRollHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
 
 -- HUD button --------------------------------------------------------------------------
-local hud = make("ImageButton", { Name = "AutoRollButton", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -150), Size = UDim2.fromOffset(176, 75),
+-- (left of the crusher hotbar, so it never covers the notices above it)
+local hud = make("ImageButton", { Name = "AutoRollButton", AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(0.5, -162, 1, -12), Size = UDim2.fromOffset(176, 75),
 	BackgroundTransparency = 1, Image = ART.Off, ImageRectOffset = Vector2.new(36, 138), ImageRectSize = Vector2.new(951, 405), ScaleType = Enum.ScaleType.Stretch }, gui)
 Style.feedback(hud)
-Style.phoneFit(hud, { scale = 0.62, anchor = Vector2.new(0.5, 1), position = UDim2.new(0.5, 0, 1, -92) })
+Style.phoneFit(hud, { scale = 0.62, anchor = Vector2.new(1, 1), position = UDim2.new(0.5, -106, 1, -8) })
 local hudText = words(hud, "AUTO ROLL", UDim2.fromScale(0.08, 0.18), UDim2.fromScale(0.84, 0.64), 30, 3)
 
 -- the window --------------------------------------------------------------------------
