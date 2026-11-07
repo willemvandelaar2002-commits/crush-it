@@ -190,7 +190,7 @@ local box = make("Frame", { Name = "AutoBuyBox", Position = UDim2.fromOffset(GX 
 Style.panel(box, rgb(30, 40, 100), rgb(16, 22, 64))
 make("UIStroke", { Color = rgb(255, 200, 60), Thickness = 3, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, box)
 words(box, "🤖 Auto Buy", UDim2.fromOffset(10, 6), UDim2.new(1, -20, 0, 28), 24, 3, 7)
-words(box, "Buys what it stops on, keeps rolling", UDim2.fromOffset(10, 34), UDim2.new(1, -20, 0, 30), 14, 2, 7)
+words(box, "Buys what it stops on, keeps rolling", UDim2.fromOffset(10, 34), UDim2.new(1, -20, 0, 30), 14, 2, 7).TextWrapped = true
 local buy = make("TextButton", { Name = "Buy", Text = "", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 66), Size = UDim2.new(1, -40, 0, 38), ZIndex = 7 }, box)
 Style.button(buy, rgb(60, 200, 80))
 local buyText = words(buy, "", UDim2.fromOffset(6, 4), UDim2.new(1, -12, 1, -8), 22, 3, 9)
