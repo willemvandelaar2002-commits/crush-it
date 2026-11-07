@@ -240,17 +240,17 @@ local function cinematic(msg: any)
 		-- 3c. Limited: three giant slot reels come down over the pedestal, spin, and stop
 		-- one by one on a clover (facing the camera), the last one on the impact
 		local face = flat -- towards the camera
-		local center = P + Vector3.new(0, 11, 0)
+		local center = P + Vector3.new(0, 4.2, 0) -- (low, under the odds and the title on screen)
 		local right = Vector3.yAxis:Cross(face).Unit
 		local box = Instance.new("Model") box.Name = "BigRollReels" box.Parent = workspace table.insert(trash, box)
-		local frame = part("ReelFrame", Vector3.new(20, 8.6, 1.2), CFrame.lookAt(center - face * 3.2, center - face * 4.2), Color3.fromRGB(255, 200, 60), Enum.Material.Neon)
+		local frame = part("ReelFrame", Vector3.new(15, 6.2, 0.8), CFrame.lookAt(center - face * 2.4, center - face * 3.2), Color3.fromRGB(255, 200, 60), Enum.Material.Neon)
 		frame.Parent = box
 		local SYMBOLS = { Enum.NormalId.Front, Enum.NormalId.Top, Enum.NormalId.Back, Enum.NormalId.Bottom }
 		local OTHER = { "⭐", "🍒", "7" }
 		local reels = {}
 		for i = 1, 3 do
-			local at = center + right * ((i - 2) * 6.4)
-			local cube = part("Reel" .. i, Vector3.new(5.6, 6, 6), CFrame.lookAt(at, at + face), Color3.fromRGB(255, 248, 230), Enum.Material.SmoothPlastic)
+			local at = center + right * ((i - 2) * 4.8)
+			local cube = part("Reel" .. i, Vector3.new(4.2, 4.4, 4.4), CFrame.lookAt(at, at + face), Color3.fromRGB(255, 248, 230), Enum.Material.SmoothPlastic)
 			cube.Parent = box
 			for k, normal in SYMBOLS do
 				local sg = Instance.new("SurfaceGui") sg.Face = normal sg.CanvasSize = Vector2.new(200, 200) sg.LightInfluence = 0 sg.Parent = cube
