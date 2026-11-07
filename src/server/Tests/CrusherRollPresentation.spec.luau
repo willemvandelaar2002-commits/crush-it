@@ -5,10 +5,12 @@ return function()
 	local R=require(game.ReplicatedStorage.Shared.CrusherRules)
 	local checks=0 local function check(v,msg) checks+=1 assert(v,msg) end
 	for luck=0,C.MaxGlobal do for _,lucky in {false,true,4 :: any} do for _,bonus in {0,0.13} do
-		local weights=R.weights(luck,lucky,bonus) local total=0 for _,w in weights do total+=w end
+		-- (8 Nov: during a Lucky Weekend the live roll includes Limited, so this does too)
+		local weekend=C.limitedOn()
+		local weights=R.weights(luck,lucky,bonus,weekend) local total=0 for _,w in weights do total+=w end
 		local sum=0
 		for rank,rarity in C.Rarities do for _,id in rarity.types do
-			if rarity.event then continue end -- (Limited: only during its event, checked below)
+			if rarity.event and not weekend then continue end -- (Limited: only during its event, checked below)
 			if rarity.weight<=0 then check(P.odds(id,luck,lucky,false,bonus)==0,"exclusive types have no roll odds") continue end
 			local odds=P.odds(id,luck,lucky,false,bonus)
 			-- 2 Nov: the Index shows the same odds, rounded
