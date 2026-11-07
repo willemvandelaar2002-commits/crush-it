@@ -123,11 +123,21 @@ local function showGrid()
 		local card = make("Frame", { Name = id, LayoutOrder = i, BackgroundColor3 = r.color:Lerp(INK, 0.55), ZIndex = 7 }, grid)
 		make("UICorner", { CornerRadius = UDim.new(0, 8) }, card)
 		make("UIStroke", { Color = r.color, Thickness = 2 }, card)
-		make("ImageLabel", { Image = CrusherIcons.image(id) or "", Position = UDim2.fromOffset(19, 4), Size = UDim2.fromOffset(60, 52), BackgroundTransparency = 1,
-			ScaleType = Enum.ScaleType.Fit, ImageColor3 = if known then WHITE else rgb(0, 0, 0), ZIndex = 8 }, card)
+		local icon = CrusherIcons.image(id)
+		if icon then
+			make("ImageLabel", { Image = icon, Position = UDim2.fromOffset(19, 4), Size = UDim2.fromOffset(60, 52), BackgroundTransparency = 1,
+				ScaleType = Enum.ScaleType.Fit, ImageColor3 = if known then WHITE else rgb(0, 0, 0), ZIndex = 8 }, card)
+		else
+			-- (no icon uploaded yet, e.g. the Lucky Weekend crushers)
+			words(card, if r.event then "🍀" else "?", UDim2.fromOffset(24, 8), UDim2.fromOffset(50, 44), 40, 2, 8)
+		end
+		if r.event then
+			local tag = words(card, "WEEKEND", UDim2.fromOffset(2, 2), UDim2.new(1, -4, 0, 12), 11, 2, 10)
+			tag.TextColor3 = rgb(140, 255, 150)
+		end
 		words(card, if known and def then def.name else "???", UDim2.fromOffset(4, 54), UDim2.new(1, -8, 0, 16), 14, 2, 9)
 		local odds = if state and state.upgrades then C.effectiveOdds(id, state.upgrades.Luck, state.rollLucky, state.index and state.index.luck, r.event ~= nil) else C.oddsFor(id)
-		local o = words(card, (if r.event then "WEEKEND · " else "") .. "1 in " .. commas(odds), UDim2.fromOffset(4, 71), UDim2.new(1, -8, 0, 16), 14, 2, 9)
+		local o = words(card, "1 in " .. commas(odds), UDim2.fromOffset(4, 71), UDim2.new(1, -8, 0, 16), 14, 2, 9)
 		o.TextColor3 = rgb(255, 230, 120)
 	end
 end
@@ -179,7 +189,7 @@ local box = make("Frame", { Name = "AutoBuyBox", Position = UDim2.fromOffset(GX 
 Style.panel(box, rgb(30, 40, 100), rgb(16, 22, 64))
 make("UIStroke", { Color = rgb(255, 200, 60), Thickness = 3, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, box)
 words(box, "🤖 Auto Buy", UDim2.fromOffset(10, 6), UDim2.new(1, -20, 0, 28), 24, 3, 7)
-words(box, "Buys the ticked rarities for you and keeps rolling", UDim2.fromOffset(10, 34), UDim2.new(1, -20, 0, 30), 14, 2, 7)
+words(box, "Buys what it stops on, keeps rolling", UDim2.fromOffset(10, 34), UDim2.new(1, -20, 0, 30), 14, 2, 7)
 local buy = make("TextButton", { Name = "Buy", Text = "", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 66), Size = UDim2.new(1, -40, 0, 38), ZIndex = 7 }, box)
 Style.button(buy, rgb(60, 200, 80))
 local buyText = words(buy, "", UDim2.fromOffset(6, 4), UDim2.new(1, -12, 1, -8), 22, 3, 9)
