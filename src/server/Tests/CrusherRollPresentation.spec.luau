@@ -14,7 +14,7 @@ return function()
 			if rarity.weight<=0 then check(P.odds(id,luck,lucky,false,bonus)==0,"exclusive types have no roll odds") continue end
 			local odds=P.odds(id,luck,lucky,false,bonus)
 			-- 2 Nov: the Index shows the same odds, rounded
-			check(C.effectiveOdds(id,luck,lucky,bonus)==math.max(1,math.floor(odds+.5)),"Index odds match the roll")
+			check(C.effectiveOdds(id,luck,lucky,bonus,weekend)==math.max(1,math.floor(odds+.5)),"Index odds match the roll")
 			check(math.abs(odds-total/weights[rank]*#rarity.types)<1e-8,"odds match authoritative weights")
 			check(P.oddsText(odds):find("roll odds")~=nil,"odds label identifies the draw")
 			sum+=1/odds
