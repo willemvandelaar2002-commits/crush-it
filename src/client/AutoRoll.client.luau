@@ -251,6 +251,13 @@ task.spawn(function()
 		local shop = me.PlayerGui:FindFirstChild("ShopButton", true)
 		local sg = shop and shop:FindFirstAncestorOfClass("ScreenGui")
 		hud.Visible = sg ~= nil and sg.Enabled and (shop :: GuiObject).Visible
-		task.wait(1)
+		-- just left of the crusher hotbar, which grows with the crushers you own
+		local bar = me.PlayerGui:FindFirstChild("CrusherHotbar")
+		bar = bar and bar:FindFirstChild("Bar")
+		local y = if Style.compact() then -8 else -12
+		if bar and (bar :: GuiObject).Visible then
+			hud.Position = UDim2.new(0, math.max((bar :: GuiObject).AbsolutePosition.X - 8, 4), 1, y)
+		end
+		task.wait(0.5)
 	end
 end)
