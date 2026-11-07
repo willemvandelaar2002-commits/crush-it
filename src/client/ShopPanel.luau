@@ -640,11 +640,12 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 			r:Destroy()
 		end)
 	end
-	local PASS_ICONS: { [string]: string } = { AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, CashX4 = Icons.DoubleCash, CashX8 = Icons.DoubleCash, CashX16 = Icons.DoubleCash, Lucky = Icons.Lucky, OfflineEarnings = Icons.Offline, AutoCollect = Icons.Cash, VIP = Icons.Trophy }
+	local PASS_ICONS: { [string]: string } = { AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, CashX4 = Icons.DoubleCash, CashX8 = Icons.DoubleCash, CashX16 = Icons.DoubleCash, Lucky = Icons.Lucky, OfflineEarnings = Icons.Offline, AutoCollect = Icons.Cash, VIP = Icons.Trophy, AutoBuy = Icons.Lucky }
 	-- the short, readable version of each pass / boost (the long text stays in Store)
 	local PASS_TEXT: { [string]: { benefit: string, sub: string, palette: string } } = {
 		AutoCrush = { benefit = "+25% POWER", sub = "+25% damage for all your crushers, forever", palette = "Pink" },
 		DoubleCash = { benefit = "2x CASH", sub = "Double cash from every crush, forever", palette = "Gold" },
+		AutoBuy = { benefit = "AUTO BUY", sub = "Auto Roll buys the crushers it stops for and keeps going", palette = "Cyan" },
 		CashX4 = { benefit = "4x CASH", sub = "4x cash from every crush, forever (up from 2x)", palette = "Cyan" },
 		CashX8 = { benefit = "8x CASH", sub = "8x cash from every crush, forever (up from 4x)", palette = "Pink" },
 		CashX16 = { benefit = "16x CASH", sub = "16x cash from every crush, forever (up from 8x)", palette = "Gold" },
@@ -667,6 +668,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		for i, pass in Store.Passes do
 			if pass.gamePassId == 0 and pass.perk == "VIP" then continue end -- 4 Nov: VIP shows once its pass exists
 			if pass.hidden then continue end -- 6 Nov: the First Buy Deal has its own button
+			if pass.gamePassId == 0 and pass.perk == "AutoBuy" then continue end -- 7 Nov: shows once its pass exists
 			if pass.gamePassId == 0 and Store.isCashLadder(pass.perk) then continue end -- 5 Nov: ladder passes show once created
 			local txt = PASS_TEXT[pass.perk] or { benefit = pass.title, sub = pass.desc, palette = "Gold" }
 			local b = benefitCard(g, i, { title = pass.title, benefit = txt.benefit, sub = txt.sub, palette = txt.palette, image = PASS_ICONS[pass.perk] or Icons.Shop }, function(button)
