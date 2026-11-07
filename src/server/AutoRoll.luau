@@ -73,7 +73,8 @@ function M.start(api: any)
 					if not bought then stop(p, s, "Auto Roll stopped: " .. best.rarity .. " " .. name .. " is waiting. " .. tostring(why)) break end
 					notice:FireClient(p, { text = "Auto Buy: " .. best.rarity .. " " .. name .. "!" })
 				else
-					stop(p, s, "Auto Roll stopped: a " .. best.rarity .. " " .. name .. " is on your pedestal!") break
+					local article = if string.find(best.rarity, "^[AEIOU]") then "an " else "a "
+					stop(p, s, "Auto Roll stopped: " .. article .. best.rarity .. " " .. name .. " is on your pedestal!") break
 				end
 			end
 		end
