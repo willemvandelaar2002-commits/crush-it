@@ -24,6 +24,10 @@
   9-sliced), START 137227985984200, STOP 122128869328114, Auto Buy panel 112110722481101 (its button is the tab art,
   green / grey). The design reference (85952094260378) is not used. Uploads are 1023 px wide, so the ImageRect
   values are in those pixels. Text, ticks, the viewing outline and the target outline are live on top.
+- Colour (7 Nov): ImageColor3 can only darken the grey art, so assets/autoroller holds ready-coloured tabs and
+  cards per rarity (tint.py; cards purple with a rim in the rarity colour, like the design reference). Their ids go
+  in ART.Tabs / ART.Cards / ART.BuyOn / ART.BuyOff; empty = grey art + a brightened tint.
+- Card pictures are CrusherIcons, the same images as the Index; undiscovered crushers are black there too.
 - (before:) HUD (client/AutoRoll): Willem's art (bar 140479169859430; AUTO ROLL button blue 118340677613688 / green 111686894944891 in the see-through first slot), above the crusher hotbar: AUTO ROLL on/off, STOP AT (tap to cycle, in the rarity
   colour), AUTO BUY (a lock that opens the pass purchase without the pass; hidden until the pass exists).
   Phones: the same bar at 0.62 scale. Shown with the Shop button.
