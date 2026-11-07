@@ -7,7 +7,9 @@
 --   * a ticked rarity: STOP (a notice says what), so you can buy it yourself
 --   * with the AUTO BUY pass (Store "AutoBuy"): buy the best one and keep rolling;
 --     if it can't (cash, full inventory) it stops and says why
--- Only after the tutorial. State: attributes AutoRoll / AutoRollPicks ("Legendary,Secret")
+-- Picks are rarity names (any crusher of it) and crusher ids (just that one, 7 Nov: Willem
+-- "make the crushers individually clickable").
+-- Only after the tutorial. State: attributes AutoRoll / AutoRollPicks ("Legendary,Titan")
 -- / AutoBuy for the window (client/AutoRoll). Remote "AutoRoll"(on, picks, buy).
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
@@ -21,12 +23,23 @@ type State = { on: boolean, picks: { [string]: boolean }, buy: boolean, token: n
 function M.start(api: any)
 	-- api.action(p, name, args) -> ok, message; api.session(p) -> ctx; api.getData(p) -> d
 	local states: { [Player]: State } = {}
+	-- crushers you can target: the ones of the rarities in the window
+	local pickable: { [string]: boolean } = {}
+	for _, name in C.AutoRoll.Rarities do
+		local r = C.rarity(name)
+		for _, id in (if r then r.types else {}) do pickable[id] = true end
+	end
 	local remote = Net.event("AutoRoll")
 	local notice = Net.event("Notice")
 
 	local function mirror(p: Player, s: State)
 		p:SetAttribute("AutoRoll", s.on)
-		local list = {} for _, name in C.AutoRoll.Rarities do if s.picks[name] then table.insert(list, name) end end
+		local list = {}
+		for _, name in C.AutoRoll.Rarities do
+			if s.picks[name] then table.insert(list, name) end
+			local r = C.rarity(name)
+			for _, id in (if r then r.types else {}) do if s.picks[id] then table.insert(list, id) end end
+		end
 		p:SetAttribute("AutoRollPicks", table.concat(list, ","))
 		p:SetAttribute("AutoBuy", s.buy)
 	end
@@ -64,7 +77,7 @@ function M.start(api: any)
 			-- the rarest offer of a ticked rarity on the pedestals
 			local bestSlot, bestRank, best = nil, -1, nil
 			for slot, offer in ctx.offers do
-				if offer and s.picks[offer.rarity] then local rank = rankOf(offer.rarity) if rank > bestRank then bestSlot, bestRank, best = slot, rank, offer end end
+				if offer and (s.picks[offer.rarity] or s.picks[offer.type]) then local rank = rankOf(offer.rarity) if rank > bestRank then bestSlot, bestRank, best = slot, rank, offer end end
 			end
 			if best then
 				local def = C.typeById(best.type)
@@ -86,7 +99,13 @@ function M.start(api: any)
 		if not s then return end
 		if type(picks) == "table" then
 			local set = {}
-			for _, name in picks do if type(name) == "string" and table.find(C.AutoRoll.Rarities, name) then set[name] = true end end
+			local count = 0
+			for _, name in picks do
+				count += 1
+				if count > 100 then break end
+				if type(name) ~= "string" then continue end
+				if table.find(C.AutoRoll.Rarities, name) or (C.typeById(name) and pickable[name]) then set[name] = true end
+			end
 			s.picks = set
 		end
 		s.buy = buy == true and Store.hasPass(p, "AutoBuy")
@@ -95,7 +114,7 @@ function M.start(api: any)
 			if not d or (d.crushers.tutorial or 1) <= #C.TutorialSteps then
 				notice:FireClient(p, { text = "Finish the tutorial first." }) mirror(p, s) return
 			end
-			if next(s.picks) == nil then notice:FireClient(p, { text = "Tick at least one rarity to stop on." }) mirror(p, s) return end
+			if next(s.picks) == nil then notice:FireClient(p, { text = "Tick a rarity or tap a crusher to stop on." }) mirror(p, s) return end
 			s.on = true s.token += 1
 			mirror(p, s)
 			task.spawn(run, p, s, s.token)
