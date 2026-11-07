@@ -428,3 +428,4 @@
 - 2026-11-07: AUTO ROLL button moved from above the hotbar to its left (it covered notices); Limited cards show a 🍀 + WEEKEND tag until Willem's icons exist.
 - 2026-11-07: Auto Roller on Willem's art (backplate, tabs, cards, START/STOP, Auto Buy panel) and single crushers targetable by tapping their card (Willem), next to the rarity tick boxes. No speed upgrade. See Systems/Auto Roll.
 - 2026-11-07: Auto Roller 'more colourful' (Willem): ready-coloured tab and card art per rarity (assets/autoroller, tint.py) because ImageColor3 on the grey art only darkens it; slots ART.Tabs/Cards/BuyOn/BuyOff wait for Willem's upload ids (the Studio upload tool refused GitHub URLs). Cards use the same crusher pictures as the Index (black until discovered).
+- 2026-11-07: Auto Roller brighter: START/STOP always in full colour (START says ROLLING...), big 'N TARGETS SELECTED' line between cyan lines like the reference, bigger card names/odds, gold SOON on Auto Buy.
