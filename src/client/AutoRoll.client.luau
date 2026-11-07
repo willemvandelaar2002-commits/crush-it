@@ -38,7 +38,27 @@ local ART = {
 	Stop = "rbxassetid://122128869328114",
 	AutoBuy = "rbxassetid://112110722481101",
 	Close = "rbxassetid://86950187561147", -- the red close sprite (Rebirth / First Buy cards)
+	-- 7 Nov (Willem: "more colourful, like the reference"): ready-coloured tabs and cards per
+	-- rarity (assets/autoroller, made from the grey art by tint.py; 640x187 tabs, 400x500
+	-- cards). Tinting the grey art in Roblox only darkens it, so until an id is filled in
+	-- the grey art + a tint is the fallback.
+	Tabs = {} :: { [string]: string },
+	Cards = {} :: { [string]: string },
+	BuyOn = "", BuyOff = "",
 }
+-- art + rect + tint for a rarity tab / card / the Auto Buy button
+local TAB_RECT = { Vector2.new(0, 22), Vector2.new(1023, 299) }
+local function vivid(c: Color3): Color3
+	local h, s, v = c:ToHSV()
+	return Color3.fromHSV(h, math.min(1, s * 1.35), 1)
+end
+local function tabArt(b: ImageButton, id: string?, tint: Color3)
+	if id and id ~= "" then
+		b.Image = id b.ImageRectOffset = Vector2.zero b.ImageRectSize = Vector2.zero b.ImageColor3 = Color3.new(1, 1, 1)
+	else
+		b.Image = ART.Tab b.ImageRectOffset = TAB_RECT[1] b.ImageRectSize = TAB_RECT[2] b.ImageColor3 = vivid(tint)
+	end
+end
 
 local function make(class: string, props: { [string]: any }, parent: Instance?): any
 	local n = Instance.new(class)
@@ -203,9 +223,16 @@ local function showGrid()
 		local def = C.typeById(id)
 		local known = seen[id] == true
 		local frame = make("Frame", { Name = id, LayoutOrder = i, BackgroundTransparency = 1, ZIndex = 7 }, grid)
-		local card = artButton("Card", ART.Card, Vector2.new(9, 15), Vector2.new(801, 1000), UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), frame, 8)
-		card.ScaleType = Enum.ScaleType.Slice card.SliceCenter = Rect.new(90, 95, 720, 925) card.SliceScale = 0.24
-		card.ImageColor3 = r.color:Lerp(WHITE, 0.15)
+		local coloured = ART.Cards[viewing]
+		local card
+		if coloured and coloured ~= "" then
+			card = artButton("Card", coloured, Vector2.zero, Vector2.zero, UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), frame, 8)
+			card.ScaleType = Enum.ScaleType.Slice card.SliceCenter = Rect.new(45, 45, 355, 455) card.SliceScale = 0.5
+		else
+			card = artButton("Card", ART.Card, Vector2.new(9, 15), Vector2.new(801, 1000), UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), frame, 8)
+			card.ScaleType = Enum.ScaleType.Slice card.SliceCenter = Rect.new(90, 95, 720, 925) card.SliceScale = 0.24
+			card.ImageColor3 = vivid(r.color)
+		end
 		local icon = CrusherIcons.image(id)
 		if icon then
 			make("ImageLabel", { Image = icon, AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.fromScale(0.5, 0.06), Size = UDim2.fromScale(0.62, 0.56),
@@ -250,8 +277,8 @@ end
 for i, name in C.AutoRoll.Rarities do
 	local r = C.rarity(name)
 	local color = if r then r.color else WHITE
-	local tab = artButton(name, ART.Tab, Vector2.new(0, 22), Vector2.new(1023, 299), UDim2.fromScale(0.048, TAB_Y + (i - 1) * TAB_H), UDim2.fromScale(0.166, TAB_H * 0.94), panel, 7)
-	tab.ImageColor3 = color:Lerp(WHITE, 0.12)
+	local tab = artButton(name, ART.Tab, TAB_RECT[1], TAB_RECT[2], UDim2.fromScale(0.048, TAB_Y + (i - 1) * TAB_H), UDim2.fromScale(0.166, TAB_H * 0.94), panel, 7)
+	tabArt(tab, ART.Tabs[name], color)
 	words(tab, string.upper(name), UDim2.fromScale(0.3, 0.16), UDim2.fromScale(0.64, 0.64), 26, 3, 9).TextXAlignment = Enum.TextXAlignment.Left
 	-- (the box sits inside the tab art; it's its own button so viewing and ticking stay separate)
 	local tick = make("TextButton", { Name = "Tick", Text = "", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.fromScale(0.07, 0.5), Size = UDim2.fromScale(0.19, 0.62),
@@ -304,13 +331,13 @@ local function refresh()
 	if Store.hasPass(me, "AutoBuy") then
 		boxTitle.Text = "🤖 AUTO BUY"
 		buyText.Text = if buying() then "ON" else "OFF"
-		buy.ImageColor3 = if buying() then GREEN else GREY
+		tabArt(buy, if buying() then ART.BuyOn else ART.BuyOff, if buying() then GREEN else GREY)
 	elseif pass and pass.gamePassId ~= 0 then
 		buyText.Text = "R$ " .. tostring(livePrice or pass.price)
-		buy.ImageColor3 = GREEN
+		tabArt(buy, ART.BuyOn, GREEN)
 	else
 		buyText.Text = "SOON"
-		buy.ImageColor3 = GREY
+		tabArt(buy, ART.BuyOff, GREY)
 	end
 	refreshTabs()
 	refreshCards()
