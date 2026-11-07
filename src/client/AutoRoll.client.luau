@@ -42,28 +42,28 @@ local ART = {
 	-- rarity (assets/autoroller, made from the grey art by tint.py; 640x187 tabs, 400x500
 	-- cards). Tinting the grey art in Roblox only darkens it, so until an id is filled in
 	-- the grey art + a tint is the fallback.
-	-- (7 Nov: Willem uploaded them)
+	-- (7 Nov: Willem uploaded them; these are the IMAGE ids behind his decal uploads)
 	Tabs = {
-		Common = "rbxassetid://84692536390995",
-		Uncommon = "rbxassetid://108184639436285",
-		Rare = "rbxassetid://96254134638578",
-		Epic = "rbxassetid://82336962767623",
-		Legendary = "rbxassetid://115996751372375",
-		Limited = "rbxassetid://81756257397649",
-		Secret = "rbxassetid://121662311267520",
-		Divine = "rbxassetid://98527372045261",
+		Common = "rbxassetid://112292625843136",
+		Uncommon = "rbxassetid://128792621316060",
+		Rare = "rbxassetid://92204123846578",
+		Epic = "rbxassetid://73045159062832",
+		Legendary = "rbxassetid://70648593064896",
+		Limited = "rbxassetid://88061051727556",
+		Secret = "rbxassetid://129562125725785",
+		Divine = "rbxassetid://88929238060612",
 	} :: { [string]: string },
 	Cards = {
-		Common = "rbxassetid://114431128162298",
-		Uncommon = "rbxassetid://128385092581638",
-		Rare = "rbxassetid://119690543633281",
-		Epic = "rbxassetid://137694601356857",
-		Legendary = "rbxassetid://136715998222028",
-		Limited = "rbxassetid://121894601287491",
-		Secret = "rbxassetid://139637565880520",
-		Divine = "rbxassetid://138553644073767",
+		Common = "rbxassetid://119036011286012",
+		Uncommon = "rbxassetid://130893599952030",
+		Rare = "rbxassetid://100137479733444",
+		Epic = "rbxassetid://136544887964168",
+		Legendary = "rbxassetid://123457031697636",
+		Limited = "rbxassetid://127308303068472",
+		Secret = "rbxassetid://108861226241049",
+		Divine = "rbxassetid://122211097534664",
 	} :: { [string]: string },
-	BuyOn = "rbxassetid://78196558078809", BuyOff = "rbxassetid://120920550853882",
+	BuyOn = "rbxassetid://120604814246237", BuyOff = "rbxassetid://109824145808331",
 }
 -- art + rect + tint for a rarity tab / card / the Auto Buy button
 local TAB_RECT = { Vector2.new(0, 22), Vector2.new(1023, 299) }
