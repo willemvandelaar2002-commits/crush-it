@@ -27,7 +27,7 @@ local Style = require(RS.Shared.Kit.Style)
 
 local me = Players.LocalPlayer
 local WHITE = Color3.new(1, 1, 1)
-local LADDER = { "Rare", "Epic", "Legendary", "Secret", "Divine" }
+local LADDER = { "Rare", "Epic", "Legendary", "Exotic", "Secret", "Divine" }
 
 local function now(): number return workspace:GetServerTimeNow() end
 local function colorOf(name: string): Color3
@@ -173,7 +173,7 @@ local function cinematic(msg: any)
 	-- 2. The odds count up, locking digits left to right, climbing the rarity colours
 	local number = commas(tonumber(msg.odds) or 0)
 	local final = "1 in " .. number
-	local ladder = if limited then { "Rare", "Epic", "Legendary", "Limited" } else LADDER
+	local ladder = if limited then { "Rare", "Epic", "Legendary", "Exotic", "Limited" } else LADDER
 	local top = table.find(ladder, rarity) or #ladder
 	local countFrom, countTo = 0.7, math.max(1.4, impactIn - (if divine then 2.6 elseif limited then 2.2 else 0.9))
 	local tier = 0

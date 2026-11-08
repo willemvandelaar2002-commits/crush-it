@@ -153,4 +153,7 @@ end
 for id, entry in require(script.Parent.LimitedCrusherAssets) do
 	Assets[id] = entry
 end
+for id, entry in require(script.Parent.ExoticCrusherAssets) do
+	Assets[id] = entry
+end
 return Assets

@@ -38,8 +38,12 @@ I.Overrides={
 	NightRipper="rbxassetid://118145357442002",HaloHammer="rbxassetid://110923909916533",
 	EclipseEngine="rbxassetid://93138181415241",CelestialCrusher="rbxassetid://106945409122885",
 	AuroraPress="rbxassetid://86411239858094",ArchangelAnvil="rbxassetid://71903745878843",
+	-- 8 Nov: Willem's Exotic icons (uploaded as Images)
+	CamCruncher="rbxassetid://115627089455714",DrawbridgeCrusher="rbxassetid://95137788222098",
+	MaglevMauler="rbxassetid://94338086206324",OrigamiClamp="rbxassetid://137299121552872",
+	ScrewStamper="rbxassetid://128874084813839",WreckingWinch="rbxassetid://125188589781218",
 } :: {[string]: string}
-I.Ready={Titan=true,Laser=true,Plasma=true,Gravity=true,Quake=true,Cyclone=true,Mecha=true,
+I.Ready={MaglevMauler=true,OrigamiClamp=true,WreckingWinch=true,CamCruncher=true,ScrewStamper=true,DrawbridgeCrusher=true,Titan=true,Laser=true,Plasma=true,Gravity=true,Quake=true,Cyclone=true,Mecha=true,
 	Quantum=true,Starforge=true,DragonJaw=true,BlackHole=true,Clockwork=true,FactoryHeart=true,
 	Mega=true,Thunder=true,Frost=true,Furnace=true,ScrapShark=true,SteamHammer=true,JunkyardJaw=true,
 	Cobalt=true,Gearbox=true,Flywheel=true,Pneumatic=true,DoubleStamp=true,Boiler=true,Conveyor=true,

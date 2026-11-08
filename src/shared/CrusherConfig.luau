@@ -40,7 +40,7 @@ local C = {
 	CashPacks = { CashSmall = 60, CashMedium = 300, CashLarge = 1200 },
 	-- Complete one physical six-bay row with a single rarity. Scrap only;
 	-- applies to that row, never stacks across rows or changes roll odds.
-	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40, Limited=.48, Secret=.48, Divine=.54, Mythic=.60 }, -- (6 Nov: Limited like Secret)
+	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40, Exotic=.44, Limited=.48, Secret=.48, Divine=.54, Mythic=.60 }, -- (6 Nov: Limited like Secret)
 }
 -- Stadium banks: ground bays open to the plaza, the upper row steps back on
 -- top of them (its walkway is the ground bays' roof). Local plot coordinates,
@@ -237,11 +237,15 @@ C.Types = {
 	{ id = "Toyzilla", name = "Toyzilla", template="Toyzilla", tier=11, input=3, damage=40, hp=120, value=220, cycle=1.8 },
 }
 C.Rarities = {
-	{ name = "Common", price = 30, weight = 69.9912, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
+	{ name = "Common", price = 30, weight = 69.9512, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
 	{ name = "Uncommon", price = 150, weight = 22, rank = 1, types = { "Cobalt", "RocketPress" }, mult = 1.15, color = Color3.fromRGB(99, 210, 132) },
 	{ name = "Rare", price = 900, weight = 6, rank = 2, types = { "Mega", "Magnetron" }, mult = 1.35, color = Color3.fromRGB(75, 148, 255) },
 	{ name = "Epic", price = 6000, weight = 1.8, rank = 3, types = { "Titan", "TwinTitan" }, mult = 1.65, color = Color3.fromRGB(187, 105, 246) },
 	{ name = "Legendary", price = 60000, weight = 0.2, rank = 4, types = { "Quantum", "GoldenKing", "Toyzilla" }, mult = 2, color = Color3.fromRGB(255, 200, 55) },
+	-- 8 Nov: six permanent Exotic types. .04% tier weight = 1 in 2,500 for any
+	-- Exotic, 1 in 15,000 for each, before luck. Move .04 from Common so all
+	-- existing non-Common base odds remain unchanged. Keep existing ranks intact.
+	{ name = "Exotic", price = 200000, weight = 0.04, rank = 4.25, types = {}, mult = 2.1, color = Color3.fromRGB(255, 112, 55) },
 	-- 6 Nov (Willem's Lucky Weekend pack): LIMITED. Only rollable while the LUCKY WEEKEND
 	-- is on (Shared/WeekendConfig; the roll passes `limited`): then eventWeight gives
 	-- about 1 in 5,000 rolls for one of its three crushers (1 in 15,000 per crusher),
@@ -353,6 +357,30 @@ do
 		for _, rarity in C.Rarities do if rarity.name == "Limited" then table.insert(rarity.types, entry.id) break end end
 	end
 end
+-- 8 Nov: Exotic models are permanent regular rolls, not weekend or crate rewards.
+-- Append types to preserve every existing catalogue index used by legacy saves.
+C.ExoticTypes = {
+	{ id = "MaglevMauler", name = "Maglev Mauler", template = "MaglevMauler" },
+	{ id = "OrigamiClamp", name = "Origami Clamp", template = "OrigamiClamp" },
+	{ id = "WreckingWinch", name = "Wrecking Winch", template = "WreckingWinch" },
+	{ id = "CamCruncher", name = "Cam Cruncher", template = "CamCruncher" },
+	{ id = "ScrewStamper", name = "Screw Stamper", template = "ScrewStamper" },
+	{ id = "DrawbridgeCrusher", name = "Drawbridge Crusher", template = "DrawbridgeCrusher" },
+}
+do
+ local band = C.Types[1]
+ for _, existing in C.Types do if existing.id == "Quantum" then band = existing break end end
+ local rarity
+ for _, entry in C.Rarities do if entry.name == "Exotic" then rarity = entry break end end
+ assert(rarity, "Missing Exotic rarity")
+ for _, entry in C.ExoticTypes do
+  local def = table.clone(band)
+  def.id = entry.id def.name = entry.name def.template = entry.template
+  def.design = nil def.value = 280
+  table.insert(C.Types, def)
+  table.insert(rarity.types, entry.id)
+ end
+end
 -- What a crusher crushes, by its rarity (29 Oct): the toy objects in
 -- Config.Objects (meshes in ReplicatedStorage.ObjectMeshes). Rarer crushers get
 -- bigger, cooler things; a tier with two picks one at random for each input.
@@ -363,6 +391,7 @@ C.RarityObjects = {
 	Rare = { "TV", "Fridge" },
 	Epic = { "Car", "Truck" },
 	Legendary = { "Tank" },
+	Exotic = { "Tank", "Statue" },
 	Secret = { "House", "Statue" },
 	Limited = { "House", "Statue" },
 	Divine = { "Plane", "Ship" },
@@ -422,8 +451,8 @@ C.RobuxButtonsGoal = 5
 -- in your hand: the ram slams down every Stroke seconds (press crushers), other crushers
 -- thump by Pump studs; sparks on each hit. Everyone sees it.
 C.Hold = { Size = 3.6, Forward = 2.7, Up = 0.5, Stroke = 1.1, Pump = 0.22 }
-C.AutoRoll = { Default = { "Legendary", "Limited", "Secret", "Divine" },
-	Rarities = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Limited", "Secret", "Divine" } }
+C.AutoRoll = { Default = { "Legendary", "Exotic", "Limited", "Secret", "Divine" },
+	Rarities = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Exotic", "Limited", "Secret", "Divine" } }
 -- 7 Nov (Willem: "should be special luck animation"): Limited (rank 4.5, under MinRank)
 -- gets its own cinematic too: three giant slot reels stop on clovers (client/BigRoll).
 C.BigRoll = { MinRank = 5, PillarSeconds = 30,
@@ -434,6 +463,7 @@ C.BigRoll = { MinRank = 5, PillarSeconds = 30,
 -- Divine adds two soft light shafts. Colours match the models (Secret neon purple/pink,
 -- Divine gold/cyan). Phones and low graphics get half the sparkles.
 C.SpecialBay = {
+	Exotic = { main = Color3.fromRGB(255, 112, 55), accent = Color3.fromRGB(109, 232, 176), sparkles = 5, shafts = false },
 	Secret = { main = Color3.fromRGB(176, 70, 255), accent = Color3.fromRGB(255, 70, 200), sparkles = 7, shafts = false },
 	Divine = { main = Color3.fromRGB(255, 205, 80), accent = Color3.fromRGB(120, 235, 255), sparkles = 9, shafts = true },
 	-- 6 Nov: Limited (Lucky Weekend): clover green and gold
@@ -442,6 +472,7 @@ C.SpecialBay = {
 	-- the bay plaque (Willem: "this stuff that changes"): a colour band sliding across,
 	-- a shine sweeping over it and a glowing rim; seconds per slide / per shine
 	Plaque = {
+		Exotic = { Color3.fromRGB(160, 48, 28), Color3.fromRGB(255, 112, 55), Color3.fromRGB(255, 175, 100), Color3.fromRGB(65, 195, 152), Color3.fromRGB(160, 48, 28) },
 		Secret = { Color3.fromRGB(58, 18, 112), Color3.fromRGB(150, 40, 210), Color3.fromRGB(235, 60, 190), Color3.fromRGB(40, 170, 230), Color3.fromRGB(58, 18, 112) },
 		Divine = { Color3.fromRGB(190, 110, 20), Color3.fromRGB(235, 165, 40), Color3.fromRGB(250, 205, 90), Color3.fromRGB(60, 150, 230), Color3.fromRGB(190, 110, 20) },
 		Limited = { Color3.fromRGB(20, 110, 50), Color3.fromRGB(40, 170, 70), Color3.fromRGB(200, 160, 30), Color3.fromRGB(40, 170, 70), Color3.fromRGB(20, 110, 50) },

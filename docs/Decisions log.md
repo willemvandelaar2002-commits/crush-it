@@ -444,3 +444,4 @@
 - 2026-11-08: no separate Auto Roll console: AUTO ROLL is a small panel on the roll machine's front next to ROLL (the console blocked the stairs, then the trash can).
 - 2026-11-08: AUTO is a smaller blue button inside the ROLL panel (two panels looked bad); Studio DEV panel + /plot 1-5 (Willem).
 - 2026-11-08: Mystery Crate sign sized in studs (6 x 1.9) and floating above the crate, max 70 studs away (Willem: too big, inside the crate).
+- 2026-11-08: Added six permanent Exotic crushers between Legendary and Secret, coral/mint art and motion rigs, 1-in-15,000 per-type base odds, 44% row bonus and 5.5 fleet points. Existing higher-tier odds/ranks remain; models/icons require Studio import and Play verification. See Systems/Exotic crushers.
