@@ -9,6 +9,7 @@ local Http=game:GetService("HttpService")
 local Config=require(RS.Shared.Config)
 local C=Config.Crushers
 local Rules=require(RS.Shared.CrusherRules)
+local Gems=require(RS.Shared.GemConfig)
 local Rows=require(RS.Shared.CrusherRows)
 local RowVisuals=require(script.Parent.CrusherRowVisuals)
 local Progression=require(RS.Shared.FactoryProgression)
@@ -65,9 +66,11 @@ local function perks(p)
 	return {speed=Frenzy.speed(p),autoCrush=Store.hasPass(p,"AutoCrush"),lucky=(if Store.hasPass(p,"Lucky") then 2 else 1)*(if Boost.active(p,"Luck",now) then 2 else 1)
 			*Weekend.luck(os.time()) -- 4 Nov: LUCKY WEEKEND (Shared/WeekendConfig), everyone, Sat-Sun UTC
 			*ServerLuck.mult() -- 4 Nov: someone bought Server Luck (x2 for the whole server)
-			*(function() local d=Data.get(p) return C.rebirthLuck(d and d.crushers.rebirths or 0) end)(),
+			*(function() local d=Data.get(p) return C.rebirthLuck(d and d.crushers.rebirths or 0) end)()
+			*(function() local d=Data.get(p) return if d then Gems.luckMult(d.crushers) else 1 end)(), -- 8 Nov: Gem Luck
 		mult=Store.cashPassMult(p)*(if Store.hasPass(p,"VIP") then Store.Vip.Mult else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now))
-			*(function() local d=Data.get(p) return C.rebirthMult(d and d.crushers.rebirths or 0) end)(), -- 2 Nov evening: rebirth bonus
+			*(function() local d=Data.get(p) return C.rebirthMult(d and d.crushers.rebirths or 0) end)() -- 2 Nov evening: rebirth bonus
+			*(function() local d=Data.get(p) return if d then Gems.cashMult(d.crushers) else 1 end)(), -- 8 Nov: Gem Cash
 		indexLuck=(function() local d=Data.get(p) return if d then IndexRewards.luck(d.crushers) else 0 end)(),
 		limited=C.limitedOn()} -- 6 Nov: Limited (Lucky Weekend) crushers roll while the weekend is on
 end
@@ -285,6 +288,7 @@ local function send(p,message,result)
 	p:SetAttribute("Cash",d.cash) p:SetAttribute("Scrap",d.scrap) p:SetAttribute("AvailableScrap",s.available)
 	p:SetAttribute("Plot",ctx.plot.index) p:SetAttribute("Crushed",d.crushed) p:SetAttribute("Tier",d.tier)
 	p:SetAttribute("CashRate",cps(p,d)) p:SetAttribute("AutoOn",true) p:SetAttribute("GoldenRush",d.goldenRush) p:SetAttribute("Rebirths",s.rebirths or 0)
+	p:SetAttribute("Gems",math.floor(s.gems or 0)) p:SetAttribute("GemRate",Rules.gemRate(d)) -- 8 Nov: GEMS
 	local goalHave,goalNeed=nil,nil
 	if s.goal and C.Goals2[s.goal] then goalHave,goalNeed=goalCount(d,C.Goals2[s.goal]) end
 	local items={}
@@ -297,7 +301,8 @@ local function send(p,message,result)
 		equipBetter=(function() -- 3 Nov: the red "!" on Equip Best, from the real rule (rechecked every 3 s)
 			if not ctx.equipCheckAt or os.clock()-ctx.equipCheckAt>3 or message then ctx.equipCheckAt=os.clock() ctx.equipBetter=Rules.equipBestHelps(d,perks(p)) end
 			return ctx.equipBetter end)(),
-		rollSeconds=C.rollSeconds(),rebirths=s.rebirths or 0,rebirthCost=C.rebirthCost(s.rebirths or 0),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
+		gems=math.floor(s.gems or 0),gemUps=s.gemUps,gemRate=Rules.gemRate(d),
+		rollSeconds=math.max(1,C.rollSeconds()-Gems.rollCut(s)),rebirths=s.rebirths or 0,rebirthCost=C.rebirthCost(s.rebirths or 0),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered,coating=ctx.coatingQuote,
 		goals=Goals.view(ctx,d,workspace:GetServerTimeNow()),
 		index={seen=(function() local list={} for id in s.seen do table.insert(list,id) end return list end)(),claimed=s.indexClaimed,luck=IndexRewards.luck(s)}})
@@ -804,8 +809,16 @@ local function action(p,name,args)
 		-- everyone sees it; the factory goes back to the ground floor (bay models rebuilt)
 		Turbo.resetPeak(p)
 		Analytics.custom(p,"CrusherRebirth",d.crushers.rebirths)
+		Analytics.custom(p,"GemsEarned",Gems.forRebirth(d.crushers.rebirths),"Rebirth") -- 8 Nov
 		Net.event("RarePull"):FireAllClients({text=p.DisplayName.." REBIRTHED! (x"..C.rebirthMult(d.crushers.rebirths).." income, x"..C.rebirthLuck(d.crushers.rebirths).." luck)",userId=p.UserId,color=Color3.fromRGB(255,170,60)})
 		Net.event("RebirthDone"):FireClient(p,{rebirths=d.crushers.rebirths,mult=C.rebirthMult(d.crushers.rebirths),luck=C.rebirthLuck(d.crushers.rebirths)})
+	end
+	-- 8 Nov: Gem Shop analytics; a Gem Crate Exotic or better is announced to the server
+	if ok and name=="GemUpgrade" and type(result)=="table" then Analytics.custom(p,"GemUpgrade",result.level,result.id) end
+	if ok and name=="GemCrate" and type(result)=="table" then
+		Analytics.custom(p,"GemCrate",1,result.rarity)
+		local r=C.rarity(result.rarity)
+		if r and r.rank>=4.25 then Net.event("RarePull"):FireAllClients({text=p.DisplayName.." opened a "..string.upper(result.rarity).." "..C.typeById(result.type).name.." from the Gem Crate!",userId=p.UserId,color=r.color}) end
 	end
 	if ok and name=="UpgradePlot" and Progression.level(d)>levelBefore then
 		Net.event("PlotUpgraded"):FireClient(p,upgradeSummary(levelBefore,Progression.level(d)))
@@ -951,7 +964,7 @@ function G.start()
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
 		elseif name=="TrashMany" then target=ctx.plot.stations.Trash and ctx.plot.stations.Trash.part reach=40
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
-		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" and name~="Rebuild" and name~="FillRow" and name~="SkipTutorial" then
+		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" and name~="Rebuild" and name~="FillRow" and name~="SkipTutorial" and name~="GemUpgrade" and name~="GemCrate" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end
@@ -994,6 +1007,11 @@ function G.start()
 		elapsed+=dt if elapsed<C.Tick then return end elapsed=0 local now=os.clock()
 		for p,ctx in sessions do local d=Data.get(p) if d then
 			for _,event in Rules.step(d,ctx,now,perks(p)) do visualEvent(p,event) end
+			local gemRate=Rules.gemRate(d) -- 8 Nov: Gems trickle from Exotic+ crushers in a bay
+			if gemRate>0 then
+				local before=math.floor(d.crushers.gems) d.crushers.gems+=gemRate*C.Tick/60
+				if math.floor(d.crushers.gems)>before then p:SetAttribute("Gems",math.floor(d.crushers.gems)) end
+			end
 			if now-lastAuto>=C.AutoCollectInterval and Store.hasPass(p,"AutoCollect") then
 				if d.crushers.available>0 then Rules.act(d,ctx,"Collect",{},now,random,guid,perks(p)) end
 				if d.scrap>0 then local before=d.cash Rules.act(d,ctx,"Sell",{},now,random,guid,perks(p)) Analytics.cash(p,"AutoSell","Gameplay",before,d.cash) end

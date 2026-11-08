@@ -2,6 +2,7 @@
 -- Pure, non-yielding profile transactions; shared by server, previews and tests.
 local C = require(script.Parent.CrusherConfig)
 local Rows = require(script.Parent.CrusherRows)
+local Gems = require(script.Parent.GemConfig)
 local Progression = require(script.Parent.FactoryProgression)
 local R = {}
 local function copy(v)
@@ -163,6 +164,10 @@ function R.migrate(d, guid)
 	s.rolls=integer(s.rolls,0,1e9) -- rolls made (the first one is always cheap)
 	s.pity=integer(s.pity,0,1e6) -- 3 Nov: rolls since the last Legendary+ was bought (C.Pity)
 	s.rebirths=integer(s.rebirths,0,1000) -- 2 Nov evening: crusher-era rebirths (not the legacy d.rebirths)
+	-- 8 Nov: GEMS (Shared/GemConfig). Fractional while the trickle fills; kept through rebirths.
+	s.gems=number(s.gems,0,1e9)
+	local ups=if type(s.gemUps)=="table" then s.gemUps else {}
+	s.gemUps={} for _,u in Gems.Upgrades do s.gemUps[u.id]=math.clamp(integer(ups[u.id],0,u.max),0,u.max) end
 	local owned,ids={},{}
 	-- crate crushers have one fixed tier: copies saved under an older tier follow it
 	local function fixTier(v) local def=C.typeById(v.type) if def and def.crate and def.rarity and C.rarity(def.rarity) then v.rarity=def.rarity end end
@@ -271,7 +276,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 			offers[i]={type=rarity.types[math.min(#rarity.types,math.floor(random()*#rarity.types)+1)],rarity=rarity.name,modifier=mod.name,level=1}
 			if first then offers[i].price=math.max(0,math.min(C.FirstRoll.Price,math.floor(d.cash))) end
 		end
-		session.offers=offers session.nextRoll=now+C.rollSeconds() s.rolls+=1
+		session.offers=offers session.nextRoll=now+math.max(1,C.rollSeconds()-Gems.rollCut(s)) s.rolls+=1 -- 8 Nov: Quick Rolls (Gem upgrade)
 		if not first then s.pity=math.min((s.pity or 0)+1,C.Pity.Rolls) end
 		return true,"Rolling...",offers
 	elseif action=="Buy" then
@@ -391,7 +396,31 @@ local function act(d,session,action,args,now,random,guid,perks)
 		for _,item in s.owned do item.level=1 end
 		if s.fusion and s.fusion.item then s.fusion.item.level=1 end
 		s.rebirths=n+1
-		return true,"REBIRTH "..s.rebirths.."! Income x"..C.rebirthMult(s.rebirths)..", luck x"..C.rebirthLuck(s.rebirths).." forever.",s.rebirths
+		local gems=Gems.forRebirth(s.rebirths) s.gems+=gems -- 8 Nov: every rebirth pays Gems
+		return true,"REBIRTH "..s.rebirths.."! Income x"..C.rebirthMult(s.rebirths)..", luck x"..C.rebirthLuck(s.rebirths).." forever. +"..gems.." Gems!",s.rebirths
+	elseif action=="GemUpgrade" then
+		-- 8 Nov: permanent Gem upgrades (GemConfig.Upgrades), kept through rebirths
+		if (s.rebirths or 0)<Gems.UnlockRebirths then return false,"The Gem Shop opens after your first rebirth." end
+		local u=type(args.id)=="string" and Gems.upgrade(args.id) if not u then return false,"Unknown upgrade." end
+		local lv=s.gemUps[u.id] or 0
+		local cost=Gems.cost(u.id,lv) if not cost then return false,u.title.." is at its maximum level." end
+		if s.gems<cost then return false,"Need "..cost.." Gems." end
+		s.gems-=cost s.gemUps[u.id]=lv+1
+		return true,u.title.." level "..(lv+1).."!",{id=u.id,level=lv+1,cost=cost}
+	elseif action=="GemCrate" then
+		-- 8 Nov: the Gem Crate: one crusher, rarity by GemConfig.Crate.Odds (shown in full in the shop)
+		if (s.rebirths or 0)<Gems.UnlockRebirths then return false,"The Gem Shop opens after your first rebirth." end
+		local cost=Gems.Crate.Cost
+		if s.gems<cost then return false,"Need "..cost.." Gems." end
+		if #s.owned>=C.MaxInventory then return false,"Inventory full. Recycle duplicates in the Index (RECYCLE DUPES). No Gems were spent." end
+		local roll=random() local pick=Gems.Crate.Odds[#Gems.Crate.Odds].rarity
+		local acc=0 for _,o in Gems.Crate.Odds do acc+=o.chance if roll<acc then pick=o.rarity break end end
+		local rarity=C.rarity(pick)
+		if not rarity or #rarity.types==0 then return false,"The Gem Crate is being restocked. Try again later." end
+		s.gems-=cost
+		local item={id=guid(),type=rarity.types[math.min(#rarity.types,math.floor(random()*#rarity.types)+1)],rarity=rarity.name,modifier=C.Modifiers[1].name,level=1}
+		table.insert(s.owned,item)
+		return true,"Gem Crate: "..C.typeById(item.type).name.."!",item
 	elseif action=="Recycle" then
 		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
 		for _,id in s.equipped do if id==item.id then return false,"Unequip this crusher before recycling it." end end
@@ -615,6 +644,15 @@ function R.step(d,session,now,perks)
 		end
 	end
 	return events
+end
+-- 8 Nov: Gems per minute from the crushers in a bay (GemConfig.Trickle)
+function R.gemRate(d)
+	local s=d.crushers local rate=0
+	for i=1,math.min(s.bays,C.bayCapacity(s.plotLevel)) do
+		local id=s.equipped[tostring(i)] local item=id and R.find(d,id)
+		if item then rate+=Gems.Trickle[item.rarity] or 0 end
+	end
+	return rate
 end
 R.copy=copy
 return R
