@@ -442,3 +442,4 @@
 - 2026-11-08: Mystery Crate uses Willem's model (ServerStorage.MysteryCrateModel, lid opens on its hinge).
 - 2026-11-08: Auto Roll console moved to the right of the roll machine: on bigger plots (stairs) it stood inside the staircase (Willem's friend). Checked at plot level 5 with all pedestals: console and Mystery Crate clear on all 6 plots.
 - 2026-11-08: no separate Auto Roll console: AUTO ROLL is a small panel on the roll machine's front next to ROLL (the console blocked the stairs, then the trash can).
+- 2026-11-08: AUTO is a smaller blue button inside the ROLL panel (two panels looked bad); Studio DEV panel + /plot 1-5 (Willem).

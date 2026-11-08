@@ -19,10 +19,10 @@
   **Auto Roller** window: title bar (dice, X), rarity tabs with tick boxes on the left, the viewed rarity's crushers
   with odds (??? if not discovered) in the middle, START / STOP, and the Auto Buy box (price button, then ON/OFF;
   SOON while the pass has id 0).
-- On the roll machine (8 Nov, Willem: the separate console stood in the stairs on bigger plots, then in front of
-  the trash can): a small green AUTO ROLL panel on the roll machine's own front, right of the (narrower) ROLL panel
-  (Workshop roll station). Its AUTO button (Action "AutoRoll", CrusherHud) fires AutoRollHud.Open. The HUD button
-  only shows while Auto Roll runs ("AUTO: ON").
+- On the roll machine (8 Nov, Willem: a separate console stood in the stairs on bigger plots, then in front of
+  the trash can; two panels side by side looked bad): one ROLL A CRUSHER panel, its ROLL button a bit narrower
+  with a smaller blue AUTO button on its right (Action "AutoRoll", CrusherHud -> AutoRollHud.Open). The HUD
+  button only shows while Auto Roll runs ("AUTO: ON").
 - Art (7 Nov, Willem's CrushIt-AutoRoller-Component-Art): backplate 88560195984273 (960x600 window, positions are
   fractions of it), rarity tab 89940482051531 and crusher card 109318241376424 (grey, tinted per rarity; the card is
   9-sliced), START 137227985984200, STOP 122128869328114, Auto Buy panel 112110722481101 (its button is the tab art,
