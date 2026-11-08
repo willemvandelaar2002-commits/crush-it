@@ -4,6 +4,8 @@
 -- client draws its countdown. Its prompt opens it once ReadyAt has passed: a free crusher
 -- (CrateConfig.Rewards) + CashMinutes of earnings, then the next one starts.
 -- Remote "Crate" server -> client: { arrived = true, readyAt } | { opened = { name, rarity, cash }, readyAt }
+-- 8 Nov: model attributes for the client animation (everyone sees it): DropAt (server time
+-- the crate starts falling), OpenedAt + OpenRarity (it bursts open).
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
 local Tags = game:GetService("CollectionService")
@@ -105,6 +107,10 @@ function M.start(api: any)
 		local cash = C.money(math.max(1, api.cashPerSecond(p)) * K.CashMinutes * 60)
 		api.addCash(p, cash, "MysteryCrate", "TimedReward")
 		c.readyAt = now + K.Hours * 3600
+		local t = workspace:GetServerTimeNow()
+		m:SetAttribute("OpenRarity", rarity)
+		m:SetAttribute("OpenedAt", t)
+		m:SetAttribute("DropAt", t + K.NextDropAfter) -- the next crate falls in
 		d.stats = d.stats or {}
 		d.stats.crates = (d.stats.crates or 0) + 1
 		api.save(p)
@@ -119,7 +125,9 @@ function M.start(api: any)
 		if not d or not d.crushers then return end
 		local c = crate(d)
 		-- the first crate lands once the tutorial is done
+		local fresh = false
 		if not c.readyAt then
+			fresh = true
 			if (d.crushers.tutorial or 0) <= #C.TutorialSteps then return end
 			c.readyAt = os.time() + K.FirstHours * 3600
 			remote:FireClient(p, { arrived = true, readyAt = c.readyAt })
@@ -129,6 +137,7 @@ function M.start(api: any)
 			if plot then
 				local m = build(plot, p)
 				models[p] = m
+				if fresh then m:SetAttribute("DropAt", workspace:GetServerTimeNow() + 1.5) end
 				local prompt = (m.PrimaryPart :: BasePart):FindFirstChild("OpenPrompt") :: ProximityPrompt
 				prompt.Triggered:Connect(function(who: Player) open(who, m) end)
 			end
