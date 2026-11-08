@@ -11,7 +11,6 @@ local Style = require(RS.Shared.Kit.Style)
 local Finish = require(RS.Shared.CrusherFinish)
 local T = {}
 
-local HOLD_SIZE = 2.2 -- studs, the mini model in your hand
 
 local function toolName(item: any): string
 	return C.typeById(item.type).name .. " [Lvl " .. item.level .. "]"
@@ -29,7 +28,7 @@ local function holdModel(tool: Tool, item: any)
 	if source and source:IsA("Model") then
 		for _, child in source:Clone():GetChildren() do child.Parent = held end
 		local _, size = held:GetBoundingBox()
-		held:ScaleTo(HOLD_SIZE / math.max(size.X, size.Y, size.Z, 0.1))
+		held:ScaleTo(C.Hold.Size / math.max(size.X, size.Y, size.Z, 0.1))
 		-- after scaling, so the coating's sparkles fit the small copy
 		Finish.apply(held,item.modifier)
 		if item.fused then Finish.fused(held) end
@@ -40,14 +39,38 @@ local function holdModel(tool: Tool, item: any)
 		if not root then held:Destroy() return end
 		local facing = root.CFrame.Rotation * CFrame.Angles(0, math.pi, 0) -- preview fronts face +Z
 		local centre = held:GetBoundingBox().Position
-		local at = (root.CFrame * CFrame.new(0, 0.3, -1.9)).Position
+		local at = (root.CFrame * CFrame.new(0, C.Hold.Up, -C.Hold.Forward)).Position
 		held:PivotTo(CFrame.new(at) * facing * CFrame.new(-centre) * held:GetPivot())
 		holder = root
 	end
-	for _, p in held:GetDescendants() do
-		if p:IsA("BasePart") then
-			p.Anchored = false p.CanCollide = false p.CanTouch = false p.CanQuery = false p.Massless = true
-			local weld = Instance.new("WeldConstraint") weld.Part0 = holder weld.Part1 = p weld.Parent = p
+	-- 8 Nov: so it can WORK in your hand (client/HeldCrusher animates these welds on every
+	-- client): one main part welded to the body with a Weld "HoldWeld", the ram (press
+	-- crushers) on its own Weld "RamWeld", everything else stuck to the main part.
+	local parts: { BasePart } = {}
+	for _, p in held:GetDescendants() do if p:IsA("BasePart") then table.insert(parts, p) end end
+	local ram = held:FindFirstChild("Ram", true) :: BasePart?
+	local bed = held:FindFirstChild("Bed", true) :: BasePart?
+	local main: BasePart? = bed
+	if not main then
+		for _, p in parts do if p ~= ram and (not main or p.Size.Magnitude > main.Size.Magnitude) then main = p end end
+	end
+	for _, p in parts do
+		p.Anchored = false p.CanCollide = false p.CanTouch = false p.CanQuery = false p.Massless = true
+	end
+	if main then
+		local hold = Instance.new("Weld") hold.Name = "HoldWeld"
+		hold.Part0 = holder hold.Part1 = main hold.C0 = holder.CFrame:ToObjectSpace(main.CFrame) hold.Parent = main
+		for _, p in parts do
+			if p ~= main and p ~= ram then
+				local weld = Instance.new("WeldConstraint") weld.Part0 = main weld.Part1 = p weld.Parent = p
+			end
+		end
+		if ram and ram:IsA("BasePart") then
+			local rw = Instance.new("Weld") rw.Name = "RamWeld"
+			rw.Part0 = main rw.Part1 = ram rw.C0 = main.CFrame:ToObjectSpace(ram.CFrame) rw.Parent = ram
+			-- how far it can travel: down to the bed (or a third of its height without one)
+			local travel = if bed then (ram.Position.Y - ram.Size.Y / 2) - (bed.Position.Y + bed.Size.Y / 2) else ram.Size.Y
+			held:SetAttribute("Travel", math.max(0, travel * 0.9))
 		end
 	end
 	if tool:FindFirstChild("Held") then held:Destroy() return end -- equipped twice quickly

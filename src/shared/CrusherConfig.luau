@@ -419,6 +419,12 @@ C.FirstRoll = { Rarity = "Rare", Price = 100, Hold = 3.6 }
 -- 8 Nov (same playtest): the Robux buttons on the HUD (R$ 5 deal, 2x cash ladder) wait
 -- until this goal; the starter pack only pops up by itself after Factory II (C.MainGoals).
 C.RobuxButtonsGoal = 5
+-- 8 Nov (Willem: "the crushers in your hand bigger and working, so you can show it"):
+-- the crusher you hold (server/CrusherTools, client/HeldCrusher). Size = studs of its
+-- longest side (was 2.2), carried Forward studs in front of the chest and Up; it works
+-- in your hand: the ram slams down every Stroke seconds (press crushers), other crushers
+-- thump by Pump studs; sparks on each hit. Everyone sees it.
+C.Hold = { Size = 3.6, Forward = 2.7, Up = 0.5, Stroke = 1.1, Pump = 0.22 }
 C.AutoRoll = { Default = { "Legendary", "Limited", "Secret", "Divine" },
 	Rarities = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Limited", "Secret", "Divine" } }
 -- 7 Nov (Willem: "should be special luck animation"): Limited (rank 4.5, under MinRank)
