@@ -58,7 +58,8 @@ Levers: the daily reward + notifications (open us first), a first session past 1
 
 ## 8 Nov: MYSTERY CRATE + "factory never stops" (Shared/CrateConfig, server/OvernightCrate, client/OvernightCrate)
 Willem picked these two from the retention ideas (the Day 2 gift is close to the daily reward we have).
-- After the tutorial a purple crate with gold bands lands on your plot, beside the walkway near the entrance
+- Since 8 Nov (Willem: "too early") it lands at goal CrateConfig.AfterGoal (6, about 5-8 minutes in), not
+  right after the tutorial. A purple crate with gold bands lands on your plot, beside the walkway near the entrance
   (CrateConfig.Spot). Card: "A MYSTERY CRATE ARRIVED! It opens in 8 hours. Free crusher inside, up to LEGENDARY!"
   with REMIND ME (Roblox notification opt-in, when Roblox allows asking).
 - Its sign counts down ("Opens in 7h 59m"), then bounces "READY! OPEN ME". Prompt "Open": a free crusher
@@ -72,5 +73,8 @@ Willem picked these two from the retention ideas (the Day 2 gift is close to the
   bounces. Opening: the crate rattles, the lid flies off spinning, a beam in the rarity's colour shoots up with
   sparks, the crate vanishes, the card follows (name in the rarity's colour), and the next crate drops 3.6 s later.
   Everyone nearby sees it.
+- Camera (8 Nov, Willem: "zoom in on it so you actually see it"): for the owner, the camera flies to the crate
+  (CrateConfig.Camera) for the first drop and for every opening, then back; it waits up to 10 s for a goal
+  celebration or window to finish. The refill drop right after an opening stays in the normal view.
 - Willem can make: a crate mesh with a separate lid, a crate icon for the cards (now emoji), a card frame.
 - Idea for later: a notification "Your Mystery Crate is ready!" (needs a second notification string from Willem).
