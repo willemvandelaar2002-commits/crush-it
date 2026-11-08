@@ -346,3 +346,11 @@ label arrow and a pulsing Highlight on the target, and detours to the bin/seller
 when the step costs more cash than you have. Each finished step: green flash,
 check, coin sound, cash flying into the counter; the last one shows a
 TUTORIAL COMPLETE banner.
+
+## 8 Nov: held crushers bigger and working (Willem: "so you can kinda show it in your hand")
+- C.Hold (CrusherConfig): longest side 3.6 studs (was 2.2), carried 2.7 studs in front of the chest.
+- server/CrusherTools welds the held copy: Weld "HoldWeld" (main part -> body) and a Weld "RamWeld" per moving
+  part (attribute Travel): the Ram part or Ram model of press/special crushers (47 + 1 code-built type). The 14
+  without a ram (TwinTitan, the Secret/Divine specials, the Lucky Weekend ones) thump as a whole.
+- client/HeldCrusher (every client, so others see it): every C.Hold.Stroke (1.1 s) the ram slams down and rises,
+  the crusher kicks a little, sparks in the rarity's colour on the hit (fewer with Effects Low).
