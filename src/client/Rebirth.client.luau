@@ -13,6 +13,7 @@ local Net = require(RS.Shared.Net)
 local Format = require(RS.Shared.Format)
 local Config = require(RS.Shared.Config)
 local Icons = require(RS.Shared.Icons)
+local Gems = require(RS.Shared.GemConfig)
 local C = Config.Crushers
 if not C.Enabled then return end
 
@@ -96,7 +97,22 @@ local panel = make("Frame", { Name = "RebirthPanel", AnchorPoint = Vector2.new(0
 make("UIAspectRatioConstraint", { AspectRatio = 1448 / 1086 }, panel)
 make("ImageLabel", { Name = "Background", Image = ART.Background, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Stretch, ZIndex = 6 }, panel)
 Style.modal(panel)
-panel:SetAttribute("FitWidth", W) panel:SetAttribute("FitHeight", H)
+panel:SetAttribute("FitWidth", W) panel:SetAttribute("FitHeight", H * 1.16)
+-- 8 Nov: under the panel, what the next rebirth also gives: Gems (Willem's gem pile) and
+-- the next unlock (Gem Shop / Annex / Gem Crusher / Awakened) with its art
+local extras = make("Frame", { Name = "NextRewards", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 1, -4), Size = UDim2.fromScale(0.86, 0.13),
+	BackgroundColor3 = RGB(46, 30, 110), ZIndex = 6 }, panel)
+make("UICorner", { CornerRadius = UDim.new(0.3, 0) }, extras)
+make("UIStroke", { Thickness = 4, Color = INK }, extras)
+make("UIGradient", { Rotation = 90, Color = ColorSequence.new(RGB(120, 60, 200), RGB(50, 26, 110)) }, extras)
+make("ImageLabel", { Image = Gems.Art.Pile, Position = UDim2.fromScale(0.015, -0.12), Size = UDim2.fromScale(0.13, 1.2), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 8 }, extras)
+local gemsBox = box(extras, "Gems", { 0.15, 0.12, 0.25, 0.76 }, 8)
+local gemsText = words(gemsBox, "", 9, 2.5)
+gemsText.TextXAlignment = Enum.TextXAlignment.Left gemsText.TextColor3 = RGB(255, 190, 250)
+local unlockArt = make("ImageLabel", { Position = UDim2.fromScale(0.42, -0.12), Size = UDim2.fromScale(0.13, 1.2), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 8 }, extras)
+local unlockBox = box(extras, "Unlock", { 0.56, 0.1, 0.42, 0.8 }, 8)
+local unlockText = words(unlockBox, "", 9, 2.5)
+unlockText.TextXAlignment = Enum.TextXAlignment.Left
 
 local titleText = words(box(panel, "Title", L.title, 8), "REBIRTH", 9, 4)
 Style.bold(titleText, 4)
@@ -158,6 +174,17 @@ local function paint()
 	cashValues.Text = string.format('%s → <font color="%s">%s</font>', mult(C.rebirthMult(n)), GREEN, mult(C.rebirthMult(n + 1)))
 	luckValues.Text = string.format('%s → <font color="%s">%s</font>', mult(C.rebirthLuck(n)), GREEN, mult(C.rebirthLuck(n + 1)))
 	countText.Text = "Rebirths: " .. n
+	gemsText.Text = "+" .. Gems.forRebirth(n + 1) .. " GEMS"
+	local nextUp = Gems.nextMilestone(n)
+	unlockArt.Visible = nextUp ~= nil
+	if nextUp then
+		unlockArt.Image = nextUp.art
+		unlockText.Text = if nextUp.rebirths == n + 1 then "UNLOCKS: " .. nextUp.text .. "!" else "REBIRTH " .. nextUp.rebirths .. ": " .. nextUp.text
+		unlockText.TextColor3 = if nextUp.rebirths == n + 1 then RGB(255, 236, 90) else WHITE
+	else
+		unlockText.Text = "EVERYTHING UNLOCKED!"
+		unlockText.TextColor3 = RGB(255, 236, 90)
+	end
 	local cost = state.rebirthCost or C.rebirthCost(n)
 	if (state.plotLevel or 0) < C.Rebirth.MinPlot then
 		progressFill.Size = UDim2.fromScale(math.clamp((state.plotLevel or 0) / C.Rebirth.MinPlot, 0, 1), 1)
@@ -204,6 +231,7 @@ Net.event("RebirthDone").OnClientEvent:Connect(function(r: any)
 	s:Play() task.delay(3, function() s:Destroy() end)
 	local pop = make("TextLabel", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.4), Size = UDim2.fromOffset(620, 90),
 		BackgroundTransparency = 1, TextScaled = true, Text = "REBIRTH " .. tostring(r.rebirths) .. "!  x" .. tostring(r.mult) .. " CASH · x" .. tostring(r.luck or 1) .. " LUCK", ZIndex = 9 }, gui)
+	pop.Font = Style.Font -- (8 Nov: the game font, was the default)
 	Style.bold(pop, 4)
 	pop.TextColor3 = RGB(255, 190, 60)
 	local sc = make("UIScale", { Scale = 0.3 }, pop)
@@ -211,5 +239,31 @@ Net.event("RebirthDone").OnClientEvent:Connect(function(r: any)
 	task.delay(2.6, function()
 		TweenService:Create(sc, TweenInfo.new(0.3), { Scale = 0 }):Play()
 		task.delay(0.35, function() pop:Destroy() end)
+	end)
+	-- 8 Nov: the Gems it paid, and what it unlocked (Willem's art)
+	local n = tonumber(r.rebirths) or 0
+	local unlocked: any = nil
+	for _, m in Gems.Milestones do if m.rebirths == n then unlocked = m end end
+	local card = make("Frame", { AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0.4, 56), Size = UDim2.fromOffset(if unlocked then 520 else 300, if unlocked then 250 else 90),
+		BackgroundTransparency = 1, ZIndex = 9 }, gui)
+	make("ImageLabel", { Image = Gems.Art.Pile, Position = UDim2.fromOffset(if unlocked then 110 else 0, 0), Size = UDim2.fromOffset(90, 90), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 9 }, card)
+	local g = make("TextLabel", { Position = UDim2.fromOffset(if unlocked then 205 else 95, 14), Size = UDim2.fromOffset(220, 62), BackgroundTransparency = 1, TextScaled = true,
+		Text = "+" .. Gems.forRebirth(n) .. " GEMS", TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 9 }, card)
+	g.Font = Style.Font
+	Style.bold(g, 4)
+	g.TextColor3 = RGB(255, 170, 245)
+	if unlocked then
+		make("ImageLabel", { Image = unlocked.art, Position = UDim2.fromOffset(10, 92), Size = UDim2.fromOffset(150, 150), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 9 }, card)
+		local u = make("TextLabel", { Position = UDim2.fromOffset(170, 120), Size = UDim2.fromOffset(340, 90), BackgroundTransparency = 1, TextScaled = true,
+			Text = "UNLOCKED:\n" .. unlocked.text .. "!", TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 9 }, card)
+		u.Font = Style.Font
+		Style.bold(u, 4)
+		u.TextColor3 = RGB(255, 236, 90)
+	end
+	local cs = make("UIScale", { Scale = 0.3 }, card)
+	TweenService:Create(cs, TweenInfo.new(0.45, Enum.EasingStyle.Back), { Scale = Style.popScale() }):Play()
+	task.delay(if unlocked then 4.5 else 2.6, function()
+		TweenService:Create(cs, TweenInfo.new(0.3), { Scale = 0 }):Play()
+		task.delay(0.35, function() card:Destroy() end)
 	end)
 end)

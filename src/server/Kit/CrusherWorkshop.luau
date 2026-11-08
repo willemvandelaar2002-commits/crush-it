@@ -455,7 +455,7 @@ function W.station(parent,cf,kind)
 			local base=studs(W.part(m,"PedestalBase",V(5.4,1,5.4),pcf*CFrame.new(0,.5,0),W.Navy,true))
 			local plinth=studs(W.part(m,"Pedestal",V(4.4,2.2,4.4),pcf*CFrame.new(0,2.1,0),W.Yellow,true))
 			plinth:SetAttribute("Slot",i)
-			studs(W.part(m,"PedestalTrim",V(4.8,.3,4.8),pcf*CFrame.new(0,3.3,0),W.Navy))
+			local trim=studs(W.part(m,"PedestalTrim",V(4.8,.3,4.8),pcf*CFrame.new(0,3.3,0),W.Navy))
 			local anchor=W.part(m,"PedestalCardAnchor",V(.2,.2,.2),pcf*CFrame.new(0,3.4,0),W.Navy)
 			anchor.Transparency=1
 			local card=Instance.new("BillboardGui") card.Name="OfferCard" card.Size=UDim2.fromScale(9,5.4)
@@ -469,7 +469,7 @@ function W.station(parent,cf,kind)
 			local prompt=Instance.new("ProximityPrompt") prompt.Name="BuyPrompt" prompt.ActionText="Buy" prompt.ObjectText="Pedestal "..i
 			prompt.KeyboardKeyCode=Enum.KeyCode.E prompt.HoldDuration=0 prompt.MaxActivationDistance=10 prompt.RequiresLineOfSight=false
 			prompt.Enabled=false prompt.Parent=plinth
-			pedestals[i]={top=pcf*CFrame.new(0,3.2,0),part=plinth,base=base,card=lines,prompt=prompt}
+			pedestals[i]={top=pcf*CFrame.new(0,3.2,0),part=plinth,base=base,card=lines,prompt=prompt,parts={base,plinth,trim}}
 		end
 		station={part=face,label=label,button=button,die=die,rollers=rollers,pedestals=pedestals,auto={part=aface,label=alabel,button=abutton}}
 	end

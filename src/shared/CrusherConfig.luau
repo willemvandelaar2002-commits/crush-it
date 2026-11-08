@@ -53,8 +53,9 @@ C.Layout = { Wings=2, Tiers=2, PerWing=6, WingX=40, Pitch=10, BayWidth=9.6,
 C.Layout.WalkFront=C.Layout.BayZ+C.Layout.BayDepth/2+1 -- front edge of the upper walkway
 C.Layout.StairFront=C.Layout.WalkFront+C.Layout.StairRun
 -- Roll pedestals, station-local (x, z) with +z out of the machine's front, in
--- unlock order: centre first, then outwards. #PedestalSpots = MaxPedestals.
-C.PedestalSpots = { Vector2.new(0,23), Vector2.new(-11,21), Vector2.new(11,21), Vector2.new(-20.5,15.5), Vector2.new(20.5,15.5) }
+-- unlock order: centre first, then outwards. The first MaxPedestals come from the
+-- ROLL UPGRADES board; 8 Nov: the 6th (in front, purple) is the Gem Pedestal (Gem Shop).
+C.PedestalSpots = { Vector2.new(0,23), Vector2.new(-11,21), Vector2.new(11,21), Vector2.new(-20.5,15.5), Vector2.new(20.5,15.5), Vector2.new(0,33) }
 C.BaseMaxBays = C.Layout.Wings*C.Layout.Tiers*C.Layout.PerWing
 -- Five plot stages (plot level 0..4), bay layout v2 (25 Oct):
 --   bays  1..24  Starter Workshop: two floors per wing
@@ -75,7 +76,8 @@ C.Layout.RearShift = -78 -- rear yard banks: ground bays at BayZ+RearShift
 -- RequireRebirths rebirths on. Bays here are cheaper than the x1.36 curve would
 -- make them (BayStart x BayGrowth per bay), so a rebirthed run can afford it.
 C.Annex = { First = C.MaxBays+1, Bays = 2*C.Layout.PerWing, Shift = -128, RequireRebirths = 3,
-	BayStart = 2e9, BayGrowth = 1.25, SignImage = "rbxassetid://0" }
+	BayStart = 2e9, BayGrowth = 1.25,
+	SignImage = "rbxassetid://131395997076419" } -- 8 Nov: Willem's locked-sign art (decal 101919176235230)
 C.MaxBays = C.Annex.First-1+C.Annex.Bays
 -- back edge of the rear yard and of the annex yard (plot-local z)
 C.Layout.YardBack = C.Layout.BayZ+C.Layout.RearShift-C.Layout.UpperBack-C.Layout.BayDepth/2-6
@@ -406,6 +408,31 @@ do
   table.insert(rarity.types, entry.id)
  end
 end
+-- 8 Nov: THE GEM CRUSHER (Willem: "a special crusher you unlock, REBIRTH 5-10 TO UNLOCK").
+-- Every player gets one at rebirth 5; at rebirth 10 that same crusher (same id, level,
+-- finish, bay) becomes the Awakened Gem Crusher. Never rolled, never in a crate or a
+-- shop, can't be trashed or recycled. Mythic tier (rows, rainbow bay); value per input
+-- above every Mythic (660), and it makes Gems while it sits in a bay (gems / min).
+-- Model: Willem's Blender model goes in ServerStorage.SpecialCrusherMeshes.<id> with a
+-- SpecialCrusherAssets entry, then set template = id here. Until then it borrows the
+-- FactoryHeart rig in gem colours (design / color). Icons: GemConfig.Art.
+C.GemCrushers = {
+	{ id = "GemCrusher", name = "Gem Crusher", rebirths = 5, value = 1200, gems = 1, design = "FactoryHeart", color = Color3.fromRGB(235, 80, 210) },
+	{ id = "GemCrusherAwakened", name = "Awakened Gem Crusher", rebirths = 10, value = 2400, gems = 2.5, design = "FactoryHeart", color = Color3.fromRGB(120, 235, 255) },
+}
+do
+	local band
+	for _, existing in C.Types do if existing.id == "JackpotPress" then band = existing break end end
+	assert(band, "Missing Mythic band for the Gem Crusher")
+	for _, entry in C.GemCrushers do
+		local def = table.clone(band)
+		def.id = entry.id def.name = entry.name def.template = entry.template
+		def.design = if entry.template then nil else entry.design def.accent = entry.color
+		def.value = entry.value def.rarity = "Mythic" def.gem = entry
+		table.insert(C.Types, def) -- (not in any rarity's roll list)
+	end
+end
+function C.gemCrusher(typeId) local def = C.typeById(typeId) return def and def.gem end
 -- What a crusher crushes, by its rarity (29 Oct): the toy objects in
 -- Config.Objects (meshes in ReplicatedStorage.ObjectMeshes). Rarer crushers get
 -- bigger, cooler things; a tier with two picks one at random for each input.

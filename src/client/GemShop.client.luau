@@ -30,12 +30,18 @@ local function words(parent: Instance, text: string, pos: UDim2, size: UDim2, ma
 	make("UITextSizeConstraint", { MinTextSize = 10, MaxTextSize = max }, l)
 	return l
 end
-local function button(parent: Instance, text: string, pos: UDim2, size: UDim2, color: Color3, max: number): (TextButton, TextLabel)
+local function button(parent: Instance, text: string, pos: UDim2, size: UDim2, color: Color3, max: number, gem: boolean?): (TextButton, TextLabel)
 	local b = make("TextButton", { Text = "", Position = pos, Size = size, ZIndex = 8 }, parent)
 	Style.button(b, color)
 	Style.buttonStuds(b, color)
-	local t = words(b, text, UDim2.fromOffset(10, 6), UDim2.new(1, -20, 1, -12), max)
+	-- gem prices: the words on the left, Willem's gem on the right (not the blue emoji)
+	local t = words(b, text, UDim2.fromOffset(10, 6), if gem then UDim2.new(1, -56, 1, -12) else UDim2.new(1, -20, 1, -12), max)
 	t.ZIndex = 10
+	if gem then
+		local h = size.Y.Offset - 10
+		make("ImageLabel", { Name = "Gem", Image = G.Icon, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -8, 0.5, 0), Size = UDim2.fromOffset(h, h),
+			BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 11 }, b)
+	end
 	return b, t
 end
 -- the Gem picture: Willem's icon once its id is in GemConfig, a 💎 until then
@@ -49,7 +55,7 @@ end
 local gui = make("ScreenGui", { Name = "GemShopHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
 
 -- HUD button (after REBIRTH in the top-left row)
-local hud = Style.iconButton(gui, { name = "GemsButton", icon = G.Emoji, label = "GEMS", a = RGB(255, 140, 230), b = RGB(150, 50, 220) })
+local hud = Style.iconButton(gui, { name = "GemsButton", image = G.Icon, icon = G.Emoji, label = "GEMS", a = RGB(255, 140, 230), b = RGB(150, 50, 220) })
 hud.Visible = false
 local function place() if hud.Visible then Style.placeAfterHudRow(hud) end end
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(place)
@@ -63,13 +69,21 @@ make("UICorner", { CornerRadius = UDim.new(0, 20) }, panel)
 make("UIStroke", { Thickness = 5, Color = INK }, panel)
 make("UIGradient", { Rotation = 90, Color = ColorSequence.new(RGB(110, 50, 190), RGB(36, 22, 96)) }, panel)
 local st = Style.studsImage(panel, 30, 0.88) st.ZIndex = 5 st.ImageColor3 = RGB(150, 90, 230)
+-- 8 Nov: Willem's Gem banner as the frame (crystal corners kept their size: 9-slice)
+make("ImageLabel", { Name = "BannerArt", Image = G.Art.Banner, BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Slice,
+	SliceCenter = Rect.new(240, 300, 784, 724), SliceScale = 0.42, Position = UDim2.fromOffset(-26, -30), Size = UDim2.new(1, 52, 1, 56), ZIndex = 5 }, panel)
 Style.modal(panel)
 panel:SetAttribute("FitWidth", W + 20) panel:SetAttribute("FitHeight", H + 20)
 gemIcon(panel, UDim2.fromOffset(22, 12), UDim2.fromOffset(60, 60), 8)
 local title = words(panel, "GEM SHOP", UDim2.fromOffset(90, 14), UDim2.fromOffset(300, 54), 46, 4)
 title.TextXAlignment = Enum.TextXAlignment.Left
-local have = words(panel, "", UDim2.fromOffset(380, 22), UDim2.new(1, -470, 0, 38), 30, 3)
-have.TextXAlignment = Enum.TextXAlignment.Right
+-- your Gems, top right: gem picture + count (+ rate)
+local haveRow = make("Frame", { Position = UDim2.fromOffset(380, 22), Size = UDim2.new(1, -470, 0, 38), BackgroundTransparency = 1, ZIndex = 8 }, panel)
+make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, VerticalAlignment = Enum.VerticalAlignment.Center, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, haveRow)
+make("ImageLabel", { Image = G.Icon, Size = UDim2.fromOffset(38, 38), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, LayoutOrder = 1, ZIndex = 8 }, haveRow)
+local have = make("TextLabel", { Text = "", AutomaticSize = Enum.AutomaticSize.X, Size = UDim2.fromOffset(0, 36), BackgroundTransparency = 1, TextSize = 30, LayoutOrder = 2, ZIndex = 8 }, haveRow)
+Style.text(have, 3)
+have.TextScaled = false have.TextSize = 30
 have.TextColor3 = RGB(255, 200, 250)
 local close = button(panel, "X", UDim2.new(1, -76, 0, 12), UDim2.fromOffset(62, 62), RGB(228, 36, 44), 38)
 close.Activated:Connect(function() Style.setOpen(panel, false) end)
@@ -79,14 +93,18 @@ local crate = make("Frame", { Name = "GemCrate", Position = UDim2.fromOffset(20,
 make("UICorner", { CornerRadius = UDim.new(0, 16) }, crate)
 make("UIStroke", { Thickness = 4, Color = INK }, crate)
 make("UIGradient", { Rotation = 60, Color = ColorSequence.new({ ColorSequenceKeypoint.new(0, RGB(255, 150, 235)), ColorSequenceKeypoint.new(0.5, RGB(190, 70, 230)), ColorSequenceKeypoint.new(1, RGB(80, 60, 220)) }) }, crate)
-local cs = Style.studsImage(crate, 26, 0.8) cs.ZIndex = 6 cs.ImageColor3 = RGB(200, 100, 240)
-words(crate, "GEM CRATE", UDim2.fromOffset(14, 10), UDim2.new(1, -28, 0, 40), 36, 3.5)
-local crateArt = gemIcon(crate, UDim2.new(0.5, -55, 0, 52), UDim2.fromOffset(110, 110), 8)
+-- 8 Nov: Willem's pink card art over the gradient, his crate in the middle
+crate.BackgroundTransparency = 1
+local crateStroke = crate:FindFirstChildOfClass("UIStroke") if crateStroke then crateStroke.Enabled = false end
+make("ImageLabel", { Name = "CardArt", Image = G.Art.Card, BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Stretch,
+	Position = UDim2.fromOffset(-10, -10), Size = UDim2.new(1, 20, 1, 20), ZIndex = 6 }, crate)
+words(crate, "GEM CRATE", UDim2.fromOffset(30, 26), UDim2.new(1, -60, 0, 38), 34, 3.5)
+local crateArt = make("ImageLabel", { Image = G.Art.Crate, Position = UDim2.new(0.5, -62, 0, 54), Size = UDim2.fromOffset(124, 124), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 8 }, crate)
 Style.floatArt(crateArt, { gate = panel, bob = 2.5, tilt = 0, period = 3.2 })
-words(crate, "One crusher per crate. Chances:", UDim2.fromOffset(14, 166), UDim2.new(1, -28, 0, 22), 18, 2)
+words(crate, "One crusher per crate. Chances:", UDim2.fromOffset(30, 176), UDim2.new(1, -60, 0, 20), 17, 2)
 for i, o in G.Crate.Odds do
 	local r = C.rarity(o.rarity)
-	local row = make("Frame", { Position = UDim2.fromOffset(18, 192 + (i - 1) * 30), Size = UDim2.new(1, -36, 0, 26), BackgroundColor3 = INK, BackgroundTransparency = 0.25, ZIndex = 7 }, crate)
+	local row = make("Frame", { Position = UDim2.fromOffset(32, 198 + (i - 1) * 27), Size = UDim2.new(1, -64, 0, 24), BackgroundColor3 = INK, BackgroundTransparency = 0.25, ZIndex = 7 }, crate)
 	make("UICorner", { CornerRadius = UDim.new(1, 0) }, row)
 	local n = words(row, string.upper(o.rarity), UDim2.fromOffset(12, 2), UDim2.new(0.6, -12, 1, -4), 20, 2)
 	n.TextXAlignment = Enum.TextXAlignment.Left
@@ -95,9 +113,9 @@ for i, o in G.Crate.Odds do
 	local c = words(row, (if pct == math.floor(pct) then string.format("%d", pct) else string.format("%.1f", pct)) .. "%", UDim2.new(0.6, 0, 0, 2), UDim2.new(0.4, -12, 1, -4), 20, 2)
 	c.TextXAlignment = Enum.TextXAlignment.Right
 end
-local open, openText = button(crate, "OPEN  " .. G.Crate.Cost .. " " .. G.Emoji, UDim2.new(0, 18, 1, -66), UDim2.new(1, -36, 0, 52), Style.GREEN, 30)
+local open, openText = button(crate, "OPEN  " .. G.Crate.Cost, UDim2.new(0, 30, 1, -76), UDim2.new(1, -60, 0, 50), Style.GREEN, 30, true)
 -- what came out: the new crusher's name in its rarity colour over the crate for 4 s
-local result = words(crate, "", UDim2.fromOffset(14, 132), UDim2.new(1, -28, 0, 30), 26, 3)
+local result = words(crate, "", UDim2.fromOffset(24, 146), UDim2.new(1, -48, 0, 30), 26, 3)
 result.ZIndex = 12
 local waitingFor: { [string]: boolean }? = nil
 local resultToken = 0
@@ -112,22 +130,28 @@ local head = words(list, "PERMANENT UPGRADES", UDim2.fromOffset(0, 0), UDim2.new
 head.TextColor3 = RGB(255, 230, 120)
 local note = words(list, "Kept through every rebirth.", UDim2.fromOffset(0, 30), UDim2.new(1, 0, 0, 22), 18, 2)
 note.TextColor3 = RGB(235, 225, 255)
-local PALETTE = { Cash = { RGB(255, 236, 120), RGB(250, 150, 30) }, Luck = { RGB(120, 236, 255), RGB(50, 120, 240) }, Rolls = { RGB(255, 150, 220), RGB(160, 60, 230) } }
+local PALETTE = { Cash = { RGB(255, 236, 120), RGB(250, 150, 30) }, Luck = { RGB(120, 236, 255), RGB(50, 120, 240) }, Rolls = { RGB(255, 150, 220), RGB(160, 60, 230) },
+	Pedestal = { RGB(150, 255, 190), RGB(30, 160, 120) } }
+local ROW = math.floor((H - 108 - 58) / #G.Upgrades) -- 4 rows: 83 px each
 local rows: { [string]: { level: TextLabel, buy: TextButton, cost: TextLabel } } = {}
 for i, u in G.Upgrades do
 	local pal = PALETTE[u.id] or PALETTE.Rolls
-	local f = make("Frame", { Name = u.id, Position = UDim2.fromOffset(0, 60 + (i - 1) * 104), Size = UDim2.new(1, 0, 0, 96), BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 6 }, list)
+	local f = make("Frame", { Name = u.id, Position = UDim2.fromOffset(0, 58 + (i - 1) * ROW), Size = UDim2.new(1, 0, 0, ROW - 6), BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 6 }, list)
 	make("UICorner", { CornerRadius = UDim.new(0, 14) }, f)
 	make("UIStroke", { Thickness = 4, Color = INK }, f)
 	make("UIGradient", { Rotation = 30, Color = ColorSequence.new(pal[1], pal[2]) }, f)
-	local t = words(f, u.title, UDim2.fromOffset(14, 8), UDim2.new(1, -170, 0, 32), 28, 3)
+	-- 8 Nov: Willem's upgrade icon on the left
+	local art = G.Art.Upgrades[u.id]
+	if art then make("ImageLabel", { Image = art, Position = UDim2.new(0, 2, 0.5, -36), Size = UDim2.fromOffset(72, 72), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 8 }, f) end
+	local x = if art then 76 else 14
+	local t = words(f, u.title, UDim2.fromOffset(x, 4), UDim2.new(1, -x - 140, 0, 28), 26, 3)
 	t.TextXAlignment = Enum.TextXAlignment.Left
-	local l = words(f, u.line, UDim2.fromOffset(14, 42), UDim2.new(1, -170, 0, 22), 18, 2)
+	local l = words(f, u.line, UDim2.fromOffset(x, 33), UDim2.new(1, -x - 140, 0, 20), 16, 2)
 	l.TextXAlignment = Enum.TextXAlignment.Left
-	local lv = words(f, "", UDim2.fromOffset(14, 66), UDim2.new(1, -170, 0, 22), 18, 2)
+	local lv = words(f, "", UDim2.fromOffset(x, 54), UDim2.new(1, -x - 140, 0, 20), 16, 2)
 	lv.TextXAlignment = Enum.TextXAlignment.Left
 	lv.TextColor3 = RGB(255, 255, 210)
-	local b, bt = button(f, "", UDim2.new(1, -150, 0.5, -26), UDim2.fromOffset(136, 52), Style.GREEN, 26)
+	local b, bt = button(f, "", UDim2.new(1, -130, 0.5, -24), UDim2.fromOffset(120, 48), Style.GREEN, 24, true)
 	b.Activated:Connect(function() Net.event("CrusherAction"):FireServer("GemUpgrade", { id = u.id }) end)
 	rows[u.id] = { level = lv, buy = b, cost = bt }
 end
@@ -136,12 +160,12 @@ local last: any = nil
 local function refresh()
 	local gems = math.floor(tonumber(me:GetAttribute("Gems")) or 0)
 	local rate = tonumber(me:GetAttribute("GemRate")) or 0
-	have.Text = G.Emoji .. " " .. gems .. (if rate > 0 then string.format("   +%.1f/min", rate) else "")
+	have.Text = tostring(gems) .. (if rate > 0 then string.format("   +%.1f/min", rate) else "")
 	local label = hud:FindFirstChild("Label") :: TextLabel?
 	if label then label.Text = tostring(gems) end -- the button is the gem: just the count
 	local canOpen = gems >= G.Crate.Cost
 	Style.setButtonColor(open, if canOpen then Style.GREEN else RGB(120, 124, 140))
-	openText.Text = "OPEN  " .. G.Crate.Cost .. " " .. G.Emoji
+	openText.Text = "OPEN  " .. G.Crate.Cost
 	for _, u in G.Upgrades do
 		local r = rows[u.id]
 		local level = (last and last.gemUps and last.gemUps[u.id]) or 0
@@ -150,8 +174,10 @@ local function refresh()
 		if not cost then
 			r.cost.Text = "MAX"
 			Style.setButtonColor(r.buy, RGB(120, 124, 140))
+			local gem = r.buy:FindFirstChild("Gem") :: ImageLabel? if gem then gem.Visible = false end
+			r.cost.Size = UDim2.new(1, -20, 1, -12)
 		else
-			r.cost.Text = cost .. " " .. G.Emoji
+			r.cost.Text = tostring(cost)
 			Style.setButtonColor(r.buy, if gems >= cost then Style.GREEN else RGB(120, 124, 140))
 		end
 	end

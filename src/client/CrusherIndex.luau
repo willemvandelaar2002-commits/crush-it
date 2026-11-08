@@ -282,7 +282,9 @@ function I.new(gui, act)
 			-- 6 Nov: Limited crushers roll only during the LUCKY WEEKEND: say so, with the odds
 			-- they have then (your luck included)
 			local weekendOnly=def.event=="LuckyWeekend"
-			local odds=label(frame,"Odds",if crate then "CRATE ONLY" elseif exclusive then "SHOP & SPIN ONLY"
+			-- 8 Nov: the Gem Crusher comes from rebirths
+			local gemOnly=def.gem
+			local odds=label(frame,"Odds",if gemOnly then "REBIRTH "..gemOnly.rebirths elseif crate then "CRATE ONLY" elseif exclusive then "SHOP & SPIN ONLY"
 				elseif weekendOnly then "WEEKEND · 1 in "..commas(if state and state.upgrades then C.effectiveOdds(def.id,state.upgrades.Luck,state.rollLucky,state.index and state.index.luck,true) else C.oddsFor(def.id))
 				else "1 in "..commas(
 				-- 2 Nov: YOUR odds (Luck upgrade, Lucky pass / 2x Luck boost, Index luck), the same maths as the roll

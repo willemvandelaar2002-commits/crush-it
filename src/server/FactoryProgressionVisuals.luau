@@ -163,15 +163,19 @@ function V.create(plot)
 		W.part(gate,"GateBar",Vector3.new(w,1.2,.8),o*CFrame.new(-gx+1.2+w*(i+.5),3.2,gz),if i%2==0 then Style.Colors.Yellow else W.Navy,true)
 		W.part(gate,"GateBarLow",Vector3.new(w,1.2,.8),o*CFrame.new(-gx+1.2+w*(i+.5),1.2,gz),if i%2==1 then Style.Colors.Yellow else W.Navy,true)
 	end
-	local gateFace,gateGui=W.panel(gate,o*CFrame.new(0,36,gz),28,10,purple,true)
+	-- 8 Nov: Willem's locked-sign art (square, padlock at the bottom) with the words in its
+	-- dark middle; the plain purple panel only if no art id is set
+	local hasArt=C.Annex.SignImage~="rbxassetid://0"
+	local gateFace,gateGui=W.panel(gate,o*CFrame.new(0,if hasArt then 38 else 36,gz),if hasArt then 22 else 28,if hasArt then 20 else 10,purple,true)
+	if hasArt then for _,p in gate:GetChildren() do if p:IsA("BasePart") and (p.Name=="PanelCasing" or p.Name=="Panel" or p.Name=="Bolt") then p.Transparency=1 p.CastShadow=false end end end
 	gateGui.MaxDistance=320
 	local gateBox=Instance.new("Frame") gateBox.Name="Content" gateBox.BackgroundTransparency=1 gateBox.Size=UDim2.fromScale(1,1) gateBox.Parent=gateGui
 	local gateArt=W.icon(gateBox,"Art",C.Annex.SignImage,UDim2.fromScale(0,0),UDim2.fromScale(1,1))
-	gateArt.Visible=C.Annex.SignImage~="rbxassetid://0"
-	local gateTitle=W.text(gateBox,"Title","🔒 THE ANNEX",UDim2.fromScale(.04,.06),UDim2.fromScale(.92,.42))
-	local gateInfo=W.text(gateBox,"Info","REBIRTH "..C.Annex.RequireRebirths.." TO UNLOCK",UDim2.fromScale(.04,.52),UDim2.fromScale(.92,.36))
+	gateArt.ScaleType=Enum.ScaleType.Stretch gateArt.Visible=hasArt
+	local gateTitle=W.text(gateBox,"Title","🔒 THE ANNEX",if hasArt then UDim2.fromScale(.14,.24) else UDim2.fromScale(.04,.06),if hasArt then UDim2.fromScale(.72,.22) else UDim2.fromScale(.92,.42))
+	local gateInfo=W.text(gateBox,"Info","REBIRTH "..C.Annex.RequireRebirths.." TO UNLOCK",if hasArt then UDim2.fromScale(.12,.47) else UDim2.fromScale(.04,.52),if hasArt then UDim2.fromScale(.76,.2) else UDim2.fromScale(.92,.36))
 	gateInfo.TextColor3=Color3.fromRGB(255,232,120)
-	gateTitle.Visible=not gateArt.Visible
+	gateTitle.ZIndex=2 gateInfo.ZIndex=2
 	-- the rear yard's back rim blocks on the road open when the annex is built
 	local road={}
 	for _,p in yard:GetDescendants() do if p:IsA("BasePart") and p.Name=="RimBlock" then
@@ -179,7 +183,7 @@ function V.create(plot)
 		if math.abs(at.Z-(yardBack+1))<.2 and math.abs(at.X)<gx then table.insert(road,p) end
 	end end
 	plot.progression={yard=yard,accents=accents,upgrade=upgrade,lab=lab,gateParts={},levelText=levelText,
-		annex=annex,annexGate={model=gate,content=gateBox,title=gateTitle,info=gateInfo,face=gateFace,road=road}}
+		annex=annex,annexGate={model=gate,content=gateBox,title=gateTitle,info=gateInfo,face=gateFace,road=road,art=hasArt}}
 	-- the plot's rear rim opens onto the rear yard
 	for _,p in plot.model:GetDescendants() do if p:IsA("BasePart") and (p.Name=="RimBlock" or p.Name=="RimCorner" or p.Name=="LampPost" or p.Name=="LampLight" or p.Name=="LampCap") and p.Parent and p.Parent.Name=="PlotBorder" then
 		local at=o:PointToObjectSpace(p.Position)
@@ -214,7 +218,7 @@ function V.sync(plot,d,quote,now,preview)
 		g.info.Text=if rebirths<annexNeed then "REBIRTH "..annexNeed.." TO UNLOCK"
 			elseif level<C.PlotUpgrade.MaxLevel-1 then "+12 BAYS · AFTER "..C.PlotUpgrade.Names[C.PlotUpgrade.MaxLevel-1]
 			else "+12 BAYS · UPGRADE PLOT TO OPEN"
-		g.title.Text=if rebirths<annexNeed then "🔒 THE ANNEX" else "THE ANNEX"
+		g.title.Text=if rebirths<annexNeed and not g.art then "🔒 THE ANNEX" else "THE ANNEX"
 		show(v.upgrade.model,boardVisible) v.upgrade.content.Visible=boardVisible
 		-- booth colour follows the plot level (orange, silver, gold versions)
 		local want=if v.lab.booth then boothName(math.max(structure,1)) else nil

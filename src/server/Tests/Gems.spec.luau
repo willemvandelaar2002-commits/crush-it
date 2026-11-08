@@ -51,5 +51,44 @@ return function()
 	check(R.gemRate(e) == 0, "no Exotic in a bay: no trickle")
 	es.equipped["2"] = ex.id
 	check(math.abs(R.gemRate(e) - G.Trickle.Exotic) < 1e-9, "an Exotic in a bay trickles " .. G.Trickle.Exotic .. "/min")
+	-- 8 Nov: the Gem Pedestal adds a 6th roll pedestal
+	local q = R.migrate({ cash = 10 }, id) local qs = q.crushers
+	qs.upgrades.Pedestals = C.upgradeMax("Pedestals")
+	check(R.pedestalCount(qs) == C.MaxPedestals, "five pedestals from the board")
+	qs.rebirths = 1 qs.gems = 1000
+	check(act(q, "GemUpgrade", { id = "Pedestal" }) and R.pedestalCount(qs) == C.MaxPedestals + 1 and #C.PedestalSpots == C.MaxPedestals + 1, "Gem Pedestal: a 6th pedestal")
+	check(not act(q, "GemUpgrade", { id = "Pedestal" }), "only one Gem Pedestal")
+	local _, _, offers = R.act(q, {}, "Roll", {}, 100, function() return 0.5 end, id, {})
+	check(type(offers) == "table" and #offers == C.MaxPedestals + 1, "a roll fills all six")
+
+	-- 8 Nov: the Gem Crusher at rebirth 5, awakened at rebirth 10
+	local g = R.migrate({ cash = 10 }, id) local gs = g.crushers
+	local function gemItems() local list = {} for _, v in gs.owned do if C.gemCrusher(v.type) then table.insert(list, v) end end return list end
+	local function rebirthTo(n) gs.rebirths = n - 1 gs.plotLevel = C.Rebirth.MinPlot g.cash = C.rebirthCost(n - 1) return act(g, "Rebirth") end
+	check(rebirthTo(4) and #gemItems() == 0, "no Gem Crusher before rebirth 5")
+	local ok5, message5 = rebirthTo(5)
+	local list = gemItems()
+	check(ok5 and #list == 1 and list[1].type == "GemCrusher" and list[1].rarity == "Mythic" and message5:find("GEM CRUSHER"), "rebirth 5 gives the Gem Crusher")
+	check(gs.seen.GemCrusher == true, "the Gem Crusher is in the Index")
+	local gemId = list[1].id
+	gs.equipped["1"] = gemId list[1].level = 7
+	check(rebirthTo(6) and #gemItems() == 1, "later rebirths don't give another")
+	check(not act(g, "TrashMany", { ids = { gemId } }) and #gemItems() == 1, "the Gem Crusher can't be trashed (equipped)")
+	gs.equipped = {}
+	local extra = { id = id(), type = "Bumper", rarity = "Common", modifier = "Standard", level = 1 } table.insert(gs.owned, extra)
+	act(g, "TrashMany", { ids = { gemId, extra.id } })
+	check(#gemItems() == 1 and not R.find(g, extra.id), "trashing a pile keeps the Gem Crusher")
+	check(not act(g, "Recycle", { id = gemId }), "the Gem Crusher can't be recycled")
+	local okA, messageA = rebirthTo(10)
+	list = gemItems()
+	check(okA and #list == 1 and list[1].id == gemId and list[1].type == "GemCrusherAwakened" and messageA:find("AWAKENED"), "rebirth 10 awakens the same crusher")
+	gs.bays = 3 gs.equipped["2"] = gemId
+	check(math.abs(R.gemRate(g) - C.GemCrushers[2].gems) < 1e-9, "the Awakened Gem Crusher makes " .. C.GemCrushers[2].gems .. " Gems / min in a bay")
+	check(C.typeById("GemCrusherAwakened").value > C.typeById("GemCrusher").value and C.typeById("GemCrusher").value > 660, "stronger than every Mythic, awakened stronger still")
+	-- old saves past rebirth 5 / 10 get theirs on load
+	local old = R.migrate({ cash = 10 }, id) old.crushers.rebirths = 7 old = R.migrate(old, id)
+	local found = 0 for _, v in old.crushers.owned do if v.type == "GemCrusher" then found += 1 end end
+	check(found == 1 and #R.migrate(R.copy(old), id).crushers.owned == #old.crushers.owned, "a rebirth 7 save gets one Gem Crusher, once")
+	for _, r in C.Rarities do for _, t in r.types do check(not C.gemCrusher(t), "the Gem Crusher is never rolled") end end
 	print("Gems spec: " .. checks .. " checks passed")
 end
