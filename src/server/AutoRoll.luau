@@ -18,7 +18,7 @@ local C = require(RS.Shared.CrusherConfig)
 local Store = require(RS.Shared.Store)
 
 local M = {}
-type State = { on: boolean, picks: { [string]: boolean }, buy: boolean, token: number }
+type State = { on: boolean, picks: { [string]: boolean }, buy: boolean, skip: boolean, token: number }
 
 function M.start(api: any)
 	-- api.action(p, name, args) -> ok, message; api.session(p) -> ctx; api.getData(p) -> d
@@ -42,6 +42,7 @@ function M.start(api: any)
 		end
 		p:SetAttribute("AutoRollPicks", table.concat(list, ","))
 		p:SetAttribute("AutoBuy", s.buy)
+		p:SetAttribute("AutoRollSkip", s.skip)
 	end
 	local function stop(p: Player, s: State, text: string?)
 		s.on = false s.token += 1
@@ -66,7 +67,11 @@ function M.start(api: any)
 		end
 		while alive() do
 			if not waitReveal() then break end
+			-- 8 Nov: SKIP ANIMATION makes this roll's reveal short (CrusherGame reads ctx.fastRoll)
+			local rctx = api.session(p)
+			if rctx then rctx.fastRoll = s.skip end
 			local ok, message = api.action(p, "Roll", {})
+			if rctx then rctx.fastRoll = nil end
 			if not ok then
 				if message == "Roll is cooling down." then task.wait(0.3) continue end
 				stop(p, s, "Auto Roll stopped: " .. tostring(message)) break
@@ -94,7 +99,7 @@ function M.start(api: any)
 		end
 	end
 
-	remote.OnServerEvent:Connect(function(p: Player, on: any, picks: any, buy: any)
+	remote.OnServerEvent:Connect(function(p: Player, on: any, picks: any, buy: any, skip: any)
 		local s = states[p]
 		if not s then return end
 		if type(picks) == "table" then
@@ -109,6 +114,7 @@ function M.start(api: any)
 			s.picks = set
 		end
 		s.buy = buy == true and Store.hasPass(p, "AutoBuy")
+		if type(skip) == "boolean" then s.skip = skip end
 		if on == true and not s.on then
 			local d = api.getData(p)
 			if not d or (d.crushers.tutorial or 1) <= #C.TutorialSteps then
@@ -126,7 +132,7 @@ function M.start(api: any)
 	end)
 	local function join(p: Player)
 		local picks = {} for _, name in C.AutoRoll.Default do picks[name] = true end
-		local s: State = { on = false, picks = picks, buy = false, token = 0 }
+		local s: State = { on = false, picks = picks, buy = false, skip = false, token = 0 }
 		states[p] = s
 		mirror(p, s)
 		-- losing the pass (refund) turns auto buy off

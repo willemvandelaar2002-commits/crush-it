@@ -121,7 +121,10 @@ local function pickList(set: { [string]: boolean }): { string }
 end
 local function running(): boolean return me:GetAttribute("AutoRoll") == true end
 local function buying(): boolean return me:GetAttribute("AutoBuy") == true end
-local function send(on: boolean, set: { [string]: boolean }, buy: boolean) remote:FireServer(on, pickList(set), buy) end
+local function skipping(): boolean return me:GetAttribute("AutoRollSkip") == true end
+local function send(on: boolean, set: { [string]: boolean }, buy: boolean, skip: boolean?)
+	remote:FireServer(on, pickList(set), buy, if skip == nil then skipping() else skip)
+end
 
 local gui = make("ScreenGui", { Name = "AutoRollHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
 
@@ -170,6 +173,12 @@ local TAB_Y, TAB_H = 0.16, 0.71 / #C.AutoRoll.Rarities
 -- the crusher area
 local head = words(panel, "", UDim2.fromScale(0.25, 0.145), UDim2.fromScale(0.69, 0.06), 40, 4, 8)
 local sub = words(panel, "Tap crushers to target them", UDim2.fromScale(0.25, 0.2), UDim2.fromScale(0.69, 0.04), 22, 3, 8)
+-- 8 Nov (Willem): SKIP ANIMATION toggle, right of "Tap crushers to target them"
+local skipBtn = make("TextButton", { Name = "SkipAnim", Text = "", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(0.935, 0.197),
+	Size = UDim2.fromScale(0.14, 0.045), ZIndex = 9 }, panel)
+Style.button(skipBtn, rgb(120, 124, 140))
+local skipText = words(skipBtn, "⏩ SKIP: OFF", UDim2.fromScale(0.06, 0.1), UDim2.fromScale(0.88, 0.8), 18, 2, 10)
+skipBtn.Activated:Connect(function() send(running(), picks(), buying(), not skipping()) end)
 local grid = make("ScrollingFrame", { Name = "Grid", Position = UDim2.fromScale(0.245, 0.25), Size = UDim2.fromScale(0.69, 0.49), BackgroundTransparency = 1,
 	BorderSizePixel = 0, ScrollBarThickness = 6, ScrollBarImageColor3 = rgb(120, 230, 255), CanvasSize = UDim2.new(), AutomaticCanvasSize = Enum.AutomaticSize.Y, ZIndex = 7 }, panel)
 make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 10), PaddingBottom = UDim.new(0, 6) }, grid)
@@ -355,6 +364,8 @@ local function refresh()
 	local what = if #names > 0 then table.concat(names, ", ") else "tick a rarity or tap a crusher"
 	status.Text = n .. (if n == 1 then " TARGET SELECTED" else " TARGETS SELECTED")
 	stopsOn.Text = (if on then "Rolling... stops on " else "Stops on ") .. what
+	skipText.Text = if skipping() then "⏩ SKIP: ON" else "⏩ SKIP: OFF"
+	Style.setButtonColor(skipBtn, if skipping() then rgb(70, 200, 255) else rgb(120, 124, 140))
 	local pass = Store.passByPerk("AutoBuy")
 	if Store.hasPass(me, "AutoBuy") then
 		boxTitle.Text = "🤖 AUTO BUY"
@@ -374,7 +385,7 @@ do
 	local pass = Store.passByPerk("AutoBuy")
 	if pass and pass.gamePassId ~= 0 then Store.livePrice("pass", pass.gamePassId, pass.price, function(n) livePrice = n refresh() end) end
 end
-for _, a in { "AutoRoll", "AutoRollPicks", "AutoBuy", Store.passAttr("AutoBuy") } do me:GetAttributeChangedSignal(a):Connect(refresh) end
+for _, a in { "AutoRoll", "AutoRollPicks", "AutoBuy", "AutoRollSkip", Store.passAttr("AutoBuy") } do me:GetAttributeChangedSignal(a):Connect(refresh) end
 
 local function open()
 	showGrid() refresh()
