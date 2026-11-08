@@ -169,6 +169,16 @@ local function banks(parent,o)
   table.insert(rears,{model=ground,first=C.rearStart(1,wing),top=true})
   table.insert(rears,{model=up,first=C.rearStart(2,wing),top=true})
  end
+ -- 8 Nov: THE ANNEX (Factory VII, from rebirth 3): two more ground banks behind
+ -- the rear yard, past its gate. Ground only; the bank's upper floor is dropped.
+ for wing,side in {-1,1} do
+  local ao=o*CFrame.new(0,0,C.Annex.Shift)
+  local ground=Instance.new("Model") ground.Name="AnnexGround"..wing ground.Parent=m
+  local up=Instance.new("Model")
+  bankWing(ground,up,up,ao,side)
+  up:Destroy()
+  table.insert(rears,{model=ground,first=C.annexStart(wing),top=true})
+ end
  return floors,tops,rears
 end
 -- One bay's frame: floor, beam with a status strip, back panel and padlock.

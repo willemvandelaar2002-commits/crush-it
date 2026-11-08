@@ -378,8 +378,8 @@ function V.create(plot)
 		end
 	end
 	-- gold beacon tower at the end of the rear yard road
-	local yardBack=L.BayZ+L.RearShift-L.UpperBack-L.BayDepth/2-6
-	local tower=o*CFrame.new(0,0,yardBack+4.5)
+	-- (8 Nov: at the end of the annex road, so it stays clear of the annex gate)
+	local tower=o*CFrame.new(0,0,L.AnnexBack+4.5)
 	W.part(s5,"BeaconBase",V3(5,1.2,5),tower*CFrame.new(0,.6,0),Navy,true)
 	W.part(s5,"BeaconMast",V3(1.6,52,1.6),tower*CFrame.new(0,27,0),Navy,true)
 	for y=8,48,10 do local b=W.part(s5,"BeaconBand",V3(2,.6,2),tower*CFrame.new(0,y,0),Gold) b.Material=Enum.Material.Metal end

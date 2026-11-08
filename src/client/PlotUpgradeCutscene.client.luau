@@ -30,6 +30,7 @@ local SECTIONS = {
 	{ banks = { "RearGround1", "RearGround2" }, extra = { "RearYard", "FusionWing" }, feature = "Fuser" },
 	{ banks = { "RearUpper1" } },
 	{ banks = { "RearUpper2" }, feature = "ArchBeam" },
+	{ banks = { "AnnexGround1", "AnnexGround2" } }, -- 8 Nov: Factory VII, the Annex
 }
 -- island blocks stay put (they reach down into the floor below the plot)
 local KEEP = { Dirt = true, Stone = true, Rock = true }

@@ -107,7 +107,7 @@ end
 local function floorFor(plot,i)
 	local l=C.bayLayout(i)
 	if l.rear then
-		local first=C.rearStart(l.tier,l.wing)
+		local first=if l.annex then C.annexStart(l.wing) else C.rearStart(l.tier,l.wing)
 		for _,f in plot.rearFloors or {} do if f.first==first then return f end end
 		return nil
 	end

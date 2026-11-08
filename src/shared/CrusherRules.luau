@@ -139,7 +139,7 @@ function R.migrate(d, guid)
 			if i and i==math.floor(i) then
 				if i>=1 and i<=C.BaseMaxBays then moved[tostring(i)]=id
 				elseif i>C.BaseMaxBays and i<=C.BaseMaxBays+6 then table.insert(rowItems,{i=i,id=id})
-				elseif i>C.BaseMaxBays+6 and i<=C.MaxBays+6 then moved[tostring(i-6)]=id end
+				elseif i>C.BaseMaxBays+6 and i<=C.Annex.First-1+6 then -- (v1 had 66 bay keys) moved[tostring(i-6)]=id end
 			end
 		end
 		table.sort(rowItems,function(a,b) return a.i<b.i end)
