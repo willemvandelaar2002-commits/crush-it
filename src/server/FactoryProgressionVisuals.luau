@@ -173,7 +173,7 @@ function V.create(plot)
 	local gateArt=W.icon(gateBox,"Art",C.Annex.SignImage,UDim2.fromScale(0,0),UDim2.fromScale(1,1))
 	gateArt.ScaleType=Enum.ScaleType.Stretch gateArt.Visible=hasArt
 	local gateTitle=W.text(gateBox,"Title","🔒 THE ANNEX",if hasArt then UDim2.fromScale(.14,.24) else UDim2.fromScale(.04,.06),if hasArt then UDim2.fromScale(.72,.22) else UDim2.fromScale(.92,.42))
-	local gateInfo=W.text(gateBox,"Info","REBIRTH "..C.Annex.RequireRebirths.." TO UNLOCK",if hasArt then UDim2.fromScale(.14,.48) else UDim2.fromScale(.04,.52),if hasArt then UDim2.fromScale(.72,.16) else UDim2.fromScale(.92,.36))
+	local gateInfo=W.text(gateBox,"Info","REBIRTH "..C.Annex.RequireRebirths.." TO UNLOCK",if hasArt then UDim2.fromScale(.12,.47) else UDim2.fromScale(.04,.52),if hasArt then UDim2.fromScale(.76,.2) else UDim2.fromScale(.92,.36))
 	gateInfo.TextColor3=Color3.fromRGB(255,232,120)
 	gateTitle.ZIndex=2 gateInfo.ZIndex=2
 	-- the rear yard's back rim blocks on the road open when the annex is built

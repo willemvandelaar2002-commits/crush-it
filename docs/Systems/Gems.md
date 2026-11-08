@@ -12,4 +12,9 @@ UI in `src/client/GemShop.client.luau`, tests in `Server/Tests/Gems.spec.luau`.
   - Quick Rolls: roll cooldown -0.25 s per level (never below 1 s), max 4, cost `20 * 2^level`.
 - Gems and upgrades survive every rebirth.
 - Analytics: `GemsEarned`, `GemUpgrade`, `GemCrate`.
-- Art still to swap in (`GemConfig.Icon` = 0 shows the built-in diamond): Gem icon, crate art, upgrade icons.
+  - Gem Pedestal (8 Nov): +1 roll pedestal (a 6th, purple, in front of the roll machine; `C.PedestalSpots[6]`), max 1, 60 Gems.
+    `CrusherRules.pedestalCount`. The 6th pedestal only shows after a rebirth.
+- Art (8 Nov): Willem's images in `GemConfig.Art` (the image ids behind his decals; decal ids in the comments):
+  gem icon (HUD, prices), banner (shop frame, 9-sliced), pink card (crate), crate, upgrade icons, gem pile
+  (rebirth), locked sign (Annex gate), Gem Crusher / Awakened.
+- Gem Crusher: see `Gem Crusher.md`.
