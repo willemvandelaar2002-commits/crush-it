@@ -35,7 +35,7 @@ local status = make("TextLabel", { Text = "DEV (Studio only)", Size = UDim2.new(
 	Font = Enum.Font.GothamBold, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 0 }, panel)
 
 local order = 0
-local function row(title: string, buttons: { { string, () -> () } })
+local function row(title: string, buttons: { { any } })
 	order += 1
 	make("TextLabel", { Text = title, Size = UDim2.new(1, 0, 0, 14), BackgroundTransparency = 1, TextColor3 = rgb(180, 185, 210), Font = Enum.Font.Gotham,
 		TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = order }, panel)
