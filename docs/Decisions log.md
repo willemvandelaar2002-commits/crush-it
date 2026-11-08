@@ -436,3 +436,4 @@
 - 2026-11-08: Auto Buy pass live: id 2074912226, R$ 89.
 - 2026-11-08: Mystery Crate (opens 8 h after the tutorial, then every 20 h: free Rare/Epic/Legendary + 20 min of earnings) and a once-per-session 'your factory never stops' card (Willem's picks for retention). See Systems/Retention.
 - 2026-11-08: Mystery Crate up to Secret (3%), drops from the sky and bursts open with a beam in the rarity's colour (Willem).
+- 2026-11-08: Held crushers 3.6 studs (was 2.2) and working in your hand: ram slams every 1.1 s with sparks, seen by everyone (Willem).
