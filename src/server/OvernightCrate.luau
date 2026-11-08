@@ -80,8 +80,10 @@ local function build(plot: any, owner: Player): Model
 	end
 	-- the countdown sign (text filled in by the client)
 	local bb = Instance.new("BillboardGui")
-	bb.Name = "Sign" bb.Size = UDim2.fromOffset(220, 80) bb.StudsOffsetWorldSpace = Vector3.new(0, body.Size.Y / 2 + 2.3, 0)
-	bb.MaxDistance = 90 bb.AlwaysOnTop = false bb.LightInfluence = 0 bb.Parent = body
+	-- 8 Nov (Willem: "too big and in the crate"): sized in studs, so it shrinks with distance
+	-- like the world, and it floats clear above the crate
+	bb.Name = "Sign" bb.Size = UDim2.fromScale(6, 1.9) bb.StudsOffsetWorldSpace = Vector3.new(0, body.Size.Y / 2 + 2.4, 0)
+	bb.MaxDistance = 70 bb.AlwaysOnTop = false bb.LightInfluence = 0 bb.Parent = body
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.Name = "OpenPrompt" prompt.ActionText = "Open" prompt.ObjectText = "Mystery Crate"
 	prompt.HoldDuration = 0.3 prompt.MaxActivationDistance = 12 prompt.RequiresLineOfSight = false
