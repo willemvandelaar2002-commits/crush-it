@@ -448,3 +448,4 @@
 - 2026-11-08: Exotic pack integrated and checked in Studio: six models in ServerStorage.SpecialCrusherMeshes (place file), icons = image ids behind Willem's decal uploads, all 21 specs pass, full Exotic row +44% active, Auto Roller Exotic tab.
 - 2026-11-08: Auto Roller SKIP ANIMATION toggle: short reveal, next auto roll after 1.5 s instead of 3 (about 2x as many auto rolls); big cinematics still play (Willem).
 - 2026-11-08: SKIP ANIMATION now skips the whole pedestal show (flicker, die spin, reveal highlight), not just shortens it (Willem: still showed it).
+- 2026-11-08: Mythic bays get the special-bay treatment in a shifting rainbow (plate, wall wash, light shafts, 12 sparkles/s) and a rainbow sliding plaque (Willem: Mythic should feel more special).
