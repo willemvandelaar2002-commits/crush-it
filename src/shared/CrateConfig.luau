@@ -8,6 +8,9 @@
 --     your factory keeps earning while you're away (Store.Offline) and when the crate opens,
 --     with REMIND ME (Roblox's notification opt-in) when Roblox allows asking.
 return {
+	-- 8 Nov (Willem: "too early" right after the tutorial): the first crate lands once the
+	-- player reaches this goal (goal 6 = "Fill 6 bays", about 5-8 minutes in)
+	AfterGoal = 6,
 	FirstHours = 8,
 	Hours = 20,
 	Rewards = {
@@ -28,4 +31,7 @@ return {
 	Drop = { Warn = 0.9, Fall = 1.15, Height = 90 },
 	Open = { Shake = 0.7, Burst = 1.4 },
 	NextDropAfter = 3.6,
+	-- 8 Nov (Willem: "zoom in on it so you actually see it"): the owner's camera flies to
+	-- the crate for its drop and its opening, then back. Distance/Height from the crate.
+	Camera = { Distance = 16, Height = 7, Move = 0.6, Hold = 1.2 },
 }
