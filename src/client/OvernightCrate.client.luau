@@ -123,6 +123,7 @@ local function near(pos: Vector3, dist: number): boolean
 end
 -- the owner's camera flies to the crate (8 Nov), then back to the player
 local camBusy = false
+local lastBurst = -100
 local function lookAtCrate(c: Crate, seconds: number): (() -> ())?
 	local cam = Workspace.CurrentCamera
 	if camBusy or Style.hasModal() or me:GetAttribute("CutscenePlaying") == true or cam.CameraType ~= Enum.CameraType.Custom then return nil end
@@ -158,7 +159,8 @@ local function drop(m: Model, c: Crate)
 	setVisible(c, false)
 	m:PivotTo(c.home)
 	local ground = c.home.Position
-	local mine = m:GetAttribute("Owner") == me.UserId
+	-- (the refill right after an opening stays in the normal view: one zoom is enough)
+	local mine = m:GetAttribute("Owner") == me.UserId and os.clock() - lastBurst > 12
 	if mine then -- (wait a little for a goal celebration / window to finish, so you see it)
 		local cam = Workspace.CurrentCamera
 		for _ = 1, 40 do
@@ -203,6 +205,7 @@ local function burst(m: Model, c: Crate, rarity: string?)
 	c.busy = true
 	local color = rarityColor(rarity)
 	local home = c.home
+	if m:GetAttribute("Owner") == me.UserId then lastBurst = os.clock() end
 	local back = if m:GetAttribute("Owner") == me.UserId then lookAtCrate(c, O.Shake + O.Burst) else nil
 	if back then task.wait(K.Camera.Move * 0.7) end
 	-- 1) it rattles
