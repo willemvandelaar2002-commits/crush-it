@@ -96,7 +96,15 @@ for i, o in G.Crate.Odds do
 	c.TextXAlignment = Enum.TextXAlignment.Right
 end
 local open, openText = button(crate, "OPEN  " .. G.Crate.Cost .. " " .. G.Emoji, UDim2.new(0, 18, 1, -66), UDim2.new(1, -36, 0, 52), Style.GREEN, 30)
-open.Activated:Connect(function() Net.event("CrusherAction"):FireServer("GemCrate", {}) end)
+-- what came out: the new crusher's name in its rarity colour over the crate for 4 s
+local result = words(crate, "", UDim2.fromOffset(14, 132), UDim2.new(1, -28, 0, 30), 26, 3)
+result.ZIndex = 12
+local waitingFor: { [string]: boolean }? = nil
+local resultToken = 0
+open.Activated:Connect(function()
+	waitingFor = {}
+	Net.event("CrusherAction"):FireServer("GemCrate", {})
+end)
 
 -- right: permanent upgrades
 local list = make("Frame", { Name = "Upgrades", Position = UDim2.fromOffset(384, 88), Size = UDim2.new(1, -404, 0, H - 108), BackgroundTransparency = 1, ZIndex = 6 }, panel)
@@ -130,7 +138,7 @@ local function refresh()
 	local rate = tonumber(me:GetAttribute("GemRate")) or 0
 	have.Text = G.Emoji .. " " .. gems .. (if rate > 0 then string.format("   +%.1f/min", rate) else "")
 	local label = hud:FindFirstChild("Label") :: TextLabel?
-	if label then label.Text = gems .. " GEMS" end
+	if label then label.Text = tostring(gems) end -- the button is the gem: just the count
 	local canOpen = gems >= G.Crate.Cost
 	Style.setButtonColor(open, if canOpen then Style.GREEN else RGB(120, 124, 140))
 	openText.Text = "OPEN  " .. G.Crate.Cost .. " " .. G.Emoji
@@ -154,7 +162,26 @@ local function showHud()
 	if hud.Visible ~= should then hud.Visible = should place() end
 end
 Net.event("CrusherState").OnClientEvent:Connect(function(v)
-	if type(v) == "table" and type(v.gemUps) == "table" then last = v end
+	if type(v) == "table" and type(v.gemUps) == "table" then
+		-- after OPEN: the crusher that wasn't there before is the crate's
+		if waitingFor and last and type(v.items) == "table" and type(last.items) == "table" then
+			local known: { [string]: boolean } = {}
+			for _, item in last.items do known[item.id] = true end
+			for _, item in v.items do
+				if not known[item.id] then
+					local r = C.rarity(item.rarity) local t = C.typeById(item.type)
+					result.Text = string.upper(item.rarity) .. ": " .. (if t then t.name else item.type) .. "!"
+					result.TextColor3 = if r then r.color else Color3.new(1, 1, 1)
+					waitingFor = nil
+					resultToken += 1
+					local mine = resultToken
+					task.delay(4, function() if resultToken == mine then result.Text = "" end end)
+					break
+				end
+			end
+		end
+		last = v
+	end
 	refresh()
 end)
 me:GetAttributeChangedSignal("Gems"):Connect(refresh)
