@@ -198,14 +198,16 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitPhone)
 	local scroll = make("ScrollingFrame", { Name = "All", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 8,
 		ScrollBarImageColor3 = C(255, 214, 60), AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(), ZIndex = 6 }, area)
-	make("UIListLayout", { Padding = UDim.new(0, 18), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Left }, scroll)
-	make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 24), PaddingLeft = UDim.new(0, 2) }, scroll)
+	-- 5 Nov (Willem: "too much background, compare it to the reference"): tight gaps
+	-- everywhere, like the reference shop (sections 8, items 6, cards 6 apart)
+	make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Left }, scroll)
+	make("UIPadding", { PaddingTop = UDim.new(0, 2), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 2) }, scroll)
 	Style.scroll(scroll)
 
 	local function newPage(name: string, order: number): Frame
 		local s = make("Frame", { Name = name, LayoutOrder = order, Size = UDim2.fromOffset(CONTENT_W - 12, 0), AutomaticSize = Enum.AutomaticSize.Y,
 			BackgroundTransparency = 1, ZIndex = 6 }, scroll)
-		make("UIListLayout", { Padding = UDim.new(0, 12), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Left }, s)
+		make("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Left }, s)
 		pages[name] = s
 		return s
 	end
@@ -264,7 +266,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 
 	-- Section heading "~ Title ~" -----------------------------------------------------
 	local function heading(page: ScrollingFrame, text: string, order: number)
-		local l = label(page, "~ " .. text .. " ~", UDim2.new(), UDim2.fromOffset(BANNER_W, 30), 2.5, 7)
+		local l = label(page, "~ " .. text .. " ~", UDim2.new(), UDim2.fromOffset(BANNER_W, 24), 2.5, 7)
 		l.LayoutOrder = order
 	end
 
@@ -559,10 +561,10 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		Pink = { C(255, 150, 220), C(220, 80, 220), C(130, 60, 230) },
 		Gold = { C(255, 238, 120), C(255, 180, 40), C(245, 120, 30) },
 	}
-	local CARD_W = math.floor((BANNER_W - 24) / 3)
+	local CARD_W = math.floor((BANNER_W - 12) / 3)
 	local function grid(page: ScrollingFrame, order: number, height: number?): Frame
 		local g = make("Frame", { LayoutOrder = order, Size = UDim2.fromOffset(BANNER_W, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, ZIndex = 7 }, page)
-		make("UIGridLayout", { CellSize = UDim2.fromOffset(CARD_W, height or 214), CellPadding = UDim2.fromOffset(12, 12), SortOrder = Enum.SortOrder.LayoutOrder,
+		make("UIGridLayout", { CellSize = UDim2.fromOffset(CARD_W, height or 214), CellPadding = UDim2.fromOffset(6, 6), SortOrder = Enum.SortOrder.LayoutOrder,
 			HorizontalAlignment = Enum.HorizontalAlignment.Center }, g)
 		return g
 	end
@@ -607,20 +609,22 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		make("UIScale", { Scale = CARD_W / 240 }, body)
 		make("ImageLabel", { Name = "Background", Image = if timeSkip then PORTRAIT.TimeSkip else PORTRAIT.Cash, Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 8 }, body)
-		local t = label(body, product.title, UDim2.fromOffset(16, 20), UDim2.fromOffset(208, 32), 3, 10)
+		-- 5 Nov (Willem: "too much of the background visible"): bigger icon and text,
+		-- the empty middle of the card filled
+		local t = label(body, product.title, UDim2.fromOffset(14, 16), UDim2.fromOffset(212, 36), 3, 10)
 		Style.bold(t, 3)
-		local art = icon(body, ShopArt.CashPacks[id] or Icons.Cash, UDim2.fromOffset(52, 60), UDim2.fromOffset(136, 136), 10)
+		local art = icon(body, ShopArt.CashPacks[id] or Icons.Cash, UDim2.fromOffset(30, 50), UDim2.fromOffset(180, 166), 10)
 		art.Name = "Art"
 		bob(art)
-		local amount = label(body, "", UDim2.fromOffset(16, 202), UDim2.fromOffset(208, 32), 3.5, 10)
+		local amount = label(body, "", UDim2.fromOffset(14, 212), UDim2.fromOffset(212, 38), 3.5, 10)
 		amount.Name = "Amount"
 		amount.TextColor3 = C(255, 240, 110)
 		local minutes = Store.CashPackMinutes[id] or 0
 		local span = if minutes >= 60 and minutes % 60 == 0 then (minutes // 60) .. (if minutes == 60 then " hour" else " hours") else minutes .. " min"
 		-- honest wording: cash equal to that much of your current earnings (no timers move)
-		local note = label(body, "Cash = " .. span .. " of earnings", UDim2.fromOffset(16, 236), UDim2.fromOffset(208, 20), 2, 10)
+		local note = label(body, "Cash = " .. span .. " of earnings", UDim2.fromOffset(16, 249), UDim2.fromOffset(208, 20), 2, 10)
 		note.TextColor3 = C(235, 244, 255)
-		local b = bigButton(body, "", UDim2.fromOffset(18, 266), UDim2.fromOffset(204, 40), nil, 11)
+		local b = bigButton(body, "", UDim2.fromOffset(16, 272), UDim2.fromOffset(208, 40), nil, 11)
 		b.Activated:Connect(function() onBuy(b) end)
 		return b, amount
 	end
