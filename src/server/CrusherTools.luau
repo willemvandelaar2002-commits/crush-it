@@ -68,8 +68,12 @@ local function holdModel(tool: Tool, item: any)
 		if ram and ram:IsA("BasePart") then
 			local rw = Instance.new("Weld") rw.Name = "RamWeld"
 			rw.Part0 = main rw.Part1 = ram rw.C0 = main.CFrame:ToObjectSpace(ram.CFrame) rw.Parent = ram
-			-- how far it can travel: down to the bed (or a third of its height without one)
-			local travel = if bed then (ram.Position.Y - ram.Size.Y / 2) - (bed.Position.Y + bed.Size.Y / 2) else ram.Size.Y
+			-- how far it can travel: down to the bed; without one (catalog crushers), part of
+			-- the way down to the bottom of the model
+			local box, size = held:GetBoundingBox()
+			local bottom = box.Position.Y - size.Y / 2
+			local ramBottom = ram.Position.Y - ram.Size.Y / 2
+			local travel = if bed then ramBottom - (bed.Position.Y + bed.Size.Y / 2) else (ramBottom - bottom) * 0.4
 			held:SetAttribute("Travel", math.max(0, travel * 0.9))
 		end
 	end
