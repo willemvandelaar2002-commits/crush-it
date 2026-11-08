@@ -452,7 +452,7 @@ C.RobuxButtonsGoal = 5
 -- thump by Pump studs; sparks on each hit. Everyone sees it.
 C.Hold = { Size = 3.6, Forward = 2.7, Up = 0.5, Stroke = 1.1, Pump = 0.22 }
 -- 8 Nov (Willem): SKIP ANIMATION in the Auto Roller: while Auto Roll runs, the pedestal
--- flicker is cut to RevealSeconds and the next roll comes SkipSeconds after the last
+-- flicker, die spin and reveal flash are skipped and the next roll comes SkipSeconds after the last
 -- (normal: RollSeconds 3). The Secret/Divine/Limited cinematics still play.
 C.AutoRoll = { SkipSeconds = 1.5, Default = { "Legendary", "Exotic", "Limited", "Secret", "Divine" },
 	Rarities = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Exotic", "Limited", "Secret", "Divine" } }
