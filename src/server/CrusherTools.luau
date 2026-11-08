@@ -44,15 +44,35 @@ local function holdModel(tool: Tool, item: any)
 		holder = root
 	end
 	-- 8 Nov: so it can WORK in your hand (client/HeldCrusher animates these welds on every
-	-- client): one main part welded to the body with a Weld "HoldWeld", the ram (press
-	-- crushers) on its own Weld "RamWeld", everything else stuck to the main part.
+	-- client): one main part welded to the body with a Weld "HoldWeld"; the moving parts on
+	-- Welds named "RamWeld" (attribute Travel = studs down): the "Ram" of a press crusher,
+	-- or each moving group (direct child model) of a code-built identity crusher.
+	-- Everything else is stuck to the main part.
 	local parts: { BasePart } = {}
 	for _, p in held:GetDescendants() do if p:IsA("BasePart") then table.insert(parts, p) end end
-	local ram = held:FindFirstChild("Ram", true) :: BasePart?
+	local box, size = held:GetBoundingBox()
+	local bottom = box.Position.Y - size.Y / 2
 	local bed = held:FindFirstChild("Bed", true) :: BasePart?
-	local main: BasePart? = bed
+	local floor = if bed then bed.Position.Y + bed.Size.Y / 2 else nil
+	-- the moving sets: { anchor part, its parts, travel }
+	local movers: { { parts: { BasePart } } } = {}
+	local moving: { [BasePart]: boolean } = {}
+	local ram = held:FindFirstChild("Ram", true)
+	if ram and ram:IsA("BasePart") then
+		table.insert(movers, { parts = { ram } })
+	elseif source and source:GetAttribute("IdentityVersion") ~= nil then
+		for _, child in held:GetChildren() do
+			if child:IsA("Model") then
+				local list = {}
+				for _, p in child:GetDescendants() do if p:IsA("BasePart") then table.insert(list, p) end end
+				if #list > 0 then table.insert(movers, { parts = list }) end
+			end
+		end
+	end
+	for _, m in movers do for _, p in m.parts do moving[p] = true end end
+	local main: BasePart? = if bed and not moving[bed] then bed else nil
 	if not main then
-		for _, p in parts do if p ~= ram and (not main or p.Size.Magnitude > main.Size.Magnitude) then main = p end end
+		for _, p in parts do if not moving[p] and (not main or p.Size.Magnitude > main.Size.Magnitude) then main = p end end
 	end
 	for _, p in parts do
 		p.Anchored = false p.CanCollide = false p.CanTouch = false p.CanQuery = false p.Massless = true
@@ -61,20 +81,24 @@ local function holdModel(tool: Tool, item: any)
 		local hold = Instance.new("Weld") hold.Name = "HoldWeld"
 		hold.Part0 = holder hold.Part1 = main hold.C0 = holder.CFrame:ToObjectSpace(main.CFrame) hold.Parent = main
 		for _, p in parts do
-			if p ~= main and p ~= ram then
+			if p ~= main and not moving[p] then
 				local weld = Instance.new("WeldConstraint") weld.Part0 = main weld.Part1 = p weld.Parent = p
 			end
 		end
-		if ram and ram:IsA("BasePart") then
+		for _, m in movers do
+			-- the set's lowest point travels down to the bed (or part of the way to the bottom)
+			local low, anchor = math.huge, m.parts[1]
+			for _, p in m.parts do
+				low = math.min(low, p.Position.Y - p.Size.Y / 2)
+				if p.Size.Magnitude > anchor.Size.Magnitude then anchor = p end
+			end
+			local travel = if floor and low > floor then low - floor else (low - bottom) * 0.4
 			local rw = Instance.new("Weld") rw.Name = "RamWeld"
-			rw.Part0 = main rw.Part1 = ram rw.C0 = main.CFrame:ToObjectSpace(ram.CFrame) rw.Parent = ram
-			-- how far it can travel: down to the bed; without one (catalog crushers), part of
-			-- the way down to the bottom of the model
-			local box, size = held:GetBoundingBox()
-			local bottom = box.Position.Y - size.Y / 2
-			local ramBottom = ram.Position.Y - ram.Size.Y / 2
-			local travel = if bed then ramBottom - (bed.Position.Y + bed.Size.Y / 2) else (ramBottom - bottom) * 0.4
-			held:SetAttribute("Travel", math.max(0, travel * 0.9))
+			rw.Part0 = main rw.Part1 = anchor rw.C0 = main.CFrame:ToObjectSpace(anchor.CFrame) rw.Parent = anchor
+			rw:SetAttribute("Travel", math.clamp(travel * 0.9, 0, size.Y * 0.35))
+			for _, p in m.parts do
+				if p ~= anchor then local weld = Instance.new("WeldConstraint") weld.Part0 = anchor weld.Part1 = p weld.Parent = p end
+			end
 		end
 	end
 	if tool:FindFirstChild("Held") then held:Destroy() return end -- equipped twice quickly

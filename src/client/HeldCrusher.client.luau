@@ -12,7 +12,7 @@ local RunService = game:GetService("RunService")
 local C = require(RS.Shared.CrusherConfig)
 local Style = require(RS.Shared.Kit.Style)
 
-type Rig = { model: Model, hold: Weld?, ram: Weld?, holdC0: CFrame, ramC0: CFrame, travel: number, offset: number, lastHit: number, spark: ParticleEmitter? }
+type Rig = { model: Model, hold: Weld?, rams: { { weld: Weld, c0: CFrame, travel: number } }, holdC0: CFrame, offset: number, lastHit: number, spark: ParticleEmitter? }
 local rigs: { [Model]: Rig } = {}
 
 local function rarityColor(model: Model): Color3
@@ -26,9 +26,15 @@ end
 
 local function add(model: Model)
 	if rigs[model] then return end
-	local ram = model:FindFirstChild("RamWeld", true) :: Weld?
 	local hold = model:FindFirstChild("HoldWeld", true) :: Weld?
 	if not hold then return end
+	local rams = {}
+	for _, w in model:GetDescendants() do
+		if w:IsA("Weld") and w.Name == "RamWeld" then
+			table.insert(rams, { weld = w, c0 = w.C0, travel = tonumber(w:GetAttribute("Travel")) or 0 })
+		end
+	end
+	local ram = if rams[1] then rams[1].weld else nil
 	local spark: ParticleEmitter? = nil
 	local at = (ram and ram.Part0) or hold.Part1
 	if at then
@@ -45,8 +51,7 @@ local function add(model: Model)
 		e.Parent = a
 		spark = e
 	end
-	rigs[model] = { model = model, hold = hold, ram = ram, holdC0 = hold.C0, ramC0 = if ram then ram.C0 else CFrame.identity,
-		travel = tonumber(model:GetAttribute("Travel")) or 0, offset = math.random() * C.Hold.Stroke, lastHit = 0, spark = spark }
+	rigs[model] = { model = model, hold = hold, rams = rams, holdC0 = hold.C0, offset = math.random() * C.Hold.Stroke, lastHit = 0, spark = spark }
 end
 
 -- watch every character's tools for a "Held" model
@@ -85,8 +90,16 @@ RunService.RenderStepped:Connect(function()
 		if not model.Parent or not (r.hold and r.hold.Parent) then rigs[model] = nil continue end
 		local t = ((now + r.offset) % C.Hold.Stroke) / C.Hold.Stroke
 		local f = stroke(t)
-		if r.ram and r.ram.Parent and r.travel > 0 then
-			r.ram.C0 = r.ramC0 * CFrame.new(0, -r.travel * f, 0)
+		local moved = false
+		for i, ram in r.rams do
+			if ram.weld.Parent and ram.travel > 0 then
+				-- several moving parts take turns a little (like the bay machines)
+				local ti = ((t + (i - 1) * 0.12) % 1)
+				ram.weld.C0 = ram.c0 * CFrame.new(0, -ram.travel * stroke(ti), 0)
+				moved = true
+			end
+		end
+		if moved then
 			-- the hit makes the whole crusher kick a little too
 			local kick = if t >= 0.16 and t < 0.3 then (1 - (t - 0.16) / 0.14) * C.Hold.Pump * 0.5 else 0
 			r.hold.C0 = r.holdC0 * CFrame.new(0, -kick, 0)
