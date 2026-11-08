@@ -409,7 +409,10 @@ task.spawn(function()
 	while true do
 		local shop = me.PlayerGui:FindFirstChild("ShopButton", true)
 		local sg = shop and shop:FindFirstAncestorOfClass("ScreenGui")
-		hud.Visible = sg ~= nil and sg.Enabled and (shop :: GuiObject).Visible
+		-- 8 Nov (Willem: "we already have the thing on the plot"): the AUTO ROLL console in the
+		-- world opens the window; this button only shows WHILE it runs ("AUTO: ON"), so you
+		-- can open the window / stop it from anywhere
+		hud.Visible = sg ~= nil and sg.Enabled and (shop :: GuiObject).Visible and running()
 		-- just left of the crusher hotbar, which grows with the crushers you own
 		local bar = me.PlayerGui:FindFirstChild("CrusherHotbar")
 		bar = bar and bar:FindFirstChild("Bar")

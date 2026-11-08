@@ -438,3 +438,4 @@
 - 2026-11-08: Mystery Crate up to Secret (3%), drops from the sky and bursts open with a beam in the rarity's colour (Willem).
 - 2026-11-08: Held crushers 3.6 studs (was 2.2) and working in your hand: ram slams every 1.1 s with sparks, seen by everyone (Willem).
 - 2026-11-08: Mystery Crate lands at goal 6 (was right after the tutorial); the camera zooms to it for the drop and the opening (Willem).
+- 2026-11-08: the HUD AUTO ROLL button only shows while Auto Roll runs (AUTO: ON, to open/stop it); the world console beside the roll machine opens the window (Willem).
