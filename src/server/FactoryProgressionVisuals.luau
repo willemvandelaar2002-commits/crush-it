@@ -151,18 +151,19 @@ function V.create(plot)
 	end
 	-- the gate across the rear yard road: two pillars, a striped barrier, the sign
 	local gate=Instance.new("Model") gate.Name="AnnexGate" gate.Parent=root
-	local gz=yardBack+1 local gx=C.Layout.RoadHalf+2
 	local purple=Color3.fromRGB(150,70,230)
+	local gz=yardBack+1 local gx=C.Layout.RoadHalf+2
 	for _,x in {-gx,gx} do
-		W.part(gate,"GatePillar",Vector3.new(2.4,13,2.4),o*CFrame.new(x,6.5,gz),W.Navy,true)
-		local cap=W.part(gate,"GatePillarCap",Vector3.new(3,1,3),o*CFrame.new(x,13.5,gz),Style.Colors.Gold) cap.Material=Enum.Material.Metal
+		-- tall enough that the sign clears the rear yard's upper banks (2 floors + parapet)
+		W.part(gate,"GatePillar",Vector3.new(2.4,31,2.4),o*CFrame.new(x,15.5,gz),W.Navy,true)
+		for _,y in {8,16,24} do W.part(gate,"GatePillarBand",Vector3.new(2.8,.6,2.8),o*CFrame.new(x,y,gz),purple) end
 	end
 	for i=0,5 do
 		local w=(2*gx-2.4)/6
 		W.part(gate,"GateBar",Vector3.new(w,1.2,.8),o*CFrame.new(-gx+1.2+w*(i+.5),3.2,gz),if i%2==0 then Style.Colors.Yellow else W.Navy,true)
 		W.part(gate,"GateBarLow",Vector3.new(w,1.2,.8),o*CFrame.new(-gx+1.2+w*(i+.5),1.2,gz),if i%2==1 then Style.Colors.Yellow else W.Navy,true)
 	end
-	local gateFace,gateGui=W.panel(gate,o*CFrame.new(0,17.5,gz),22,8,purple,true)
+	local gateFace,gateGui=W.panel(gate,o*CFrame.new(0,36,gz),28,10,purple,true)
 	gateGui.MaxDistance=320
 	local gateBox=Instance.new("Frame") gateBox.Name="Content" gateBox.BackgroundTransparency=1 gateBox.Size=UDim2.fromScale(1,1) gateBox.Parent=gateGui
 	local gateArt=W.icon(gateBox,"Art",C.Annex.SignImage,UDim2.fromScale(0,0),UDim2.fromScale(1,1))
