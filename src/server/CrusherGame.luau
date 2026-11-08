@@ -1025,6 +1025,7 @@ function G.start()
 		finishLegacyProduct=function(p) local d=Data.get(p) if d then d.scrap=C.money(d.scrap+d.crushers.available) d.crushers.available=0 action(p,"Sell") end end}
 	require(script.Parent.Shop).start(api) require(script.Parent.Rewards).start(api)
 	require(script.Parent.DailySpin).start(api)
+	require(script.Parent.OvernightCrate).start(api) -- 8 Nov: the Mystery Crate
 	require(script.Parent.Quests).start(api)
 	require(script.Parent.TopBoards).start(api)
 	require(script.Parent.Boosts).start(api)

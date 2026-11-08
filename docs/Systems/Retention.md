@@ -55,3 +55,15 @@ Levers: the daily reward + notifications (open us first), a first session past 1
 - Also 5 Nov: stuck hints after 8 s (was 15); tutorial guidance stops pulsing with Reduced Motion.
 
 - 2026-11-08 (Willem, "impatient kid" playtest): HUD badges: the Rewards "!" goes once the panel was opened and comes back only when something NEW can be claimed; the Index "!" likewise. Shop "!" unchanged (until opened once per session).
+
+## 8 Nov: MYSTERY CRATE + "factory never stops" (Shared/CrateConfig, server/OvernightCrate, client/OvernightCrate)
+Willem picked these two from the retention ideas (the Day 2 gift is close to the daily reward we have).
+- After the tutorial a purple crate with gold bands lands on your plot, beside the walkway near the entrance
+  (CrateConfig.Spot). Card: "A MYSTERY CRATE ARRIVED! It opens in 8 hours. Free crusher inside, up to LEGENDARY!"
+  with REMIND ME (Roblox notification opt-in, when Roblox allows asking).
+- Its sign counts down ("Opens in 7h 59m"), then bounces "READY! OPEN ME". Prompt "Open": a free crusher
+  (Rare 55 / Epic 33 / Legendary 12) + 20 minutes of earnings; the next crate opens 20 h later. Saved as
+  d.crate.readyAt (os.time). Opening too early tells you when. Analytics custom event `MysteryCrateOpened`.
+- Away card, once per session after 8 min of play (once the crate exists): "YOUR FACTORY NEVER STOPS / Earns up to
+  $X while you're away (Store.Offline: 10% for 6 h, VIP 12 h) / Mystery Crate opens in ..." + REMIND ME.
+- Idea for later: a notification "Your Mystery Crate is ready!" (needs a second notification string from Willem).
