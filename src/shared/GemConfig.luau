@@ -31,6 +31,17 @@ G.Art = {
 	},
 }
 G.Icon = G.Art.Icon
+-- What rebirths unlock (the rebirth panel shows the next one; 8 Nov)
+G.Milestones = {
+	{ rebirths = 1, text = "GEM SHOP", art = G.Art.Icon },
+	{ rebirths = 3, text = "THE ANNEX", art = G.Art.Gate },
+	{ rebirths = 5, text = "GEM CRUSHER", art = G.Art.Crusher },
+	{ rebirths = 10, text = "AWAKENED GEM CRUSHER", art = G.Art.Awakened },
+}
+function G.nextMilestone(rebirths: number): any
+	for _, m in G.Milestones do if m.rebirths > rebirths then return m end end
+	return nil
+end
 G.Emoji = "💎"
 G.UnlockRebirths = 1 -- the Gem Shop opens after this many rebirths
 
@@ -60,7 +71,7 @@ G.Upgrades = {
 	{ id = "Luck", title = "Gem Luck", line = "+10% luck per level", per = 0.10, max = 10, base = 15, growth = 1.5 },
 	{ id = "Rolls", title = "Quick Rolls", line = "Rolls 0.25 s faster per level", per = 0.25, max = 4, base = 20, growth = 2 },
 	-- 8 Nov: a 6th roll pedestal (the purple one in front of the roll machine)
-	{ id = "Pedestal", title = "Gem Pedestal", line = "+1 roll pedestal: 6 choices per roll", per = 1, max = 1, base = 60, growth = 1 },
+	{ id = "Pedestal", title = "Gem Pedestal", line = "+1 pedestal: 6 choices per roll", per = 1, max = 1, base = 60, growth = 1 },
 }
 function G.upgrade(id: string): any
 	for _, u in G.Upgrades do if u.id == id then return u end end

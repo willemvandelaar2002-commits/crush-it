@@ -408,6 +408,31 @@ do
   table.insert(rarity.types, entry.id)
  end
 end
+-- 8 Nov: THE GEM CRUSHER (Willem: "a special crusher you unlock, REBIRTH 5-10 TO UNLOCK").
+-- Every player gets one at rebirth 5; at rebirth 10 that same crusher (same id, level,
+-- finish, bay) becomes the Awakened Gem Crusher. Never rolled, never in a crate or a
+-- shop, can't be trashed or recycled. Mythic tier (rows, rainbow bay); value per input
+-- above every Mythic (660), and it makes Gems while it sits in a bay (gems / min).
+-- Model: Willem's Blender model goes in ServerStorage.SpecialCrusherMeshes.<id> with a
+-- SpecialCrusherAssets entry, then set template = id here. Until then it borrows the
+-- FactoryHeart rig in gem colours (design / color). Icons: GemConfig.Art.
+C.GemCrushers = {
+	{ id = "GemCrusher", name = "Gem Crusher", rebirths = 5, value = 1200, gems = 1, design = "FactoryHeart", color = Color3.fromRGB(235, 80, 210) },
+	{ id = "GemCrusherAwakened", name = "Awakened Gem Crusher", rebirths = 10, value = 2400, gems = 2.5, design = "FactoryHeart", color = Color3.fromRGB(120, 235, 255) },
+}
+do
+	local band
+	for _, existing in C.Types do if existing.id == "JackpotPress" then band = existing break end end
+	assert(band, "Missing Mythic band for the Gem Crusher")
+	for _, entry in C.GemCrushers do
+		local def = table.clone(band)
+		def.id = entry.id def.name = entry.name def.template = entry.template
+		def.design = if entry.template then nil else entry.design def.accent = entry.color
+		def.value = entry.value def.rarity = "Mythic" def.gem = entry
+		table.insert(C.Types, def) -- (not in any rarity's roll list)
+	end
+end
+function C.gemCrusher(typeId) local def = C.typeById(typeId) return def and def.gem end
 -- What a crusher crushes, by its rarity (29 Oct): the toy objects in
 -- Config.Objects (meshes in ReplicatedStorage.ObjectMeshes). Rarer crushers get
 -- bigger, cooler things; a tier with two picks one at random for each input.

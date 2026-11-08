@@ -170,7 +170,7 @@ function R.migrate(d, guid)
 	s.gemUps={} for _,u in Gems.Upgrades do s.gemUps[u.id]=math.clamp(integer(ups[u.id],0,u.max),0,u.max) end
 	local owned,ids={},{}
 	-- crate crushers have one fixed tier: copies saved under an older tier follow it
-	local function fixTier(v) local def=C.typeById(v.type) if def and def.crate and def.rarity and C.rarity(def.rarity) then v.rarity=def.rarity end end
+	local function fixTier(v) local def=C.typeById(v.type) if def and (def.crate or def.gem) and def.rarity and C.rarity(def.rarity) then v.rarity=def.rarity end end
 	for _,v in (if type(s.owned)=="table" then s.owned else {}) do
 		if type(v)=="table" then fixTier(v) end
 		if type(v)=="table" and C.typeById(v.type) and C.rarity(v.rarity) and C.modifier(v.modifier) and (#owned<C.MaxInventory or C.rarity(v.rarity).exclusive) then
@@ -182,6 +182,7 @@ function R.migrate(d, guid)
 	end
 	if #owned==0 then local id=guid() table.insert(owned,{id=id,type="Bumper",rarity="Common",modifier="Standard",level=1}) ids[id]=true end
 	s.owned=owned
+	R.gemCrusher(s,guid) -- 8 Nov: rebirth 5+ saves get the Gem Crusher (10+: awakened)
 	-- Index: every type ever owned (kept after recycling) and claimed milestones
 	local seen={}
 	for typeId,v in (if type(s.seen)=="table" then s.seen else {}) do if v==true and C.typeById(typeId) then seen[typeId]=true end end
@@ -397,7 +398,11 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if s.fusion and s.fusion.item then s.fusion.item.level=1 end
 		s.rebirths=n+1
 		local gems=Gems.forRebirth(s.rebirths) s.gems+=gems -- 8 Nov: every rebirth pays Gems
-		return true,"REBIRTH "..s.rebirths.."! Income x"..C.rebirthMult(s.rebirths)..", luck x"..C.rebirthLuck(s.rebirths).." forever. +"..gems.." Gems!",s.rebirths
+		-- 8 Nov: rebirth 5 gives the Gem Crusher, rebirth 10 awakens it
+		local gem,how=R.gemCrusher(s,guid)
+		local extra=if how=="new" then " You got the GEM CRUSHER!" elseif how=="awakened" then " Your Gem Crusher AWAKENED!" else ""
+		if gem then R.markSeen(s) end
+		return true,"REBIRTH "..s.rebirths.."! Income x"..C.rebirthMult(s.rebirths)..", luck x"..C.rebirthLuck(s.rebirths).." forever. +"..gems.." Gems!"..extra,s.rebirths
 	elseif action=="GemUpgrade" then
 		-- 8 Nov: permanent Gem upgrades (GemConfig.Upgrades), kept through rebirths
 		if (s.rebirths or 0)<Gems.UnlockRebirths then return false,"The Gem Shop opens after your first rebirth." end
@@ -437,6 +442,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		local equipped={} for _,id in s.equipped do equipped[id]=true end
 		local want={} for i=1,#ids do local id=ids[i] if type(id)=="string" then want[id]=true end end -- 5 Nov: only the counted list part
 		local gone=0
+		for _,item in s.owned do if want[item.id] and C.gemCrusher(item.type) then want[item.id]=nil end end -- 8 Nov: the Gem Crusher stays
 		for _,item in s.owned do if want[item.id] and not equipped[item.id] then gone+=1 end end
 		if gone==0 then return false,"Those crushers are equipped. Take them out of their bay first." end
 		if gone>=#s.owned then return false,"Keep at least one crusher." end
@@ -650,11 +656,31 @@ end
 function R.pedestalCount(s)
 	return math.min(#C.PedestalSpots,C.pedestals(s.upgrades.Pedestals)+Gems.extraPedestals(s))
 end
+-- 8 Nov: make sure a save has the Gem Crusher its rebirths earned (rebirth 5: one Gem
+-- Crusher; rebirth 10: that one becomes the Awakened Gem Crusher, keeping its id, level,
+-- finish and bay). Returns the item and "new" / "awakened" when something changed.
+function R.gemCrusher(s,guid)
+	local want=nil
+	for i=#C.GemCrushers,1,-1 do local g=C.GemCrushers[i] if (s.rebirths or 0)>=g.rebirths then want=g break end end
+	if not want then return nil,nil end
+	for _,v in s.owned do
+		local gem=C.gemCrusher(v.type)
+		if gem then
+			if gem.rebirths<want.rebirths then v.type=want.id v.rarity="Mythic" return v,"awakened" end
+			return nil,nil
+		end
+	end
+	if s.fusion and s.fusion.item and C.gemCrusher(s.fusion.item.type) then return nil,nil end
+	local item={id=guid(),type=want.id,rarity="Mythic",modifier=C.Modifiers[1].name,level=1}
+	table.insert(s.owned,item)
+	return item,"new"
+end
 function R.gemRate(d)
 	local s=d.crushers local rate=0
 	for i=1,math.min(s.bays,C.bayCapacity(s.plotLevel)) do
 		local id=s.equipped[tostring(i)] local item=id and R.find(d,id)
-		if item then rate+=Gems.Trickle[item.rarity] or 0 end
+		local gem=item and C.gemCrusher(item.type)
+		if gem then rate+=gem.gems elseif item then rate+=Gems.Trickle[item.rarity] or 0 end
 	end
 	return rate
 end
