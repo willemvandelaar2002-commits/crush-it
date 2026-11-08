@@ -118,3 +118,4 @@ PointLight (`RowAura` parts in `RarityRowN`, hidden until active, set by
 `CrusherRowVisuals.sync`). The client pulses them around their `Base`
 transparency, and sparkles now play for every rarity (softer for
 Common/Uncommon/Rare). Bonus numbers are unchanged.
+- 8 Nov: Mythic bays (client/SpecialBayFx, C.SpecialBay.Mythic, rainbow = true): plate, wash, shafts and sparkles cycle through the rainbow; plaque band in rainbow colours.

@@ -471,6 +471,9 @@ C.SpecialBay = {
 	Divine = { main = Color3.fromRGB(255, 205, 80), accent = Color3.fromRGB(120, 235, 255), sparkles = 9, shafts = true },
 	-- 6 Nov: Limited (Lucky Weekend): clover green and gold
 	Limited = { main = Color3.fromRGB(70, 225, 100), accent = Color3.fromRGB(255, 205, 60), sparkles = 7, shafts = false },
+	-- 8 Nov (Willem: "mythic should feel more special"): the top tier gets everything, in a
+	-- rainbow that keeps shifting (rainbow = true: plate, wash, shafts and sparkles cycle hues)
+	Mythic = { main = Color3.fromRGB(255, 70, 190), accent = Color3.fromRGB(80, 230, 255), sparkles = 12, shafts = true, rainbow = true },
 	PlateTransparency = { 0.5, 0.75 }, PulseSeconds = 1.6, WallHeight = 9,
 	-- the bay plaque (Willem: "this stuff that changes"): a colour band sliding across,
 	-- a shine sweeping over it and a glowing rim; seconds per slide / per shine
@@ -479,6 +482,8 @@ C.SpecialBay = {
 		Secret = { Color3.fromRGB(58, 18, 112), Color3.fromRGB(150, 40, 210), Color3.fromRGB(235, 60, 190), Color3.fromRGB(40, 170, 230), Color3.fromRGB(58, 18, 112) },
 		Divine = { Color3.fromRGB(190, 110, 20), Color3.fromRGB(235, 165, 40), Color3.fromRGB(250, 205, 90), Color3.fromRGB(60, 150, 230), Color3.fromRGB(190, 110, 20) },
 		Limited = { Color3.fromRGB(20, 110, 50), Color3.fromRGB(40, 170, 70), Color3.fromRGB(200, 160, 30), Color3.fromRGB(40, 170, 70), Color3.fromRGB(20, 110, 50) },
+		Mythic = { Color3.fromRGB(255, 60, 120), Color3.fromRGB(255, 170, 40), Color3.fromRGB(255, 235, 70), Color3.fromRGB(70, 220, 110),
+			Color3.fromRGB(60, 190, 255), Color3.fromRGB(170, 90, 255), Color3.fromRGB(255, 60, 120) },
 		SlideSeconds = 4, ShineEvery = 3.2,
 	},
 }
