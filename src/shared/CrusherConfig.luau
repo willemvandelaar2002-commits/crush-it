@@ -133,7 +133,7 @@ C.PlotUpgrade = {MaxLevel=6,
 	Accents={Color3.fromRGB(80,190,255),Color3.fromRGB(255,222,24),Color3.fromRGB(255,140,40),Color3.fromRGB(205,215,228),Color3.fromRGB(255,210,68),Color3.fromRGB(190,90,255)},
 	-- 2 Nov evening (doc: a capped-out player had nothing to buy for hours): much
 	-- higher caps; prices keep rising (x1.65 / x1.38 per level), so it stays a choice
-	Caps={{global=30,level=60},{global=40,level=80},{global=55,level=110},{global=70,level=140},{global=90,level=180},{global=110,level=220}}}
+	Caps={{global=30,level=60},{global=40,level=80},{global=55,level=110},{global=70,level=140},{global=90,level=180},{global=90,level=180}}} -- (8 Nov: the Annex adds bays, not caps)
 -- 8 Nov: rebirths needed for a plot level (0 = none)
 function C.plotRebirths(level) return C.PlotUpgrade.Rebirths[level] or 0 end
 -- plot levels where things unlock (2 Nov: each one level later than before)
@@ -663,7 +663,7 @@ function C.rollSeconds() return C.RollSeconds end
 -- Caps grow with the plot upgrade (PlotUpgrade.Caps). Pedestals keep their own max.
 -- Luck keeps the older, lower caps (start, Factory II..VI): its effect grows
 -- with the rank of the tier, so the 2 Nov cap raise is for the cash upgrades only
-C.LuckCaps={20,25,30,40,50,60}
+C.LuckCaps={20,25,30,40,50,60,60}
 function C.upgradeMax(id,plotLevel)
 	local u=C.Upgrades[id] if u.max then return u.max end
 	if id=="Luck" then return C.LuckCaps[math.clamp(math.floor(plotLevel or 0),0,#C.LuckCaps-1)+1] end
