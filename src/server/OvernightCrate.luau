@@ -129,6 +129,9 @@ function M.start(api: any)
 		if not c.readyAt then
 			fresh = true
 			if (d.crushers.tutorial or 0) <= #C.TutorialSteps then return end
+			-- (8 Nov: not right after the tutorial; goal 0/nil = older saves past the goals)
+			local goal = d.crushers.goal or 0
+			if goal ~= 0 and goal < K.AfterGoal then return end
 			c.readyAt = os.time() + K.FirstHours * 3600
 			remote:FireClient(p, { arrived = true, readyAt = c.readyAt })
 		end

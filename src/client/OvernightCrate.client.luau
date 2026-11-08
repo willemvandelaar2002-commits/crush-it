@@ -121,12 +121,46 @@ local function near(pos: Vector3, dist: number): boolean
 	local root = ch and ch:FindFirstChild("HumanoidRootPart") :: BasePart?
 	return root ~= nil and (root.Position - pos).Magnitude < dist
 end
+-- the owner's camera flies to the crate (8 Nov), then back to the player
+local camBusy = false
+local function lookAtCrate(c: Crate, seconds: number): (() -> ())?
+	local cam = Workspace.CurrentCamera
+	if camBusy or Style.hasModal() or me:GetAttribute("CutscenePlaying") == true or cam.CameraType ~= Enum.CameraType.Custom then return nil end
+	camBusy = true
+	me:SetAttribute("CutscenePlaying", true)
+	local Q = K.Camera
+	local target = c.home.Position + Vector3.new(0, 3, 0)
+	-- from the player's side of the crate, so they see where it is
+	local root = me.Character and me.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	local from = if root then (root.Position - target) * Vector3.new(1, 0, 1) else c.home.LookVector
+	if from.Magnitude < 0.1 then from = c.home.LookVector end
+	local eye = target + from.Unit * Q.Distance + Vector3.new(0, Q.Height, 0)
+	local start = cam.CFrame
+	cam.CameraType = Enum.CameraType.Scriptable
+	TweenService:Create(cam, TweenInfo.new(Q.Move, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { CFrame = CFrame.lookAt(eye, target) }):Play()
+	local done = false
+	local function back()
+		if done then return end
+		done = true
+		local t = TweenService:Create(cam, TweenInfo.new(Q.Move, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), { CFrame = start })
+		t:Play()
+		t.Completed:Wait()
+		cam.CameraType = Enum.CameraType.Custom
+		me:SetAttribute("CutscenePlaying", nil)
+		camBusy = false
+	end
+	task.delay(seconds + 8, back) -- safety
+	return back
+end
 local function drop(m: Model, c: Crate)
 	local D = K.Drop
 	c.busy = true
 	setVisible(c, false)
 	m:PivotTo(c.home)
 	local ground = c.home.Position
+	local mine = m:GetAttribute("Owner") == me.UserId
+	local back = if mine then lookAtCrate(c, D.Warn + D.Fall + 1) else nil
+	if back then task.wait(K.Camera.Move * 0.7) end
 	-- a warning ring where it will land
 	ring(ground + Vector3.new(0, 0.2, 0), rgb(255, 215, 80), 12, D.Warn)
 	local beam = fx("Part", { Size = Vector3.new(1.2, D.Height, 1.2), CFrame = CFrame.new(ground + Vector3.new(0, D.Height / 2, 0)),
@@ -155,12 +189,15 @@ local function drop(m: Model, c: Crate)
 	end
 	m:PivotTo(c.home)
 	c.busy = false
+	if back then task.wait(K.Camera.Hold) back() end
 end
 local function burst(m: Model, c: Crate, rarity: string?)
 	local O = K.Open
 	c.busy = true
 	local color = rarityColor(rarity)
 	local home = c.home
+	local back = if m:GetAttribute("Owner") == me.UserId then lookAtCrate(c, O.Shake + O.Burst) else nil
+	if back then task.wait(K.Camera.Move * 0.7) end
 	-- 1) it rattles
 	local t0 = os.clock()
 	while os.clock() - t0 < O.Shake do
@@ -200,6 +237,7 @@ local function burst(m: Model, c: Crate, rarity: string?)
 	setVisible(c, false)
 	if lid then lid.LocalTransparencyModifier = 0 end
 	c.busy = false
+	if back then task.wait(K.Camera.Hold * 0.6) back() end
 end
 local function watch(m: Model)
 	local body = m:WaitForChild("Body", 10)
@@ -306,12 +344,12 @@ end)
 Net.event("Crate").OnClientEvent:Connect(function(msg: any)
 	if type(msg) ~= "table" then return end
 	if msg.arrived then
-		task.delay(4, function() -- after the tutorial's own celebration
+		task.delay(K.Drop.Warn + K.Drop.Fall + K.Camera.Move * 2 + K.Camera.Hold + 2.5, function() -- after it landed and the camera is back
 			show("🎁", "A MYSTERY CRATE ARRIVED!", "It opens in " .. K.FirstHours .. " hours", "Free crusher inside, up to SECRET!", true)
 		end)
 	elseif type(msg.opened) == "table" then
 		local o = msg.opened
-		task.delay(K.Open.Shake + 0.9, function() -- after the lid blows off
+		task.delay(K.Open.Shake + 0.9 + K.Camera.Move * 2 + K.Camera.Hold * 0.6, function() -- after the lid blows off and the camera is back
 			show("🎉", "MYSTERY CRATE OPENED!", tostring(o.name) .. " (" .. tostring(o.rarity) .. ")", "+" .. tostring(o.cash) .. "  ·  next crate in " .. K.Hours .. "h", false)
 			line1.TextColor3 = rarityColor(o.rarity):Lerp(Color3.new(1, 1, 1), 0.25)
 		end)
