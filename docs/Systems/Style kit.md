@@ -157,3 +157,8 @@ labels, cash + friend boost, the offline card, Index/Coating/Fusion titles,
 tutorial step title, event shield %. (Not on world SurfaceGuis: two extra
 labels each.) Travel buttons: brighter colours, still studs tinted with the
 button colour (0.15). Drifting studs only on the offline card's 2X / 5X buttons (Willem: moving studs elsewhere look weird). Icon tiles: studs at 0.2.
+
+## 8 Nov: Studio DEV panel (client/DevPanel, server/CrusherGame "Dev" remote)
+Studio only (the server handler exists only in Studio). A small DEV button bottom left opens: plot level 1-5
+(skips tutorial and main goals, unlocks that level's bays), skip tutorial / + goals, cash +1M/+1B/+1T,
+big roll Secret/Divine/Limited, Mystery Crate ready, Lucky Weekend on/off. Chat: /plot 1-5.
