@@ -447,3 +447,4 @@
 - 2026-11-08: Added six permanent Exotic crushers between Legendary and Secret, coral/mint art and motion rigs, 1-in-15,000 per-type base odds, 44% row bonus and 5.5 fleet points. Existing higher-tier odds/ranks remain; models/icons require Studio import and Play verification. See Systems/Exotic crushers.
 - 2026-11-08: Exotic pack integrated and checked in Studio: six models in ServerStorage.SpecialCrusherMeshes (place file), icons = image ids behind Willem's decal uploads, all 21 specs pass, full Exotic row +44% active, Auto Roller Exotic tab.
 - 2026-11-08: Auto Roller SKIP ANIMATION toggle: short reveal, next auto roll after 1.5 s instead of 3 (about 2x as many auto rolls); big cinematics still play (Willem).
+- 2026-11-08: SKIP ANIMATION now skips the whole pedestal show (flicker, die spin, reveal highlight), not just shortens it (Willem: still showed it).

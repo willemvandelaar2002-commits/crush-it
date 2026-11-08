@@ -39,6 +39,7 @@
 - Remote "AutoRoll"(on, picks (list of rarity names and crusher ids), buy). Shop funnel source "AutoBuyButton".
 - SKIP ANIMATION (8 Nov, Willem): a toggle right of "Tap crushers to target them" (attribute AutoRollSkip, 4th
   argument of the AutoRoll remote, not saved). While Auto Roll runs with it on, server/AutoRoll sets ctx.fastRoll
-  for its roll: the pedestal reveal takes C.AutoRoll.RevealSeconds (0.3 s) and the next roll comes after
+  for its roll: no flicker, no die spin, all pedestals at once without the reveal highlight/sting (offer
+  attribute RevealFast, client/RollReveal), and the next roll comes after
   C.AutoRoll.SkipSeconds (1.5 s, normal 3). Measured: 4 rolls / 15 s normal, 9 with skip. Big cinematics
   (Limited, Secret, Divine) still play. Manual rolls are unchanged.
