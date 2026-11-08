@@ -62,8 +62,15 @@ Willem picked these two from the retention ideas (the Day 2 gift is close to the
   (CrateConfig.Spot). Card: "A MYSTERY CRATE ARRIVED! It opens in 8 hours. Free crusher inside, up to LEGENDARY!"
   with REMIND ME (Roblox notification opt-in, when Roblox allows asking).
 - Its sign counts down ("Opens in 7h 59m"), then bounces "READY! OPEN ME". Prompt "Open": a free crusher
-  (Rare 55 / Epic 33 / Legendary 12) + 20 minutes of earnings; the next crate opens 20 h later. Saved as
+  (Rare 52 / Epic 32 / Legendary 13 / Secret 3; 8 Nov Willem: up to Secret) + 20 minutes of earnings; the next crate opens 20 h later. Saved as
   d.crate.readyAt (os.time). Opening too early tells you when. Analytics custom event `MysteryCrateOpened`.
 - Away card, once per session after 8 min of play (once the crate exists): "YOUR FACTORY NEVER STOPS / Earns up to
   $X while you're away (Store.Offline: 10% for 6 h, VIP 12 h) / Mystery Crate opens in ..." + REMIND ME.
+- Animation (8 Nov, Willem: "very interesting with an animation dropping"), client-only from model attributes
+  DropAt / OpenedAt + OpenRarity (CrateConfig.Drop / Open): a gold warning ring and light beam where it lands,
+  the crate falls ~90 studs spinning, lands with a dust ring, a camera shake (if close and Shake is on) and two
+  bounces. Opening: the crate rattles, the lid flies off spinning, a beam in the rarity's colour shoots up with
+  sparks, the crate vanishes, the card follows (name in the rarity's colour), and the next crate drops 3.6 s later.
+  Everyone nearby sees it.
+- Willem can make: a crate mesh with a separate lid, a crate icon for the cards (now emoji), a card frame.
 - Idea for later: a notification "Your Mystery Crate is ready!" (needs a second notification string from Willem).
