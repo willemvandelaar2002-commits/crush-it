@@ -76,5 +76,9 @@ Willem picked these two from the retention ideas (the Day 2 gift is close to the
 - Camera (8 Nov, Willem: "zoom in on it so you actually see it"): for the owner, the camera flies to the crate
   (CrateConfig.Camera) for the first drop and for every opening, then back; it waits up to 10 s for a goal
   celebration or window to finish. The refill drop right after an opening stays in the normal view.
-- Willem can make: a crate mesh with a separate lid, a crate icon for the cards (now emoji), a card frame.
+- Model (8 Nov): Willem's CrushIt-Mystery-Crate (assets/mystery-crate: FBX, blend, icon). Imported MeshParts Body /
+  Lid / Seal live in ServerStorage.MysteryCrateModel (place file, not in Git). server/OvernightCrate clones it,
+  scales it to CrateConfig.ModelWidth (6.4 studs across), stands it on the base and turns the Seal (front) toward
+  the walkway; without it the block placeholder. On opening the lid swings 105 degrees open on its rear hinge
+  (client). Still to do: the icon (MysteryCrate-Icon.png) on the cards instead of the emoji.
 - Idea for later: a notification "Your Mystery Crate is ready!" (needs a second notification string from Willem).
