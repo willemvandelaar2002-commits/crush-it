@@ -1,5 +1,9 @@
 # Crush It
 
+8 Nov Exotic crushers: six permanent rollable machines between Legendary and
+Secret, with coral/mint visuals and imported motion rigs. Studio import pending.
+See [[Systems/Exotic crushers]].
+
 30 Oct shop presentation: the Factory Crate card now previews individual rewards,
 with a larger spotlight, floating artwork and glints; shop focus uses mild camera
 blur. Existing crate rules/purchases stay intact. See [[Systems/Shop]].

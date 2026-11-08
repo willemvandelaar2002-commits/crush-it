@@ -53,3 +53,32 @@ Levers: the daily reward + notifications (open us first), a first session past 1
   still logs the skipped steps as done (so the goal steps stay in order): subtract TutorialSkipped when reading
   steps 3-9.
 - Also 5 Nov: stuck hints after 8 s (was 15); tutorial guidance stops pulsing with Reduced Motion.
+
+- 2026-11-08 (Willem, "impatient kid" playtest): HUD badges: the Rewards "!" goes once the panel was opened and comes back only when something NEW can be claimed; the Index "!" likewise. Shop "!" unchanged (until opened once per session).
+
+## 8 Nov: MYSTERY CRATE + "factory never stops" (Shared/CrateConfig, server/OvernightCrate, client/OvernightCrate)
+Willem picked these two from the retention ideas (the Day 2 gift is close to the daily reward we have).
+- Since 8 Nov (Willem: "too early") it lands at goal CrateConfig.AfterGoal (6, about 5-8 minutes in), not
+  right after the tutorial. A purple crate with gold bands lands on your plot, beside the walkway near the entrance
+  (CrateConfig.Spot). Card: "A MYSTERY CRATE ARRIVED! It opens in 8 hours. Free crusher inside, up to LEGENDARY!"
+  with REMIND ME (Roblox notification opt-in, when Roblox allows asking).
+- Its sign counts down ("Opens in 7h 59m"), then bounces "READY! OPEN ME". Prompt "Open": a free crusher
+  (Rare 52 / Epic 32 / Legendary 13 / Secret 3; 8 Nov Willem: up to Secret) + 20 minutes of earnings; the next crate opens 20 h later. Saved as
+  d.crate.readyAt (os.time). Opening too early tells you when. Analytics custom event `MysteryCrateOpened`.
+- Away card, once per session after 8 min of play (once the crate exists): "YOUR FACTORY NEVER STOPS / Earns up to
+  $X while you're away (Store.Offline: 10% for 6 h, VIP 12 h) / Mystery Crate opens in ..." + REMIND ME.
+- Animation (8 Nov, Willem: "very interesting with an animation dropping"), client-only from model attributes
+  DropAt / OpenedAt + OpenRarity (CrateConfig.Drop / Open): a gold warning ring and light beam where it lands,
+  the crate falls ~90 studs spinning, lands with a dust ring, a camera shake (if close and Shake is on) and two
+  bounces. Opening: the crate rattles, the lid flies off spinning, a beam in the rarity's colour shoots up with
+  sparks, the crate vanishes, the card follows (name in the rarity's colour), and the next crate drops 3.6 s later.
+  Everyone nearby sees it.
+- Camera (8 Nov, Willem: "zoom in on it so you actually see it"): for the owner, the camera flies to the crate
+  (CrateConfig.Camera) for the first drop and for every opening, then back; it waits up to 10 s for a goal
+  celebration or window to finish. The refill drop right after an opening stays in the normal view.
+- Model (8 Nov): Willem's CrushIt-Mystery-Crate (assets/mystery-crate: FBX, blend, icon). Imported MeshParts Body /
+  Lid / Seal live in ServerStorage.MysteryCrateModel (place file, not in Git). server/OvernightCrate clones it,
+  scales it to CrateConfig.ModelWidth (6.4 studs across), stands it on the base and turns the Seal (front) toward
+  the walkway; without it the block placeholder. On opening the lid swings 105 degrees open on its rear hinge
+  (client). Still to do: the icon (MysteryCrate-Icon.png) on the cards instead of the emoji.
+- Idea for later: a notification "Your Mystery Crate is ready!" (needs a second notification string from Willem).

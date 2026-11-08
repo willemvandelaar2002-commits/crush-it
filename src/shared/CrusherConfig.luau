@@ -26,7 +26,8 @@ local C = {
 		-- (31 Oct, later: Auto Collect beside the bin, 2x Cash beside Sell, Lucky
 		-- by the road; no Production Boost sign)
 		{ x = -58, z = 78, yaw = math.pi / 2, perks = { "AutoCollect" } },
-		{ x = -42, z = 96, yaw = math.pi, perks = { "DoubleCash" } },
+		-- (5 Nov: the 2x Cash sign beside Sell is gone: Willem; the cash passes are a
+		-- ladder now, sold from the button on the right)
 		{ x = 13, z = 74, yaw = -math.pi / 2, perks = { "Lucky" } },
 		-- (5 Nov: the time-skip signs are gone again: Willem didn't like them by the road;
 		-- RobuxSigns can still build product signs if a better spot comes up)
@@ -39,7 +40,7 @@ local C = {
 	CashPacks = { CashSmall = 60, CashMedium = 300, CashLarge = 1200 },
 	-- Complete one physical six-bay row with a single rarity. Scrap only;
 	-- applies to that row, never stacks across rows or changes roll odds.
-	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40, Secret=.48, Divine=.54, Mythic=.60 },
+	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40, Exotic=.44, Limited=.48, Secret=.48, Divine=.54, Mythic=.60 }, -- (6 Nov: Limited like Secret)
 }
 -- Stadium banks: ground bays open to the plaza, the upper row steps back on
 -- top of them (its walkway is the ground bays' roof). Local plot coordinates,
@@ -236,11 +237,22 @@ C.Types = {
 	{ id = "Toyzilla", name = "Toyzilla", template="Toyzilla", tier=11, input=3, damage=40, hp=120, value=220, cycle=1.8 },
 }
 C.Rarities = {
-	{ name = "Common", price = 30, weight = 69.9912, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
+	{ name = "Common", price = 30, weight = 69.9512, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
 	{ name = "Uncommon", price = 150, weight = 22, rank = 1, types = { "Cobalt", "RocketPress" }, mult = 1.15, color = Color3.fromRGB(99, 210, 132) },
 	{ name = "Rare", price = 900, weight = 6, rank = 2, types = { "Mega", "Magnetron" }, mult = 1.35, color = Color3.fromRGB(75, 148, 255) },
 	{ name = "Epic", price = 6000, weight = 1.8, rank = 3, types = { "Titan", "TwinTitan" }, mult = 1.65, color = Color3.fromRGB(187, 105, 246) },
 	{ name = "Legendary", price = 60000, weight = 0.2, rank = 4, types = { "Quantum", "GoldenKing", "Toyzilla" }, mult = 2, color = Color3.fromRGB(255, 200, 55) },
+	-- 8 Nov: six permanent Exotic types. .04% tier weight = 1 in 2,500 for any
+	-- Exotic, 1 in 15,000 for each, before luck. Move .04 from Common so all
+	-- existing non-Common base odds remain unchanged. Keep existing ranks intact.
+	{ name = "Exotic", price = 200000, weight = 0.04, rank = 4.25, types = {}, mult = 2.1, color = Color3.fromRGB(255, 112, 55) },
+	-- 6 Nov (Willem's Lucky Weekend pack): LIMITED. Only rollable while the LUCKY WEEKEND
+	-- is on (Shared/WeekendConfig; the roll passes `limited`): then eventWeight gives
+	-- about 1 in 5,000 rolls for one of its three crushers (1 in 15,000 per crusher),
+	-- before luck. Willem: as strong as a Secret (C.LimitedTypes). rank 4.5: between
+	-- Legendary and Secret for luck and pity, no big-roll cinematic. Once owned they
+	-- stay (ownership, equipping and production don't care about the weekend).
+	{ name = "Limited", price = 750000, weight = 0, eventWeight = 0.02, event = "LuckyWeekend", rank = 4.5, types = {}, mult = 2.2, color = Color3.fromRGB(70, 215, 95) },
 	-- Chase tiers above Legendary (29 Oct): rollable but very rare, and luck helps
 	-- them most (luck scales with rank). Weights give 1 in 50,000 (Secret) and
 	-- 1 in 500,000 (Divine) per crusher with four crushers each; Common was
@@ -326,6 +338,49 @@ do
 		for _, rarity in C.Rarities do if rarity.name == entry.rarity then table.insert(rarity.types, entry.id) break end end
 	end
 end
+-- 6 Nov: the three LIMITED Lucky Weekend crushers (Willem's Blender pack, models in
+-- ServerStorage.SpecialCrusherMeshes, motion in Shared/LimitedCrusherAssets). Production
+-- like a Secret (Willem: "same as Secret").
+C.LimitedTypes = {
+	{ id = "CloverOverdrive", name = "Clover Overdrive", template = "CloverOverdrive" },
+	{ id = "HorseshoeComet", name = "Horseshoe Comet", template = "HorseshoeComet" },
+	{ id = "JackpotFoundry", name = "Jackpot Foundry", template = "JackpotFoundry" },
+}
+do
+	local band
+	for _, existing in C.Types do if existing.id == "Quantum" then band = existing break end end
+	for _, entry in C.LimitedTypes do
+		local def = table.clone(band)
+		def.id = entry.id def.name = entry.name def.design = nil def.template = entry.template
+		def.value = C.ChaseValue.Secret def.event = "LuckyWeekend"
+		table.insert(C.Types, def)
+		for _, rarity in C.Rarities do if rarity.name == "Limited" then table.insert(rarity.types, entry.id) break end end
+	end
+end
+-- 8 Nov: Exotic models are permanent regular rolls, not weekend or crate rewards.
+-- Append types to preserve every existing catalogue index used by legacy saves.
+C.ExoticTypes = {
+	{ id = "MaglevMauler", name = "Maglev Mauler", template = "MaglevMauler" },
+	{ id = "OrigamiClamp", name = "Origami Clamp", template = "OrigamiClamp" },
+	{ id = "WreckingWinch", name = "Wrecking Winch", template = "WreckingWinch" },
+	{ id = "CamCruncher", name = "Cam Cruncher", template = "CamCruncher" },
+	{ id = "ScrewStamper", name = "Screw Stamper", template = "ScrewStamper" },
+	{ id = "DrawbridgeCrusher", name = "Drawbridge Crusher", template = "DrawbridgeCrusher" },
+}
+do
+ local band = C.Types[1]
+ for _, existing in C.Types do if existing.id == "Quantum" then band = existing break end end
+ local rarity
+ for _, entry in C.Rarities do if entry.name == "Exotic" then rarity = entry break end end
+ assert(rarity, "Missing Exotic rarity")
+ for _, entry in C.ExoticTypes do
+  local def = table.clone(band)
+  def.id = entry.id def.name = entry.name def.template = entry.template
+  def.design = nil def.value = 280
+  table.insert(C.Types, def)
+  table.insert(rarity.types, entry.id)
+ end
+end
 -- What a crusher crushes, by its rarity (29 Oct): the toy objects in
 -- Config.Objects (meshes in ReplicatedStorage.ObjectMeshes). Rarer crushers get
 -- bigger, cooler things; a tier with two picks one at random for each input.
@@ -336,7 +391,9 @@ C.RarityObjects = {
 	Rare = { "TV", "Fridge" },
 	Epic = { "Car", "Truck" },
 	Legendary = { "Tank" },
+	Exotic = { "Tank", "Statue" },
 	Secret = { "House", "Statue" },
+	Limited = { "House", "Statue" },
 	Divine = { "Plane", "Ship" },
 	Mythic = { "Planet" },
 }
@@ -374,6 +431,62 @@ C.UpgradeMany = 10 -- 3 Nov: the x10 button on the FACTORY UPGRADES board
 -- pedestal of every roll shows a Legendary until you buy one. Base Legendary+ odds
 -- are about 1 in 480 per pedestal at Luck 0, so this only catches bad streaks.
 C.Pity = { Rolls = 200, Rarity = "Legendary", MinRank = 4 }
+-- 5 Nov: big roll cinematic (BigRoll.client) for Secret and up. Hold = seconds the
+-- pedestal waits after the flicker before the crusher appears (the cinematic's
+-- impact lands on it; buying and the next roll wait too). Divine also gives the
+-- whole server x AftershockLuck on rolls for AftershockSeconds (Willem: not Secret).
+-- 7 Nov (Willem): AUTO ROLL, free for everyone after the tutorial (server/AutoRoll): it
+-- stops when a pedestal shows one of the TICKED rarities (the Auto Roller window); with
+-- the AUTO BUY pass it buys it and keeps going. Rarities: the rollable ones, in order.
+-- 8 Nov (Willem, after an "impatient kid" playtest: the first roll was a Common, no wow):
+-- the very first roll (tutorial) puts ONE Rare on the pedestal with the big cinematic,
+-- priced so the player can always buy it right away (Price, or all their cash if less).
+C.FirstRoll = { Rarity = "Rare", Price = 100, Hold = 3.6 }
+-- 8 Nov (same playtest): the Robux buttons on the HUD (R$ 5 deal, 2x cash ladder) wait
+-- until this goal; the starter pack only pops up by itself after Factory II (C.MainGoals).
+C.RobuxButtonsGoal = 5
+-- 8 Nov (Willem: "the crushers in your hand bigger and working, so you can show it"):
+-- the crusher you hold (server/CrusherTools, client/HeldCrusher). Size = studs of its
+-- longest side (was 2.2), carried Forward studs in front of the chest and Up; it works
+-- in your hand: the ram slams down every Stroke seconds (press crushers), other crushers
+-- thump by Pump studs; sparks on each hit. Everyone sees it.
+C.Hold = { Size = 3.6, Forward = 2.7, Up = 0.5, Stroke = 1.1, Pump = 0.22 }
+-- 8 Nov (Willem): SKIP ANIMATION in the Auto Roller: while Auto Roll runs, the pedestal
+-- flicker, die spin and reveal flash are skipped and the next roll comes SkipSeconds after the last
+-- (normal: RollSeconds 3). The Secret/Divine/Limited cinematics still play.
+C.AutoRoll = { SkipSeconds = 1.5, Default = { "Legendary", "Exotic", "Limited", "Secret", "Divine" },
+	Rarities = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Exotic", "Limited", "Secret", "Divine" } }
+-- 7 Nov (Willem: "should be special luck animation"): Limited (rank 4.5, under MinRank)
+-- gets its own cinematic too: three giant slot reels stop on clovers (client/BigRoll).
+C.BigRoll = { MinRank = 5, PillarSeconds = 30,
+	Limited = { Hold = 5.2 },
+	Secret = { Hold = 4.6 }, Divine = { Hold = 6.4, AftershockLuck = 1.5, AftershockSeconds = 30 } }
+-- 5 Nov (Willem): a bay holding a Secret or Divine crusher glows (client/SpecialBayFx; 6 Nov: Limited too):
+-- a light plate on the pedestal, a colour wash up the back wall, rising sparkles;
+-- Divine adds two soft light shafts. Colours match the models (Secret neon purple/pink,
+-- Divine gold/cyan). Phones and low graphics get half the sparkles.
+C.SpecialBay = {
+	Exotic = { main = Color3.fromRGB(255, 112, 55), accent = Color3.fromRGB(109, 232, 176), sparkles = 5, shafts = false },
+	Secret = { main = Color3.fromRGB(176, 70, 255), accent = Color3.fromRGB(255, 70, 200), sparkles = 7, shafts = false },
+	Divine = { main = Color3.fromRGB(255, 205, 80), accent = Color3.fromRGB(120, 235, 255), sparkles = 9, shafts = true },
+	-- 6 Nov: Limited (Lucky Weekend): clover green and gold
+	Limited = { main = Color3.fromRGB(70, 225, 100), accent = Color3.fromRGB(255, 205, 60), sparkles = 7, shafts = false },
+	-- 8 Nov (Willem: "mythic should feel more special"): the top tier gets everything, in a
+	-- rainbow that keeps shifting (rainbow = true: plate, wash, shafts and sparkles cycle hues)
+	Mythic = { main = Color3.fromRGB(255, 70, 190), accent = Color3.fromRGB(80, 230, 255), sparkles = 12, shafts = true, rainbow = true },
+	PlateTransparency = { 0.5, 0.75 }, PulseSeconds = 1.6, WallHeight = 9,
+	-- the bay plaque (Willem: "this stuff that changes"): a colour band sliding across,
+	-- a shine sweeping over it and a glowing rim; seconds per slide / per shine
+	Plaque = {
+		Exotic = { Color3.fromRGB(160, 48, 28), Color3.fromRGB(255, 112, 55), Color3.fromRGB(255, 175, 100), Color3.fromRGB(65, 195, 152), Color3.fromRGB(160, 48, 28) },
+		Secret = { Color3.fromRGB(58, 18, 112), Color3.fromRGB(150, 40, 210), Color3.fromRGB(235, 60, 190), Color3.fromRGB(40, 170, 230), Color3.fromRGB(58, 18, 112) },
+		Divine = { Color3.fromRGB(190, 110, 20), Color3.fromRGB(235, 165, 40), Color3.fromRGB(250, 205, 90), Color3.fromRGB(60, 150, 230), Color3.fromRGB(190, 110, 20) },
+		Limited = { Color3.fromRGB(20, 110, 50), Color3.fromRGB(40, 170, 70), Color3.fromRGB(200, 160, 30), Color3.fromRGB(40, 170, 70), Color3.fromRGB(20, 110, 50) },
+		Mythic = { Color3.fromRGB(255, 60, 120), Color3.fromRGB(255, 170, 40), Color3.fromRGB(255, 235, 70), Color3.fromRGB(70, 220, 110),
+			Color3.fromRGB(60, 190, 255), Color3.fromRGB(170, 90, 255), Color3.fromRGB(255, 60, 120) },
+		SlideSeconds = 4, ShineEvery = 3.2,
+	},
+}
 C.IndividualBase = 16
 C.IndividualGrowth = 1.38
 -- Guided tutorial (client/Tutorial): one step at a time, each finished by the
@@ -405,14 +518,13 @@ C.StarterScrap = 24 -- 1 Nov: scrap waiting in a new player's bin (three toys' w
 -- between the bay goals (they raise income the most). Since the plot split the
 -- starting factory has 12 bays, so the chain ends with "Fill 12 bays" and
 -- "Buy FACTORY II". "upgrades n" = total factory upgrade levels (Damage + Speed + Yield).
-C.Goals2Version = 9 -- 4 Nov: quiet goals after Factory II. 8: 3 Nov: the SMASH goal left the guide (30% churn on it; SMASH stays as a free extra)
+C.Goals2Version = 11 -- 5 Nov: after Factory II "Fill 18 bays" comes before "Coat a crusher"; Factory III prize Legendary (was Epic). 10: 5 Nov: the TURBO goal left the guide (17% churn on it; the pump stays). 9: 4 Nov: quiet goals after Factory II. 8: 3 Nov: the SMASH goal left the guide (30% churn on it; SMASH stays as a free extra)
 C.Goals2 = {
 	{ id="Fill3", check="fill", n=3, title="Fill 3 bays", text="Unlock bay 3, then roll a crusher and place it there.", target="NextBayOrEmpty", reward={cash=30,min=60} },
 	{ id="Upgrades3", check="upgrades", n=3, title="Upgrade your factory", text="The blue FACTORY UPGRADES board makes ALL crushers better.", target="Production", reward={cash=45,min=100} },
 	{ id="Fill5", check="fill", n=5, title="Fill 5 bays", text="Unlock more bays and put a crusher in each one.", target="NextBayOrEmpty", reward={cash=45,min=150} },
 	{ id="Golden", check="golden", title="Grab a golden toy", text="Golden toys land at your bays every half minute. Walk into one!", target="GoldenToy", reward={cash=45,min=150} },
 	{ id="Fill6", check="fill", n=6, title="Fill 6 bays", text="Unlock bay 6 and place a crusher. Prize: a FREE RARE crusher!", target="NextBayOrEmpty", reward={crusher="Rare"} },
-	{ id="Turbo", check="turbo", title="Fill up on TURBO", text="The orange TURBO pump doubles ALL your cash for 5 minutes.", target="TurboStation", reward={boost="Cash",minutes=5} },
 	{ id="Level5", check="level", n=5, title="Level a crusher to Lv 5", text="Press LEVEL UP on a crusher's plaque. Higher level = more scrap.", target="LevelBay", reward={cash=60,min=250} },
 	{ id="Upgrades8", check="upgrades", n=8, title="Upgrade your factory", text="Factory upgrades make every crusher earn more.", target="Production", reward={cash=60,min=300} },
 	{ id="Fill9", check="fill", n=9, title="Fill 9 bays", text="Keep growing your factory!", target="NextBayOrEmpty", reward={cash=90,min=600} },
@@ -421,11 +533,11 @@ C.Goals2 = {
 	-- 4 Nov (Willem; vault FTUE "the end of the tutorial needs a successor"): after
 	-- Factory II the goals go on QUIETLY (quiet=true): a small "NEXT GOAL" line, no
 	-- arrows, no trail, no hints - just a little direction. Not in the funnel.
-	{ id="Coat", check="coat", quiet=true, title="Coat a crusher", text="The Coating Lab opened with Factory II.", reward={cash=120,min=3000} },
 	{ id="Fill18", check="fill", n=18, quiet=true, title="Fill 18 bays", text="", reward={cash=120,min=3000} },
+	{ id="Coat", check="coat", quiet=true, title="Coat a crusher", text="The Coating Lab opened with Factory II.", reward={cash=120,min=3000} },
 	{ id="Upgrades20", check="upgrades", n=20, quiet=true, title="Upgrade your factory", text="", reward={cash=150,min=5000} },
 	{ id="Fill24", check="fill", n=24, quiet=true, title="Fill all 24 bays", text="", reward={cash=150,min=5000} },
-	{ id="Factory3", check="plot", n=2, quiet=true, title="Buy FACTORY III", text="", reward={crusher="Epic"} },
+	{ id="Factory3", check="plot", n=2, quiet=true, title="Buy FACTORY III", text="", reward={crusher="Legendary"} },
 	{ id="RowSet", check="row", quiet=true, title="Fill a row with one rarity", text="Press FILL ROW at a row's sign.", reward={cash=180,min=8000} },
 	{ id="Fill36", check="fill", n=36, quiet=true, title="Fill 36 bays", text="", reward={cash=180,min=8000} },
 	{ id="Factory4", check="plot", n=3, quiet=true, title="Buy FACTORY IV", text="", reward={crusher="Legendary"} },
@@ -442,6 +554,8 @@ C.Goals2History = {
 	{ "Bay3","Frenzy","Fill3","Upgrades3","Bay5","Fill5","Golden","Gift","Fill6","Turbo","Level5","Rolls10","Upgrades8","Bay9","Index","Level10","Upgrades12","Fill12","Level15","Factory2" },
 	{ "Frenzy","Fill3","Upgrades3","Fill5","Golden","Fill6","Turbo","Level5","Upgrades8","Fill9","Fill12","Factory2" },
 	{ "Fill3","Upgrades3","Fill5","Golden","Fill6","Turbo","Level5","Upgrades8","Fill9","Fill12","Factory2" },
+	{ "Fill3","Upgrades3","Fill5","Golden","Fill6","Turbo","Level5","Upgrades8","Fill9","Fill12","Factory2","Coat","Fill18","Upgrades20","Fill24","Factory3","RowSet","Fill36","Factory4","Fuse","Rebirth1" },
+	{ "Fill3","Upgrades3","Fill5","Golden","Fill6","Level5","Upgrades8","Fill9","Fill12","Factory2","Coat","Fill18","Upgrades20","Fill24","Factory3","RowSet","Fill36","Factory4","Fuse","Rebirth1" },
 }
 -- Onboarding funnel step names as they appear in the Creator Dashboard
 -- (Analytics > Funnels). 1 = join, 2-9 = the tutorial steps above in order,
@@ -466,14 +580,24 @@ C.Goals = { GroupId = 264438399, SkipMinutes = 5, SkipCooldownHours = 24, MinSki
 -- board all use this). luck = Luck upgrade level; lucky = luck multiplier on
 -- every non-Common rarity (true = 2: Lucky pass OR 2x Luck boost; 4 = both);
 -- bonus = permanent Index luck (0.1 = +10%).
-function C.rollWeights(luck,lucky,bonus)
+-- limited: the LUCKY WEEKEND is on, so event rarities (Limited) can roll (C.limitedOn)
+function C.rollWeights(luck,lucky,bonus,limited)
 	local mult=if type(lucky)=="number" then lucky elseif lucky then 2 else 1
-	local out={} for i,v in C.Rarities do out[i]=v.weight*C.luckFactor(luck or 0,v.rank)*(if v.rank>0 then mult*(1+(bonus or 0)) else 1) end
+	local out={} for i,v in C.Rarities do
+		local base=if v.event then (if limited then v.eventWeight or 0 else 0) else v.weight
+		out[i]=base*C.luckFactor(luck or 0,v.rank)*(if v.rank>0 then mult*(1+(bonus or 0)) else 1)
+	end
 	return out
 end
+-- 6 Nov: is the LUCKY WEEKEND on (so Limited crushers roll)? Same clock as the 2x weekend
+-- luck. Studio: workspace attribute WeekendTest = "active" forces it (as the HUD preview).
+function C.limitedOn(): boolean
+	if game:GetService("RunService"):IsStudio() and workspace:GetAttribute("WeekendTest") == "active" then return true end
+	return require(script.Parent.WeekendConfig).on(os.time())
+end
 -- "1 in N" for one crusher type with your luck (nil luck = base odds)
-function C.effectiveOdds(typeId,luck,lucky,bonus)
-	local w=C.rollWeights(luck,lucky,bonus) local total=0 for _,x in w do total+=x end
+function C.effectiveOdds(typeId,luck,lucky,bonus,limited)
+	local w=C.rollWeights(luck,lucky,bonus,limited) local total=0 for _,x in w do total+=x end
 	for i,r in C.Rarities do for _,t in r.types do if t==typeId then
 		if w[i]<=0 then return math.huge end
 		return math.max(1,math.floor(total/w[i]*#r.types+.5))
@@ -483,6 +607,8 @@ end
 function C.oddsFor(typeId)
 	local total=0 for _,r in C.Rarities do total+=r.weight end
 	for _,r in C.Rarities do for _,t in r.types do if t==typeId then
+		-- (event rarities: their odds while the event is on)
+		if r.event and (r.eventWeight or 0)>0 then return math.max(1,math.floor((total+r.eventWeight)/r.eventWeight*#r.types+.5)) end
 		if r.weight<=0 then return math.huge end -- Mythic: can't be rolled
 		return math.max(1,math.floor(total/r.weight*#r.types+.5))
 	end end end
@@ -501,6 +627,7 @@ function C.modifier(name)
 	for _,v in C.CraftModifiers do if v.name==name then return v end end
 end
 -- Luck multiplier on a rarity's roll weight (rank 0 = Common stays 1)
+C.LuckBoardSecretFrom = 40 -- 5 Nov: the Luck board shows Secret+ odds from this level (Legendary+ before)
 function C.luckFactor(luck, rank) return (1 + C.LuckPerLevel * luck * rank) * C.LuckGrowth ^ (luck * rank) end
 -- seconds to place the next toy in a bay (Strike Speed shortens it, to PlacingFloor)
 function C.inputDelay(speedLevel) return C.InputDelay * math.max(C.PlacingFloor, C.SpeedFactor ^ (speedLevel or 0)) end
@@ -527,5 +654,9 @@ function C.topLevelCap() return C.levelCap(C.PlotUpgrade.MaxLevel) end
 function C.topUpgradeMax(id) return C.upgradeMax(id,C.PlotUpgrade.MaxLevel) end
 function C.pedestals(level) return math.clamp(C.StartPedestals + (level or 0), 1, C.MaxPedestals) end
 -- Price of a rolled offer on a pedestal (rarity price x modifier multiplier).
-function C.offerPrice(item) return math.floor(C.rarity(item.rarity).price * C.modifier(item.modifier).mult) end
+-- (8 Nov: an offer can carry its own price - the tutorial's first Rare, C.FirstRoll)
+function C.offerPrice(item)
+	if type(item.price)=="number" then return item.price end
+	return math.floor(C.rarity(item.rarity).price * C.modifier(item.modifier).mult)
+end
 return C

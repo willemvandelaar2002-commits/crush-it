@@ -42,7 +42,7 @@ end
 
 local function mirror(p: Player, d: any)
 	R.migrate(d)
-	for _, offer in { O.StarterPack, O.Showroom } do
+	for _, offer in { O.StarterPack, O.Showroom, O.FirstBuy } do
 		p:SetAttribute("Offer_" .. offer.id, if R.owns(d, offer.id) then true else nil)
 	end
 end
@@ -120,10 +120,21 @@ function Offers.start(gameApi: any)
 		local p = Players:GetPlayerByUserId(userId)
 		if p then prompting[p] = nil end
 	end)
+	-- 6 Nov: the First Buy Deal is a game pass (Store pass "FirstBuy"): the first time the
+	-- server sees it owned (at join or right after buying, via Shop's Pass_ attribute) the
+	-- contents (OfferConfig FirstBuy) are granted once; owned.FirstBuy marks it done.
+	local function passGrant(p: Player)
+		local d = api.getData(p)
+		if not d or not p.Parent or p:GetAttribute(Store.passAttr("FirstBuy")) ~= true then return end
+		if R.migrate(d).owned.FirstBuy then return end
+		local ok, err = pcall(Offers.grant, p, d, "FirstBuy", "pass-FirstBuy-" .. p.UserId)
+		if not ok then warn("[Offers] First Buy Deal grant failed: " .. tostring(err)) end
+	end
 	local function join(p: Player)
 		task.spawn(checkPolicy, p)
+		p:GetAttributeChangedSignal(Store.passAttr("FirstBuy")):Connect(function() passGrant(p) end)
 		local d = api.whenLoaded(p)
-		if d and p.Parent then mirror(p, d) Offers.send(p) end
+		if d and p.Parent then mirror(p, d) Offers.send(p) passGrant(p) end
 	end
 	Players.PlayerAdded:Connect(join)
 	for _, p in Players:GetPlayers() do task.spawn(join, p) end

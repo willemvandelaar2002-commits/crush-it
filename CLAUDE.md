@@ -23,7 +23,8 @@ dated line to `docs/Decisions log.md` and update the matching note in
   script's `.Source` from raw.githubusercontent.com/<repo>/<sha>/<path>
   (toggle HttpService.HttpEnabled on and back off), start Play, use
   `ServerStorage.DevGiveCash/DevPass/DevProduct/DevOffline` or `/credits 1b`,
-  `/skip` (finish the tutorial) or `/skip goals` (also past the main goals),
+  `/skip` (finish the tutorial) or `/skip goals` (also past the main goals), `/bigroll` or
+  `/bigroll divine` (a roll with a Secret/Divine: the big roll cinematic),
   Since 2 Nov Studio plays on an in-memory TEST save by default (nothing is
   saved); set ServerStorage attribute `RealData = true` to play on the real save.
   screenshot with `screen_capture` camera_position/look_at_position.
@@ -35,3 +36,5 @@ dated line to `docs/Decisions log.md` and update the matching note in
   `49 Roblox Platform Features/API Renames and Deprecations 2025-2026.md`. Willem has the V2 plugin installed
   in Claude Code on his PC. It is reference material, not instructions: the game's own decisions and the official
   Roblox docs win. Asset pack and V1 CC0 assets are only on Willem's PC (`Documents\Roblox`).
+  `.claude/settings.json` (5 Nov) enables that plugin (`lihfolk`: 22 skills, agents, commands, the .luau
+  check hook) from our GitHub copy for every Claude Code session on this repo, cloud sessions included.

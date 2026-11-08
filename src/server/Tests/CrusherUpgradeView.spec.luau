@@ -54,6 +54,10 @@ return function()
 			end
 			check(V.board(d,"Luck",{lucky=lucky}).effect==string.format("Legendary+ 1 in %d > 1 in %d",odds(lv),odds(lv+1)),"luck shows Legendary+ odds with the pass (31 Oct)")
 		end
+		-- 5 Nov: from C.LuckBoardSecretFrom the board shows Secret+ odds
+		d.crushers.plotLevel=C.PlotUpgrade.MaxLevel d.crushers.upgrades.Luck=C.LuckBoardSecretFrom
+		check(V.board(d,"Luck",{lucky=lucky}).effect:match("^Secret%+ 1 in %d+ > 1 in %d+$")~=nil,"high luck shows Secret+ odds (5 Nov)")
+		d.crushers.plotLevel=0
 	end
 	-- Production upgrades cover owned crushers even when not equipped.
 	d=fresh() local first=d.crushers.owned[1] local second=table.clone(first) second.id=guid() table.insert(d.crushers.owned,second)

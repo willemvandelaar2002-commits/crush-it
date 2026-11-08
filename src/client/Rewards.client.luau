@@ -121,8 +121,15 @@ giftTime.TextColor3 = C(255, 230, 90)
 local function placeGiftChip()
 	Style.placeHudButton(button, 2)
 	local compact = Style.compact()
-	giftChip.Size = if compact then UDim2.fromOffset(116, 36) else UDim2.fromOffset(150, 40)
-	giftChip.Position = UDim2.fromOffset(button.Position.X.Offset + button.Size.X.Offset / 2, button.Position.Y.Offset + button.Size.Y.Offset + 4)
+	giftChip.Size = if compact then UDim2.fromOffset(100, 32) else UDim2.fromOffset(150, 40)
+	if compact then
+		-- 6 Nov: the phone buttons are a column: the chip goes to the right of REWARDS
+		giftChip.AnchorPoint = Vector2.new(0, 0.5)
+		giftChip.Position = UDim2.fromOffset(button.Position.X.Offset + math.floor(button.Size.X.Offset * 1.15) + 8, button.Position.Y.Offset + button.Size.X.Offset / 2)
+	else
+		giftChip.AnchorPoint = Vector2.new(0.5, 0)
+		giftChip.Position = UDim2.fromOffset(button.Position.X.Offset + button.Size.X.Offset / 2, button.Position.Y.Offset + button.Size.Y.Offset + 4)
+	end
 end
 -- 3 Nov (vault: 44 px taps): an invisible 48 px tap pad over the chip on touch screens
 if game:GetService("UserInputService").TouchEnabled then
@@ -604,6 +611,7 @@ RunService.RenderStepped:Connect(function()
 	end
 end)
 
+local seenCount = 0 -- claimable tiles when the panel was last open
 local function refresh()
 	if not state then
 		return
@@ -615,6 +623,7 @@ local function refresh()
 		claimed[i] = true
 	end
 	local anyPlay, anyDaily = false, false
+	local readyN = 0 -- claimable tiles (8 Nov: the HUD badge)
 	-- the countdown chip: the first gift not claimed yet
 	local nextGift, nextLeft = nil, 0
 	for i, r in Config.Rewards.Playtime do
@@ -635,6 +644,7 @@ local function refresh()
 		elseif left <= 0 then
 			set(playTiles[i], title, sub, "ready", "")
 			anyPlay = true
+			readyN += 1
 		else
 			set(playTiles[i], title, sub, "wait", clock(left))
 		end
@@ -645,6 +655,7 @@ local function refresh()
 		if i == d.day and d.canClaim then
 			set(dailyTiles[i], title, sub, "ready", "", true)
 			anyDaily = true
+			readyN += 1
 		elseif not d.canClaim and i == d.tomorrowDay and i ~= d.day then
 			-- 4 Nov: tomorrow's tile counts down (the D1 "come back tomorrow" hook)
 			set(dailyTiles[i], title, sub, "wait", "TOMORROW " .. clock(d.nextAt - now), true)
@@ -668,7 +679,12 @@ local function refresh()
 		end
 		(mark :: Frame).Visible = has
 	end
-	badge.Visible = anyPlay or anyDaily
+	-- 8 Nov (kid playtest): the HUD "!" goes once the panel was opened, and comes back
+	-- when something NEW can be claimed (the tabs inside keep their own "!")
+	local count = readyN
+	if panel.Visible then seenCount = count end
+	if count < seenCount then seenCount = count end
+	badge.Visible = count > seenCount
 end
 
 local function claimedSet(s: any): { [number]: boolean }

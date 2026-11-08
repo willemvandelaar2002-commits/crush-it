@@ -46,6 +46,15 @@ O.Crates = {
 	},
 }
 
+-- 6 Nov (Willem): the R$ 5 First Buy Deal, once per player: a guaranteed Epic crate
+-- crusher + 15 min 2x Cash + 15 min 2x Luck (a fixed crusher, so not a paid random item).
+O.FirstBuy = {
+	id = "FirstBuy", product = "FirstBuy", once = true,
+	title = "First Buy Deal", tag = "ONLY ONCE",
+	crusher = "GumballGobbler", rarity = "Epic",
+	boosts = { { id = "Cash", minutes = 15 }, { id = "Luck", minutes = 15 } },
+}
+
 O.Showroom = {
 	id = "PrismMech", product = "Mythic_PrismMech", once = true,
 	title = "Prism Mech", tag = "GUARANTEED CRUSHER",
@@ -71,6 +80,7 @@ end
 function O.byProduct(product: any): any
 	if product == O.StarterPack.product then return { kind = "starter", offer = O.StarterPack } end
 	if product == O.Showroom.product then return { kind = "showroom", offer = O.Showroom } end
+	if product == O.FirstBuy.product then return { kind = "starter", offer = O.FirstBuy } end
 	for _, c in O.Crates do
 		for _, b in c.bundles do
 			if b.product == product then return { kind = "crate", offer = c, count = b.count } end

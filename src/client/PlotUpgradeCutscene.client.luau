@@ -25,8 +25,8 @@ local WHITE = Color3.new(1, 1, 1)
 -- 2 Nov plot split: Factory II is now the upper floor (no feature), so the
 -- Coating Lab comes with Factory III and everything after moved up one level
 local SECTIONS = {
-	{ banks = { "UpperFloor1", "UpperFloor2" } },
-	{ banks = { "TopFloor1", "TopFloor2" }, feature = "CoatingBooth" },
+	{ banks = { "UpperFloor1", "UpperFloor2" }, feature = "CoatingBooth" }, -- 5 Nov: the Coating Lab is back at Factory II
+	{ banks = { "TopFloor1", "TopFloor2" } },
 	{ banks = { "RearGround1", "RearGround2" }, extra = { "RearYard", "FusionWing" }, feature = "Fuser" },
 	{ banks = { "RearUpper1" } },
 	{ banks = { "RearUpper2" }, feature = "ArchBeam" },

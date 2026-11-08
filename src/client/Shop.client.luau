@@ -160,6 +160,8 @@ local function openFullShop(from: string)
 	Style.setOpen(panel, true)
 	Net.event("ShopOpened"):FireServer(from)
 end
+-- 6 Nov: the R$ 5 First Buy Deal button + card (client/FirstBuy)
+require(script.Parent.FirstBuy).build(gui, buyPass)
 -- QuickShop (3 Nov) now only hosts the pushed Starter Pack offer card.
 local quick = require(script.Parent.QuickShop).build(gui, { buyPass = buyPass, buyProduct = buyProduct, notice = notice,
 	openFull = function() openFullShop("QuickShopMore") end })
@@ -196,7 +198,9 @@ do
 			task.wait(5)
 			local C2 = Config.Crushers
 			-- 4 Nov: from goal 3, when the shop itself appears (HudReveal); gui.Enabled = shown
-			local ready = tutorial > #C2.TutorialSteps and goal >= 3 and gui.Enabled and os.clock() - joinedAt >= 180
+			-- 8 Nov (kid playtest: it popped up 3 minutes in, right after the tutorial): only
+			-- once all the main goals are done (Factory II); goal 0 / nil = an older save
+			local ready = tutorial > #C2.TutorialSteps and (goal > C2.MainGoals or goal == 0) and gui.Enabled and os.clock() - joinedAt >= 180
 			local calm = not Style.hasModal() and not quick.panel.Visible and not panel.Visible
 				and player:GetAttribute("CutscenePlaying") ~= true and player:GetAttribute("SaveOff") ~= true
 			-- (4 Nov: one unprompted offer per session: not after a moment offer, client/MomentOffer)
@@ -227,8 +231,14 @@ local offersScale = make("UIScale", { Parent = offers })
 local function fitOffers()
 	local viewport = Workspace.CurrentCamera.ViewportSize
 	local h = viewport.Y
-	offersScale.Scale = math.clamp((h - 380) / 480, 0.5, 1) -- stays between the leaderboard and the CRUSH button
-	offers:SetAttribute("FitsScreen", not Style.compact() and h >= (if Config.Crushers.Enabled then 560 else 650))
+	-- 6 Nov (Willem: "do the 2x cash on the right just like on pc, with that button"): on
+	-- phones the stack shows too, smaller, bottom right just left of Roblox's jump button
+	local compact = Style.compact()
+	offersScale.Scale = if compact then 0.55 else math.clamp((h - 380) / 480, 0.5, 1) -- stays between the leaderboard and the CRUSH button
+	-- (phones: under the SMASH button on the right, Willem; SMASH is centred at 36% height)
+	offers.AnchorPoint = if compact then Vector2.new(1, 0) else Vector2.new(1, 1)
+	offers.Position = if compact then UDim2.new(1, -6, 0.36, 54) else UDim2.new(1, -14, 1, if Config.Crushers.Enabled then -24 else -240)
+	offers:SetAttribute("FitsScreen", compact or h >= (if Config.Crushers.Enabled then 560 else 650))
 	local book = hud:FindFirstChild("Book") :: GuiObject?
 	offers.Visible = offers:GetAttribute("FitsScreen") == true and not panel.Visible and not (book and book.Visible)
 end
@@ -236,7 +246,6 @@ Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitOffe
 fitOffers()
 
 -- 2X CASH: rainbow tile with a dark outline, big text and "ONLY R$ 249" under it.
-local doublePass = Store.passByPerk("DoubleCash")
 local doubleHolder = make("Frame", { Size = UDim2.fromOffset(200, 96), BackgroundTransparency = 1, LayoutOrder = 1, Parent = offers })
 local doubleButton = make("TextButton", {
 	Name = "DoubleCashOffer", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.42), Size = UDim2.fromOffset(190, 66),
@@ -256,18 +265,20 @@ Style.text(doublePrice, 3)
 doublePrice.TextColor3 = Color3.fromRGB(150, 255, 110)
 Style.wobble(doubleButton, 4, 2.5)
 Style.feedback(doubleButton)
+-- 5 Nov (Willem): the button climbs the cash ladder: 2X -> 4X -> 8X -> 16X CASH
+-- (Store.CashLadder), always offering the next one; gone after 16x.
+local doubleNext: string? = nil
 doubleButton.Activated:Connect(function()
+	if not doubleNext then return end
 	Net.event("ShopOpened"):FireServer("DoubleCashOffer")
-	buyPass("DoubleCash")
+	buyPass(doubleNext)
 end)
 
 -- Featured pass card: gradient panel, "BEST!" ribbon, big icon, name and price.
-local FEATURED = {
-	{ perk = "AutoCrush", icon = Icons.AutoCrush, a = Color3.fromRGB(255, 120, 90), b = Color3.fromRGB(200, 40, 70) },
-	{ perk = "AutoCollect", icon = Icons.Cash, a = Color3.fromRGB(255, 185, 70), b = Color3.fromRGB(225, 110, 30) },
-	{ perk = "Lucky", icon = Icons.Lucky, a = Color3.fromRGB(255, 225, 90), b = Color3.fromRGB(230, 140, 20) },
-	{ perk = "OfflineEarnings", icon = Icons.Offline, a = Color3.fromRGB(130, 160, 255), b = Color3.fromRGB(70, 60, 210) },
-}
+-- 6 Nov (Willem: "remove that production boost button and just leave the 2x, 4x etc
+-- cash"): no featured pass card any more; the list is empty, so the card stays hidden.
+-- (Was: AutoCrush, AutoCollect, Lucky, OfflineEarnings, first one not owned.)
+local FEATURED: { { perk: string, icon: string, a: Color3, b: Color3 } } = {}
 local featuredCard = make("TextButton", {
 	Name = "FeaturedOffer", Size = UDim2.fromOffset(170, 170), BackgroundTransparency = 1, Text = "", LayoutOrder = 2, Parent = offers,
 })
@@ -312,10 +323,15 @@ featuredCard.Activated:Connect(function()
 end)
 
 local function refreshOffers()
-	doubleHolder.Visible = doublePass ~= nil and not Store.hasPass(player, "DoubleCash")
-	if doublePass then
-		local pass = doublePass
-		Store.livePrice("pass", pass.gamePassId, pass.price, function(n) doublePrice.Text = "ONLY R$ " .. n end)
+	local nextPass = Store.nextCashPass(player)
+	doubleNext = if nextPass then nextPass.perk else nil
+	-- 8 Nov (kid playtest): from goal C.RobuxButtonsGoal, not right after the tutorial
+	doubleHolder.Visible = nextPass ~= nil and (tonumber(player:GetAttribute("HudStage")) or 0) >= Config.Crushers.RobuxButtonsGoal
+	if nextPass then
+		doubleText.Text = string.upper(nextPass.title:sub(1, -6)) .. " Cash" -- "4X Cash"
+		Store.livePrice("pass", nextPass.gamePassId, nextPass.price, function(n)
+			if doubleNext == nextPass.perk then doublePrice.Text = "ONLY R$ " .. n end
+		end)
 	end
 	featuredPerk = nil
 	for _, f in FEATURED do
@@ -333,6 +349,8 @@ end
 for _, pass in Store.Passes do
 	player:GetAttributeChangedSignal(Store.passAttr(pass.perk)):Connect(refreshOffers)
 end
+offers:GetAttributeChangedSignal("FitsScreen"):Connect(refreshOffers) -- 6 Nov: phone <-> desktop layout
+player:GetAttributeChangedSignal("HudStage"):Connect(refreshOffers)
 refreshOffers()
 -- The book lives in the HUD below this ScreenGui: hide the offers while it's open.
 local bookPanel = hud:WaitForChild("Book", 10) :: GuiObject?

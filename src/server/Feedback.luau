@@ -24,9 +24,12 @@ function M.start(api: any)
 			for _, r in F.Ratings do
 				if r.value == value then
 					seen.rating = true
-					Analytics.custom(p, "FeedbackRating", r.value, r.label)
+					Analytics.custom(p, "FeedbackRating", r.value, r.key)
 				end
 			end
+		elseif kind == "LikeAsk" and not seen.likeAsk then
+			seen.likeAsk = true
+			Analytics.custom(p, "FeedbackLikeAsk", 1)
 		elseif kind == "Wish" and type(value) == "string" and not seen[value] then
 			for _, w in F.Wishes do
 				if w.key == value then

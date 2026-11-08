@@ -181,6 +181,10 @@ function R.migrate(d, guid)
 	local seen={}
 	for typeId,v in (if type(s.seen)=="table" then s.seen else {}) do if v==true and C.typeById(typeId) then seen[typeId]=true end end
 	s.seen=seen
+	-- 5 Nov: big roll cinematics already watched (Secret / Divine): from then on they can be skipped
+	local big={}
+	for name,v in (if type(s.bigSeen)=="table" then s.bigSeen else {}) do if v==true and type(name)=="string" then big[name]=true end end
+	s.bigSeen=big
 	R.markSeen(s)
 	local claimed,claimedOnce={},{}
 	for _,i in (if type(s.indexClaimed)=="table" then s.indexClaimed else {}) do
@@ -232,7 +236,7 @@ function R.stats(d,item,perks,rows)
 	return {damage=damage,cycle=cycle,hp=t.hp,value=C.money(value),cps=value/(math.ceil(t.hp/damage)*cycle+delay),rowBonus=multiplier-1,overkill=overkill,delay=delay}
 end
 -- bonus: permanent Index-milestone luck (0.1 = +10% weight on every non-Common rarity)
-function R.weights(luck,lucky,bonus) return C.rollWeights(luck,lucky,bonus) end
+function R.weights(luck,lucky,bonus,limited) return C.rollWeights(luck,lucky,bonus,limited) end
 -- Remember every type the save owns now (and the one inside the fuser).
 function R.markSeen(s)
 	if type(s.seen)~="table" then s.seen={} end
@@ -254,16 +258,18 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if now<(session.nextRoll or 0) then return false,"Roll is cooling down." end
 		local weights={} for i,v in C.Modifiers do weights[i]=v.weight end
 		local offers={}
-		-- the very first roll only offers plain Commons, so it is cheap to buy
+		-- the very first roll (8 Nov): one plain Rare (C.FirstRoll), priced so it can be
+		-- bought at once - the player's first "wow"
 		local first=s.rolls==0
 		local count=C.pedestals(s.upgrades.Pedestals)
 		-- pity: one pedestal is a guaranteed Legendary once the counter is full
 		local pitySlot=if not first and (s.pity or 0)+1>=C.Pity.Rolls then math.min(count,math.floor(random()*count)+1) else nil
 		for i=1,count do
-			local rarity=if first then C.Rarities[1] else C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky,perks and perks.indexLuck),random)]
+			local rarity=if first then C.rarity(C.FirstRoll.Rarity) else C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky,perks and perks.indexLuck,perks and perks.limited),random)]
 			if i==pitySlot and rarity.rank<C.Pity.MinRank then rarity=C.rarity(C.Pity.Rarity) end
 			local mod=if first then C.Modifiers[1] else C.Modifiers[choose(weights,random)]
 			offers[i]={type=rarity.types[math.min(#rarity.types,math.floor(random()*#rarity.types)+1)],rarity=rarity.name,modifier=mod.name,level=1}
+			if first then offers[i].price=math.max(0,math.min(C.FirstRoll.Price,math.floor(d.cash))) end
 		end
 		session.offers=offers session.nextRoll=now+C.rollSeconds() s.rolls+=1
 		if not first then s.pity=math.min((s.pity or 0)+1,C.Pity.Rolls) end

@@ -260,7 +260,9 @@ Custom events: ShopOpened (where from), PassPurchase, RobuxPurchase, Rebirth.
 first versions made from an in-game shot of a golden car in the press.
 
 ## Offer buttons (right side, Shop.client.luau)
-- Rainbow wobbling "2X Cash / ONLY R$ 249" button (DoubleCash pass); hidden once owned.
+- Rainbow wobbling "2X Cash / ONLY R$ x" button. 5 Nov: it climbs the cash pass ladder
+  (Store.CashLadder): 2X -> 4X -> 8X -> 16X CASH, always the next one up; gone after 16x
+  (or while the next pass has id 0).
 - Featured pass card under it with a "BEST!" ribbon: Auto Crush, then Lucky, then Offline Earnings (first one not owned); hidden when all owned.
 - Both fire ShopOpened analytics ("DoubleCashOffer" / "FeaturedOffer") and prompt the pass ("Coming soon!" while ids are 0).
 - SHOP is now a big icon button with a "!" badge until the shop is opened once per session; hidden offers while the book is open.
@@ -373,3 +375,33 @@ quests; QuestRules keeps frenzies/goldenToys/turbos/gifts (they were wiped on lo
   price/OWNED button) in cyan/blue, pink/purple or yellow/orange. Roblox Plus is one full-width row. The Starter
   Pack details show three big reward tiles (featured-card colours) and the live price on BUY. Icons bob 2.5 px
   (ShowcaseMotion, paused when the shop is hidden); Style.feedback press is now 0.97.
+
+## 5 Nov: cash pass ladder (Willem)
+Four game passes: `DoubleCash` 2x (R$ 19), `CashX4` 4x (R$ 49), `CashX8` 8x (R$ 129), `CashX16` 16x (R$ 299).
+You get the highest one you own (`Store.cashPassMult`), not all multiplied together, so 16x is 16x (with the
+VIP x1.5 and the timed boosts still on top, like before). The right-side button, the shop panel and the quick
+shop only offer the next step (`Store.nextCashPass`); the shop panel shows your top one as OWNED at the end.
+New passes have id 0 until Willem creates them (hidden until then). The 2x Cash sign beside Sell is gone
+(C.RobuxSignSpots). Owning a higher pass without the lower ones (bought from the game page) works fine.
+
+## 6 Nov: First Buy Deal (R$ 5)
+Product `FirstBuy` (Store), contents `O.FirstBuy` (OfferConfig): Gumball Gobbler (Epic) + 15 min 2x Cash + 15 min
+2x Luck, once per player (d.offers.owned.FirstBuy, attribute Offer_FirstBuy). Granted by server/Offers via the one
+ProcessReceipt (OfferRules handles `boosts`, a list). client/FirstBuy: a rainbow wobbling "R$ 5 DEAL" icon button
+after the last visible button of the top-left row (Index / Shop / Rewards / Rebirth), in the Shop gui, so it shows
+when the shop does; opens Willem's empty card board (image 77919314377312, FirstBuy.Art) with the title, crusher icon
+and name, the two boost tiles, a close sprite, a BUY R$ 5 button (live price) and "Only once per player!" laid out on it
+like his reference picture. Hidden while the
+product id is 0 and once owned. Shop funnel source "FirstBuyButton".
+
+## 6 Nov: phones
+The right-side offers are hidden on phones (FitsScreen false), so the next cash pass is a rainbow icon button
+"PhoneCashButton" in the top-left row there (same ladder, same buyPass; ShopOpened source "PhoneCashButton").
+The shop window on phones is scaled by width only and made shorter (fitPhone in ShopPanel); the page scrolls.
+
+## 6 Nov: no featured pass card
+The featured pass card under the cash button (Auto Crush / Auto Collect / Lucky / Offline) is gone (Willem); the
+right side only has the cash ladder button. First Buy Deal: now game pass `FirstBuy` (2074832519), hidden from pass
+lists; server/Offers grants O.FirstBuy once when it sees the pass owned.
+
+- 2026-11-08 (Willem, "impatient kid" playtest): the R$ 5 deal and the 2x/4x/8x/16x cash button show from goal C.RobuxButtonsGoal (5), read from the HudStage attribute (client/HudReveal). The starter pack no longer pops up 3 minutes in: only once all main goals are done (after Factory II), still once per session.

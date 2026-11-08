@@ -179,6 +179,23 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 	local pages: { [string]: any } = {}
 	local current = "FEATURED"
 	local area = make("Frame", { Name = "Content", Position = UDim2.fromOffset(14, 144), Size = UDim2.fromOffset(CONTENT_W, H - 158), BackgroundTransparency = 1, ZIndex = 6, ClipsDescendants = true }, panel)
+	-- 6 Nov (phone check: on an iPhone SE the whole 860 x 590 window shrank to half size,
+	-- 68 texts under 12 px): the shop is one scrolling page, so on phones it is scaled by
+	-- its WIDTH only and made shorter instead; the page scrolls. Text ends up ~40% bigger.
+	local function fitPhone()
+		local h = H
+		if Style.compact() then
+			local v = Workspace.CurrentCamera.ViewportSize
+			local inset = game:GetService("GuiService"):GetGuiInset().Y
+			local s = math.clamp((v.X - 24) / (W / 0.94), 0.3, 1)
+			h = math.clamp(math.floor((v.Y - inset - 12) / s * 0.92), 300, H)
+		end
+		panel.Size = UDim2.fromOffset(W, h)
+		area.Size = UDim2.fromOffset(CONTENT_W, h - 158)
+		panel:SetAttribute("FitHeight", h / 0.92)
+	end
+	fitPhone()
+	Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitPhone)
 	local scroll = make("ScrollingFrame", { Name = "All", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 8,
 		ScrollBarImageColor3 = C(255, 214, 60), AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(), ZIndex = 6 }, area)
 	-- 5 Nov (Willem: "too much background, compare it to the reference"): tight gaps
@@ -627,11 +644,15 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 			r:Destroy()
 		end)
 	end
-	local PASS_ICONS: { [string]: string } = { AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, Lucky = Icons.Lucky, OfflineEarnings = Icons.Offline, AutoCollect = Icons.Cash, VIP = Icons.Trophy }
+	local PASS_ICONS: { [string]: string } = { AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, CashX4 = Icons.DoubleCash, CashX8 = Icons.DoubleCash, CashX16 = Icons.DoubleCash, Lucky = Icons.Lucky, OfflineEarnings = Icons.Offline, AutoCollect = Icons.Cash, VIP = Icons.Trophy, AutoBuy = Icons.Lucky }
 	-- the short, readable version of each pass / boost (the long text stays in Store)
 	local PASS_TEXT: { [string]: { benefit: string, sub: string, palette: string } } = {
 		AutoCrush = { benefit = "+25% POWER", sub = "+25% damage for all your crushers, forever", palette = "Pink" },
 		DoubleCash = { benefit = "2x CASH", sub = "Double cash from every crush, forever", palette = "Gold" },
+		AutoBuy = { benefit = "AUTO BUY", sub = "Auto Roll buys the crushers it stops for and keeps going", palette = "Cyan" },
+		CashX4 = { benefit = "4x CASH", sub = "4x cash from every crush, forever (up from 2x)", palette = "Cyan" },
+		CashX8 = { benefit = "8x CASH", sub = "8x cash from every crush, forever (up from 4x)", palette = "Pink" },
+		CashX16 = { benefit = "16x CASH", sub = "16x cash from every crush, forever (up from 8x)", palette = "Gold" },
 		Lucky = { benefit = "2x LUCK", sub = "Forever. Uncommon or better: 30% -> 46% of rolls", palette = "Cyan" },
 		AutoCollect = { benefit = "AUTO SELL", sub = "Scrap collects and sells itself", palette = "Gold" },
 		VIP = { benefit = "x1.5 CASH", sub = "12 h offline cash and a gold VIP tag", palette = "Pink" },
@@ -650,6 +671,9 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		local g = grid(page, order)
 		for i, pass in Store.Passes do
 			if pass.gamePassId == 0 and pass.perk == "VIP" then continue end -- 4 Nov: VIP shows once its pass exists
+			if pass.hidden then continue end -- 6 Nov: the First Buy Deal has its own button
+			if pass.gamePassId == 0 and pass.perk == "AutoBuy" then continue end -- 7 Nov: shows once its pass exists
+			if pass.gamePassId == 0 and Store.isCashLadder(pass.perk) then continue end -- 5 Nov: ladder passes show once created
 			local txt = PASS_TEXT[pass.perk] or { benefit = pass.title, sub = pass.desc, palette = "Gold" }
 			local b = benefitCard(g, i, { title = pass.title, benefit = txt.benefit, sub = txt.sub, palette = txt.palette, image = PASS_ICONS[pass.perk] or Icons.Shop }, function(button)
 				if Store.hasPass(player, pass.perk) then return end
@@ -658,6 +682,14 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 			end)
 			if not Store.hasPass(player, pass.perk) then lowerPrice(b.Parent :: GuiObject, pass.perk) end
 			local function update()
+				-- 5 Nov: the cash ladder shows one card: the next step up, or your top
+				-- one as OWNED once there's nothing left to buy
+				if Store.isCashLadder(pass.perk) then
+					local nextPass = Store.nextCashPass(player)
+					local shown = if nextPass then nextPass.perk else Store.topCashPerk(player)
+					local card = b.Parent :: GuiObject
+					card.Visible = shown == pass.perk
+				end
 				if Store.hasPass(player, pass.perk) then
 					setCaption(b, "OWNED", GREY)
 					local ribbon = (b.Parent :: Instance):FindFirstChild("LowerPrice")
@@ -668,7 +700,11 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 					setCaption(b, if price then "R$ " .. price else "BUY", Style.GREEN)
 				end
 			end
-			player:GetAttributeChangedSignal(Store.passAttr(pass.perk)):Connect(update)
+			if Store.isCashLadder(pass.perk) then
+				for _, step in Store.CashLadder do player:GetAttributeChangedSignal(Store.passAttr(step.perk)):Connect(update) end
+			else
+				player:GetAttributeChangedSignal(Store.passAttr(pass.perk)):Connect(update)
+			end
 			table.insert(refreshers, update)
 		end
 	end

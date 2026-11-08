@@ -81,6 +81,11 @@ to your own press whenever you're more than 40 studs from it. Hidden otherwise.
 - Roll-speed upgrade: not added; RollSpeed was retired for pedestals earlier and pedestals already speed up rolling.
 - Lucky Block helpers: waiting for models.
 - Goals v7 (12, Willem: the tutorial took too long): Frenzy, Fill 3, Upgrade x3, Fill 5, Golden toy, Fill 6 (Rare), Turbo, Lv 5, Upgrade x8, Fill 9, Fill 12 (Epic), Factory II (Legendary). Unlock+fill pairs became one "Fill N bays" goal; Roll 10, free gift, Index, Lv 10, Lv 15 and one upgrade goal dropped (the gift counts down on the HUD anyway). Funnel: goals are steps 10-21, Factory III-VI 22-25.
+- Goals v8 (3 Nov): the SMASH/Frenzy goal left. v9 (4 Nov): quiet goals after Factory II. v10 (5 Nov): the TURBO goal left
+  (17% churn on it): Fill 3, Upgrade x3, Fill 5, Golden toy, Fill 6 (Rare), Lv 5, Upgrade x8, Fill 9, Fill 12 (Epic),
+  Factory II (Legendary). Funnel: goals are steps 10-19. A save on a removed goal moves to the next one that still exists.
+- Goals v11 (5 Nov): the quiet goals after Factory II start with Fill 18 bays, then Coat a crusher; Factory III prize
+  Legendary (was Epic).
 
 ## Intro cutscene (client/IntroCutscene, 2 Nov)
 Brand-new players only (tutorial step 1, one crusher), once per join, ~4.6 s, Skip button. Shot 1: close-up of your
@@ -117,3 +122,9 @@ Goal: fewer players leaving before the first collect (funnel step 2, 12.5% churn
 - Gift chip: 48 px tap pad; phone cash/friend boost moved below it.
 - Measured at 750x381 (Studio phone view): HUD text all >= 12 px, no overlaps. Panels are the desktop menus shrunk (scale 0.41-0.98): Shop and Rewards text down to 8 px, tabs/close 20-26 px. Next: real phone layouts for the panels (vault: Case Study - Phone UI Overhaul).
 - 5 Nov (Willem: "it takes from other bays"): FILL ROW only uses crushers from the backpack or already in that row; crushers in other rows stay put; crushers already in the right place keep their bay; the picker counts only usable crushers. Spec: RebirthMerge.spec.
+
+## Rebirth panel look (5 Nov)
+client/Rebirth.client.luau draws the panel on Willem's art (ART.Background 99505950209721, 1448x1086) with the layout
+fractions from the art pack (L table). Text, the gold progress bar and the green/red buttons (starter offer sprites
+106307684676239 / 86950187561147) are live UI on top. The reset/keep lists match CrusherRules "Rebirth": update both
+together if the rules change.

@@ -22,7 +22,7 @@ Simulated first run (greedy buyer): tier 2 at ~1.3 min, Car ~12 min, Tank
 Tiers: Apple, Teddy Bear, Phone, TV, Fridge, Car, Truck, Tank, House, Plane,
 Ship, Statue, Planet.
 
-- 31 Oct: crusher strikes are timed from when they were due (CrusherRules.step), so real output matches the shown $/min (measured 99.9%; was ~98%). 2x Cash pass and 2x Cash boost multiply (x4 together).
+- 31 Oct: crusher strikes are timed from when they were due (CrusherRules.step), so real output matches the shown $/min (measured 99.9%; was ~98%). 2x Cash pass and 2x Cash boost multiply (x4 together). 5 Nov: the pass is a ladder (2x/4x/8x/16x, highest owned counts, see Shop).
 
 - 31 Oct: overkill: damage above a toy's hp gives scrap x(1 + C.OverkillBonus*log2(damage/hp)), OverkillBonus 0.05 (+5% per doubling; ~+1.2% income per Damage level late game). Board Damage/Speed lines show the next level's real income gain on equipped crushers (CrusherUpgradeView incomeGain).
 
@@ -34,3 +34,5 @@ Ship, Statue, Planet.
 
 ## 2 Nov: economy events (Creator Dashboard > Analytics > Economy)
 Kit/Analytics `cash(player, sku, tx, before, after)` logs every cash change with its reason, summed per player and sent once a minute (and on leave); `cashBalance` (every second) logs whatever no call explained as `Passive` (gain) or `Other` (loss). Currency "Cash". Sources: SellScrap, AutoSell, GoalReward (Onboarding), Gift / GiftBonus / DailySpin / OfflineCash / TimeSkip / Code (TimedReward), IndexReward, FactoryEvent, QuestShop, cash packs and OfflineMultiplier / OfferPack (IAP), Passive. Sinks: UnlockBay, BuyCrusher (Shop), FactoryUpgrade, LevelUp, PlotUpgrade, Coating, Fusion, RollUpgrade.
+
+5 Nov: the Luck board shows Legendary+ odds up to Luck 39 and Secret+ odds from Luck 40 (C.LuckBoardSecretFrom), where Legendary+ barely moves per level.

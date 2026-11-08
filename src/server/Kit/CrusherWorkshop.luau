@@ -436,7 +436,16 @@ function W.station(parent,cf,kind)
 		studs(W.part(m,"DiePedestal",V(5,2,5),cf*CFrame.new(6.5,9,-3),W.Yellow))
 		local die=W.die(m,cf*CFrame.new(6.5,13,-3)*CFrame.Angles(.35,.6,.2),5.2)
 		W.beacon(m,cf*CFrame.new(-10,8,6)) W.beacon(m,cf*CFrame.new(10,8,6))
+		-- 8 Nov (Willem: a separate console blocked the stairs, then the trash can): AUTO ROLL is
+		-- a second, smaller panel on the roll machine's own front, right of ROLL; its button
+		-- opens the Auto Roller window (client/AutoRoll, through CrusherHud's "AutoRoll" action).
 		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.3,7.4),W.Purple,"ROLL A CRUSHER","ROLL")
+		-- (Willem: one panel, AUTO smaller than ROLL) the ROLL button makes room for a smaller
+		-- blue AUTO button on its right, in the same panel
+		button.Position=UDim2.fromScale(.05,.56) button.Size=UDim2.fromScale(.6,.38)
+		local abutton=W.button(button.Parent,"AutoAction","AUTO",UDim2.fromScale(.68,.6),UDim2.fromScale(.27,.3),"AutoRoll")
+		Style.setButtonColor(abutton,Color3.fromRGB(70,150,255))
+		local aface,alabel=face,label
 		-- Pedestals in an arc in front of the machine (like the reference): a roll
 		-- fills every unlocked one with an offer; each has a card and a Buy prompt.
 		-- Listed in unlock order: centre first, then outwards.
@@ -462,7 +471,7 @@ function W.station(parent,cf,kind)
 			prompt.Enabled=false prompt.Parent=plinth
 			pedestals[i]={top=pcf*CFrame.new(0,3.2,0),part=plinth,base=base,card=lines,prompt=prompt}
 		end
-		station={part=face,label=label,button=button,die=die,rollers=rollers,pedestals=pedestals}
+		station={part=face,label=label,button=button,die=die,rollers=rollers,pedestals=pedestals,auto={part=aface,label=alabel,button=abutton}}
 	end
 	return station
 end

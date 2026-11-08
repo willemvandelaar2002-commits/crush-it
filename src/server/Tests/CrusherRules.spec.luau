@@ -13,7 +13,10 @@ return function()
 	local d=fresh() local s={} local starter=d.crushers.owned[1]
 	check(#d.crushers.owned==1 and d.crushers.equipped["1"]==starter.id,"starter must be equipped")
 	local first=fresh() local _,_,cheap=R.act(first,{},"Roll",{},0,function() return .999 end,id,{})
-	check(cheap[1].rarity=="Common" and cheap[1].modifier=="Standard" and first.crushers.rolls==1,"first roll is always a plain Common")
+	check(cheap[1].rarity==C.FirstRoll.Rarity and cheap[1].modifier=="Standard" and first.crushers.rolls==1,"first roll is always a plain Rare (C.FirstRoll)")
+	check(C.offerPrice(cheap[1])==math.min(C.FirstRoll.Price,first.cash),"the first Rare costs C.FirstRoll.Price (or all your cash if less)")
+	local poor=fresh() poor.cash=37 local _,_,poorOffers=R.act(poor,{},"Roll",{},0,random,id,{})
+	check(C.offerPrice(poorOffers[1])==37,"the first Rare is always affordable")
 	local before=d.cash local ok,_,offers=act(d,s,"Roll")
 	check(ok and d.cash==before and #offers==C.StartPedestals and #d.crushers.owned==1,"free roll fills the starting pedestals only")
 	check(not act(d,s,"Buy",{slot=1},.1),"cannot buy before the reveal")
@@ -140,12 +143,13 @@ return function()
 	end
 	-- Forty real, reachable definitions; model additions must not silently
 	-- change legacy IDs, saved instance stats or the existing rarity weights.
-	check(#C.Types==40+#C.Mythics+#C.CrateTypes+#C.ChaseTypes,"forty rollable crusher types plus the Mythics")
+	check(#C.Types==40+#C.Mythics+#C.CrateTypes+#C.ChaseTypes+#C.LimitedTypes+#C.ExoticTypes,"complete catalogue including Exotic")
 	local seen={} local cumulative=0 local total=0 for _,r in C.Rarities do total+=r.weight end
 	for _,r in C.Rarities do
 		local chase=0 for _,e in C.ChaseTypes do if e.rarity==r.name then chase+=1 end end
-		check(#r.types==(if r.exclusive then #C.Mythics elseif chase>0 then chase else 8),"eight types per rollable rarity (chase tiers: their chase crushers)")
+		check(#r.types==(if r.exclusive then #C.Mythics elseif r.event then #C.LimitedTypes elseif r.name=="Exotic" then #C.ExoticTypes elseif chase>0 then chase else 8),"eight types per rollable rarity (chase tiers: their chase crushers)")
 		if r.exclusive then for _,t in r.types do check(C.typeById(t)~=nil and not seen[t],"real Mythic type") seen[t]=true end continue end
+		if r.event then for _,t in r.types do check(C.typeById(t)~=nil and not seen[t] and C.typeById(t).event==r.event,"real Limited type") seen[t]=true end continue end
 		for position,typeId in r.types do
 			check(not seen[typeId] and C.typeById(typeId)~=nil,"unique real type in each roll pool") seen[typeId]=true
 			local profile=fresh() profile.crushers.rolls=1 local context={} local values={(cumulative+r.weight/2)/total,.1,(position-.5)/#r.types} local n=0
@@ -187,6 +191,26 @@ return function()
 	local sec,div,leg,myth2=C.rarity("Secret"),C.rarity("Divine"),C.rarity("Legendary"),C.rarity("Mythic")
 	check(C.oddsFor(sec.types[1])==50000 and C.oddsFor(div.types[1])==500000 and C.oddsFor(leg.types[1])==4000,"chase odds 1 in 50K / 500K, Legendary unchanged")
 	check(C.Rarities[#C.Rarities]==myth2 and myth2.rank>div.rank and div.rank>sec.rank and sec.rank>leg.rank,"Mythic stays last and on top")
+	-- 6 Nov: Limited (Lucky Weekend): never rolled without the event, about 1 in 5,000 with it,
+	-- as strong as a Secret, normal ownership
+	local lim=C.rarity("Limited")
+	local off,on=R.weights(0,1,0,false),R.weights(0,1,0,true)
+	local totalOn,limOn=0,0 for i,x in on do totalOn+=x if C.Rarities[i]==lim then limOn=x end end
+	for i,x in off do if C.Rarities[i]==lim then check(x==0,"no Limited weight outside the weekend") end end
+	check(math.abs(totalOn/limOn-5001)<1,"Limited: about 1 in 5,000 rolls during the weekend")
+	check(C.oddsFor(lim.types[1])==15003,"Index: 1 in 15,003 per Limited crusher")
+	check(C.typeById(lim.types[1]).value==C.typeById(sec.types[1]).value and lim.mult==sec.mult,"Limited as strong as Secret")
+	check(lim.rank>leg.rank and lim.rank<sec.rank,"Limited between Legendary and Secret")
+	do
+		local index=0 for i,r in C.Rarities do if r==lim then index=i end end
+		local before=0 for i=1,index-1 do before+=on[i] end
+		local profile=fresh() profile.crushers.rolls=1 local context={} local values={(before+limOn/2)/totalOn,.1,.5} local n=0
+		local ok,_,result=R.act(profile,context,"Roll",{},0,function() n+=1 return values[n] end,id,{limited=true})
+		check(ok and result[1].rarity=="Limited","Limited rolls during the weekend")
+		profile.cash=1e9
+		local bought,_,item=R.act(profile,context,"Buy",{slot=1},context.nextRoll,math.random,id,{})
+		check(bought and item.rarity=="Limited" and R.find(R.migrate(profile,id),item.id)~=nil,"a Limited crusher is kept after the weekend")
+	end
 	local function out(id,r) return C.typeById(id).value*r.mult end
 	check(out(sec.types[1],sec)>out("Quantum",leg) and out(div.types[1],div)>out(sec.types[1],sec) and out(myth2.types[1],myth2)>out(div.types[1],div),"output grows Legendary < Secret < Divine < Mythic")
 	return {passed=checks}

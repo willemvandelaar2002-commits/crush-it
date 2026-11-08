@@ -10,7 +10,7 @@ local Config = require(script.Parent.Config)
 
 local Store = {}
 
-export type Pass = { perk: string, gamePassId: number, price: number, title: string, desc: string, color: Color3 }
+export type Pass = { perk: string, gamePassId: number, price: number, title: string, desc: string, color: Color3, hidden: boolean? }
 export type Product = { id: string, productId: number, price: number, title: string, desc: string, color: Color3, hidden: boolean?, mythic: string? }
 
 Store.Passes = {
@@ -19,8 +19,22 @@ Store.Passes = {
 	-- 3 Nov (vault audit, "see exactly what you get"): the shop card said "Auto Crush:
 	-- crushes for you while AFK", but crushers always work; it now says what it does.
 	{ perk = "AutoCrush", gamePassId = 2060699266, price = 79, title = "Production Boost", desc = "+25% damage for all your crushers, forever", color = Color3.fromRGB(230, 80, 70) },
-	{ perk = "DoubleCash", gamePassId = 2039584674, price = 59, title = "2x Cash", desc = "Double cash from every crush, forever", color = Color3.fromRGB(80, 200, 110) },
-	{ perk = "Lucky", gamePassId = 2041580327, price = 99, title = "Lucky", desc = "2x luck on crusher rolls: Uncommon or better about 30% -> 46% of rolls", color = Color3.fromRGB(255, 200, 50) },
+	-- 5 Nov (Willem): a cash pass ladder 2x -> 4x -> 8x -> 16x. Each is its own game pass;
+	-- you get the HIGHEST one you own (not multiplied together). 2x is R$ 19 now.
+	-- (ids from Willem's Creator Dashboard, 5 Nov)
+	{ perk = "DoubleCash", gamePassId = 2039584674, price = 19, title = "2x Cash", desc = "Double cash from every crush, forever", color = Color3.fromRGB(80, 200, 110) },
+	{ perk = "CashX4", gamePassId = 2070673080, price = 49, title = "4x Cash", desc = "4x cash from every crush, forever (replaces 2x)", color = Color3.fromRGB(60, 190, 230) },
+	{ perk = "CashX8", gamePassId = 2070092535, price = 129, title = "8x Cash", desc = "8x cash from every crush, forever (replaces 4x)", color = Color3.fromRGB(170, 80, 240) },
+	{ perk = "CashX16", gamePassId = 2071704684, price = 299, title = "16x Cash", desc = "16x cash from every crush, forever (replaces 8x)", color = Color3.fromRGB(255, 190, 40) },
+	-- 7 Nov (Willem: "auto buy is paid"): AUTO BUY for Auto Roll (server/AutoRoll): it buys
+	-- what auto roll stops for and keeps rolling. Pass 2074912226 (8 Nov, R$ 89).
+	{ perk = "AutoBuy", gamePassId = 2074912226, price = 89, title = "Auto Buy", desc = "Auto Roll buys the crushers it stops for and keeps rolling", color = Color3.fromRGB(80, 200, 255) },
+	-- 6 Nov (Willem: "something under 5 robux, very visible, to get people over the first
+	-- buy barrier"; vault Price Points: impulse rung). Willem made it a GAME PASS: owning it
+	-- grants the contents (Shared/OfferConfig FirstBuy) once, by server/Offers. Hidden from
+	-- the pass lists; sold by its own HUD button (client/FirstBuy).
+	{ perk = "FirstBuy", gamePassId = 2074832519, price = 5, title = "First Buy Deal", desc = "Gumball Gobbler (Epic crusher) + 15 min 2x Cash + 15 min 2x Luck. Only once!", color = Color3.fromRGB(255, 90, 200), hidden = true },
+	{ perk = "Lucky", gamePassId = 2041580327, price = 49, title = "Lucky", desc = "2x luck on crusher rolls: Uncommon or better about 30% -> 46% of rolls", color = Color3.fromRGB(255, 200, 50) },
 	{ perk = "AutoCollect", gamePassId = 2057934074, price = 69, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
 	-- 4 Nov (monetization round 2, vault: Price Points "the 299-599 rung was empty"; Willem):
 	-- VIP. Id 0 until Willem creates the pass (hidden in the shop until then).
@@ -116,6 +130,42 @@ end
 
 function Store.hasPass(player: Player, perk: string): boolean
 	return player:GetAttribute(Store.passAttr(perk)) == true
+end
+
+-- 5 Nov: the cash pass ladder, lowest first. Only the highest owned one counts.
+Store.CashLadder = { { perk = "DoubleCash", mult = 2 }, { perk = "CashX4", mult = 4 }, { perk = "CashX8", mult = 8 }, { perk = "CashX16", mult = 16 } }
+function Store.isCashLadder(perk: string): boolean
+	for _, step in Store.CashLadder do if step.perk == perk then return true end end
+	return false
+end
+-- the cash multiplier from cash passes (1 without any)
+function Store.cashPassMult(player: Player): number
+	local best = 1
+	for _, step in Store.CashLadder do
+		if Store.hasPass(player, step.perk) then best = math.max(best, step.mult) end
+	end
+	return best
+end
+-- the highest cash pass you own (nil without any)
+function Store.topCashPerk(player: Player): string?
+	local top = nil
+	for _, step in Store.CashLadder do
+		if Store.hasPass(player, step.perk) then top = step.perk end
+	end
+	return top
+end
+-- the next ladder pass to offer (above the highest owned), or nil when none is left
+-- or the next one isn't created yet (id 0)
+function Store.nextCashPass(player: Player): Pass?
+	local mult = Store.cashPassMult(player)
+	for _, step in Store.CashLadder do
+		if step.mult > mult then
+			local pass = Store.passByPerk(step.perk)
+			if pass and pass.gamePassId ~= 0 then return pass end
+			return nil
+		end
+	end
+	return nil
 end
 
 function Store.passByPerk(perk: string): Pass?

@@ -19,6 +19,7 @@ if not C.Enabled then return end
 local me = Players.LocalPlayer
 local INK = Style.Colors.Ink
 local RGB = Color3.fromRGB
+local WHITE = Color3.new(1, 1, 1)
 
 local function make(class: string, props: { [string]: any }, parent: Instance?): any
 	local n = Instance.new(class)
@@ -38,55 +39,112 @@ button.Visible = false
 Style.placeHudButton(button, 3)
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() Style.placeHudButton(button, 3) end)
 
-local W, H = 560, 420
-local panel = make("Frame", { Name = "RebirthPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.52), Size = UDim2.fromOffset(W, H),
-	BackgroundColor3 = RGB(44, 48, 54), Visible = false, ZIndex = 5 }, gui)
-make("UICorner", { CornerRadius = UDim.new(0, 16) }, panel)
-make("UIStroke", { Thickness = 5, Color = INK }, panel)
-Style.modal(panel)
-panel:SetAttribute("FitWidth", W + 40)
-panel:SetAttribute("FitHeight", H + 60)
-local header = make("Frame", { Position = UDim2.fromOffset(-4, -4), Size = UDim2.new(1, 8, 0, 70), BackgroundColor3 = RGB(255, 140, 30), ZIndex = 6 }, panel)
-make("UICorner", { CornerRadius = UDim.new(0, 16) }, header)
-make("UIStroke", { Thickness = 5, Color = INK }, header)
-make("UIGradient", { Rotation = 90, Color = ColorSequence.new(RGB(255, 200, 70), RGB(230, 70, 40)) }, header)
-local title = label(header, "REBIRTH", UDim2.fromOffset(20, 8), UDim2.new(1, -120, 0, 54), 4)
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.ZIndex = 7
-local close = make("TextButton", { AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -12, 0.5, 0), Size = UDim2.fromOffset(54, 54), Text = "",
-	BackgroundColor3 = RGB(228, 36, 44), ZIndex = 8 }, header)
-make("UICorner", { CornerRadius = UDim.new(0, 10) }, close)
-make("UIStroke", { Thickness = 3, Color = INK, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, close)
-label(close, "X", UDim2.fromScale(0.15, 0.1), UDim2.fromScale(0.7, 0.8), 3).ZIndex = 9
-
-local multLine = label(panel, "", UDim2.fromOffset(20, 80), UDim2.new(1, -40, 0, 56), 4)
-multLine.TextColor3 = RGB(255, 215, 60)
-multLine.RichText = true
-local sub = label(panel, "INCOME FOREVER", UDim2.fromOffset(20, 134), UDim2.new(1, -40, 0, 22), 2)
-local function box(x: number, color: Color3, head: string, body: string)
-	local f = make("Frame", { Position = UDim2.fromOffset(x, 166), Size = UDim2.fromOffset((W - 60) / 2, 132), BackgroundColor3 = color, ZIndex = 6 }, panel)
-	make("UICorner", { CornerRadius = UDim.new(0, 12) }, f)
-	make("UIStroke", { Thickness = 3, Color = INK }, f)
-	label(f, head, UDim2.fromOffset(8, 6), UDim2.new(1, -16, 0, 26), 3)
-	local b = label(f, body, UDim2.fromOffset(10, 36), UDim2.new(1, -20, 1, -44), 2)
-	b.TextYAlignment = Enum.TextYAlignment.Top
+-- 5 Nov: the panel is Willem's art (Rebirth-Background, 1448 x 1086) with live text, a
+-- native progress bar and the starter offer's green / red sprite buttons on top.
+-- Layout = the art pack's layout.json (fractions of the background).
+local ART = {
+	Background = "rbxassetid://99505950209721", -- Rebirth-Background.png
+	Purchase = "rbxassetid://106307684676239", -- PurchaseButton.png (from the starter offer pack)
+	Close = "rbxassetid://86950187561147", -- CloseButton.png (from the starter offer pack)
+}
+local L = {
+	title = { 0.37, 0.043, 0.34, 0.10 }, closeButton = { 0.832, 0.062, 0.077, 0.103 }, boostSubtitle = { 0.34, 0.177, 0.32, 0.034 },
+	cashTitle = { 0.19, 0.235, 0.29, 0.048 }, cashValues = { 0.19, 0.29, 0.29, 0.058 },
+	luckTitle = { 0.59, 0.235, 0.29, 0.048 }, luckValues = { 0.59, 0.29, 0.29, 0.058 },
+	rebirthCount = { 0.40, 0.367, 0.20, 0.038 },
+	resetsTitle = { 0.264, 0.438, 0.21, 0.05 }, keepsTitle = { 0.64, 0.438, 0.23, 0.05 },
+	resetsList = { 0.145, 0.507, 0.33, 0.195 }, keepsList = { 0.54, 0.507, 0.345, 0.195 },
+	progressBar = { 0.125, 0.742, 0.75, 0.06 }, rebirthButton = { 0.21, 0.825, 0.58, 0.12 },
+}
+local W, H = 760, 570 -- 4:3 like the art
+local function box(parent: Instance, name: string, r: { number }, z: number): Frame
+	return make("Frame", { Name = name, Position = UDim2.fromScale(r[1], r[2]), Size = UDim2.fromScale(r[3], r[4]), BackgroundTransparency = 1, ZIndex = z }, parent)
 end
-box(20, RGB(150, 50, 50), "RESETS", "Cash, bays, factory level, factory upgrades, crusher levels")
-box(40 + (W - 60) / 2, RGB(50, 130, 70), "YOU KEEP", "All crushers (coatings, fused), Index, Luck, pedestals, passes")
-local progressBack = make("Frame", { Position = UDim2.fromOffset(20, 308), Size = UDim2.new(1, -40, 0, 28), BackgroundColor3 = RGB(24, 28, 46), ZIndex = 6 }, panel)
+local function words(parent: Instance, text: string, z: number, outline: number?, max: number?): TextLabel
+	local l = make("TextLabel", { Name = "Text", Text = text, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, TextScaled = true, ZIndex = z }, parent)
+	Style.text(l, outline or 2.5)
+	if max then make("UITextSizeConstraint", { MaxTextSize = max }, l) end
+	return l
+end
+-- a stable root frame with an ImageButton centred in it; hover/press scale only the button
+local function imageButton(parent: Instance, name: string, r: { number }, image: string, z: number, hoverScale: number, pressScale: number)
+	local root = box(parent, name .. "Root", r, z)
+	local b = make("ImageButton", { Name = name, Image = image, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromScale(1, 1), ScaleType = Enum.ScaleType.Fit, BackgroundTransparency = 1, AutoButtonColor = false, ZIndex = z, Selectable = true }, root)
+	local scale = make("UIScale", { Scale = 1 }, b)
+	local hovered, down = false, false
+	local tween: Tween? = nil
+	local function settle()
+		local target = if down then pressScale elseif hovered then hoverScale else 1
+		if tween then tween:Cancel() end
+		tween = TweenService:Create(scale, TweenInfo.new(if down then 0.07 else 0.12, Enum.EasingStyle.Quad), { Scale = target })
+		;(tween :: Tween):Play()
+	end
+	b.MouseEnter:Connect(function() hovered = true settle() end)
+	b.MouseLeave:Connect(function() hovered = false down = false settle() end)
+	b.SelectionGained:Connect(function() hovered = true settle() end)
+	b.SelectionLost:Connect(function() hovered = false down = false settle() end)
+	b.MouseButton1Down:Connect(function() down = true settle() end)
+	b.MouseButton1Up:Connect(function() down = false settle() end)
+	b.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.Touch then hovered = false down = false settle() end end)
+	local function reset() hovered = false down = false if tween then tween:Cancel() end scale.Scale = 1 end
+	return b, reset
+end
+
+local panel = make("Frame", { Name = "RebirthPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(W, H),
+	BackgroundTransparency = 1, Visible = false, ZIndex = 5 }, gui)
+make("UIAspectRatioConstraint", { AspectRatio = 1448 / 1086 }, panel)
+make("ImageLabel", { Name = "Background", Image = ART.Background, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Stretch, ZIndex = 6 }, panel)
+Style.modal(panel)
+panel:SetAttribute("FitWidth", W) panel:SetAttribute("FitHeight", H)
+
+local titleText = words(box(panel, "Title", L.title, 8), "REBIRTH", 9, 4)
+Style.bold(titleText, 4)
+local close, resetClose = imageButton(panel, "Close", L.closeButton, ART.Close, 12, 1.07, 0.94)
+local xHome = make("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.47), Size = UDim2.fromScale(0.56, 0.56), BackgroundTransparency = 1, ZIndex = 13 }, close)
+Style.bold(words(xHome, "X", 13, 4), 4)
+words(box(panel, "Subtitle", L.boostSubtitle, 8), "PERMANENT BOOSTS", 9, 2.5)
+words(box(panel, "CashTitle", L.cashTitle, 8), "CASH MULTIPLIER", 9, 3)
+words(box(panel, "LuckTitle", L.luckTitle, 8), "LUCK", 9, 3)
+local cashValues = words(box(panel, "CashValues", L.cashValues, 8), "", 9, 3.5)
+local luckValues = words(box(panel, "LuckValues", L.luckValues, 8), "", 9, 3.5)
+cashValues.RichText = true luckValues.RichText = true
+local countText = words(box(panel, "RebirthCount", L.rebirthCount, 8), "", 9, 2.5)
+words(box(panel, "ResetsTitle", L.resetsTitle, 8), "RESETS", 9, 3)
+words(box(panel, "KeepsTitle", L.keepsTitle, 8), "YOU KEEP", 9, 3)
+-- the real reset / keep rules (CrusherRules "Rebirth"), five lines each
+local function list(r: { number }, name: string, lines: { string })
+	local home = box(panel, name, r, 8)
+	make("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, FillDirection = Enum.FillDirection.Vertical }, home)
+	for i, text in lines do
+		local row = make("Frame", { Size = UDim2.fromScale(1, 1 / #lines), BackgroundTransparency = 1, LayoutOrder = i, ZIndex = 8 }, home)
+		local l = words(row, "•  " .. text, 9, 2.2, 26)
+		l.TextXAlignment = Enum.TextXAlignment.Left
+	end
+end
+list(L.resetsList, "ResetsList", { "Cash", "Bays", "Factory level", "Factory upgrades", "Crusher levels" })
+list(L.keepsList, "KeepsList", { "All crushers", "Coatings & fused status", "Index & Luck", "Pedestals", "Passes" })
+-- native progress bar: navy track, gold gradient fill
+local progressBack = box(panel, "Progress", L.progressBar, 8)
+progressBack.BackgroundTransparency = 0 progressBack.BackgroundColor3 = RGB(16, 26, 70)
 make("UICorner", { CornerRadius = UDim.new(1, 0) }, progressBack)
 make("UIStroke", { Thickness = 3, Color = INK }, progressBack)
-local progressFill = make("Frame", { Size = UDim2.fromScale(0, 1), BackgroundColor3 = RGB(255, 200, 40), ZIndex = 7 }, progressBack)
+local progressFill = make("Frame", { Name = "Fill", Size = UDim2.fromScale(0, 1), BackgroundColor3 = WHITE, ZIndex = 9 }, progressBack)
 make("UICorner", { CornerRadius = UDim.new(1, 0) }, progressFill)
-local progressText = label(progressBack, "", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), 2)
-local go = make("TextButton", { AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 346), Size = UDim2.fromOffset(280, 56), Text = "",
-	BackgroundColor3 = RGB(60, 200, 80), ZIndex = 7 }, panel)
-make("UICorner", { CornerRadius = UDim.new(0, 12) }, go)
-make("UIStroke", { Thickness = 3, Color = INK, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, go)
-Style.feedback(go)
-local goText = label(go, "REBIRTH", UDim2.fromOffset(8, 6), UDim2.new(1, -16, 1, -12), 3)
-goText.ZIndex = 8
+make("UIGradient", { Rotation = 90, Color = ColorSequence.new({ ColorSequenceKeypoint.new(0, RGB(255, 236, 110)), ColorSequenceKeypoint.new(0.55, RGB(255, 196, 30)), ColorSequenceKeypoint.new(1, RGB(240, 150, 20)) }) }, progressFill)
+local progressText = words(progressBack, "", 10, 2.5)
+local go, resetGo = imageButton(panel, "Rebirth", L.rebirthButton, ART.Purchase, 10, 1.035, 0.97)
+local goHome = make("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.46), Size = UDim2.fromScale(0.8, 0.56), BackgroundTransparency = 1, ZIndex = 11 }, go)
+local goText = words(goHome, "REBIRTH", 11, 4)
+Style.bold(goText, 4)
+panel:GetPropertyChangedSignal("Visible"):Connect(function() if not panel.Visible then resetGo() resetClose() end end)
 
+-- multipliers shown rounded for reading (2 decimals at most); the math is untouched
+local function mult(x: number): string
+	local t = string.format("%.2f", x):gsub("0+$", ""):gsub("%.$", "")
+	return t .. "x"
+end
+local GREEN = "#7CFF4E"
 local state: any = nil
 local confirmUntil = 0
 local function ready(): boolean
@@ -97,19 +155,27 @@ local function paint()
 	local n = state.rebirths or 0
 	button.Visible = (state.plotLevel or 0) >= C.Rebirth.MinPlot - 1 or n > 0
 	badge.Visible = ready()
-	multLine.Text = string.format('x%s CASH  >  <font color="#7CFF6E">x%s CASH</font>', tostring(C.rebirthMult(n)), tostring(C.rebirthMult(n + 1)))
-	sub.Text = string.format("LUCK x%s > x%s · FOREVER", tostring(C.rebirthLuck(n)), tostring(C.rebirthLuck(n + 1))) .. (if n > 0 then " · REBIRTHS: " .. n else "")
+	cashValues.Text = string.format('%s → <font color="%s">%s</font>', mult(C.rebirthMult(n)), GREEN, mult(C.rebirthMult(n + 1)))
+	luckValues.Text = string.format('%s → <font color="%s">%s</font>', mult(C.rebirthLuck(n)), GREEN, mult(C.rebirthLuck(n + 1)))
+	countText.Text = "Rebirths: " .. n
 	local cost = state.rebirthCost or C.rebirthCost(n)
 	if (state.plotLevel or 0) < C.Rebirth.MinPlot then
 		progressFill.Size = UDim2.fromScale(math.clamp((state.plotLevel or 0) / C.Rebirth.MinPlot, 0, 1), 1)
 		progressText.Text = "Needs " .. C.PlotUpgrade.Names[C.Rebirth.MinPlot]
-	else
+	elseif type(cost) == "number" and cost > 0 and cost == cost then
 		progressFill.Size = UDim2.fromScale(math.clamp((state.cash or 0) / cost, 0, 1), 1)
 		progressText.Text = Format.cash(state.cash or 0) .. " / " .. Format.cash(cost)
+	else
+		progressFill.Size = UDim2.fromScale(0, 1)
+		progressText.Text = "..."
 	end
+	progressFill.Visible = progressFill.Size.X.Scale > 0.01
 	local confirming = os.clock() < confirmUntil
-	go.BackgroundColor3 = if not ready() then RGB(120, 124, 134) elseif confirming then RGB(235, 60, 50) else RGB(60, 200, 80)
+	local can = ready()
+	go.ImageColor3 = if can then WHITE else RGB(150, 150, 150)
+	go.ImageTransparency = if can then 0 else 0.15
 	goText.Text = if confirming then "SURE? TAP AGAIN" else "REBIRTH"
+	goText.TextColor3 = if confirming then RGB(255, 236, 90) else WHITE
 end
 Net.event("CrusherState").OnClientEvent:Connect(function(v: any)
 	if type(v) ~= "table" then return end

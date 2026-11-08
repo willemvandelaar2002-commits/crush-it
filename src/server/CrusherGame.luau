@@ -66,9 +66,10 @@ local function perks(p)
 			*Weekend.luck(os.time()) -- 4 Nov: LUCKY WEEKEND (Shared/WeekendConfig), everyone, Sat-Sun UTC
 			*ServerLuck.mult() -- 4 Nov: someone bought Server Luck (x2 for the whole server)
 			*(function() local d=Data.get(p) return C.rebirthLuck(d and d.crushers.rebirths or 0) end)(),
-		mult=(if Store.hasPass(p,"DoubleCash") then 2 else 1)*(if Store.hasPass(p,"VIP") then Store.Vip.Mult else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now))
+		mult=Store.cashPassMult(p)*(if Store.hasPass(p,"VIP") then Store.Vip.Mult else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now))
 			*(function() local d=Data.get(p) return C.rebirthMult(d and d.crushers.rebirths or 0) end)(), -- 2 Nov evening: rebirth bonus
-		indexLuck=(function() local d=Data.get(p) return if d then IndexRewards.luck(d.crushers) else 0 end)()}
+		indexLuck=(function() local d=Data.get(p) return if d then IndexRewards.luck(d.crushers) else 0 end)(),
+		limited=C.limitedOn()} -- 6 Nov: Limited (Lucky Weekend) crushers roll while the weekend is on
 end
 local function cps(p,d)
 	local rows=Rows.snapshot(d) local buffs=perks(p)
@@ -249,6 +250,11 @@ local function goalTick(p,d)
 		s.goal+=1 done+=1
 	end
 end
+-- 5 Nov (Willem): UNOWNED / NEW DISCOVERY mean "not in your Index yet" (every type
+-- the save ever had, crushers.seen), not "not in your inventory right now"
+local function inIndex(s,typeId)
+	return (type(s.seen)=="table" and s.seen[typeId]==true) or RollLook.owns(s.owned,typeId)
+end
 local function send(p,message,result)
 	local d=Data.get(p) local ctx=sessions[p] if not d or not ctx then return end
 	local s=d.crushers
@@ -256,7 +262,7 @@ local function send(p,message,result)
 	-- A first purchase (or spin prize) can make another visible offer of the
 	-- same type known. Keep its badge honest without rebuilding the model.
 	for slot,model in ctx.plot.offerModels or {} do
-		if model.Parent and model:GetAttribute("RevealUnowned") and RollLook.owns(s.owned,model:GetAttribute("RevealType")) then
+		if model.Parent and model:GetAttribute("RevealUnowned") and inIndex(s,model:GetAttribute("RevealType")) then
 			model:SetAttribute("RevealUnowned",false)
 			local card=ctx.plot.stations.Roll.pedestals[slot].card
 			card.rarity.Text=card.rarity.Text:gsub(" · UNOWNED","")
@@ -554,17 +560,55 @@ end
 -- output and price. Buying is done with the pedestal's prompt.
 local function rollShow(p,offers)
 	local ctx=sessions[p] local plot=ctx.plot local st=plot.stations.Roll
-	local seconds=math.max(1.2,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
+	-- 8 Nov (Willem: "the skip still shows it"): SKIP ANIMATION = no flicker, no die spin,
+	-- all pedestals at once, no reveal highlight / sting (RevealFast)
+	local fast=ctx.fastRoll==true
+	local seconds=if fast then 0 else math.max(1.2,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
 	local rollId=guid() local rollData=Data.get(p) local rollPerks=perks(p)
 	local rollLuck=rollData.crushers.upgrades.Luck local first=rollData.crushers.rolls==1
 	-- 2 Nov: a Legendary or better roll is announced to the whole server once revealed
-	local best=nil
-	for _,item in offers do local r=item and C.rarity(item.rarity) if r and r.rank>=4 and (not best or r.rank>best.rank) then best=table.clone(r) best.item=item end end
-	if best then
+	local best=nil local bestSlot=nil
+	for slot,item in offers do local r=item and C.rarity(item.rarity) if r and r.rank>=4 and (not best or r.rank>best.rank) then best=table.clone(r) best.item=item bestSlot=slot end end
+	-- 5 Nov: Secret and up get the big cinematic (BigRoll.client): that pedestal is
+	-- held back for C.BigRoll[rarity].Hold seconds so the impact lands on the reveal;
+	-- the next roll and buying wait as long (no rolling a Secret away by accident)
+	local big=if best and (best.rank>=C.BigRoll.MinRank or best.name=="Limited") then C.BigRoll[best.name] else nil
+	-- 8 Nov: the tutorial's first roll (one Rare, C.FirstRoll) gets the big cinematic too,
+	-- only for this player (no server-wide announcement for a Rare)
+	local firstShow=false
+	if first and not best then
+		for slot,item in offers do local r=item and C.rarity(item.rarity) if r and r.name==C.FirstRoll.Rarity then best=table.clone(r) best.item=item bestSlot=slot end end
+		if best then big={Hold=C.FirstRoll.Hold} firstShow=true end
+	end
+	local hold=if big then big.Hold else 0
+	if big then
+		ctx.nextRoll=(ctx.nextRoll or 0)+hold
+		rollData.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock())
+		local def=C.typeById(best.item.type) local ped=st.pedestals[bestSlot]
+		-- 5 Nov (Willem): the cinematic counts up to the BASE odds of that crusher (no luck,
+		-- passes or boosts), so a Secret / Divine always shows how rare it really is
+		local odds=RollLook.odds(best.item.type,0,nil,false,0)
+		task.delay(seconds,function()
+			if ctx.rollToken~=token or sessions[p]~=ctx then return end
+			-- 5 Nov (Willem): skippable once you have watched this rarity's cinematic before (saved)
+			local cs=rollData.crushers if type(cs.bigSeen)~="table" then cs.bigSeen={} end
+			local canSkip=cs.bigSeen[best.name]==true cs.bigSeen[best.name]=true
+			local fire=if firstShow then function(t) Net.event("BigRoll"):FireClient(p,t) end else function(t) Net.event("BigRoll"):FireAllClients(t) end
+			fire({canSkip=canSkip,userId=p.UserId,player=p.DisplayName,rarity=best.name,rank=best.rank,color=best.color,
+				name=def and def.name or best.item.type,type=best.item.type,odds=odds,slot=bestSlot,at=ped.top,machine=st.die:GetPivot().Position,hold=hold,
+				revealAt=workspace:GetServerTimeNow()+hold,aftershock=big.AftershockLuck,aftershockSeconds=big.AftershockSeconds})
+		end)
+	end
+	if best and not firstShow then
 		local def=C.typeById(best.item.type)
-		task.delay(seconds+0.4,function()
+		task.delay(seconds+hold+0.4,function()
 			if ctx.rollToken~=token then return end
 			Net.event("RarePull"):FireAllClients({player=p.DisplayName,rarity=best.name,name=def and def.name or best.item.type,color=best.color,userId=p.UserId})
+			if big and big.AftershockLuck then
+				ServerLuck.aftershock(p,big.AftershockLuck,big.AftershockSeconds)
+				Net.event("RarePull"):FireAllClients({text="DIVINE AFTERSHOCK: +"..math.floor((big.AftershockLuck-1)*100+.5).."% luck for EVERYONE for "..big.AftershockSeconds.." seconds!",
+					userId=p.UserId,color=best.color})
+			end
 		end)
 	end
 	for i in st.pedestals do clearOffer(plot,i) end
@@ -645,17 +689,18 @@ local function rollShow(p,offers)
 			local d=Data.get(p)
 			for slot,item in offers do
 				-- reveal the pedestals one after another, centre first
-				task.delay((slot-1)*.12,function()
+				task.delay((if fast then 0 else (slot-1)*.12)+(if slot==bestSlot then hold else 0),function()
 					if ctx.rollToken~=token or sessions[p]~=ctx or not item then return end
 					if not ctx.offers or ctx.offers[slot]~=item then return end -- already bought/replaced during the stagger
 					local ped=st.pedestals[slot] local r=C.rarity(item.rarity)
 					local odds=RollLook.odds(item.type,rollLuck,rollPerks.lucky,first,rollPerks.indexLuck)
-					local unowned=d and not RollLook.owns(d.crushers.owned,item.type)
+					local unowned=d and not inIndex(d.crushers,item.type)
 					local model=displayModel(item.type,ped.top,item) model.Name="OfferCrusher"
 					model:SetAttribute("RevealOwner",p.UserId) model:SetAttribute("RevealRoll",rollId)
 					model:SetAttribute("RevealSlot",slot) model:SetAttribute("RevealAt",workspace:GetServerTimeNow())
 					model:SetAttribute("RevealRarity",item.rarity) model:SetAttribute("RevealType",item.type)
 					model:SetAttribute("RevealUnowned",unowned==true) model:SetAttribute("RevealOdds",odds)
+					if fast then model:SetAttribute("RevealFast",true) end
 					model.Parent=plot.model game:GetService("CollectionService"):AddTag(model,RollLook.Tag)
 					plot.offerModels[slot]=model
 					spin(model,ped.top.Position,.8,item.rarity)
@@ -698,7 +743,7 @@ local function action(p,name,args)
 	local ctx=sessions[p] local d=Data.get(p) if not ctx or not d then return false,"Profile is loading." end
 	local cashBefore=d.cash
 	local offer=if name=="Buy" and type(args)=="table" and type(args.slot)=="number" then ctx.offers and ctx.offers[args.slot] else nil
-	local newType=offer and not RollLook.owns(d.crushers.owned,offer.type)
+	local newType=offer and not inIndex(d.crushers,offer.type)
 	local ok,message,result
 	local levelBefore=Progression.level(d) local baysBefore=C.bayCapacity(levelBefore)
 	-- coating: the crusher chosen on the coating screen (args.item), or the held one (old board)
@@ -716,6 +761,13 @@ local function action(p,name,args)
 		if name=="Fuse" or name=="CollectFusion" then args.serverTime=os.time() end
 		ok,message,result=Rules.act(d,ctx,name,args,os.clock(),random,guid,perks(p))
 	end
+	-- Studio only (DevCrusher "ForceRoll"): the first pedestal of the next roll gets this rarity
+	if ok and name=="Roll" and ctx.forceRarity and RunService:IsStudio() then
+		local r=C.rarity(ctx.forceRarity) ctx.forceRarity=nil
+		if r and #r.types>0 then result[1]={type=r.types[1],rarity=r.name,modifier="Standard",level=1} ctx.offers=result end
+	end
+	-- 8 Nov: Auto Roll with SKIP ANIMATION (server/AutoRoll sets ctx.fastRoll)
+	if ok and name=="Roll" and ctx.fastRoll then ctx.nextRoll=os.clock()+C.AutoRoll.SkipSeconds end
 	if ok and name=="Roll" then d.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock()) rollShow(p,result) end
 	if ok and name=="Buy" then
 		if newType then ctx.justDiscovered={id=result.id,type=result.type,rarity=result.rarity} end
@@ -979,6 +1031,7 @@ function G.start()
 		finishLegacyProduct=function(p) local d=Data.get(p) if d then d.scrap=C.money(d.scrap+d.crushers.available) d.crushers.available=0 action(p,"Sell") end end}
 	require(script.Parent.Shop).start(api) require(script.Parent.Rewards).start(api)
 	require(script.Parent.DailySpin).start(api)
+	require(script.Parent.OvernightCrate).start(api) -- 8 Nov: the Mystery Crate
 	require(script.Parent.Quests).start(api)
 	require(script.Parent.TopBoards).start(api)
 	require(script.Parent.Boosts).start(api)
@@ -991,6 +1044,8 @@ function G.start()
 	require(script.Parent.WhatsNew).start(api)
 	require(script.Parent.Referral).start(api) -- 4 Nov: invite a friend -> both get a Legendary
 	require(script.Parent.Feedback).start(api) -- 5 Nov: the one-tap survey
+	require(script.Parent.Settings).start(api) -- 6 Nov: the SETTINGS menu (music, sounds, shake, effects, vibration)
+	require(script.Parent.AutoRoll).start({action=action,session=function(p) return sessions[p] end,getData=Data.get}) -- 7 Nov: AUTO ROLL (free) + AUTO BUY (pass)
 	require(script.Parent.NameTags).start() -- 5 Nov: VIP / PLUS tag above the head
 	-- /credits <amount> (or /cash): test cash, e.g. "/credits 5m". Studio, or the
 	-- place owner in live servers. No amount gives 1M.
@@ -1046,6 +1101,61 @@ function G.start()
 			send(p,if goals then "Tutorial and main goals skipped (dev)" else "Tutorial skipped (dev)")
 		end)
 		skipCommand.Parent=TCS
+		-- 5 Nov (Willem): /bigroll [secret|divine|limited] rolls at once with that rarity on the first
+		-- pedestal, to test the big roll cinematic (default: secret). Studio only.
+		local bigCommand=Instance.new("TextChatCommand") bigCommand.Name="BigRollCommand" bigCommand.PrimaryAlias="/bigroll"
+		bigCommand.Triggered:Connect(function(source,text)
+			local p=Players:GetPlayerByUserId(source.UserId) local ctx=p and sessions[p]
+			if not p or not ctx then return end
+			local arg=string.lower(string.split(text," ")[2] or "secret")
+			local rarity=if arg=="divine" then "Divine" elseif arg=="limited" then "Limited" else "Secret"
+			ctx.forceRarity=rarity
+			local ok,message=action(p,"Roll",{})
+			if not ok then ctx.forceRarity=nil end
+			Net.event("Notice"):FireClient(p,{text=if ok then "Big roll test: "..rarity.." (dev)" else "Big roll test: "..tostring(message)})
+		end)
+		bigCommand.Parent=TCS
+		-- 8 Nov (Willem: "a command so I can skip to plots, or a dev panel"): /plot <1-5> jumps to
+		-- that plot level with every bay of it unlocked; the DEV panel (client/DevPanel, Studio
+		-- only) sends the same through the remote "Dev".
+		local function devDo(p: Player, what: string, arg: any): string?
+			local d=Data.get(p) local ctx=sessions[p]
+			if not d or not ctx then return nil end
+			local s=d.crushers
+			if what=="Plot" then
+				local level=math.clamp(math.floor(tonumber(arg) or 1),1,C.PlotUpgrade.MaxLevel)
+				while C.TutorialSteps[s.tutorial] do Rules.tutorialAdvance(d,C.TutorialSteps[s.tutorial].id) end
+				s.goal=math.max(s.goal or 1,C.MainGoals+1)
+				s.plotLevel=level s.bays=math.max(s.bays,C.bayCapacity(level))
+				ctx.bays={} reconcile(p) send(p,"Plot level "..level.." (dev)") return "ok"
+			elseif what=="Skip" then
+				while C.TutorialSteps[s.tutorial] do Rules.tutorialAdvance(d,C.TutorialSteps[s.tutorial].id) end
+				if arg=="goals" then s.goal=math.max(s.goal or 1,C.MainGoals+1) end
+				send(p,"Skipped (dev)") return "ok"
+			elseif what=="Cash" then
+				api.addCash(p,math.clamp(tonumber(arg) or 0,0,1e15)) send(p,"+cash (dev)") return "ok"
+			elseif what=="BigRoll" then
+				ctx.forceRarity=if arg=="Divine" or arg=="Limited" then arg else "Secret"
+				local ok,message=action(p,"Roll",{}) if not ok then ctx.forceRarity=nil end
+				return tostring(message)
+			elseif what=="CrateReady" then
+				if type(d.crate)=="table" and d.crate.readyAt then d.crate.readyAt=os.time()-1 end
+				return "ok"
+			elseif what=="Weekend" then
+				workspace:SetAttribute("WeekendTest",if workspace:GetAttribute("WeekendTest")=="active" then nil else "active")
+				return tostring(workspace:GetAttribute("WeekendTest"))
+			end
+			return nil
+		end
+		Net.event("Dev").OnServerEvent:Connect(function(p,what,arg)
+			if type(what)=="string" then devDo(p,what,arg) end
+		end)
+		local plotCommand=Instance.new("TextChatCommand") plotCommand.Name="PlotCommand" plotCommand.PrimaryAlias="/plot"
+		plotCommand.Triggered:Connect(function(source,text)
+			local p=Players:GetPlayerByUserId(source.UserId)
+			if p then devDo(p,"Plot",string.split(text," ")[2]) end
+		end)
+		plotCommand.Parent=TCS
 	end
 	if RunService:IsStudio() then
 		local dev=Instance.new("BindableFunction") dev.Name="DevCrusher"
@@ -1059,6 +1169,7 @@ function G.start()
 				Net.event("PlotUpgraded"):FireClient(p,upgradeSummary(level-1,level)) return true
 			end
 			if cmd=="Action" then return action(p,args.name,args.args) end
+			if cmd=="ForceRoll" then sessions[p].forceRarity=args return true end -- 5 Nov: test the big roll cinematic
 			if cmd=="Reload" then
 				assert(Data.isMock(),"Mock store only") assert(Data.saveNow(p)) Data.reloadForTest(p)
 				local ctx=sessions[p] ctx.bays={} ctx.nextRoll=restoredCooldown(Data.get(p)) reconcile(p) send(p) return true
