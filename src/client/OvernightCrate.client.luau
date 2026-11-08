@@ -159,6 +159,13 @@ local function drop(m: Model, c: Crate)
 	m:PivotTo(c.home)
 	local ground = c.home.Position
 	local mine = m:GetAttribute("Owner") == me.UserId
+	if mine then -- (wait a little for a goal celebration / window to finish, so you see it)
+		local cam = Workspace.CurrentCamera
+		for _ = 1, 40 do
+			if not (camBusy or Style.hasModal() or me:GetAttribute("CutscenePlaying") == true or cam.CameraType ~= Enum.CameraType.Custom) then break end
+			task.wait(0.25)
+		end
+	end
 	local back = if mine then lookAtCrate(c, D.Warn + D.Fall + 1) else nil
 	if back then task.wait(K.Camera.Move * 0.7) end
 	-- a warning ring where it will land
