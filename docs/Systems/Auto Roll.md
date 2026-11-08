@@ -12,7 +12,7 @@
   chosen rarity or better (C.AutoRoll.Choices: Rare, Epic, Legendary (default), Limited, Secret; "Limited+" also
   stops on Secret/Divine) it **stops** with a notice ("a Legendary Toyzilla is on your pedestal!"), otherwise it
   rolls again (C.RollSeconds apart, like by hand).
-- **AUTO BUY** is a game pass (Store perk "AutoBuy", R$ 149 suggested, id 0 until Willem creates it): with it on,
+- **AUTO BUY** is a game pass (Store perk "AutoBuy", R$ 89 suggested, id 0 until Willem creates it): with it on,
   Auto Roll buys the best offer it stops for and keeps going; if that fails (cash, full inventory) it stops and
   says why. The server checks the pass; losing it switches auto buy off.
 - HUD + window (client/AutoRoll, 7 Nov): Willem's AUTO ROLL button (blue off / green on) just left of the crusher hotbar (follows its left edge as it grows) opens the
