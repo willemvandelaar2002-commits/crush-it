@@ -27,8 +27,8 @@ Store.Passes = {
 	{ perk = "CashX8", gamePassId = 2070092535, price = 129, title = "8x Cash", desc = "8x cash from every crush, forever (replaces 4x)", color = Color3.fromRGB(170, 80, 240) },
 	{ perk = "CashX16", gamePassId = 2071704684, price = 299, title = "16x Cash", desc = "16x cash from every crush, forever (replaces 8x)", color = Color3.fromRGB(255, 190, 40) },
 	-- 7 Nov (Willem: "auto buy is paid"): AUTO BUY for Auto Roll (server/AutoRoll): it buys
-	-- what auto roll stops for and keeps rolling. Id 0 until Willem creates the pass.
-	{ perk = "AutoBuy", gamePassId = 0, price = 89, title = "Auto Buy", desc = "Auto Roll buys the crushers it stops for and keeps rolling", color = Color3.fromRGB(80, 200, 255) },
+	-- what auto roll stops for and keeps rolling. Pass 2074912226 (8 Nov, R$ 89).
+	{ perk = "AutoBuy", gamePassId = 2074912226, price = 89, title = "Auto Buy", desc = "Auto Roll buys the crushers it stops for and keeps rolling", color = Color3.fromRGB(80, 200, 255) },
 	-- 6 Nov (Willem: "something under 5 robux, very visible, to get people over the first
 	-- buy barrier"; vault Price Points: impulse rung). Willem made it a GAME PASS: owning it
 	-- grants the contents (Shared/OfferConfig FirstBuy) once, by server/Offers. Hidden from
