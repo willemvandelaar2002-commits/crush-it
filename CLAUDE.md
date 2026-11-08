@@ -21,7 +21,9 @@ dated line to `docs/Decisions log.md` and update the matching note in
 - Testing in Studio (Roblox Studio MCP via Willem's PC): Studio must be in
   Edit mode to change scripts. Push a commit, then in Edit set each
   script's `.Source` from raw.githubusercontent.com/<repo>/<sha>/<path>
-  (toggle HttpService.HttpEnabled on and back off), start Play, use
+  (toggle HttpService.HttpEnabled on and back off; since 8 Nov the Studio assistant's
+  HTTP allowlist blocks raw.githubusercontent.com, so apply the diff with plain
+  string.find replacements on the current `.Source` instead), start Play, use
   `ServerStorage.DevGiveCash/DevPass/DevProduct/DevOffline` or `/credits 1b`,
   `/skip` (finish the tutorial) or `/skip goals` (also past the main goals), `/bigroll` or
   `/bigroll divine` (a roll with a Secret/Divine: the big roll cinematic),
