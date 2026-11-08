@@ -823,6 +823,11 @@ local function action(p,name,args)
 		Analytics.custom(p,"GemsEarned",Gems.forRebirth(d.crushers.rebirths),"Rebirth") -- 8 Nov
 		Net.event("RarePull"):FireAllClients({text=p.DisplayName.." REBIRTHED! (x"..C.rebirthMult(d.crushers.rebirths).." income, x"..C.rebirthLuck(d.crushers.rebirths).." luck)",userId=p.UserId,color=Color3.fromRGB(255,170,60)})
 		Net.event("RebirthDone"):FireClient(p,{rebirths=d.crushers.rebirths,mult=C.rebirthMult(d.crushers.rebirths),luck=C.rebirthLuck(d.crushers.rebirths)})
+		-- 8 Nov: the Gem Crusher (rebirth 5) and its awakening (rebirth 10) are announced
+		for _,g in C.GemCrushers do if g.rebirths==d.crushers.rebirths then
+			Net.event("RarePull"):FireAllClients({text=p.DisplayName.." "..(if g.id=="GemCrusher" then "UNLOCKED THE GEM CRUSHER!" else "AWAKENED THE GEM CRUSHER!"),userId=p.UserId,color=Color3.fromRGB(235,80,210)})
+			Analytics.custom(p,"GemCrusher",d.crushers.rebirths,g.id)
+		end end
 	end
 	-- 8 Nov: Gem Shop analytics; a Gem Crate Exotic or better is announced to the server
 	if ok and name=="GemUpgrade" and type(result)=="table" then Analytics.custom(p,"GemUpgrade",result.level,result.id) end
