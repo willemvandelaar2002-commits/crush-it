@@ -560,7 +560,7 @@ end
 -- output and price. Buying is done with the pedestal's prompt.
 local function rollShow(p,offers)
 	local ctx=sessions[p] local plot=ctx.plot local st=plot.stations.Roll
-	local seconds=math.max(1.2,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
+	local seconds=if ctx.fastRoll then C.AutoRoll.RevealSeconds else math.max(1.2,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
 	local rollId=guid() local rollData=Data.get(p) local rollPerks=perks(p)
 	local rollLuck=rollData.crushers.upgrades.Luck local first=rollData.crushers.rolls==1
 	-- 2 Nov: a Legendary or better roll is announced to the whole server once revealed
@@ -762,6 +762,8 @@ local function action(p,name,args)
 		local r=C.rarity(ctx.forceRarity) ctx.forceRarity=nil
 		if r and #r.types>0 then result[1]={type=r.types[1],rarity=r.name,modifier="Standard",level=1} ctx.offers=result end
 	end
+	-- 8 Nov: Auto Roll with SKIP ANIMATION (server/AutoRoll sets ctx.fastRoll)
+	if ok and name=="Roll" and ctx.fastRoll then ctx.nextRoll=os.clock()+C.AutoRoll.SkipSeconds end
 	if ok and name=="Roll" then d.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock()) rollShow(p,result) end
 	if ok and name=="Buy" then
 		if newType then ctx.justDiscovered={id=result.id,type=result.type,rarity=result.rarity} end

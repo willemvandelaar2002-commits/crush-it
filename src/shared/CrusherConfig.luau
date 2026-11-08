@@ -451,7 +451,10 @@ C.RobuxButtonsGoal = 5
 -- in your hand: the ram slams down every Stroke seconds (press crushers), other crushers
 -- thump by Pump studs; sparks on each hit. Everyone sees it.
 C.Hold = { Size = 3.6, Forward = 2.7, Up = 0.5, Stroke = 1.1, Pump = 0.22 }
-C.AutoRoll = { Default = { "Legendary", "Exotic", "Limited", "Secret", "Divine" },
+-- 8 Nov (Willem): SKIP ANIMATION in the Auto Roller: while Auto Roll runs, the pedestal
+-- flicker is cut to RevealSeconds and the next roll comes SkipSeconds after the last
+-- (normal: RollSeconds 3). The Secret/Divine/Limited cinematics still play.
+C.AutoRoll = { SkipSeconds = 1.5, RevealSeconds = 0.3, Default = { "Legendary", "Exotic", "Limited", "Secret", "Divine" },
 	Rarities = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Exotic", "Limited", "Secret", "Divine" } }
 -- 7 Nov (Willem: "should be special luck animation"): Limited (rank 4.5, under MinRank)
 -- gets its own cinematic too: three giant slot reels stop on clovers (client/BigRoll).
