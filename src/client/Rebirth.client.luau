@@ -231,6 +231,7 @@ Net.event("RebirthDone").OnClientEvent:Connect(function(r: any)
 	s:Play() task.delay(3, function() s:Destroy() end)
 	local pop = make("TextLabel", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.4), Size = UDim2.fromOffset(620, 90),
 		BackgroundTransparency = 1, TextScaled = true, Text = "REBIRTH " .. tostring(r.rebirths) .. "!  x" .. tostring(r.mult) .. " CASH · x" .. tostring(r.luck or 1) .. " LUCK", ZIndex = 9 }, gui)
+	pop.Font = Style.Font -- (8 Nov: the game font, was the default)
 	Style.bold(pop, 4)
 	pop.TextColor3 = RGB(255, 190, 60)
 	local sc = make("UIScale", { Scale = 0.3 }, pop)
@@ -248,12 +249,14 @@ Net.event("RebirthDone").OnClientEvent:Connect(function(r: any)
 	make("ImageLabel", { Image = Gems.Art.Pile, Position = UDim2.fromOffset(if unlocked then 110 else 0, 0), Size = UDim2.fromOffset(90, 90), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 9 }, card)
 	local g = make("TextLabel", { Position = UDim2.fromOffset(if unlocked then 205 else 95, 14), Size = UDim2.fromOffset(220, 62), BackgroundTransparency = 1, TextScaled = true,
 		Text = "+" .. Gems.forRebirth(n) .. " GEMS", TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 9 }, card)
+	g.Font = Style.Font
 	Style.bold(g, 4)
 	g.TextColor3 = RGB(255, 170, 245)
 	if unlocked then
 		make("ImageLabel", { Image = unlocked.art, Position = UDim2.fromOffset(10, 92), Size = UDim2.fromOffset(150, 150), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 9 }, card)
 		local u = make("TextLabel", { Position = UDim2.fromOffset(170, 120), Size = UDim2.fromOffset(340, 90), BackgroundTransparency = 1, TextScaled = true,
 			Text = "UNLOCKED:\n" .. unlocked.text .. "!", TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 9 }, card)
+		u.Font = Style.Font
 		Style.bold(u, 4)
 		u.TextColor3 = RGB(255, 236, 90)
 	end
