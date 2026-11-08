@@ -61,6 +61,10 @@ local function holdModel(tool: Tool, item: any)
 	local ram = held:FindFirstChild("Ram", true)
 	if ram and ram:IsA("BasePart") then
 		table.insert(movers, { parts = { ram } })
+	elseif ram and ram:IsA("Model") then -- (imported specials keep their ram as a model)
+		local list = {}
+		for _, p in ram:GetDescendants() do if p:IsA("BasePart") then table.insert(list, p) end end
+		if #list > 0 then table.insert(movers, { parts = list }) end
 	elseif source and source:GetAttribute("IdentityVersion") ~= nil then
 		for _, child in held:GetChildren() do
 			if child:IsA("Model") then
