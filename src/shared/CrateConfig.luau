@@ -16,7 +16,8 @@ return {
 		{ rarity = "Legendary", weight = 12 },
 	},
 	CashMinutes = 20,
-	-- plot-local spot (studs; x across, z toward the plaza), beside the walkway
-	Spot = { x = -12, z = 84, yaw = 0 },
+	-- plot-local spot (studs; x across, z toward the plaza), beside the walkway near the
+	-- entrance, off the tutorial arrows
+	Spot = { x = 14, z = 84, yaw = 0 },
 	Away = { AfterMinutes = 8, Seconds = 12 },
 }

@@ -434,3 +434,4 @@
 - 2026-11-08: After an "impatient kid" playtest (Willem: likes down to 43%): first roll = one buyable Rare with the big reveal; R$ 5 deal and 2x cash button from goal 5; starter pack pops up only after Factory II; survey right after the Factory II upgrade (else 25 min); Rewards/Index "!" clear once opened. Specs fixed to pass during a Lucky Weekend.
 - 2026-11-08: Auto Buy pass price R$ 89 (Willem; was planned at 149).
 - 2026-11-08: Auto Buy pass live: id 2074912226, R$ 89.
+- 2026-11-08: Mystery Crate (opens 8 h after the tutorial, then every 20 h: free Rare/Epic/Legendary + 20 min of earnings) and a once-per-session 'your factory never stops' card (Willem's picks for retention). See Systems/Retention.
