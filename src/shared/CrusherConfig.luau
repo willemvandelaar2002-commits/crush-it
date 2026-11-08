@@ -53,8 +53,9 @@ C.Layout = { Wings=2, Tiers=2, PerWing=6, WingX=40, Pitch=10, BayWidth=9.6,
 C.Layout.WalkFront=C.Layout.BayZ+C.Layout.BayDepth/2+1 -- front edge of the upper walkway
 C.Layout.StairFront=C.Layout.WalkFront+C.Layout.StairRun
 -- Roll pedestals, station-local (x, z) with +z out of the machine's front, in
--- unlock order: centre first, then outwards. #PedestalSpots = MaxPedestals.
-C.PedestalSpots = { Vector2.new(0,23), Vector2.new(-11,21), Vector2.new(11,21), Vector2.new(-20.5,15.5), Vector2.new(20.5,15.5) }
+-- unlock order: centre first, then outwards. The first MaxPedestals come from the
+-- ROLL UPGRADES board; 8 Nov: the 6th (in front, purple) is the Gem Pedestal (Gem Shop).
+C.PedestalSpots = { Vector2.new(0,23), Vector2.new(-11,21), Vector2.new(11,21), Vector2.new(-20.5,15.5), Vector2.new(20.5,15.5), Vector2.new(0,33) }
 C.BaseMaxBays = C.Layout.Wings*C.Layout.Tiers*C.Layout.PerWing
 -- Five plot stages (plot level 0..4), bay layout v2 (25 Oct):
 --   bays  1..24  Starter Workshop: two floors per wing
@@ -75,7 +76,8 @@ C.Layout.RearShift = -78 -- rear yard banks: ground bays at BayZ+RearShift
 -- RequireRebirths rebirths on. Bays here are cheaper than the x1.36 curve would
 -- make them (BayStart x BayGrowth per bay), so a rebirthed run can afford it.
 C.Annex = { First = C.MaxBays+1, Bays = 2*C.Layout.PerWing, Shift = -128, RequireRebirths = 3,
-	BayStart = 2e9, BayGrowth = 1.25, SignImage = "rbxassetid://0" }
+	BayStart = 2e9, BayGrowth = 1.25,
+	SignImage = "rbxassetid://131395997076419" } -- 8 Nov: Willem's locked-sign art (decal 101919176235230)
 C.MaxBays = C.Annex.First-1+C.Annex.Bays
 -- back edge of the rear yard and of the annex yard (plot-local z)
 C.Layout.YardBack = C.Layout.BayZ+C.Layout.RearShift-C.Layout.UpperBack-C.Layout.BayDepth/2-6

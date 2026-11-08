@@ -10,7 +10,27 @@
 -- Flat numbers on purpose (vault: fixed prices live in a currency that does not grow).
 local G = {}
 
-G.Icon = "rbxassetid://0" -- Willem's Gem icon (0 = the built-in diamond until it arrives)
+-- 8 Nov: Willem's art. The Image ids behind his decal uploads (InsertService:LoadAsset(decal)
+-- -> Decal.Texture), so they show for every player; the decal id is in each comment.
+local function art(n: string): string return "rbxassetid://" .. n end
+G.Art = {
+	Icon = art("112913909423142"), -- decal 113909316355113: one gem
+	Pile = art("129834324837306"), -- decal 77094412241926: a pile of gems (rebirth payout)
+	Card = art("108447205790507"), -- decal 91253976184327: pink framed card (Gem Crate background)
+	Banner = art("81713506028869"), -- decal 83889563134831: blue framed banner (Gem Shop background)
+	Crate = art("123864848157453"), -- decal 132339925831398: the Gem Crate
+	Gate = art("131395997076419"), -- decal 101919176235230: locked sign (Annex gate, Gem Crusher stand)
+	Crusher = art("83451761817246"), -- decal 136649559216027: the Gem Crusher (Index icon)
+	Awakened = art("112011297282058"), -- decal 140060527339386: the Awakened Gem Crusher
+	Concept = art("81563709177293"), -- decal 138446926529109: concept art (grey background, reference only)
+	Upgrades = {
+		Cash = art("79785191119846"), -- decal 124725494999959
+		Luck = art("94629274904889"), -- decal 125402540072740
+		Rolls = art("119021304569499"), -- decal 76405017429071 (stopwatch)
+		Pedestal = art("89027718081950"), -- decal 77978521877906
+	},
+}
+G.Icon = G.Art.Icon
 G.Emoji = "💎"
 G.UnlockRebirths = 1 -- the Gem Shop opens after this many rebirths
 
@@ -39,6 +59,8 @@ G.Upgrades = {
 	{ id = "Cash", title = "Gem Cash", line = "+10% cash per level", per = 0.10, max = 10, base = 15, growth = 1.5 },
 	{ id = "Luck", title = "Gem Luck", line = "+10% luck per level", per = 0.10, max = 10, base = 15, growth = 1.5 },
 	{ id = "Rolls", title = "Quick Rolls", line = "Rolls 0.25 s faster per level", per = 0.25, max = 4, base = 20, growth = 2 },
+	-- 8 Nov: a 6th roll pedestal (the purple one in front of the roll machine)
+	{ id = "Pedestal", title = "Gem Pedestal", line = "+1 roll pedestal: 6 choices per roll", per = 1, max = 1, base = 60, growth = 1 },
 }
 function G.upgrade(id: string): any
 	for _, u in G.Upgrades do if u.id == id then return u end end
@@ -53,5 +75,6 @@ end
 function G.cashMult(s: any): number return 1 + 0.10 * ((s.gemUps and s.gemUps.Cash) or 0) end
 function G.luckMult(s: any): number return 1 + 0.10 * ((s.gemUps and s.gemUps.Luck) or 0) end
 function G.rollCut(s: any): number return 0.25 * ((s.gemUps and s.gemUps.Rolls) or 0) end
+function G.extraPedestals(s: any): number return (s.gemUps and s.gemUps.Pedestal) or 0 end
 
 return G

@@ -304,7 +304,7 @@ local function send(p,message,result)
 			if not ctx.equipCheckAt or os.clock()-ctx.equipCheckAt>3 or message then ctx.equipCheckAt=os.clock() ctx.equipBetter=Rules.equipBestHelps(d,perks(p)) end
 			return ctx.equipBetter end)(),
 		gems=math.floor(s.gems or 0),gemUps=s.gemUps,gemRate=Rules.gemRate(d),
-		rollSeconds=math.max(1,C.rollSeconds()-Gems.rollCut(s)),rebirths=s.rebirths or 0,rebirthCost=C.rebirthCost(s.rebirths or 0),rolled=ctx.justRolled,pedestals=C.pedestals(s.upgrades.Pedestals),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
+		rollSeconds=math.max(1,C.rollSeconds()-Gems.rollCut(s)),rebirths=s.rebirths or 0,rebirthCost=C.rebirthCost(s.rebirths or 0),rolled=ctx.justRolled,pedestals=Rules.pedestalCount(s),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered,coating=ctx.coatingQuote,
 		goals=Goals.view(ctx,d,workspace:GetServerTimeNow()),
 		index={seen=(function() local list={} for id in s.seen do table.insert(list,id) end return list end)(),claimed=s.indexClaimed,luck=IndexRewards.luck(s)}})
@@ -330,9 +330,10 @@ local function send(p,message,result)
 	-- 3 Nov: the pity counter is shown on the roll machine (vault: pity must be visible)
 	local pityLeft=math.max(0,C.Pity.Rolls-(s.pity or 0))
 	local pityText=if pityLeft<=0 then "LEGENDARY GUARANTEED!" else "Legendary in "..pityLeft.." rolls"
-	st.Roll.label.Text=if rolling then "Rolling..." else "Free  ·  "..C.pedestals(s.upgrades.Pedestals).." pedestal"..(if C.pedestals(s.upgrades.Pedestals)>1 then "s" else "").."\n"..pityText
+	local pedCount=Rules.pedestalCount(s)
+	st.Roll.label.Text=if rolling then "Rolling..." else "Free  ·  "..pedCount.." pedestal"..(if pedCount>1 then "s" else "").."\n"..pityText
 	st.Roll.button.Text=if rolling then "ROLLING..." else "ROLL"
-	pedestalLook(ctx.plot,C.pedestals(s.upgrades.Pedestals))
+	pedestalLook(ctx.plot,pedCount,(s.rebirths or 0)>=Gems.UnlockRebirths)
 	local displayPerks=perks(p)
 	for _,group in {"Production","Rolling"} do
 		for _,id in C.UpgradeOrder do if C.Upgrades[id].group==group then
@@ -535,13 +536,21 @@ local function oddsText(typeId)
 end
 -- Unlocked pedestals are yellow and empty until a roll; locked ones are grey
 -- with a hint, so the ROLLING board upgrade is visible on the plot.
-function pedestalLook(plot,count)
-	if plot.pedestalCount==count then return end plot.pedestalCount=count
+function pedestalLook(plot,count,gemShop)
+	local key=count..":"..tostring(gemShop==true)
+	if plot.pedestalCount==key then return end plot.pedestalCount=key
 	for i,ped in plot.stations.Roll.pedestals do
 		local open=i<=count
-		ped.part.Color=if open then Workshop.Yellow else Color3.fromRGB(120,128,140)
+		-- 8 Nov: the Gem Pedestal (past the board's max) is purple, and only there after a rebirth
+		local gem=i>C.MaxPedestals
+		if gem then for _,part in ped.parts or {} do
+			if part:GetAttribute("BaseT")==nil then part:SetAttribute("BaseT",part.Transparency) end
+			part.Transparency=if gemShop then part:GetAttribute("BaseT") else 1 part.CanCollide=gemShop==true part.CanQuery=gemShop==true
+		end end
+		ped.part.Color=if open then (if gem then Color3.fromRGB(205,80,240) else Workshop.Yellow) else Color3.fromRGB(120,128,140)
 		ped.part.Material=if open then Enum.Material.SmoothPlastic else Enum.Material.Slate
-		if not open then card(ped,"LOCKED","More pedestals at","ROLL UPGRADES","","",Color3.fromRGB(200,205,215)) ped.prompt.Enabled=false
+		if gem and not gemShop then card(ped,"","","","","") ped.prompt.Enabled=false
+		elseif not open then card(ped,"LOCKED","More pedestals at",if gem then "GEM SHOP" else "ROLL UPGRADES","","",Color3.fromRGB(200,205,215)) ped.prompt.Enabled=false
 		elseif ped.card.name.Text=="LOCKED" then card(ped,"","","","","") end
 		-- 30 Oct (less busy plot): the LOCKED hint only shows up close; offers stay readable from afar
 		local gui=ped.card.name.Parent
@@ -874,7 +883,7 @@ function G.start()
 	require(script.Parent.RobuxSigns).start(Plots.all) -- 31 Oct: clickable Robux signs on the plots
 	require(script.Parent.CrusherPreviews).start()
 	for _,plot in Plots.all() do for _,bay in plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.line.Text="" bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false end end
-	for _,plot in Plots.all() do pedestalLook(plot,C.StartPedestals) end
+	for _,plot in Plots.all() do pedestalLook(plot,C.StartPedestals,false) end
 	for _,plot in Plots.all() do floorLook(plot,0) ProgressVisuals.sync(plot,nil,nil,0,"") for i,bay in plot.bays do if floorFor(plot,i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end end
 	require(script.Parent.Moat).start(function(p) local ctx=sessions[p] return if ctx then Plots.spawnFor(ctx.plot) else CFrame.new(0,5,14) end, G.safeTeleport)
 	require(script.Parent.Kit.Leaderboard).start({store="CashBoard_v1",score=function(p) return p:GetAttribute("Cash") or 0 end})
@@ -936,7 +945,7 @@ function G.start()
 	Players.PlayerRemoving:Connect(function(p)
 		local ctx=sessions[p] if ctx then for _,v in ctx.visuals do v.model:Destroy() end ctx.plot.owner=nil ctx.plot.sign.Text="Free factory"
 			if ctx.plot.progression and ctx.plot.progression.levelText then ctx.plot.progression.levelText.Text="" end ctx.rollToken=nil
-			for i in ctx.plot.stations.Roll.pedestals do clearOffer(ctx.plot,i) end ctx.plot.pedestalCount=nil pedestalLook(ctx.plot,C.StartPedestals)
+			for i in ctx.plot.stations.Roll.pedestals do clearOffer(ctx.plot,i) end ctx.plot.pedestalCount=nil pedestalLook(ctx.plot,C.StartPedestals,false)
 			for i,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.line.Text="" bay.label.scope.Text="BAY "..i Workshop.clearPurchase(bay.buy) bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false end end
 			floorLook(ctx.plot,0) RowVisuals.sync(ctx.plot,nil) ProgressVisuals.sync(ctx.plot,nil,nil,0,"") for i,bay in ctx.plot.bays do if floorFor(ctx.plot,i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
 		sessions[p]=nil

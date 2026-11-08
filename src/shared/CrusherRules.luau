@@ -266,7 +266,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		-- the very first roll (8 Nov): one plain Rare (C.FirstRoll), priced so it can be
 		-- bought at once - the player's first "wow"
 		local first=s.rolls==0
-		local count=C.pedestals(s.upgrades.Pedestals)
+		local count=R.pedestalCount(s)
 		-- pity: one pedestal is a guaranteed Legendary once the counter is full
 		local pitySlot=if not first and (s.pity or 0)+1>=C.Pity.Rolls then math.min(count,math.floor(random()*count)+1) else nil
 		for i=1,count do
@@ -646,6 +646,10 @@ function R.step(d,session,now,perks)
 	return events
 end
 -- 8 Nov: Gems per minute from the crushers in a bay (GemConfig.Trickle)
+-- 8 Nov: roll pedestals = the ROLL UPGRADES ones + the Gem Pedestal (Gem Shop)
+function R.pedestalCount(s)
+	return math.min(#C.PedestalSpots,C.pedestals(s.upgrades.Pedestals)+Gems.extraPedestals(s))
+end
 function R.gemRate(d)
 	local s=d.crushers local rate=0
 	for i=1,math.min(s.bays,C.bayCapacity(s.plotLevel)) do
