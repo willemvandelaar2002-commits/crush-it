@@ -38,10 +38,10 @@ I.Overrides={
 	NightRipper="rbxassetid://118145357442002",HaloHammer="rbxassetid://110923909916533",
 	EclipseEngine="rbxassetid://93138181415241",CelestialCrusher="rbxassetid://106945409122885",
 	AuroraPress="rbxassetid://86411239858094",ArchangelAnvil="rbxassetid://71903745878843",
-	-- 8 Nov: Willem's Exotic icons (uploaded as Images)
-	CamCruncher="rbxassetid://115627089455714",DrawbridgeCrusher="rbxassetid://95137788222098",
-	MaglevMauler="rbxassetid://94338086206324",OrigamiClamp="rbxassetid://137299121552872",
-	ScrewStamper="rbxassetid://128874084813839",WreckingWinch="rbxassetid://125188589781218",
+	-- 8 Nov: Willem's Exotic icons (the image ids behind his decal uploads)
+	CamCruncher="rbxassetid://122886848157283",DrawbridgeCrusher="rbxassetid://95168633052661",
+	MaglevMauler="rbxassetid://126673838144880",OrigamiClamp="rbxassetid://81631247983925",
+	ScrewStamper="rbxassetid://107469672913843",WreckingWinch="rbxassetid://128684710178111",
 } :: {[string]: string}
 I.Ready={MaglevMauler=true,OrigamiClamp=true,WreckingWinch=true,CamCruncher=true,ScrewStamper=true,DrawbridgeCrusher=true,Titan=true,Laser=true,Plasma=true,Gravity=true,Quake=true,Cyclone=true,Mecha=true,
 	Quantum=true,Starforge=true,DragonJaw=true,BlackHole=true,Clockwork=true,FactoryHeart=true,
