@@ -409,9 +409,6 @@ C.Pity = { Rolls = 200, Rarity = "Legendary", MinRank = 4 }
 -- 7 Nov (Willem): AUTO ROLL, free for everyone after the tutorial (server/AutoRoll): it
 -- stops when a pedestal shows one of the TICKED rarities (the Auto Roller window); with
 -- the AUTO BUY pass it buys it and keeps going. Rarities: the rollable ones, in order.
--- 7 Nov: the AUTO ROLL console beside the roll machine (machine-local studs: X left/right,
--- Z toward the front; the machine is 24 wide, the outer pedestals sit at x +-20.5, z 15.5)
-C.AutoRollConsole = { X = 22, Z = 6 } -- 8 Nov: right of the machine (on the left the bigger plots' stairs come down)
 -- 8 Nov (Willem, after an "impatient kid" playtest: the first roll was a Common, no wow):
 -- the very first roll (tutorial) puts ONE Rare on the pedestal with the big cinematic,
 -- priced so the player can always buy it right away (Price, or all their cash if less).
