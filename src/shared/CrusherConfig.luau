@@ -69,19 +69,19 @@ C.LayoutVersion = 2
 C.TopFirst = C.BaseMaxBays+1
 C.RearFirst = C.TopFirst+C.Layout.Wings*C.Layout.PerWing
 C.MaxBays = C.RearFirst-1+2*C.Layout.Wings*C.Layout.PerWing
-C.Layout.RearShift = -78 -- rear yard banks: ground bays at BayZ+RearShift
+C.Layout.RearShift = -90 -- rear yard banks: ground bays at BayZ+RearShift (8 Nov, Willem: more room behind the wings; was -78)
 -- 8 Nov (Willem: "the plot gets longer" after rebirth 3): THE ANNEX, bays 61..72,
 -- two ground banks (left, then right) behind the rear yard, past a gate. It is
 -- Factory VII, the plot upgrade after Factory VI, and can only be bought from
 -- RequireRebirths rebirths on. Bays here are cheaper than the x1.36 curve would
 -- make them (BayStart x BayGrowth per bay), so a rebirthed run can afford it.
-C.Annex = { First = C.MaxBays+1, Bays = 2*C.Layout.PerWing, Shift = -128, RequireRebirths = 3,
+C.Annex = { First = C.MaxBays+1, Bays = 2*C.Layout.PerWing, Shift = C.Layout.RearShift-44, RequireRebirths = 3, -- (was -128 with RearShift -78)
 	BayStart = 2e9, BayGrowth = 1.25,
 	SignImage = "rbxassetid://131395997076419" } -- 8 Nov: Willem's locked-sign art (decal 101919176235230)
 C.MaxBays = C.Annex.First-1+C.Annex.Bays
 -- back edge of the rear yard and of the annex yard (plot-local z)
 C.Layout.YardBack = C.Layout.BayZ+C.Layout.RearShift-C.Layout.UpperBack-C.Layout.BayDepth/2-6
-C.Layout.AnnexBack = C.Layout.BayZ+C.Annex.Shift-C.Layout.UpperBack-C.Layout.BayDepth/2-6
+C.Layout.AnnexBack = C.Layout.BayZ+C.Annex.Shift-C.Layout.UpperBack-C.Layout.BayDepth/2-3 -- (3: plot 2's supply belt is right behind)
 C.Layout.RoadHalf = 6 -- central road half-width (rear yard banks keep clear of it)
 C.LegacyTypes={"Bumper","Steel","Cobalt","Mega","Titan","Quantum"}
 -- 1 Nov: the first 24 bays are much cheaper (funnel: only 5.5% reached Factory II),

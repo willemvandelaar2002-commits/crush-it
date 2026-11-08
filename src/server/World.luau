@@ -184,7 +184,7 @@ local function displays(parent: Instance)
 	-- Supply belts hug the other walls; they never cross the train or bridges.
 	FactoryProps.conveyor(m, CFrame.new(0, FLOOR_Y, -HALF + 24) * CFrame.Angles(0, math.pi, 0), 300)
 	-- (8 Nov: 12 studs nearer the wall, clear of the plot annex behind the rear yard)
-	FactoryProps.conveyor(m, CFrame.new(HALF - 12, FLOOR_Y, 0) * CFrame.Angles(0, math.pi / 2, 0), 250)
+	FactoryProps.conveyor(m, CFrame.new(HALF - 11, FLOOR_Y, 0) * CFrame.Angles(0, math.pi / 2, 0), 250)
 	loadingBay(m, CFrame.new(-63, FLOOR_Y, HALF - 4), "TOY STORAGE")
 	loadingBay(m, CFrame.new(63, FLOOR_Y, HALF - 4), "DISPATCH")
 	FactoryProps.brandSign(m, CFrame.new(0, FLOOR_Y + 124, HALF - 9))
