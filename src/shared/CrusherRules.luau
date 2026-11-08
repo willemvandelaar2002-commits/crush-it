@@ -73,7 +73,7 @@ function R.fusionCopies(d,main)
 end
 -- Message at a cap: points at the plot upgrade while it can still raise caps.
 function R.capMessage(plotLevel)
-	if (plotLevel or 0)<C.PlotUpgrade.MaxLevel then return "Maximum level for now. UPGRADE PLOT raises the cap." end
+	if C.levelCap(plotLevel or 0)<C.topLevelCap() then return "Maximum level for now. UPGRADE PLOT raises the cap." end
 	return "Maximum level reached."
 end
 -- How many levels this crusher can buy in a row with this much cash, and
