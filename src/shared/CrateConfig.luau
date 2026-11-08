@@ -23,6 +23,8 @@ return {
 	CashMinutes = 20,
 	-- plot-local spot (studs; x across, z toward the plaza), beside the walkway near the
 	-- entrance, off the tutorial arrows
+	-- Willem's model (ServerStorage.MysteryCrateModel) is scaled to this width (studs)
+	ModelWidth = 6.4,
 	Spot = { x = 14, z = 84, yaw = 0 },
 	Away = { AfterMinutes = 8, Seconds = 12 },
 	-- 8 Nov (Willem: "very interesting with an animation dropping"): client animation timings

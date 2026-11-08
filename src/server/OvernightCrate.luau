@@ -25,12 +25,47 @@ local function part(parent: Instance, name: string, size: Vector3, cf: CFrame, c
 	return p
 end
 
+-- 8 Nov: Willem's crate model (CrushIt-Mystery-Crate: MeshParts Body, Lid, Seal; the Seal is
+-- on the front). Imported by Willem into ServerStorage.MysteryCrateModel (place file, not
+-- in Git). Without it, the block placeholder below.
+local function fromTemplate(m: Model, cf: CFrame): BasePart?
+	local template = game:GetService("ServerStorage"):FindFirstChild("MysteryCrateModel")
+	if not template then return nil end
+	local copy = template:Clone()
+	local body = copy:FindFirstChild("Body", true) :: BasePart?
+	local seal = copy:FindFirstChild("Seal", true) :: BasePart?
+	if not body or not body:IsA("BasePart") then copy:Destroy() return nil end
+	for _, d in copy:GetDescendants() do
+		if d:IsA("BasePart") then d.Anchored = true d.CanCollide = d == body d.CanTouch = false d.Parent = m end
+	end
+	copy:Destroy()
+	-- front = the side with the Seal; turn it toward the walkway (plot x = 0)
+	local box, size = m:GetBoundingBox()
+	local front = if seal then (seal.Position - body.Position) * Vector3.new(1, 0, 1) else Vector3.new(0, 0, -1)
+	if front.Magnitude < 0.01 then front = Vector3.new(0, 0, -1) end
+	local want = (cf.Position - (cf * CFrame.new(1, 0, 0)).Position) -- plot local -x (toward the walkway)
+	local turn = math.atan2(-want.Unit.X, -want.Unit.Z) - math.atan2(-front.Unit.X, -front.Unit.Z)
+	-- scale to the crate's footprint (longest side across = K.ModelWidth), stand it on the base
+	local scale = K.ModelWidth / math.max(size.X, size.Z, 0.1)
+	local holder = Instance.new("Model")
+	for _, d in m:GetChildren() do d.Parent = holder end
+	holder.WorldPivot = CFrame.new(box.Position - Vector3.new(0, size.Y / 2, 0))
+	holder:ScaleTo(holder:GetScale() * scale)
+	holder:PivotTo(CFrame.new(cf.Position + Vector3.new(0, 0.6, 0)) * CFrame.Angles(0, turn, 0))
+	for _, d in holder:GetChildren() do d.Parent = m end
+	holder:Destroy()
+	m:SetAttribute("Imported", true)
+	return body
+end
+
 local function build(plot: any, owner: Player): Model
 	local m = Instance.new("Model")
 	m.Name = "MysteryCrate"
 	local cf = plot.origin * CFrame.new(K.Spot.x, 0, K.Spot.z) * CFrame.Angles(0, K.Spot.yaw, 0)
 	part(m, "Base", Vector3.new(7.5, 0.6, 7.5), cf * CFrame.new(0, 0.3, 0), Color3.fromRGB(30, 34, 80))
-	local body = part(m, "Body", Vector3.new(6, 5, 6), cf * CFrame.new(0, 3.1, 0), Color3.fromRGB(150, 70, 230))
+	local imported = fromTemplate(m, cf)
+	local body = imported or part(m, "Body", Vector3.new(6, 5, 6), cf * CFrame.new(0, 3.1, 0), Color3.fromRGB(150, 70, 230))
+	if not imported then
 	-- gold bands and lid
 	part(m, "BandA", Vector3.new(6.3, 5.2, 0.8), cf * CFrame.new(0, 3.1, 0), Color3.fromRGB(255, 200, 40), Enum.Material.Neon).Transparency = 0.15
 	part(m, "BandB", Vector3.new(0.8, 5.2, 6.3), cf * CFrame.new(0, 3.1, 0), Color3.fromRGB(255, 200, 40), Enum.Material.Neon).Transparency = 0.15
@@ -42,9 +77,10 @@ local function build(plot: any, owner: Player): Model
 		t.Size = UDim2.fromScale(1, 1) t.BackgroundTransparency = 1 t.Text = "?" t.TextScaled = true
 		t.Font = Enum.Font.FredokaOne t.TextColor3 = Color3.new(1, 1, 1) t.TextStrokeTransparency = 0 t.Parent = g
 	end
+	end
 	-- the countdown sign (text filled in by the client)
 	local bb = Instance.new("BillboardGui")
-	bb.Name = "Sign" bb.Size = UDim2.fromOffset(220, 80) bb.StudsOffsetWorldSpace = Vector3.new(0, 4.8, 0)
+	bb.Name = "Sign" bb.Size = UDim2.fromOffset(220, 80) bb.StudsOffsetWorldSpace = Vector3.new(0, body.Size.Y / 2 + 2.3, 0)
 	bb.MaxDistance = 90 bb.AlwaysOnTop = false bb.LightInfluence = 0 bb.Parent = body
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.Name = "OpenPrompt" prompt.ActionText = "Open" prompt.ObjectText = "Mystery Crate"

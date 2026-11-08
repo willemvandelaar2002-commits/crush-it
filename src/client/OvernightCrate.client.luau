@@ -53,6 +53,7 @@ local function sign(model: Instance)
 	if not bb then return end
 	local title = words(bb, "MYSTERY CRATE", UDim2.fromScale(0, 0), UDim2.fromScale(1, 0.48), 2, 30, rgb(255, 215, 80))
 	local timer = words(bb, "", UDim2.fromScale(0, 0.5), UDim2.fromScale(1, 0.46), 2, 28)
+	local baseOffset = bb.StudsOffsetWorldSpace
 	local mine = model:GetAttribute("Owner") == me.UserId
 	if not mine then title.Text = tostring(model:GetAttribute("OwnerName")) .. "'s CRATE" end
 	task.spawn(function()
@@ -63,7 +64,7 @@ local function sign(model: Instance)
 				if left <= 0 then
 					timer.Text = if mine then "READY! OPEN ME" else "READY!"
 					timer.TextColor3 = rgb(110, 255, 120)
-					bb.StudsOffsetWorldSpace = Vector3.new(0, 4.8 + math.abs(math.sin(os.clock() * 3)) * 0.6, 0)
+					bb.StudsOffsetWorldSpace = baseOffset + Vector3.new(0, math.abs(math.sin(os.clock() * 3)) * 0.6, 0)
 				else
 					timer.Text = "Opens in " .. timeLeft(left)
 					timer.TextColor3 = Color3.new(1, 1, 1)
@@ -216,10 +217,34 @@ local function burst(m: Model, c: Crate, rarity: string?)
 		RunService.RenderStepped:Wait()
 	end
 	m:PivotTo(home)
-	-- 2) the lid flies off, a beam in the rarity's colour, sparks
-	local lid = m:FindFirstChild("Lid") :: BasePart?
-	local top = home.Position + Vector3.new(0, 6, 0)
-	if lid then
+	-- 2) the lid opens (Willem's model: on its rear hinge, 105 degrees) or flies off (the
+	-- block placeholder), a beam in the rarity's colour, sparks
+	local lid = m:FindFirstChild("Lid", true) :: BasePart?
+	local body = m:FindFirstChild("Body", true) :: BasePart?
+	local top = if body then Vector3.new(home.Position.X, body.Position.Y + body.Size.Y / 2, home.Position.Z) else home.Position + Vector3.new(0, 6, 0)
+	if lid and m:GetAttribute("Imported") == true then
+		-- hinge: the lid's bottom edge on the side away from the Seal (the front)
+		local seal = m:FindFirstChild("Seal", true) :: BasePart?
+		local front = if seal and body then ((seal.Position - body.Position) * Vector3.new(1, 0, 1)).Unit else -home.LookVector
+		local axis = front:Cross(Vector3.yAxis).Unit -- horizontal, along the hinge
+		local depth = math.abs(lid.CFrame:VectorToObjectSpace(front):Dot(lid.Size)) -- (rough: lid depth along front)
+		local hinge = lid.Position - front * (depth / 2) - Vector3.new(0, lid.Size.Y / 2, 0)
+		local closed = lid.CFrame
+		local pivot = CFrame.fromMatrix(hinge, axis, Vector3.yAxis)
+		local rel = pivot:ToObjectSpace(closed)
+		local t1 = os.clock()
+		task.spawn(function()
+			while os.clock() - t1 < 0.35 do
+				local k = (os.clock() - t1) / 0.35
+				local e = 1 - (1 - k) * (1 - k) * (1 - k)
+				lid.CFrame = pivot * CFrame.Angles(math.rad(105) * e, 0, 0) * rel
+				RunService.RenderStepped:Wait()
+			end
+			lid.CFrame = pivot * CFrame.Angles(math.rad(105), 0, 0) * rel
+			task.wait(0.9)
+			lid.CFrame = closed
+		end)
+	elseif lid then
 		local ghost = lid:Clone()
 		ghost.Anchored = true ghost.CanCollide = false
 		for _, g in ghost:GetChildren() do g:Destroy() end
