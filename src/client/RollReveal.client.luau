@@ -56,6 +56,7 @@ Net.event("CrusherState").OnClientEvent:Connect(function(state)
 	if #discoveryQueue<#C.Types then table.insert(discoveryQueue,item) end
 end)
 local function show(model,now)
+	if model:GetAttribute("RevealFast") then return end -- 8 Nov: Auto Roll with SKIP ANIMATION
 	local slot=model:GetAttribute("RevealSlot")
 	if type(slot)~="number" or slot%1~=0 or not pools[slot] then return end
 	local rarity=model:GetAttribute("RevealRarity") local r=C.rarity(rarity) if not r then return end

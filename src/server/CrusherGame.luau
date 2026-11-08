@@ -560,7 +560,10 @@ end
 -- output and price. Buying is done with the pedestal's prompt.
 local function rollShow(p,offers)
 	local ctx=sessions[p] local plot=ctx.plot local st=plot.stations.Roll
-	local seconds=if ctx.fastRoll then C.AutoRoll.RevealSeconds else math.max(1.2,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
+	-- 8 Nov (Willem: "the skip still shows it"): SKIP ANIMATION = no flicker, no die spin,
+	-- all pedestals at once, no reveal highlight / sting (RevealFast)
+	local fast=ctx.fastRoll==true
+	local seconds=if fast then 0 else math.max(1.2,(ctx.nextRoll or 0)-os.clock()) local token={} ctx.rollToken=token
 	local rollId=guid() local rollData=Data.get(p) local rollPerks=perks(p)
 	local rollLuck=rollData.crushers.upgrades.Luck local first=rollData.crushers.rolls==1
 	-- 2 Nov: a Legendary or better roll is announced to the whole server once revealed
@@ -686,7 +689,7 @@ local function rollShow(p,offers)
 			local d=Data.get(p)
 			for slot,item in offers do
 				-- reveal the pedestals one after another, centre first
-				task.delay((slot-1)*.12+(if slot==bestSlot then hold else 0),function()
+				task.delay((if fast then 0 else (slot-1)*.12)+(if slot==bestSlot then hold else 0),function()
 					if ctx.rollToken~=token or sessions[p]~=ctx or not item then return end
 					if not ctx.offers or ctx.offers[slot]~=item then return end -- already bought/replaced during the stagger
 					local ped=st.pedestals[slot] local r=C.rarity(item.rarity)
@@ -697,6 +700,7 @@ local function rollShow(p,offers)
 					model:SetAttribute("RevealSlot",slot) model:SetAttribute("RevealAt",workspace:GetServerTimeNow())
 					model:SetAttribute("RevealRarity",item.rarity) model:SetAttribute("RevealType",item.type)
 					model:SetAttribute("RevealUnowned",unowned==true) model:SetAttribute("RevealOdds",odds)
+					if fast then model:SetAttribute("RevealFast",true) end
 					model.Parent=plot.model game:GetService("CollectionService"):AddTag(model,RollLook.Tag)
 					plot.offerModels[slot]=model
 					spin(model,ped.top.Position,.8,item.rarity)
