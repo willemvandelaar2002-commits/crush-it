@@ -20,7 +20,8 @@
   with odds (??? if not discovered) in the middle, START / STOP, and the Auto Buy box (price button, then ON/OFF;
   SOON while the pass has id 0).
 - World console (7 Nov, Willem: "a physical button next to the normal rolling"): a green AUTO ROLL console
-  with two dice beside the roll machine (Workshop roll station, C.AutoRollConsole machine-local X -18, Z 3).
+  with two dice beside the roll machine (Workshop roll station, C.AutoRollConsole machine-local X 22, Z 6: right of the
+  machine since 8 Nov, the left side clashed with the stairs on bigger plots).
   Its AUTO button (Action "AutoRoll", CrusherHud) fires the BindableEvent AutoRollHud.Open, which opens the
   same window as the HUD button. Since 8 Nov the HUD button only shows while Auto Roll runs ("AUTO: ON").
 - Art (7 Nov, Willem's CrushIt-AutoRoller-Component-Art): backplate 88560195984273 (960x600 window, positions are

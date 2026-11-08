@@ -440,3 +440,4 @@
 - 2026-11-08: Mystery Crate lands at goal 6 (was right after the tutorial); the camera zooms to it for the drop and the opening (Willem).
 - 2026-11-08: the HUD AUTO ROLL button only shows while Auto Roll runs (AUTO: ON, to open/stop it); the world console beside the roll machine opens the window (Willem).
 - 2026-11-08: Mystery Crate uses Willem's model (ServerStorage.MysteryCrateModel, lid opens on its hinge).
+- 2026-11-08: Auto Roll console moved to the right of the roll machine: on bigger plots (stairs) it stood inside the staircase (Willem's friend). Checked at plot level 5 with all pedestals: console and Mystery Crate clear on all 6 plots.
