@@ -124,13 +124,69 @@ function V.create(plot)
 		end
 		lab.button=W.button(lab.content,"ApplyCoating","SELECT A FINISH",UDim2.fromScale(.1,.81),UDim2.fromScale(.8,.16),"ApplyCoating")
 	end
-	plot.progression={yard=yard,accents=accents,upgrade=upgrade,lab=lab,gateParts={},levelText=levelText}
+	-- 8 Nov: THE ANNEX yard behind the rear yard (Factory VII, rebirth 3). It shows
+	-- with the rear yard; a gate on the road says what opens it. Its banks are in
+	-- CrusherPlots (AnnexGround1/2) and come with the plot level.
+	local annex=Instance.new("Model") annex.Name="AnnexYard" annex.Parent=root
+	local annexBack=C.Layout.AnnexBack local annexDepth=yardBack-annexBack
+	Build.island(annex,o*CFrame.new(0,0,(yardBack+annexBack)/2),F,annexDepth,World.SeaY,
+		{dirt=Color3.fromRGB(25,43,73),stone=Color3.fromRGB(46,84,156),stoneDark=Color3.fromRGB(25,43,73)},{rng=Random.new(78),curb=false,rocks=false})
+	local annexFloor=W.part(annex,"YardFloor",Vector3.new(F,2,annexDepth),o*CFrame.new(0,-1,(yardBack+annexBack)/2),platform,true)
+	Style.studs(annexFloor)
+	W.walkway(annex,o,C.Layout.RoadHalf*2,annexBack+4,yardBack)
+	local function annexRim(a,b,fixed,alongX)
+		local len=b-a local n=math.max(1,math.floor(len/6+.5)) local seg=len/n
+		for i=0,n-1 do
+			local mid=a+seg*(i+.5)
+			local pos=if alongX then CFrame.new(mid,.8,fixed) else CFrame.new(fixed,.8,mid)
+			local block=W.part(annex,"RimBlock",if alongX then Vector3.new(seg-.2,1.6,2) else Vector3.new(2,1.6,seg-.2),o*pos,if i%2==0 then Color3.fromRGB(150,70,230) else Color3.fromRGB(190,110,255),true)
+			Style.materialStuds(block,true,{Enum.NormalId.Top},2)
+		end
+	end
+	annexRim(-half+1,half-1,annexBack+1,true)
+	for _,x in {-half+1,half-1} do
+		annexRim(annexBack+2,yardBack-2,x,false)
+		W.part(annex,"RimCorner",Vector3.new(2.6,2.2,2.6),o*CFrame.new(x,1.1,annexBack+1),W.Navy,true)
+		W.lamp(annex,o*CFrame.new(x,2.2,annexBack+1),2.2)
+	end
+	-- the gate across the rear yard road: two pillars, a striped barrier, the sign
+	local gate=Instance.new("Model") gate.Name="AnnexGate" gate.Parent=root
+	local purple=Color3.fromRGB(150,70,230)
+	local gz=yardBack+1 local gx=C.Layout.RoadHalf+2
+	for _,x in {-gx,gx} do
+		-- tall enough that the sign clears the rear yard's upper banks (2 floors + parapet)
+		W.part(gate,"GatePillar",Vector3.new(2.4,31,2.4),o*CFrame.new(x,15.5,gz),W.Navy,true)
+		for _,y in {8,16,24} do W.part(gate,"GatePillarBand",Vector3.new(2.8,.6,2.8),o*CFrame.new(x,y,gz),purple) end
+	end
+	for i=0,5 do
+		local w=(2*gx-2.4)/6
+		W.part(gate,"GateBar",Vector3.new(w,1.2,.8),o*CFrame.new(-gx+1.2+w*(i+.5),3.2,gz),if i%2==0 then Style.Colors.Yellow else W.Navy,true)
+		W.part(gate,"GateBarLow",Vector3.new(w,1.2,.8),o*CFrame.new(-gx+1.2+w*(i+.5),1.2,gz),if i%2==1 then Style.Colors.Yellow else W.Navy,true)
+	end
+	local gateFace,gateGui=W.panel(gate,o*CFrame.new(0,36,gz),28,10,purple,true)
+	gateGui.MaxDistance=320
+	local gateBox=Instance.new("Frame") gateBox.Name="Content" gateBox.BackgroundTransparency=1 gateBox.Size=UDim2.fromScale(1,1) gateBox.Parent=gateGui
+	local gateArt=W.icon(gateBox,"Art",C.Annex.SignImage,UDim2.fromScale(0,0),UDim2.fromScale(1,1))
+	gateArt.Visible=C.Annex.SignImage~="rbxassetid://0"
+	local gateTitle=W.text(gateBox,"Title","🔒 THE ANNEX",UDim2.fromScale(.04,.06),UDim2.fromScale(.92,.42))
+	local gateInfo=W.text(gateBox,"Info","REBIRTH "..C.Annex.RequireRebirths.." TO UNLOCK",UDim2.fromScale(.04,.52),UDim2.fromScale(.92,.36))
+	gateInfo.TextColor3=Color3.fromRGB(255,232,120)
+	gateTitle.Visible=not gateArt.Visible
+	-- the rear yard's back rim blocks on the road open when the annex is built
+	local road={}
+	for _,p in yard:GetDescendants() do if p:IsA("BasePart") and p.Name=="RimBlock" then
+		local at=o:PointToObjectSpace(p.Position)
+		if math.abs(at.Z-(yardBack+1))<.2 and math.abs(at.X)<gx then table.insert(road,p) end
+	end end
+	plot.progression={yard=yard,accents=accents,upgrade=upgrade,lab=lab,gateParts={},levelText=levelText,
+		annex=annex,annexGate={model=gate,content=gateBox,title=gateTitle,info=gateInfo,face=gateFace,road=road}}
 	-- the plot's rear rim opens onto the rear yard
 	for _,p in plot.model:GetDescendants() do if p:IsA("BasePart") and (p.Name=="RimBlock" or p.Name=="RimCorner" or p.Name=="LampPost" or p.Name=="LampLight" or p.Name=="LampCap") and p.Parent and p.Parent.Name=="PlotBorder" then
 		local at=o:PointToObjectSpace(p.Position)
 		if math.abs(at.Z-(plotRear+1))<.2 then p:SetAttribute("RimX",at.X) table.insert(plot.progression.gateParts,p) end
 	end end
 	Stages.create(plot)
+	show(annex,false) show(gate,false) gateBox.Visible=false
 	show(yard,false) show(accents,false) show(upgrade.model,false) show(lab.model,false)
 	upgrade.content.Visible=false if lab.content then lab.content.Visible=false end
 end
@@ -142,11 +198,23 @@ function V.sync(plot,d,quote,now,preview)
 	local structure=C.structureLevel(level)
 	local expanded=structure>=1
 	local boardVisible=d and (level>=1 or P.full(d)) or false
-	Stages.sync(plot,structure)
+	-- (8 Nov: the annex level keeps Factory VI's look; PlotStages has looks up to structure 4)
+	Stages.sync(plot,math.min(structure,C.structureLevel(C.PlotUpgrade.MaxLevel-1)))
 	local yardOpen=structure>=2
-	local signature=tostring(level)..":"..tostring(boardVisible)
+	local rebirths=if d then d.crushers.rebirths or 0 else 0
+	local annexNeed=C.plotRebirths(C.PlotUpgrade.MaxLevel)
+	local annexOpen=level>=C.PlotUpgrade.MaxLevel
+	local signature=tostring(level)..":"..tostring(boardVisible)..":"..tostring(rebirths>=annexNeed)
 	if v.signature~=signature then
 		v.signature=signature show(v.yard,yardOpen) show(v.accents,expanded)
+		-- 8 Nov: the annex yard shows with the rear yard; its gate until it is built
+		local g=v.annexGate
+		show(v.annex,yardOpen) show(g.model,yardOpen and not annexOpen) g.content.Visible=yardOpen and not annexOpen
+		for _,p in g.road do local closed=not annexOpen p.Transparency=if closed then 0 else 1 p.CanCollide=closed p.CanQuery=closed end
+		g.info.Text=if rebirths<annexNeed then "REBIRTH "..annexNeed.." TO UNLOCK"
+			elseif level<C.PlotUpgrade.MaxLevel-1 then "+12 BAYS · AFTER "..C.PlotUpgrade.Names[C.PlotUpgrade.MaxLevel-1]
+			else "+12 BAYS · UPGRADE PLOT TO OPEN"
+		g.title.Text=if rebirths<annexNeed then "🔒 THE ANNEX" else "THE ANNEX"
 		show(v.upgrade.model,boardVisible) v.upgrade.content.Visible=boardVisible
 		-- booth colour follows the plot level (orange, silver, gold versions)
 		local want=if v.lab.booth then boothName(math.max(structure,1)) else nil
@@ -169,11 +237,13 @@ function V.sync(plot,d,quote,now,preview)
 	local maxed=level>=C.PlotUpgrade.MaxLevel
 	local cost=if maxed then 0 else C.plotCost(level+1)
 	local full=d~=nil and P.full(d)
-	local state=if maxed then "Max" elseif not full then "Short" elseif d.cash>=cost then "Ready" else "Short"
+	local need=if maxed then 0 else C.plotRebirths(level+1)
+	local locked=d~=nil and (d.crushers.rebirths or 0)<need
+	local state=if maxed then "Max" elseif not full or locked then "Short" elseif d.cash>=cost then "Ready" else "Short"
 	local name=C.PlotUpgrade.Names[math.min(level+1,C.PlotUpgrade.MaxLevel)]
 	local view={state=state,cost=cost,
-		button=if maxed then C.PlotUpgrade.Names[C.PlotUpgrade.MaxLevel].." · COMPLETE" else name.."\n"..Format.cash(cost),
-		hint=if full then "Collect and sell scrap for more cash." else "Fill all "..C.bayCapacity(level).." bays with crushers, then upgrade your plot.",
+		button=if maxed then C.PlotUpgrade.Names[C.PlotUpgrade.MaxLevel].." · COMPLETE" elseif locked then name.."\nREBIRTH "..need else name.."\n"..Format.cash(cost),
+		hint=if locked then "Reach REBIRTH "..need.." to open the Annex." elseif full then "Collect and sell scrap for more cash." else "Fill all "..C.bayCapacity(level).." bays with crushers, then upgrade your plot.",
 		success=name.."!"}
 	W.purchase(v.upgrade.button,view)
 	v.upgrade.info.Text=if maxed then C.MaxBays.." BAYS · MASTER FACTORY"
@@ -181,7 +251,8 @@ function V.sync(plot,d,quote,now,preview)
 		elseif level==1 then "+12 BAYS · 3RD FLOOR · HIGHER LV CAPS"
 		elseif level==2 then "+12 BAYS · REAR YARD · FUSION MACHINE"
 		elseif level==3 then "+6 BAYS · REAR UPPER LEFT · HIGHER LV CAPS"
-		else "+6 BAYS · REAR UPPER RIGHT · HIGHER LV CAPS"
+		elseif level==4 then "+6 BAYS · REAR UPPER RIGHT · HIGHER LV CAPS"
+		else "+12 BAYS · THE ANNEX · REBIRTH "..C.plotRebirths(C.PlotUpgrade.MaxLevel)..""
 	-- the gate sign shows the owner's level (29 Oct: was FACTORY II on every empty plot
 	-- and on level 0 plots); empty plots show nothing
 	v.levelText.Text=if not d then "" elseif level<=0 then "FACTORY I" else C.PlotUpgrade.Names[level]

@@ -371,3 +371,19 @@ CrusherPlots applies Style.studs to the blue bank back walls, parapets and solid
 - Saves from before the split (`crushers.plotsV` ~= 2) with any plot upgrade or more than 12 bays move up one level: same bays, crushers and caps (or higher), nothing lost.
 - Goals v3 (17): ... Upgrades12, Fill all 12 bays (Epic), Level15, Buy FACTORY II (Legendary). Older goal lists (goalsV 1/2) map by goal id; on that remap goals already done are skipped without rewards.
 - After Factory II the guide is finished (no NEXT GOAL mode).
+
+## Factory VII: THE ANNEX (8 Nov)
+
+The plot gets longer after rebirth 3 (Willem; rebirth data: 33 players reached R3).
+`CrusherConfig.Annex`, plot level 6, bays 61..72:
+
+- Two ground banks (left 61-66, right 67-72) behind the rear yard, `Annex.Shift` = -128
+  (bays at z -140, yard back `Layout.AnnexBack` -164). Rows 11-12: ANNEX LEFT / ANNEX RIGHT.
+- Needs `Annex.RequireRebirths` = 3 (`PlotUpgrade.Rebirths[6]`, checked in `FactoryProgression.expand`),
+  all 60 bays filled, and `10 x` the first annex bay ($20B). Annex bays: $2B x1.25 per bay (bay 72 ~$23B).
+- Keeps Factory VI's caps; the cap hint only says UPGRADE PLOT when a plot upgrade still raises a cap.
+- World: the annex yard (purple rim) shows with the rear yard (Factory IV). A gate on the rear road
+  shows "THE ANNEX · REBIRTH 3 TO UNLOCK" → "AFTER FACTORY VI" → "UPGRADE PLOT TO OPEN"; the annex
+  banks stand as ghosts until bought, then rise. The beacon tower moved to the annex road end. The toy
+  supply belt behind plot 2 moved 12 studs toward the wall to make room.
+- `Annex.SignImage` takes Willem's gate art (0 = the text sign).

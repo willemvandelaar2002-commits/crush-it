@@ -23,9 +23,9 @@ return function()
 		end
 		return items
 	end
-	check(Rows.count()==10 and C.BaseMaxBays==24 and C.Layout.PerWing==6,"4 base rows, 2 top-floor rows, 4 rear yard rows")
+	check(Rows.count()==12 and C.BaseMaxBays==24 and C.Layout.PerWing==6,"4 base rows, 2 top-floor rows, 4 rear yard rows, 2 annex rows")
 	for bay=1,C.MaxBays do local l=C.bayLayout(bay)
-		check(Rows.index(bay)==(if l.top then 4+l.wing elseif l.rear then 6+(l.tier-1)*2+l.wing else (l.tier-1)*C.Layout.Wings+l.wing),"row matches physical layout")
+		check(Rows.index(bay)==(if l.top then 4+l.wing elseif l.annex then 10+l.wing elseif l.rear then 6+(l.tier-1)*2+l.wing else (l.tier-1)*C.Layout.Wings+l.wing),"row matches physical layout")
 	end
 	for _,rarity in C.Rarities do for row=1,Rows.count() do
 		local d=fresh() local items=fill(d,row,rarity.name)

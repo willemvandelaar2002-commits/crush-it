@@ -107,7 +107,7 @@ end
 local function floorFor(plot,i)
 	local l=C.bayLayout(i)
 	if l.rear then
-		local first=C.rearStart(l.tier,l.wing)
+		local first=if l.annex then C.annexStart(l.wing) else C.rearStart(l.tier,l.wing)
 		for _,f in plot.rearFloors or {} do if f.first==first then return f end end
 		return nil
 	end
@@ -124,7 +124,9 @@ local function floorLook(plot,unlocked,cap)
 		-- bays bought one by one): no ghost or BUILD sign, top floors rise in
 		-- 2 Nov plot split: everything past the ground floor (StartBays) comes with a
 		-- plot upgrade, so a floor is built when the plot includes it, never a ghost
-		local mode=if unlocked>=f.first or (f.first>C.StartBays and f.first<=cap) then "built" elseif unlocked+1==f.first and not f.top and f.first<=C.StartBays then "ghost" else "hidden"
+		local mode=if unlocked>=f.first or (f.first>C.StartBays and f.first<=cap) then "built" elseif unlocked+1==f.first and not f.top and f.first<=C.StartBays then "ghost"
+			-- 8 Nov: the annex banks stand as ghosts behind their gate once the rear yard is open
+			elseif f.first>=C.Annex.First and cap>=C.RearFirst then "ghost" else "hidden"
 		if f.mode~=mode then
 			-- (2 Nov: the upper floor also rises when Factory II is bought)
 			local rise=(f.mode=="ghost" or (f.top==true and plot.riseTop==true) or (f.mode=="hidden" and not f.top and not f.rear)) and mode=="built"

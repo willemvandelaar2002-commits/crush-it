@@ -73,7 +73,7 @@ function R.fusionCopies(d,main)
 end
 -- Message at a cap: points at the plot upgrade while it can still raise caps.
 function R.capMessage(plotLevel)
-	if (plotLevel or 0)<C.PlotUpgrade.MaxLevel then return "Maximum level for now. UPGRADE PLOT raises the cap." end
+	if C.levelCap(plotLevel or 0)<C.topLevelCap() then return "Maximum level for now. UPGRADE PLOT raises the cap." end
 	return "Maximum level reached."
 end
 -- How many levels this crusher can buy in a row with this much cash, and
@@ -139,7 +139,7 @@ function R.migrate(d, guid)
 			if i and i==math.floor(i) then
 				if i>=1 and i<=C.BaseMaxBays then moved[tostring(i)]=id
 				elseif i>C.BaseMaxBays and i<=C.BaseMaxBays+6 then table.insert(rowItems,{i=i,id=id})
-				elseif i>C.BaseMaxBays+6 and i<=C.MaxBays+6 then moved[tostring(i-6)]=id end
+				elseif i>C.BaseMaxBays+6 and i<=C.Annex.First-1+6 then moved[tostring(i-6)]=id end
 			end
 		end
 		table.sort(rowItems,function(a,b) return a.i<b.i end)
