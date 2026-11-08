@@ -173,9 +173,9 @@ local TAB_Y, TAB_H = 0.16, 0.71 / #C.AutoRoll.Rarities
 -- the crusher area
 local head = words(panel, "", UDim2.fromScale(0.25, 0.145), UDim2.fromScale(0.69, 0.06), 40, 4, 8)
 local sub = words(panel, "Tap crushers to target them", UDim2.fromScale(0.25, 0.2), UDim2.fromScale(0.69, 0.04), 22, 3, 8)
--- 8 Nov (Willem): SKIP ANIMATION toggle, top right of the crusher area
-local skipBtn = make("TextButton", { Name = "SkipAnim", Text = "", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(0.935, 0.148),
-	Size = UDim2.fromScale(0.15, 0.05), ZIndex = 9 }, panel)
+-- 8 Nov (Willem): SKIP ANIMATION toggle, right of "Tap crushers to target them"
+local skipBtn = make("TextButton", { Name = "SkipAnim", Text = "", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(0.935, 0.197),
+	Size = UDim2.fromScale(0.14, 0.045), ZIndex = 9 }, panel)
 Style.button(skipBtn, rgb(120, 124, 140))
 local skipText = words(skipBtn, "⏩ SKIP: OFF", UDim2.fromScale(0.06, 0.1), UDim2.fromScale(0.88, 0.8), 18, 2, 10)
 skipBtn.Activated:Connect(function() send(running(), picks(), buying(), not skipping()) end)
