@@ -1,5 +1,6 @@
 --!strict
--- 5 Nov (Willem: "show they are special"): a bay with a Secret or Divine crusher gets
+-- 5 Nov (Willem: "show they are special"): a bay with a Secret or Divine crusher (8 Nov: also
+-- Exotic, Limited, and Mythic in a shifting rainbow) gets
 -- its own look, on every plot: a glowing plate on the pedestal (slow pulse), a colour
 -- wash up the back wall, rising sparkles, and for Divine two soft light shafts from the
 -- top beam. Client-only, no lights; Style.lite() halves the sparkles. Numbers: C.SpecialBay.
@@ -129,9 +130,32 @@ local function build(bay: Model, rarity: string): Folder
 			a0:SetAttribute("SpecialBayFx", true) a1:SetAttribute("SpecialBayFx", true)
 		end
 	end
+	-- 4. Mythic (8 Nov): everything cycles through the rainbow (see the Heartbeat below)
+	if look.rainbow then folder:SetAttribute("Rainbow", true) end
 	folder.Parent = bay
 	return folder
 end
+-- rainbow bays: plate, rim, wash, shafts and sparkles shift hue together (Mythic)
+task.spawn(function()
+	while true do
+		local h = (os.clock() * 0.08) % 1
+		local a, b = Color3.fromHSV(h, 0.75, 1), Color3.fromHSV((h + 0.35) % 1, 0.75, 1)
+		for _, entry in active do
+			local f = entry.folder
+			if f.Parent and f:GetAttribute("Rainbow") then
+				for _, d in f:GetDescendants() do
+					if d:IsA("BasePart") then d.Color = if d.Name == "Rim" then b else a
+					elseif d:IsA("Frame") then
+						local g = d:FindFirstChildOfClass("UIGradient")
+						if g then g.Color = ColorSequence.new(a, b) end
+					elseif d:IsA("ParticleEmitter") then d.Color = ColorSequence.new(a, b)
+					elseif d:IsA("Beam") then d.Color = ColorSequence.new(Color3.new(1, 1, 1), a) end
+				end
+			end
+		end
+		task.wait(if LITE then 0.25 else 0.1)
+	end
+end)
 
 local function clear(bay: Model)
 	local entry = active[bay]
