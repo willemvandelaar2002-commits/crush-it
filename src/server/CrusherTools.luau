@@ -50,6 +50,7 @@ local function holdModel(tool: Tool, item: any)
 	-- Everything else is stuck to the main part.
 	local parts: { BasePart } = {}
 	for _, p in held:GetDescendants() do if p:IsA("BasePart") then table.insert(parts, p) end end
+	if #parts > 0 then -- (no preview model: nothing to hold, only the name tag)
 	local box, size = held:GetBoundingBox()
 	local bottom = box.Position.Y - size.Y / 2
 	local bed = held:FindFirstChild("Bed", true) :: BasePart?
@@ -100,6 +101,7 @@ local function holdModel(tool: Tool, item: any)
 				if p ~= anchor then local weld = Instance.new("WeldConstraint") weld.Part0 = anchor weld.Part1 = p weld.Parent = p end
 			end
 		end
+	end
 	end
 	if tool:FindFirstChild("Held") then held:Destroy() return end -- equipped twice quickly
 	held.Parent = tool
