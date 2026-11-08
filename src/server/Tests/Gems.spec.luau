@@ -86,7 +86,7 @@ return function()
 	check(math.abs(R.gemRate(g) - C.GemCrushers[2].gems) < 1e-9, "the Awakened Gem Crusher makes " .. C.GemCrushers[2].gems .. " Gems / min in a bay")
 	check(C.typeById("GemCrusherAwakened").value > C.typeById("GemCrusher").value and C.typeById("GemCrusher").value > 660, "stronger than every Mythic, awakened stronger still")
 	-- old saves past rebirth 5 / 10 get theirs on load
-	local old = R.migrate({ cash = 10, crushers = { rebirths = 7 } }, id)
+	local old = R.migrate({ cash = 10 }, id) old.crushers.rebirths = 7 old = R.migrate(old, id)
 	local found = 0 for _, v in old.crushers.owned do if v.type == "GemCrusher" then found += 1 end end
 	check(found == 1 and #R.migrate(R.copy(old), id).crushers.owned == #old.crushers.owned, "a rebirth 7 save gets one Gem Crusher, once")
 	for _, r in C.Rarities do for _, t in r.types do check(not C.gemCrusher(t), "the Gem Crusher is never rolled") end end

@@ -143,7 +143,7 @@ return function()
 	end
 	-- Forty real, reachable definitions; model additions must not silently
 	-- change legacy IDs, saved instance stats or the existing rarity weights.
-	check(#C.Types==40+#C.Mythics+#C.CrateTypes+#C.ChaseTypes+#C.LimitedTypes+#C.ExoticTypes,"complete catalogue including Exotic")
+	check(#C.Types==40+#C.Mythics+#C.CrateTypes+#C.ChaseTypes+#C.LimitedTypes+#C.ExoticTypes+#C.GemCrushers,"complete catalogue including Exotic")
 	local seen={} local cumulative=0 local total=0 for _,r in C.Rarities do total+=r.weight end
 	for _,r in C.Rarities do
 		local chase=0 for _,e in C.ChaseTypes do if e.rarity==r.name then chase+=1 end end
