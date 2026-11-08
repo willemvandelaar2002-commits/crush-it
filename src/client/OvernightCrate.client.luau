@@ -73,8 +73,168 @@ local function sign(model: Instance)
 		end
 	end)
 end
-for _, m in Tags:GetTagged("MysteryCrate") do task.spawn(sign, m) end
-Tags:GetInstanceAddedSignal("MysteryCrate"):Connect(function(m) task.spawn(sign, m) end)
+
+-- crate animations (8 Nov, Willem: "very interesting with an animation dropping") -----
+-- Everything here moves the model on this client only (the server never moves it), from
+-- the attributes DropAt / OpenedAt + OpenRarity (CrateConfig.Drop / Open).
+local RunService = game:GetService("RunService")
+local Debris = game:GetService("Debris")
+local function rarityColor(name: string?): Color3
+	local r = name and C2.rarity(name)
+	return if r then r.color else rgb(255, 215, 80)
+end
+local function fx(class: string, props: { [string]: any }): any
+	local n = make(class, props, nil)
+	if n:IsA("BasePart") then n.Anchored = true n.CanCollide = false n.CanQuery = false n.CanTouch = false n.CastShadow = false end
+	n.Parent = Workspace
+	return n
+end
+local function ring(at: Vector3, color: Color3, size: number, time: number)
+	local r = fx("Part", { Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.3, 2, 2), CFrame = CFrame.new(at) * CFrame.Angles(0, 0, math.rad(90)),
+		Color = color, Material = Enum.Material.Neon, Transparency = 0.2 })
+	TweenService:Create(r, TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = Vector3.new(0.3, size, size), Transparency = 1 }):Play()
+	Debris:AddItem(r, time + 0.1)
+end
+local function shake(strength: number, time: number)
+	if not Style.shakeOn() then return end
+	local cam = Workspace.CurrentCamera
+	local t0 = os.clock()
+	local conn
+	conn = RunService.RenderStepped:Connect(function()
+		local k = 1 - (os.clock() - t0) / time
+		if k <= 0 then conn:Disconnect() return end
+		cam.CFrame = cam.CFrame * CFrame.new((math.random() - 0.5) * strength * k, (math.random() - 0.5) * strength * k, 0)
+	end)
+end
+type Crate = { home: CFrame, parts: { [BasePart]: number }, busy: boolean }
+local crates: { [Model]: Crate } = {}
+local function setVisible(c: Crate, on: boolean)
+	for part, t in c.parts do part.LocalTransparencyModifier = if on then 0 else 1 end
+	for part in c.parts do
+		for _, g in part:GetChildren() do
+			if g:IsA("SurfaceGui") or g:IsA("BillboardGui") then g.Enabled = on end
+		end
+	end
+end
+local function near(pos: Vector3, dist: number): boolean
+	local ch = me.Character
+	local root = ch and ch:FindFirstChild("HumanoidRootPart") :: BasePart?
+	return root ~= nil and (root.Position - pos).Magnitude < dist
+end
+local function drop(m: Model, c: Crate)
+	local D = K.Drop
+	c.busy = true
+	setVisible(c, false)
+	m:PivotTo(c.home)
+	local ground = c.home.Position
+	-- a warning ring where it will land
+	ring(ground + Vector3.new(0, 0.2, 0), rgb(255, 215, 80), 12, D.Warn)
+	local beam = fx("Part", { Size = Vector3.new(1.2, D.Height, 1.2), CFrame = CFrame.new(ground + Vector3.new(0, D.Height / 2, 0)),
+		Color = rgb(255, 215, 80), Material = Enum.Material.Neon, Transparency = 0.6 })
+	TweenService:Create(beam, TweenInfo.new(D.Warn + D.Fall), { Transparency = 1, Size = Vector3.new(0.2, D.Height, 0.2) }):Play()
+	Debris:AddItem(beam, D.Warn + D.Fall + 0.1)
+	task.wait(D.Warn)
+	setVisible(c, true)
+	local t0 = os.clock()
+	while true do
+		local k = math.min(1, (os.clock() - t0) / D.Fall)
+		local y = D.Height * (1 - k * k) -- falls faster and faster
+		m:PivotTo(c.home * CFrame.new(0, y, 0) * CFrame.Angles(0, (1 - k) * 4, 0))
+		if k >= 1 then break end
+		RunService.RenderStepped:Wait()
+	end
+	-- impact: squash bounce, dust ring, shake if close
+	ring(ground + Vector3.new(0, 0.3, 0), rgb(255, 255, 255), 22, 0.6)
+	ring(ground + Vector3.new(0, 0.3, 0), rgb(255, 200, 60), 14, 0.45)
+	if near(ground, 60) then shake(0.9, 0.35) end
+	local t1 = os.clock()
+	while os.clock() - t1 < 0.45 do -- two little bounces
+		local k = (os.clock() - t1) / 0.45
+		m:PivotTo(c.home * CFrame.new(0, math.abs(math.sin(k * math.pi * 2)) * 1.4 * (1 - k), 0))
+		RunService.RenderStepped:Wait()
+	end
+	m:PivotTo(c.home)
+	c.busy = false
+end
+local function burst(m: Model, c: Crate, rarity: string?)
+	local O = K.Open
+	c.busy = true
+	local color = rarityColor(rarity)
+	local home = c.home
+	-- 1) it rattles
+	local t0 = os.clock()
+	while os.clock() - t0 < O.Shake do
+		local k = (os.clock() - t0) / O.Shake
+		m:PivotTo(home * CFrame.new(0, 0, 0) * CFrame.Angles(math.rad(math.sin(os.clock() * 60) * 6 * k), 0, math.rad(math.cos(os.clock() * 55) * 6 * k)))
+		RunService.RenderStepped:Wait()
+	end
+	m:PivotTo(home)
+	-- 2) the lid flies off, a beam in the rarity's colour, sparks
+	local lid = m:FindFirstChild("Lid") :: BasePart?
+	local top = home.Position + Vector3.new(0, 6, 0)
+	if lid then
+		local ghost = lid:Clone()
+		ghost.Anchored = true ghost.CanCollide = false
+		for _, g in ghost:GetChildren() do g:Destroy() end
+		ghost.Parent = Workspace
+		lid.LocalTransparencyModifier = 1
+		TweenService:Create(ghost, TweenInfo.new(O.Burst, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			{ CFrame = ghost.CFrame * CFrame.new(math.random(-8, 8), 26, math.random(-8, 8)) * CFrame.Angles(math.rad(540), math.rad(300), 0), Transparency = 1 }):Play()
+		Debris:AddItem(ghost, O.Burst + 0.1)
+	end
+	local beam = fx("Part", { Shape = Enum.PartType.Cylinder, Size = Vector3.new(80, 1, 1), CFrame = CFrame.new(top + Vector3.new(0, 40, 0)) * CFrame.Angles(0, 0, math.rad(90)),
+		Color = color, Material = Enum.Material.Neon, Transparency = 0.1 })
+	TweenService:Create(beam, TweenInfo.new(0.25, Enum.EasingStyle.Back), { Size = Vector3.new(80, 7, 7) }):Play()
+	task.delay(0.35, function() TweenService:Create(beam, TweenInfo.new(O.Burst), { Size = Vector3.new(80, 0.5, 0.5), Transparency = 1 }):Play() end)
+	Debris:AddItem(beam, O.Burst + 0.5)
+	ring(top, color, 26, 0.7)
+	local spark = fx("Part", { Size = Vector3.new(1, 1, 1), CFrame = CFrame.new(top), Transparency = 1 })
+	local emitter = make("ParticleEmitter", { Color = ColorSequence.new(color, Color3.new(1, 1, 1)), LightEmission = 1, Size = NumberSequence.new(0.9, 0),
+		Lifetime = NumberRange.new(0.8, 1.4), Speed = NumberRange.new(22, 40), SpreadAngle = Vector2.new(180, 180), Acceleration = Vector3.new(0, -30, 0),
+		Rate = 0 }, spark)
+	emitter:Emit(if Style.lite() then 40 else 90)
+	Debris:AddItem(spark, 2)
+	if near(top, 60) then shake(0.6, 0.3) end
+	-- 3) the crate is gone until the next one drops
+	task.wait(0.5)
+	setVisible(c, false)
+	if lid then lid.LocalTransparencyModifier = 0 end
+	c.busy = false
+end
+local function watch(m: Model)
+	local body = m:WaitForChild("Body", 10)
+	if not body then return end
+	local c: Crate = { home = m:GetPivot(), parts = {}, busy = false }
+	for _, d in m:GetDescendants() do if d:IsA("BasePart") then c.parts[d] = d.Transparency end end
+	crates[m] = c
+	local lastDrop, lastOpen = 0, 0
+	local function check()
+		local now = Workspace:GetServerTimeNow()
+		local openedAt = tonumber(m:GetAttribute("OpenedAt")) or 0
+		if openedAt > lastOpen and now - openedAt < 4 then
+			lastOpen = openedAt
+			task.spawn(burst, m, c, m:GetAttribute("OpenRarity"))
+		end
+		local dropAt = tonumber(m:GetAttribute("DropAt")) or 0
+		if dropAt > lastDrop and now - dropAt < 4 then
+			lastDrop = dropAt
+			task.spawn(function()
+				while Workspace:GetServerTimeNow() < dropAt or c.busy do
+					if Workspace:GetServerTimeNow() < dropAt and not c.busy then setVisible(c, false) end
+					task.wait()
+				end
+				drop(m, c)
+			end)
+		end
+	end
+	m:GetAttributeChangedSignal("OpenedAt"):Connect(check)
+	m:GetAttributeChangedSignal("DropAt"):Connect(check)
+	check()
+	m.AncestryChanged:Connect(function() if not m.Parent then crates[m] = nil end end)
+end
+
+for _, m in Tags:GetTagged("MysteryCrate") do task.spawn(sign, m) task.spawn(watch, m) end
+Tags:GetInstanceAddedSignal("MysteryCrate"):Connect(function(m) task.spawn(sign, m) task.spawn(watch, m) end)
 
 -- the card ---------------------------------------------------------------------------
 local gui = make("ScreenGui", { Name = "CrateHud", ResetOnSpawn = false, DisplayOrder = 40, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
@@ -127,6 +287,7 @@ local function show(emoji: string, head: string, a: string, b: string, ask: bool
 	end
 	ask = ask and canPrompt()
 	icon.Text = emoji title.Text = head line1.Text = a line2.Text = b
+	line1.TextColor3 = Color3.new(1, 1, 1)
 	remind.Visible = ask
 	ok.Position = if ask then UDim2.fromOffset(318, 112) else UDim2.fromOffset(240, 112)
 	card.Visible = true
@@ -146,11 +307,14 @@ Net.event("Crate").OnClientEvent:Connect(function(msg: any)
 	if type(msg) ~= "table" then return end
 	if msg.arrived then
 		task.delay(4, function() -- after the tutorial's own celebration
-			show("🎁", "A MYSTERY CRATE ARRIVED!", "It opens in " .. K.FirstHours .. " hours", "Free crusher inside, up to LEGENDARY!", true)
+			show("🎁", "A MYSTERY CRATE ARRIVED!", "It opens in " .. K.FirstHours .. " hours", "Free crusher inside, up to SECRET!", true)
 		end)
 	elseif type(msg.opened) == "table" then
 		local o = msg.opened
-		show("🎉", "MYSTERY CRATE OPENED!", tostring(o.name) .. " (" .. tostring(o.rarity) .. ")", "+" .. tostring(o.cash) .. "  ·  next crate in " .. K.Hours .. "h", false)
+		task.delay(K.Open.Shake + 0.9, function() -- after the lid blows off
+			show("🎉", "MYSTERY CRATE OPENED!", tostring(o.name) .. " (" .. tostring(o.rarity) .. ")", "+" .. tostring(o.cash) .. "  ·  next crate in " .. K.Hours .. "h", false)
+			line1.TextColor3 = rarityColor(o.rarity):Lerp(Color3.new(1, 1, 1), 0.25)
+		end)
 	end
 end)
 
