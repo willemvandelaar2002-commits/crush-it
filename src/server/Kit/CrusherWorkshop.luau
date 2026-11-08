@@ -439,10 +439,13 @@ function W.station(parent,cf,kind)
 		-- 8 Nov (Willem: a separate console blocked the stairs, then the trash can): AUTO ROLL is
 		-- a second, smaller panel on the roll machine's own front, right of ROLL; its button
 		-- opens the Auto Roller window (client/AutoRoll, through CrusherHud's "AutoRoll" action).
-		local face,label,button=stationPanel(m,cf*CFrame.new(-3.9,4.3,7.4),W.Purple,"ROLL A CRUSHER","ROLL",13.4)
-		local aface,alabel,abutton=stationPanel(m,cf*CFrame.new(7.1,4.3,7.4),W.Green,"AUTO ROLL","AUTO",7.4)
-		alabel.Text="Stops on your targets"
-		abutton:SetAttribute("Action","AutoRoll")
+		local face,label,button=stationPanel(m,cf*CFrame.new(0,4.3,7.4),W.Purple,"ROLL A CRUSHER","ROLL")
+		-- (Willem: one panel, AUTO smaller than ROLL) the ROLL button makes room for a smaller
+		-- blue AUTO button on its right, in the same panel
+		button.Position=UDim2.fromScale(.05,.56) button.Size=UDim2.fromScale(.6,.38)
+		local abutton=W.button(button.Parent,"AutoAction","AUTO",UDim2.fromScale(.68,.6),UDim2.fromScale(.27,.3),"AutoRoll")
+		Style.setButtonColor(abutton,Color3.fromRGB(70,150,255))
+		local aface,alabel=face,label
 		-- Pedestals in an arc in front of the machine (like the reference): a roll
 		-- fills every unlocked one with an offer; each has a card and a Buy prompt.
 		-- Listed in unlock order: centre first, then outwards.

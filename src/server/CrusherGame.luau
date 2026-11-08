@@ -1109,6 +1109,47 @@ function G.start()
 			Net.event("Notice"):FireClient(p,{text=if ok then "Big roll test: "..rarity.." (dev)" else "Big roll test: "..tostring(message)})
 		end)
 		bigCommand.Parent=TCS
+		-- 8 Nov (Willem: "a command so I can skip to plots, or a dev panel"): /plot <1-5> jumps to
+		-- that plot level with every bay of it unlocked; the DEV panel (client/DevPanel, Studio
+		-- only) sends the same through the remote "Dev".
+		local function devDo(p: Player, what: string, arg: any): string?
+			local d=Data.get(p) local ctx=sessions[p]
+			if not d or not ctx then return nil end
+			local s=d.crushers
+			if what=="Plot" then
+				local level=math.clamp(math.floor(tonumber(arg) or 1),1,C.PlotUpgrade.MaxLevel)
+				while C.TutorialSteps[s.tutorial] do Rules.tutorialAdvance(d,C.TutorialSteps[s.tutorial].id) end
+				s.goal=math.max(s.goal or 1,C.MainGoals+1)
+				s.plotLevel=level s.bays=math.max(s.bays,C.bayCapacity(level))
+				ctx.bays={} reconcile(p) send(p,"Plot level "..level.." (dev)") return "ok"
+			elseif what=="Skip" then
+				while C.TutorialSteps[s.tutorial] do Rules.tutorialAdvance(d,C.TutorialSteps[s.tutorial].id) end
+				if arg=="goals" then s.goal=math.max(s.goal or 1,C.MainGoals+1) end
+				send(p,"Skipped (dev)") return "ok"
+			elseif what=="Cash" then
+				api.addCash(p,math.clamp(tonumber(arg) or 0,0,1e15)) send(p,"+cash (dev)") return "ok"
+			elseif what=="BigRoll" then
+				ctx.forceRarity=if arg=="Divine" or arg=="Limited" then arg else "Secret"
+				local ok,message=action(p,"Roll",{}) if not ok then ctx.forceRarity=nil end
+				return tostring(message)
+			elseif what=="CrateReady" then
+				if type(d.crate)=="table" and d.crate.readyAt then d.crate.readyAt=os.time()-1 end
+				return "ok"
+			elseif what=="Weekend" then
+				workspace:SetAttribute("WeekendTest",if workspace:GetAttribute("WeekendTest")=="active" then nil else "active")
+				return tostring(workspace:GetAttribute("WeekendTest"))
+			end
+			return nil
+		end
+		Net.event("Dev").OnServerEvent:Connect(function(p,what,arg)
+			if type(what)=="string" then devDo(p,what,arg) end
+		end)
+		local plotCommand=Instance.new("TextChatCommand") plotCommand.Name="PlotCommand" plotCommand.PrimaryAlias="/plot"
+		plotCommand.Triggered:Connect(function(source,text)
+			local p=Players:GetPlayerByUserId(source.UserId)
+			if p then devDo(p,"Plot",string.split(text," ")[2]) end
+		end)
+		plotCommand.Parent=TCS
 	end
 	if RunService:IsStudio() then
 		local dev=Instance.new("BindableFunction") dev.Name="DevCrusher"
