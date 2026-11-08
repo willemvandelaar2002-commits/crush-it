@@ -12,8 +12,8 @@ local CURTAIN=9 -- studs the light curtain rises above the rail
 local V,F=Vector3.new,CFrame.new
 -- sparkles for every full rarity set (Common/Uncommon/Rare softer)
 local palettes={Common=Color3.fromRGB(205,220,235),Uncommon=Color3.fromRGB(90,235,120),Rare=Color3.fromRGB(80,170,255),
-	Epic=Color3.fromRGB(193,105,255),Legendary=Color3.fromRGB(255,204,62),Limited=Color3.fromRGB(90,230,110),Secret=Color3.fromRGB(205,210,235),Divine=Color3.fromRGB(150,235,255),Mythic=Color3.fromRGB(255,90,200)}
-local TOP={Legendary=true,Limited=true,Secret=true,Divine=true,Mythic=true}
+	Epic=Color3.fromRGB(193,105,255),Legendary=Color3.fromRGB(255,204,62),Exotic=Color3.fromRGB(255,112,55),Limited=Color3.fromRGB(90,230,110),Secret=Color3.fromRGB(205,210,235),Divine=Color3.fromRGB(150,235,255),Mythic=Color3.fromRGB(255,90,200)}
+local TOP={Legendary=true,Exotic=true,Limited=true,Secret=true,Divine=true,Mythic=true}
 local white=Color3.new(1,1,1)
 local function part(parent,name,size)
 	local p=Instance.new("Part") p.Name=name p.Size=size p.Anchored=true
