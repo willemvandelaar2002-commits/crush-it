@@ -35,20 +35,20 @@ local function fromTemplate(m: Model, cf: CFrame): BasePart?
 	local body = copy:FindFirstChild("Body", true) :: BasePart?
 	local seal = copy:FindFirstChild("Seal", true) :: BasePart?
 	if not body or not body:IsA("BasePart") then copy:Destroy() return nil end
+	-- (fit only the template's parts: the Base stays as it is)
+	local holder = Instance.new("Model")
 	for _, d in copy:GetDescendants() do
-		if d:IsA("BasePart") then d.Anchored = true d.CanCollide = d == body d.CanTouch = false d.Parent = m end
+		if d:IsA("BasePart") then d.Anchored = true d.CanCollide = d == body d.CanTouch = false d.Parent = holder end
 	end
 	copy:Destroy()
 	-- front = the side with the Seal; turn it toward the walkway (plot x = 0)
-	local box, size = m:GetBoundingBox()
+	local box, size = holder:GetBoundingBox()
 	local front = if seal then (seal.Position - body.Position) * Vector3.new(1, 0, 1) else Vector3.new(0, 0, -1)
 	if front.Magnitude < 0.01 then front = Vector3.new(0, 0, -1) end
 	local want = (cf.Position - (cf * CFrame.new(1, 0, 0)).Position) -- plot local -x (toward the walkway)
 	local turn = math.atan2(-want.Unit.X, -want.Unit.Z) - math.atan2(-front.Unit.X, -front.Unit.Z)
 	-- scale to the crate's footprint (longest side across = K.ModelWidth), stand it on the base
 	local scale = K.ModelWidth / math.max(size.X, size.Z, 0.1)
-	local holder = Instance.new("Model")
-	for _, d in m:GetChildren() do d.Parent = holder end
 	holder.WorldPivot = CFrame.new(box.Position - Vector3.new(0, size.Y / 2, 0))
 	holder:ScaleTo(holder:GetScale() * scale)
 	holder:PivotTo(CFrame.new(cf.Position + Vector3.new(0, 0.6, 0)) * CFrame.Angles(0, turn, 0))
