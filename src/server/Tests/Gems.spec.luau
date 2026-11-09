@@ -98,5 +98,20 @@ return function()
 	check(f.crushers.gems == 12 and math.abs(f.crushers.gemDust - 0.75) < 1e-9, "12.75 Gems -> 12 Gems + 0.75 dust")
 	f.crushers.gems = 3.5 f.crushers.gemDust = 0.75 f = R.migrate(f, id)
 	check(f.crushers.gems == 4 and math.abs(f.crushers.gemDust - 0.25) < 1e-9, "dust over 1 becomes a Gem")
+	-- 9 Nov: HEAD START and NEST EGG change where a rebirth starts
+	local h = R.migrate({ cash = 10 }, id) local hs = h.crushers
+	local function rebirthOnce() hs.plotLevel = C.Rebirth.MinPlot h.cash = C.rebirthCost(hs.rebirths) return act(h, "Rebirth") end
+	check(rebirthOnce() and hs.plotLevel == 0 and hs.bays == 1 and h.cash == C.Rebirth.StartCash, "no Gem upgrades: a rebirth starts from scratch")
+	hs.gemUps.HeadStart = 1
+	local ok1, msg1 = rebirthOnce()
+	check(ok1 and hs.plotLevel == 1 and hs.bays == C.bayCapacity(0) and msg1:find("Head Start"), "Head Start 1: FACTORY II with Factory I's 12 bays open")
+	hs.gemUps.HeadStart = 2 hs.gemUps.NestEgg = 5
+	local price = C.rebirthCost(hs.rebirths)
+	check(rebirthOnce() and hs.plotLevel == 2 and hs.bays == C.bayCapacity(1), "Head Start 2: FACTORY III with 24 bays open")
+	check(h.cash == C.Rebirth.StartCash + math.floor(price * 0.05), "Nest Egg 5: start with 5% of the rebirth price")
+	check(hs.plotLevel < C.Rebirth.MinPlot and not act(h, "Rebirth"), "a Head Start never skips the run to the next rebirth")
+	hs.gems = 1000 hs.gemUps.HeadStart = 0
+	check(act(h, "GemUpgrade", { id = "HeadStart" }) and act(h, "GemUpgrade", { id = "HeadStart" }) and not act(h, "GemUpgrade", { id = "HeadStart" })
+		and hs.gems == 1000 - G.cost("HeadStart", 0) - G.cost("HeadStart", 1), "Head Start: two levels, 40 + 120 Gems")
 	print("Gems spec: " .. checks .. " checks passed")
 end

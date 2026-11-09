@@ -140,12 +140,15 @@ head.TextColor3 = RGB(255, 230, 120)
 local note = words(list, "Kept through every rebirth.", UDim2.fromOffset(0, 30), UDim2.new(1, 0, 0, 22), 18, 2)
 note.TextColor3 = RGB(235, 225, 255)
 local PALETTE = { Cash = { RGB(255, 236, 120), RGB(250, 150, 30) }, Luck = { RGB(120, 236, 255), RGB(50, 120, 240) }, Rolls = { RGB(255, 150, 220), RGB(160, 60, 230) },
-	Pedestal = { RGB(150, 255, 190), RGB(30, 160, 120) } }
-local ROW = math.floor((H - 108 - 58) / #G.Upgrades) -- 4 rows: 83 px each
+	Pedestal = { RGB(150, 255, 190), RGB(30, 160, 120) }, HeadStart = { RGB(255, 190, 120), RGB(230, 80, 40) }, NestEgg = { RGB(190, 255, 120), RGB(60, 170, 40) } }
+-- 9 Nov: six upgrades, so the rows scroll (four fit, 83 px each)
+local ROW = 83
+local scroller = make("ScrollingFrame", { Name = "Rows", Position = UDim2.fromOffset(0, 56), Size = UDim2.new(1, 8, 1, -56), BackgroundTransparency = 1, BorderSizePixel = 0,
+	CanvasSize = UDim2.fromOffset(0, #G.Upgrades * ROW + 6), ScrollBarThickness = 8, ScrollBarImageColor3 = RGB(255, 230, 120), ScrollingDirection = Enum.ScrollingDirection.Y, ZIndex = 6 }, list)
 local rows: { [string]: { level: TextLabel, buy: TextButton, cost: TextLabel } } = {}
 for i, u in G.Upgrades do
 	local pal = PALETTE[u.id] or PALETTE.Rolls
-	local f = make("Frame", { Name = u.id, Position = UDim2.fromOffset(0, 58 + (i - 1) * ROW), Size = UDim2.new(1, 0, 0, ROW - 6), BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 6 }, list)
+	local f = make("Frame", { Name = u.id, Position = UDim2.fromOffset(3, 4 + (i - 1) * ROW), Size = UDim2.new(1, -18, 0, ROW - 6), BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 6 }, scroller)
 	make("UICorner", { CornerRadius = UDim.new(0, 14) }, f)
 	make("UIStroke", { Thickness = 4, Color = INK }, f)
 	make("UIGradient", { Rotation = 30, Color = ColorSequence.new(pal[1], pal[2]) }, f)
