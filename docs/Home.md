@@ -1,7 +1,7 @@
 # Crush It
 
-10 Nov Gem Mine: a teleporter on every plot (rebirth 1) to a shared mine where your Gem Crusher
-crushes private gems you pick up; awakened at rebirth 5. All Gems come from here. See [[Systems/Gem Mine]].
+10 Nov Gem Mine: a teleporter on every plot (rebirth 1) to a shared mine where one big Gem Crusher
+crushes everyone's private gems into a zone you pick them up from; yours awakens at rebirth 5. All Gems come from here. See [[Systems/Gem Mine]].
 
 8 Nov Exotic crushers: six permanent rollable machines between Legendary and
 Secret, with coral/mint visuals and imported motion rigs. Studio import pending.
