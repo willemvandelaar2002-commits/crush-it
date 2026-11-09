@@ -77,7 +77,7 @@ to your own press whenever you're more than 40 studs from it. Hidden otherwise.
 ## 2 Nov evening (2): merge, Coating Lab earlier, rebirth
 - ~~MERGE~~ removed the same evening (Willem: the fuser already combines crushers). Crushers merged while it was live keep their stars (`item.stars`, x1.5 each); nothing adds stars any more. Goals v6 drop the Merge goal; a save sitting on a removed goal moves to the next goal that still exists.
 - **Coating Lab** now opens with Factory II (`C.CoatingPlotLevel = 1`) instead of Factory III, so coatings are there early.
-- **REBIRTH** (`C.Rebirth`, CrusherRules "Rebirth", client/Rebirth, HUD button slot 3 shown from Factory III): needs Factory IV and $150M x8^rebirths cash. Resets cash (to $1K), scrap, bays (back to 1, bay 1 keeps its crusher), factory level, Damage/Speed/Yield and crusher levels. Keeps every crusher (coatings, fused), the Index, Luck, pedestals, passes. Each rebirth +50% income (x1.5, x2, x2.5...; in perks.mult) and +25% luck (x1.25, x1.5...; in perks.lucky, so the Index odds show it) forever. Server-wide banner. Saved as `d.crushers.rebirths` (the old `d.rebirths` belongs to the retired press game). The panel asks twice.
+- **REBIRTH** (`C.Rebirth`, CrusherRules "Rebirth", client/Rebirth, HUD button slot 3 shown from Factory III): needs Factory IV and $150M x3^rebirths cash (9 Nov; was x4). Resets cash (to $1K), scrap, bays (back to 1, bay 1 keeps its crusher), factory level, Damage/Speed/Yield and crusher levels. Keeps every crusher (coatings, fused), the Index, Luck, pedestals, passes. Each rebirth +50% income (x1.5, x2, x2.5...; in perks.mult) and +25% luck (x1.25, x1.5...; in perks.lucky, so the Index odds show it) forever. Server-wide banner. Saved as `d.crushers.rebirths` (the old `d.rebirths` belongs to the retired press game). The panel asks twice.
 - Roll-speed upgrade: not added; RollSpeed was retired for pedestals earlier and pedestals already speed up rolling.
 - Lucky Block helpers: waiting for models.
 - Goals v7 (12, Willem: the tutorial took too long): Frenzy, Fill 3, Upgrade x3, Fill 5, Golden toy, Fill 6 (Rare), Turbo, Lv 5, Upgrade x8, Fill 9, Fill 12 (Epic), Factory II (Legendary). Unlock+fill pairs became one "Fill N bays" goal; Roll 10, free gift, Index, Lv 10, Lv 15 and one upgrade goal dropped (the gift counts down on the HUD anyway). Funnel: goals are steps 10-21, Factory III-VI 22-25.
@@ -100,6 +100,10 @@ Goal: fewer players leaving before the first collect (funnel step 2, 12.5% churn
   run ~5x longer): now cash x1.5 per rebirth (x1.5, x2.25, x3.4, x5.1, x7.6) and cost x4 ($150M, $600M, $2.4B, $9.6B,
   $38.4B...; Willem picked x4 over x3), so each run takes about 2.7x as long as the one before. (x2 / x4 was live briefly: x32 at 5 rebirths, too much.)
   Luck stays +25% per rebirth.
+- 9 Nov: cost x3 per rebirth ($150M, $450M, $1.35B, $4.05B, $12.2B, $36.5B...), Willem: runs a bit shorter.
+  Each run now takes about 2x the one before (was 2.7x): by rebirth 5 a run is ~3x shorter than with x4,
+  by rebirth 10 ~13x. Plus Gem upgrades Head Start / Nest Egg (Gems.md). Side effect: Factory V/VI and the
+  Annex come a rebirth or two later (Factory VI $22B is more than the rebirth 4 price now).
 - REBUILD (top row, only after your first rebirth and while bays are left to buy): buys every bay you can afford,
   cheapest first, then Equip Best. A player's idea; the first run stays hands-on.
 - Fill a row (Willem, from a player's idea): an orange FILL ROW button board stands at the right end of each row's
