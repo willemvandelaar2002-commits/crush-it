@@ -10,7 +10,15 @@ UI in `src/client/GemShop.client.luau`, tests in `Server/Tests/Gems.spec.luau`.
   - Gem Crate, 25 Gems: Legendary 60% / Exotic 30% / Secret 8% / Divine 2%, Standard finish, refused when the inventory is full. Exotic+ results are announced server-wide.
   - Gem Cash and Gem Luck: +10% per level, max 10, cost `15 * 1.5^level`.
   - Quick Rolls: roll cooldown -0.25 s per level (never below 1 s), max 4, cost `20 * 2^level`.
+  - Head Start (9 Nov): a rebirth starts 1 Factory further per level with the earlier bays open
+    (lv 1: FACTORY II + 12 bays, lv 2: FACTORY III + 24), max 2 (never at Rebirth.MinPlot), 40 / 120 Gems.
+  - Nest Egg (9 Nov): start a rebirth with 1% of its price per level, max 5 (25, 40, 64, 102, 164 Gems).
+  - Why: rebirth 1 -> 2 is where players stop (170 -> 66); vault (Progression and Pacing): a rebirth
+    keeps "fast travel to the start of the furthest region". Willem tests whether it feels good.
+  - The upgrade list scrolls (6 rows, 4 visible).
 - Gems and upgrades survive every rebirth.
+- DEV panel (Studio): Gems +25/+100/+1000, set Rebirths 0/1/3/5/10 (5+ gives the Gem Crusher),
+  Rebirth "Make ready" / "Rebirth now", Gem upgrades all max / all 0, plot level 6 (Annex).
 - Analytics: custom `GemsEarned`, `GemUpgrade`, `GemCrate`; since 9 Nov also economy events in currency
   **"Gems"** (`Analytics.gems`): sources Rebirth / Bays (trickle), sinks GemCrate / GemUpgrade:<id>.
 - Whole numbers (9 Nov): the trickle collects in `s.gemDust` and pays whole Gems.
