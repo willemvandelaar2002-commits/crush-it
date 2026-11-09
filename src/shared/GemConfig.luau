@@ -53,18 +53,20 @@ G.UnlockRebirths = 1 -- the Gem Mine and the Gem Shop open after this many rebir
 G.HowToEarn = "Earn Gems in the GEM MINE: take the teleporter on your plot, pick up what your Gem Crusher crushes"
 
 -- 9 Nov: THE GEM MINE (Willem). A shared area far from the factories (it only streams in
--- when you are there); one pad per plot with that player's Gem Crusher. Every CrushSeconds it
--- crushes out Drops gems worth Value each into the glowing pickup zone in front of it; they wait
--- (up to MaxDrops) until you walk within Magnet studs. Rebirth 5 awakens the crusher (x AwakenValue).
+-- when you are there). 10 Nov: ONE big Gem Crusher in the middle that everyone uses; every
+-- CrushSeconds (your own upgrades) it crushes out Drops gems worth Value each for you into the
+-- glowing zone around it (each player sees only their own); they wait (up to MaxDrops) until you
+-- walk within Magnet studs. Rebirth 5 awakens your crusher (x AwakenValue).
 -- 10 Nov (Willem: "1 every 6 seconds seems very slow"): a crush every 2 s with 2 gems, base
 -- 60 Gems a minute; every Gem price went x6 with it. The mine upgrades reach ~12x, capped.
 G.Mine = {
 	Origin = CFrame.new(1800, 0, 0), -- far outside the toy room (map spans +-505; streaming 1024)
-	Radius = 100, -- floor radius
-	PadRing = 66, -- the six pads sit on this circle, facing the middle
+	Radius = 70, -- floor radius (rocks and crystals on the rim)
+	CrusherScale = 1.8, -- the one crusher, x the bay stand-in's size
+	Zone = { inner = 13, radius = 25 }, -- gems land between these distances from the crusher
+	PortalZ = 44, -- the portal (arrive / go home) and the GEM UPGRADES sign, in front of the crusher
 	CrushSeconds = 2, Drops = 2, Value = 1, Magnet = 5,
 	MaxDrops = 60,
-	Zone = { z = -14, radius = 11 }, -- the pickup zone: a circle this far in front of the crusher
 	AwakenRebirths = 5, AwakenValue = 1.5,
 	CollectSlack = 6, -- server distance tolerance (studs) over the magnet radius
 	CollectPerSecond = 30, -- most pickups the server accepts per second
