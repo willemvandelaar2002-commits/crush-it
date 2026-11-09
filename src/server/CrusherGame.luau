@@ -1222,6 +1222,25 @@ function G.start()
 					while v.model.Parent do Special.strike(v,{cycle=1.8,completed=true}) task.wait(2) end
 				end)
 				send(p,"Preview: "..tostring(arg).." in bay 1 (dev)") return "ok"
+			-- 9 Nov: fill every open bay (Willem: "fill all rows"). "rows": one rarity per row,
+			-- so the row bonuses switch on; "specials": the heaviest models everywhere (lag test);
+			-- "empty": take everything out except bay 1. Dev crushers are added to the inventory.
+			elseif what=="FillRows" then
+				if arg=="empty" then
+					local keep=s.equipped["1"] s.equipped={} if keep then s.equipped["1"]=keep end
+				else
+					local heavy={}
+					for _,r in C.Rarities do if r.name=="Exotic" or r.name=="Secret" or r.name=="Divine" then for _,t in r.types do table.insert(heavy,{t,r.name}) end end end
+					for i=1,s.bays do if not s.equipped[tostring(i)] then
+						local typeId,rarity
+						if arg=="specials" and #heavy>0 then local h=heavy[(i-1)%#heavy+1] typeId,rarity=h[1],h[2]
+						else local r=C.Rarities[(Rows.index(i)-1)%#C.Rarities+1] typeId,rarity=r.types[(i-1)%#r.types+1],r.name end
+						local item={id=guid(),type=typeId,rarity=rarity,modifier=C.Modifiers[1].name,level=1}
+						table.insert(s.owned,item) s.equipped[tostring(i)]=item.id
+					end end
+					Rules.markSeen(s)
+				end
+				ctx.bays={} reconcile(p) send(p,"Bays "..tostring(arg).." (dev)") return "ok"
 			elseif what=="Weekend" then
 				workspace:SetAttribute("WeekendTest",if workspace:GetAttribute("WeekendTest")=="active" then nil else "active")
 				return tostring(workspace:GetAttribute("WeekendTest"))
