@@ -54,15 +54,17 @@ G.HowToEarn = "Earn Gems in the GEM MINE: take the teleporter on your plot, pick
 
 -- 9 Nov: THE GEM MINE (Willem). A shared area far from the factories (it only streams in
 -- when you are there); one pad per plot with that player's Gem Crusher. Every CrushSeconds it
--- crushes out Drops gems worth Value each, scattered in front of the pad; they wait (up to
--- MaxDrops) until you walk within Magnet studs. Rebirth 5 awakens the crusher (x AwakenValue).
--- Base yield ~10 Gems a minute; the four mine upgrades below reach ~12x that, capped.
+-- crushes out Drops gems worth Value each into the glowing pickup zone in front of it; they wait
+-- (up to MaxDrops) until you walk within Magnet studs. Rebirth 5 awakens the crusher (x AwakenValue).
+-- 10 Nov (Willem: "1 every 6 seconds seems very slow"): a crush every 2 s with 2 gems, base
+-- 60 Gems a minute; every Gem price went x6 with it. The mine upgrades reach ~12x, capped.
 G.Mine = {
 	Origin = CFrame.new(1800, 0, 0), -- far outside the toy room (map spans +-505; streaming 1024)
-	Radius = 92, -- floor radius
-	PadRing = 56, -- the six pads sit on this circle, facing the middle
-	CrushSeconds = 6, Drops = 1, Value = 1, Magnet = 5,
-	MaxDrops = 40, Scatter = 9, -- gems land up to Scatter studs in front of the pad
+	Radius = 100, -- floor radius
+	PadRing = 66, -- the six pads sit on this circle, facing the middle
+	CrushSeconds = 2, Drops = 2, Value = 1, Magnet = 5,
+	MaxDrops = 60,
+	Zone = { z = -14, radius = 11 }, -- the pickup zone: a circle this far in front of the crusher
 	AwakenRebirths = 5, AwakenValue = 1.5,
 	CollectSlack = 6, -- server distance tolerance (studs) over the magnet radius
 	CollectPerSecond = 30, -- most pickups the server accepts per second
@@ -71,7 +73,7 @@ G.Mine = {
 
 -- The Gem Crate: one crusher per open, rarity by these chances (they add up to 1)
 G.Crate = {
-	Cost = 250, -- 9 Nov: the mine pays ~10-120 Gems a minute, so the crate costs more (was 25)
+	Cost = 1500, -- 10 Nov: the mine pays ~60-720 Gems a minute (was 250 at 10-180; 25 before the mine)
 	Odds = {
 		{ rarity = "Legendary", chance = 0.60 },
 		{ rarity = "Exotic", chance = 0.30 },
@@ -84,23 +86,23 @@ G.Crate = {
 -- base * growth ^ level.
 G.Upgrades = {
 	-- 9 Nov: GEM MINE upgrades (group "mine", listed first): what your Gem Crusher makes
-	{ id = "MineSpeed", group = "mine", title = "Crush Speed", line = "Crushes 0.5 s faster", per = 0.5, max = 6, base = 20, growth = 1.6 },
-	{ id = "MineDrops", group = "mine", title = "More Gems", line = "+1 gem per crush", per = 1, max = 2, base = 60, growth = 4 },
-	{ id = "MineValue", group = "mine", title = "Gem Value", line = "Gems worth +50%", per = 0.5, max = 2, base = 80, growth = 4 },
-	{ id = "Magnet", group = "mine", title = "Gem Magnet", line = "Pick up from 3 studs further", per = 3, max = 5, base = 15, growth = 1.6 },
-	{ id = "Cash", title = "Gem Cash", line = "+10% cash per level", per = 0.10, max = 10, base = 15, growth = 1.5 },
-	{ id = "Luck", title = "Gem Luck", line = "+10% luck per level", per = 0.10, max = 10, base = 15, growth = 1.5 },
+	{ id = "MineSpeed", group = "mine", title = "Crush Speed", line = "Crushes 0.25 s faster", per = 0.25, max = 4, base = 120, growth = 1.6 },
+	{ id = "MineDrops", group = "mine", title = "More Gems", line = "+1 gem per crush", per = 1, max = 2, base = 360, growth = 4 },
+	{ id = "MineValue", group = "mine", title = "Gem Value", line = "Gems worth +50%", per = 0.5, max = 2, base = 480, growth = 4 },
+	{ id = "Magnet", group = "mine", title = "Gem Magnet", line = "Pick up from 3 studs further", per = 3, max = 5, base = 90, growth = 1.6 },
+	{ id = "Cash", title = "Gem Cash", line = "+10% cash per level", per = 0.10, max = 10, base = 90, growth = 1.5 },
+	{ id = "Luck", title = "Gem Luck", line = "+10% luck per level", per = 0.10, max = 10, base = 90, growth = 1.5 },
 	-- 9 Nov (rebirth data: 170 players at rebirth 1, 66 at rebirth 2: starting over is where
 	-- players stop; vault: Progression and Pacing - a rebirth keeps "fast travel to the start
 	-- of the furthest region"). HEAD START: each level, a rebirth starts one Factory further
 	-- with the bays before it already open (lv 1: FACTORY II + 12 bays; lv 2: FACTORY III + 24).
 	-- Never past the factory before the rebirth one (Rebirth.MinPlot), so a rebirth always
 	-- needs a run. NEST EGG: start each rebirth with 1% of its price per level (max 5%).
-	{ id = "HeadStart", title = "Head Start", line = "Rebirth 1 Factory further on", per = 1, max = 2, base = 40, growth = 3 },
-	{ id = "NestEgg", title = "Nest Egg", line = "Rebirth with +1% of its price", per = 0.01, max = 5, base = 25, growth = 1.6 },
-	{ id = "Rolls", title = "Quick Rolls", line = "Rolls 0.25 s faster per level", per = 0.25, max = 4, base = 20, growth = 2 },
+	{ id = "HeadStart", title = "Head Start", line = "Rebirth 1 Factory further on", per = 1, max = 2, base = 240, growth = 3 },
+	{ id = "NestEgg", title = "Nest Egg", line = "Rebirth with +1% of its price", per = 0.01, max = 5, base = 150, growth = 1.6 },
+	{ id = "Rolls", title = "Quick Rolls", line = "Rolls 0.25 s faster per level", per = 0.25, max = 4, base = 120, growth = 2 },
 	-- 8 Nov: a 6th roll pedestal (the purple one in front of the roll machine)
-	{ id = "Pedestal", title = "Gem Pedestal", line = "+1 pedestal: 6 choices per roll", per = 1, max = 1, base = 60, growth = 1 },
+	{ id = "Pedestal", title = "Gem Pedestal", line = "+1 pedestal: 6 choices per roll", per = 1, max = 1, base = 360, growth = 1 },
 }
 function G.upgrade(id: string): any
 	for _, u in G.Upgrades do if u.id == id then return u end end
@@ -120,7 +122,7 @@ function G.headStart(s: any): number return (s.gemUps and s.gemUps.HeadStart) or
 function G.nestEgg(s: any): number return 0.01 * ((s.gemUps and s.gemUps.NestEgg) or 0) end
 -- 9 Nov: the Gem Mine numbers for a save
 local function lv(s: any, id: string): number return (s.gemUps and s.gemUps[id]) or 0 end
-function G.mineCrushSeconds(s: any): number return G.Mine.CrushSeconds - 0.5 * lv(s, "MineSpeed") end
+function G.mineCrushSeconds(s: any): number return G.Mine.CrushSeconds - 0.25 * lv(s, "MineSpeed") end
 function G.mineDrops(s: any): number return G.Mine.Drops + lv(s, "MineDrops") end
 function G.mineAwake(s: any): boolean return (s.rebirths or 0) >= G.Mine.AwakenRebirths end
 function G.mineValue(s: any): number
