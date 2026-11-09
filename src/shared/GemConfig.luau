@@ -2,8 +2,9 @@
 -- 8 Nov (Willem: "new currency after rebirth"; vault: Currency Architecture - one job,
 -- one faucet, one sink; Rebirth and Prestige - a second layer). GEMS:
 --   job     progress after the first rebirth
---   faucet  every rebirth pays Gems (more for later rebirths) + a small trickle from
---           Exotic / Mythic / Secret / Divine crushers in a bay
+--   faucet  (9 Nov, Willem) only the GEM MINE: from rebirth 1 a teleporter on your plot takes
+--           you to a shared mine where your own Gem Crusher crushes gems out; you walk over
+--           them to pick them up (each player sees only their own gems). server/GemMine.
 --   sink    the Gem Shop: the Gem Crate and permanent Gem upgrades (they survive rebirths)
 -- Gems are earned in-game only (not sold for Robux), so the Gem Crate is not a paid
 -- random item. Its odds are still shown in full before every open.
@@ -30,39 +31,47 @@ G.Art = {
 		Pedestal = art("89027718081950"), -- decal 77978521877906
 		HeadStart = art("90818789034514"), -- (the REBIRTH icon until Willem draws one)
 		NestEgg = art("98244872810376"), -- (the cash icon until Willem draws one)
+		-- 9 Nov: Gem Mine upgrades borrow icons until Willem draws theirs
+		MineSpeed = art("119021304569499"), MineDrops = art("129834324837306"), MineValue = art("112913909423142"),
 	},
 }
 G.Icon = G.Art.Icon
 -- What rebirths unlock (the rebirth panel shows the next one; 8 Nov)
 G.Milestones = {
-	{ rebirths = 1, text = "GEM SHOP", art = G.Art.Icon },
+	{ rebirths = 1, text = "GEM MINE", art = G.Art.Crusher },
 	{ rebirths = 3, text = "THE ANNEX", art = G.Art.Gate },
-	{ rebirths = 5, text = "GEM CRUSHER", art = G.Art.Crusher },
-	{ rebirths = 10, text = "AWAKENED GEM CRUSHER", art = G.Art.Awakened },
+	{ rebirths = 5, text = "AWAKENED GEM CRUSHER", art = G.Art.Awakened },
 }
 function G.nextMilestone(rebirths: number): any
 	for _, m in G.Milestones do if m.rebirths > rebirths then return m end end
 	return nil
 end
 G.Emoji = "💎"
-G.UnlockRebirths = 1 -- the Gem Shop opens after this many rebirths
+G.UnlockRebirths = 1 -- the Gem Mine and the Gem Shop open after this many rebirths
 
--- Gems for reaching rebirth n (1, 2, 3, ...): 10, 15, 20, ... 55 at rebirth 10.
--- 9 Nov (vault: time to afford): the first rebirth pays FirstBonus extra (25), so the
--- first Gem Shop visit can buy something (cheapest: an upgrade 15, the crate 25).
-G.FirstBonus = 15
-function G.forRebirth(n: number): number
-	return 10 + 5 * (math.max(1, n) - 1) + (if n == 1 then G.FirstBonus else 0)
-end
 -- Where Gems come from (shown in the Gem Shop; vault: show where a currency comes from)
-G.HowToEarn = "Earn Gems: REBIRTH · Exotic or better crushers in a bay · the GEM CRUSHER"
+G.HowToEarn = "Earn Gems in the GEM MINE: take the teleporter on your plot, pick up what your Gem Crusher crushes"
 
--- Gems per minute for each crusher of these rarities that sits in a bay
-G.Trickle = { Exotic = 0.1, Mythic = 0.15, Secret = 0.25, Divine = 0.5 }
+-- 9 Nov: THE GEM MINE (Willem). A shared area far from the factories (it only streams in
+-- when you are there); one pad per plot with that player's Gem Crusher. Every CrushSeconds it
+-- crushes out Drops gems worth Value each, scattered in front of the pad; they wait (up to
+-- MaxDrops) until you walk within Magnet studs. Rebirth 5 awakens the crusher (x AwakenValue).
+-- Base yield ~10 Gems a minute; the four mine upgrades below reach ~12x that, capped.
+G.Mine = {
+	Origin = CFrame.new(1800, 0, 0), -- far outside the toy room (map spans +-505; streaming 1024)
+	Radius = 92, -- floor radius
+	PadRing = 56, -- the six pads sit on this circle, facing the middle
+	CrushSeconds = 6, Drops = 1, Value = 1, Magnet = 5,
+	MaxDrops = 40, Scatter = 9, -- gems land up to Scatter studs in front of the pad
+	AwakenRebirths = 5, AwakenValue = 1.5,
+	CollectSlack = 6, -- server distance tolerance (studs) over the magnet radius
+	CollectPerSecond = 30, -- most pickups the server accepts per second
+	Teleporter = { x = -40, z = 96 }, -- plot-local spot (front left, inside the entrance)
+}
 
 -- The Gem Crate: one crusher per open, rarity by these chances (they add up to 1)
 G.Crate = {
-	Cost = 25,
+	Cost = 250, -- 9 Nov: the mine pays ~10-120 Gems a minute, so the crate costs more (was 25)
 	Odds = {
 		{ rarity = "Legendary", chance = 0.60 },
 		{ rarity = "Exotic", chance = 0.30 },
@@ -74,6 +83,11 @@ G.Crate = {
 -- Permanent upgrades (kept through every rebirth). Cost of the next level:
 -- base * growth ^ level.
 G.Upgrades = {
+	-- 9 Nov: GEM MINE upgrades (group "mine", listed first): what your Gem Crusher makes
+	{ id = "MineSpeed", group = "mine", title = "Crush Speed", line = "Crushes 0.5 s faster", per = 0.5, max = 6, base = 20, growth = 1.6 },
+	{ id = "MineDrops", group = "mine", title = "More Gems", line = "+1 gem per crush", per = 1, max = 2, base = 60, growth = 4 },
+	{ id = "MineValue", group = "mine", title = "Gem Value", line = "Gems worth +50%", per = 0.5, max = 2, base = 80, growth = 4 },
+	{ id = "Magnet", group = "mine", title = "Gem Magnet", line = "Pick up from 3 studs further", per = 3, max = 5, base = 15, growth = 1.6 },
 	{ id = "Cash", title = "Gem Cash", line = "+10% cash per level", per = 0.10, max = 10, base = 15, growth = 1.5 },
 	{ id = "Luck", title = "Gem Luck", line = "+10% luck per level", per = 0.10, max = 10, base = 15, growth = 1.5 },
 	-- 9 Nov (rebirth data: 170 players at rebirth 1, 66 at rebirth 2: starting over is where
@@ -104,5 +118,16 @@ function G.rollCut(s: any): number return 0.25 * ((s.gemUps and s.gemUps.Rolls) 
 function G.extraPedestals(s: any): number return (s.gemUps and s.gemUps.Pedestal) or 0 end
 function G.headStart(s: any): number return (s.gemUps and s.gemUps.HeadStart) or 0 end
 function G.nestEgg(s: any): number return 0.01 * ((s.gemUps and s.gemUps.NestEgg) or 0) end
+-- 9 Nov: the Gem Mine numbers for a save
+local function lv(s: any, id: string): number return (s.gemUps and s.gemUps[id]) or 0 end
+function G.mineCrushSeconds(s: any): number return G.Mine.CrushSeconds - 0.5 * lv(s, "MineSpeed") end
+function G.mineDrops(s: any): number return G.Mine.Drops + lv(s, "MineDrops") end
+function G.mineAwake(s: any): boolean return (s.rebirths or 0) >= G.Mine.AwakenRebirths end
+function G.mineValue(s: any): number
+	return G.Mine.Value * (1 + 0.5 * lv(s, "MineValue")) * (if G.mineAwake(s) then G.Mine.AwakenValue else 1)
+end
+function G.mineMagnet(s: any): number return G.Mine.Magnet + 3 * lv(s, "Magnet") end
+-- Gems a minute if you pick everything up
+function G.minePerMinute(s: any): number return G.mineDrops(s) * G.mineValue(s) * 60 / G.mineCrushSeconds(s) end
 
 return G

@@ -42,8 +42,6 @@ I.Overrides={
 	CamCruncher="rbxassetid://122886848157283",DrawbridgeCrusher="rbxassetid://95168633052661",
 	MaglevMauler="rbxassetid://126673838144880",OrigamiClamp="rbxassetid://81631247983925",
 	ScrewStamper="rbxassetid://107469672913843",WreckingWinch="rbxassetid://128684710178111",
-	-- 8 Nov: the Gem Crusher (Willem's art; GemConfig.Art.Crusher / .Awakened)
-	GemCrusher="rbxassetid://83451761817246",GemCrusherAwakened="rbxassetid://112011297282058",
 } :: {[string]: string}
 I.Ready={MaglevMauler=true,OrigamiClamp=true,WreckingWinch=true,CamCruncher=true,ScrewStamper=true,DrawbridgeCrusher=true,Titan=true,Laser=true,Plasma=true,Gravity=true,Quake=true,Cyclone=true,Mecha=true,
 	Quantum=true,Starforge=true,DragonJaw=true,BlackHole=true,Clockwork=true,FactoryHeart=true,

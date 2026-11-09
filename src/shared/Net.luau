@@ -36,8 +36,9 @@ local Net = {}
 --   RedeemCode  client -> server : code text; CodeResult server -> client : { ok, text } (2 Nov)
 --   Feedback    client -> server : ("Shown") | ("Rating", 1-3) | ("Wish", key) — the tap survey (5 Nov)
 --   Crate       server -> client : the Mystery Crate arrived / opened (8 Nov, server/OvernightCrate)
+--   GemMine     both ways: the Gem Mine (9 Nov, server/GemMine): your gems, pickups, shop sign
 --   WhatsNew    server -> client : the news (NewsConfig) once per version; NewsSeen client -> server : closed it
-for _, name in { "CrusherAction", "CrusherState", "CrusherOpen", "Travel", "DailySpin", "QuestState", "QuestAction", "BoostAction", "PlotUpgraded", "OfferState", "OfferAction", "FactoryEventAction", "FactoryEventState", "ClaimIndexReward", "OfflineAction", "RedeemCode", "CodeResult", "WhatsNew", "NewsSeen", "RarePull", "TurboAction", "TurboState", "Smash", "FrenzyState", "GoldenToy", "RebirthDone", "Feedback", "BigRoll", "Settings", "AutoRoll", "Crate", "Dev" } do table.insert(NAMES, name) end
+for _, name in { "CrusherAction", "CrusherState", "CrusherOpen", "Travel", "DailySpin", "QuestState", "QuestAction", "BoostAction", "PlotUpgraded", "OfferState", "OfferAction", "FactoryEventAction", "FactoryEventState", "ClaimIndexReward", "OfflineAction", "RedeemCode", "CodeResult", "WhatsNew", "NewsSeen", "RarePull", "TurboAction", "TurboState", "Smash", "FrenzyState", "GoldenToy", "RebirthDone", "Feedback", "BigRoll", "Settings", "AutoRoll", "Crate", "Dev", "GemMine" } do table.insert(NAMES, name) end
 
 local folder: Instance
 if RunService:IsServer() then

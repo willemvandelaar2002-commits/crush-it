@@ -174,7 +174,7 @@ local function paint()
 	cashValues.Text = string.format('%s → <font color="%s">%s</font>', mult(C.rebirthMult(n)), GREEN, mult(C.rebirthMult(n + 1)))
 	luckValues.Text = string.format('%s → <font color="%s">%s</font>', mult(C.rebirthLuck(n)), GREEN, mult(C.rebirthLuck(n + 1)))
 	countText.Text = "Rebirths: " .. n
-	gemsText.Text = "+" .. Gems.forRebirth(n + 1) .. " GEMS"
+	gemsText.Text = if n >= Gems.UnlockRebirths then "GEMS: GEM MINE" else "NEXT: GEMS"
 	local nextUp = Gems.nextMilestone(n)
 	unlockArt.Visible = nextUp ~= nil
 	if nextUp then
@@ -240,18 +240,13 @@ Net.event("RebirthDone").OnClientEvent:Connect(function(r: any)
 		TweenService:Create(sc, TweenInfo.new(0.3), { Scale = 0 }):Play()
 		task.delay(0.35, function() pop:Destroy() end)
 	end)
-	-- 8 Nov: the Gems it paid, and what it unlocked (Willem's art)
+	-- 8 Nov: what it unlocked (Willem's art). 9 Nov: rebirths no longer pay Gems (the Gem Mine does)
 	local n = tonumber(r.rebirths) or 0
 	local unlocked: any = nil
 	for _, m in Gems.Milestones do if m.rebirths == n then unlocked = m end end
-	local card = make("Frame", { AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0.4, 56), Size = UDim2.fromOffset(if unlocked then 520 else 300, if unlocked then 250 else 90),
+	if not unlocked then return end
+	local card = make("Frame", { AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0.4, -36), Size = UDim2.fromOffset(520, 250),
 		BackgroundTransparency = 1, ZIndex = 9 }, gui)
-	make("ImageLabel", { Image = Gems.Art.Pile, Position = UDim2.fromOffset(if unlocked then 110 else 0, 0), Size = UDim2.fromOffset(90, 90), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 9 }, card)
-	local g = make("TextLabel", { Position = UDim2.fromOffset(if unlocked then 205 else 95, 14), Size = UDim2.fromOffset(220, 62), BackgroundTransparency = 1, TextScaled = true,
-		Text = "+" .. Gems.forRebirth(n) .. " GEMS", TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 9 }, card)
-	g.Font = Style.Font
-	Style.bold(g, 4)
-	g.TextColor3 = RGB(255, 170, 245)
 	if unlocked then
 		make("ImageLabel", { Image = unlocked.art, Position = UDim2.fromOffset(10, 92), Size = UDim2.fromOffset(150, 150), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 9 }, card)
 		local u = make("TextLabel", { Position = UDim2.fromOffset(170, 120), Size = UDim2.fromOffset(340, 90), BackgroundTransparency = 1, TextScaled = true,

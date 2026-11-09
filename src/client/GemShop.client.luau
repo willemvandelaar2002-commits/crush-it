@@ -140,7 +140,9 @@ head.TextColor3 = RGB(255, 230, 120)
 local note = words(list, "Kept through every rebirth.", UDim2.fromOffset(0, 30), UDim2.new(1, 0, 0, 22), 18, 2)
 note.TextColor3 = RGB(235, 225, 255)
 local PALETTE = { Cash = { RGB(255, 236, 120), RGB(250, 150, 30) }, Luck = { RGB(120, 236, 255), RGB(50, 120, 240) }, Rolls = { RGB(255, 150, 220), RGB(160, 60, 230) },
-	Pedestal = { RGB(150, 255, 190), RGB(30, 160, 120) }, HeadStart = { RGB(255, 190, 120), RGB(230, 80, 40) }, NestEgg = { RGB(190, 255, 120), RGB(60, 170, 40) } }
+	Pedestal = { RGB(150, 255, 190), RGB(30, 160, 120) }, HeadStart = { RGB(255, 190, 120), RGB(230, 80, 40) }, NestEgg = { RGB(190, 255, 120), RGB(60, 170, 40) },
+	MineSpeed = { RGB(255, 160, 240), RGB(200, 40, 200) }, MineDrops = { RGB(255, 160, 240), RGB(200, 40, 200) },
+	MineValue = { RGB(255, 160, 240), RGB(200, 40, 200) }, Magnet = { RGB(255, 160, 240), RGB(200, 40, 200) } }
 -- 9 Nov: six upgrades, so the rows scroll (four fit, 83 px each)
 local ROW = 83
 local scroller = make("ScrollingFrame", { Name = "Rows", Position = UDim2.fromOffset(0, 56), Size = UDim2.new(1, 8, 1, -56), BackgroundTransparency = 1, BorderSizePixel = 0,
