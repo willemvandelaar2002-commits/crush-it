@@ -62,7 +62,7 @@ row("Cash", { { "+1M", send("Cash", 1e6) }, { "+1B", send("Cash", 1e9) }, { "+1T
 row("Big roll", { { "Secret", send("BigRoll", "Secret") }, { "Divine", send("BigRoll", "Divine") }, { "Limited", send("BigRoll", "Limited") } })
 -- 9 Nov: Gems / rebirth tests
 row("Gems", { { "+25", send("Gems", 25) }, { "+100", send("Gems", 100) }, { "+1000", send("Gems", 1000) } })
-row("Rebirths (sets the count; 5+: Gem Crusher)", { { "0", send("Rebirths", 0) }, { "1", send("Rebirths", 1) }, { "3", send("Rebirths", 3) }, { "5", send("Rebirths", 5) }, { "10", send("Rebirths", 10) } })
+row("Rebirths (1+: Gem Mine, 5+: awakened)", { { "0", send("Rebirths", 0) }, { "1", send("Rebirths", 1) }, { "3", send("Rebirths", 3) }, { "5", send("Rebirths", 5) }, { "10", send("Rebirths", 10) } })
 row("Rebirth (test Head Start / Nest Egg)", { { "Make ready", send("RebirthReady") }, { "Rebirth now", send("RebirthNow") } })
 row("Gem upgrades", { { "All max", send("GemUps", "max") }, { "All 0", send("GemUps", "reset") } })
 -- 9 Nov: fill every open bay

@@ -26,6 +26,7 @@ local Plots=require(script.Parent.Plots)
 local PressBuilder=require(script.Parent.PressBuilder)
 local Workshop=require(script.Parent.Kit.CrusherWorkshop)
 local Special=require(script.Parent.SpecialCrushers)
+local GemMine=require(script.Parent.GemMine) -- 9 Nov
 local Catalog=require(script.Parent.CatalogCrushers)
 local Friend=require(script.Parent.FriendBoost)
 local Tools=require(script.Parent.CrusherTools)
@@ -290,7 +291,7 @@ local function send(p,message,result)
 	p:SetAttribute("Cash",d.cash) p:SetAttribute("Scrap",d.scrap) p:SetAttribute("AvailableScrap",s.available)
 	p:SetAttribute("Plot",ctx.plot.index) p:SetAttribute("Crushed",d.crushed) p:SetAttribute("Tier",d.tier)
 	p:SetAttribute("CashRate",cps(p,d)) p:SetAttribute("AutoOn",true) p:SetAttribute("GoldenRush",d.goldenRush) p:SetAttribute("Rebirths",s.rebirths or 0)
-	p:SetAttribute("Gems",math.floor(s.gems or 0)) p:SetAttribute("GemRate",Rules.gemRate(d)) -- 8 Nov: GEMS
+	p:SetAttribute("Gems",math.floor(s.gems or 0)) p:SetAttribute("GemRate",if (s.rebirths or 0)>=Gems.UnlockRebirths then Gems.minePerMinute(s) else 0) -- 9 Nov: the Gem Mine's rate
 	local goalHave,goalNeed=nil,nil
 	if s.goal and C.Goals2[s.goal] then goalHave,goalNeed=goalCount(d,C.Goals2[s.goal]) end
 	local items={}
@@ -303,7 +304,7 @@ local function send(p,message,result)
 		equipBetter=(function() -- 3 Nov: the red "!" on Equip Best, from the real rule (rechecked every 3 s)
 			if not ctx.equipCheckAt or os.clock()-ctx.equipCheckAt>3 or message then ctx.equipCheckAt=os.clock() ctx.equipBetter=Rules.equipBestHelps(d,perks(p)) end
 			return ctx.equipBetter end)(),
-		gems=math.floor(s.gems or 0),gemUps=s.gemUps,gemRate=Rules.gemRate(d),
+		gems=math.floor(s.gems or 0),gemUps=s.gemUps,gemRate=if (s.rebirths or 0)>=Gems.UnlockRebirths then Gems.minePerMinute(s) else 0,
 		rollSeconds=math.max(1,C.rollSeconds()-Gems.rollCut(s)),rebirths=s.rebirths or 0,rebirthCost=C.rebirthCost(s.rebirths or 0),rolled=ctx.justRolled,pedestals=Rules.pedestalCount(s),rollReadyAt=workspace:GetServerTimeNow()+math.max(0,(ctx.nextRoll or 0)-os.clock()),
 		message=message,result=result,lastRoll=ctx.lastRoll,discovery=ctx.justDiscovered,coating=ctx.coatingQuote,
 		goals=Goals.view(ctx,d,workspace:GetServerTimeNow()),
@@ -820,20 +821,19 @@ local function action(p,name,args)
 		-- everyone sees it; the factory goes back to the ground floor (bay models rebuilt)
 		Turbo.resetPeak(p)
 		Analytics.custom(p,"CrusherRebirth",d.crushers.rebirths)
-		Analytics.custom(p,"GemsEarned",Gems.forRebirth(d.crushers.rebirths),"Rebirth") -- 8 Nov
-		Analytics.gems(p,"Rebirth","Gameplay",Gems.forRebirth(d.crushers.rebirths),d.crushers.gems) -- 9 Nov: economy dashboard
 		Net.event("RarePull"):FireAllClients({text=p.DisplayName.." REBIRTHED! (x"..C.rebirthMult(d.crushers.rebirths).." income, x"..C.rebirthLuck(d.crushers.rebirths).." luck)",userId=p.UserId,color=Color3.fromRGB(255,170,60)})
 		Net.event("RebirthDone"):FireClient(p,{rebirths=d.crushers.rebirths,mult=C.rebirthMult(d.crushers.rebirths),luck=C.rebirthLuck(d.crushers.rebirths)})
-		-- 8 Nov: the Gem Crusher (rebirth 5) and its awakening (rebirth 10) are announced
-		for _,g in C.GemCrushers do if g.rebirths==d.crushers.rebirths then
-			Net.event("RarePull"):FireAllClients({text=p.DisplayName.." "..(if g.id=="GemCrusher" then "UNLOCKED THE GEM CRUSHER!" else "AWAKENED THE GEM CRUSHER!"),userId=p.UserId,color=Color3.fromRGB(235,80,210)})
-			Analytics.custom(p,"GemCrusher",d.crushers.rebirths,g.id)
-		end end
+		-- 9 Nov: the Gem Mine opens at rebirth 1, its Gem Crusher awakens at rebirth 5 (announced)
+		if d.crushers.rebirths==Gems.Mine.AwakenRebirths then
+			Net.event("RarePull"):FireAllClients({text=p.DisplayName.." AWAKENED THE GEM CRUSHER!",userId=p.UserId,color=Color3.fromRGB(235,80,210)})
+		end
+		GemMine.refresh(p)
 	end
 	-- 8 Nov: Gem Shop analytics; a Gem Crate Exotic or better is announced to the server
 	if ok and name=="GemUpgrade" and type(result)=="table" then
 		Analytics.custom(p,"GemUpgrade",result.level,result.id)
 		Analytics.gems(p,"GemUpgrade:"..tostring(result.id),"Shop",-(result.cost or 0),d.crushers.gems)
+		GemMine.refresh(p) -- 10 Nov: a mine upgrade (speed, magnet...) applies at once
 	end
 	if ok and name=="GemCrate" and type(result)=="table" then
 		Analytics.custom(p,"GemCrate",1,result.rarity)
@@ -922,7 +922,17 @@ function G.start()
 		p.CharacterAdded:Connect(function(char) spawnCharacter(p,char) end)
 		if p.Character then task.spawn(spawnCharacter,p,p.Character) end
 		reconcile(p) send(p)
+		task.defer(GemMine.refresh,p) -- 9 Nov: your pad, teleporter text, gems
 	end
+	-- 9 Nov: THE GEM MINE (server/GemMine)
+	GemMine.start({
+		data=function(p) return Data.get(p) end,
+		plot=function(p) local ctx=sessions[p] return ctx and ctx.plot end,
+		plots=function() return Plots.all() end,
+		teleport=function(p,cf) local char=p.Character if char then G.safeTeleport(p,char,cf) end end,
+		home=function(p) local ctx=sessions[p] local char=p.Character if ctx and char then G.safeTeleport(p,char,Plots.spawnFor(ctx.plot)) end end,
+		refreshState=function(p) send(p) end,
+	})
 	for _,plot in Plots.all() do
 		for name,station in plot.stations do if station.prompt then station.prompt.Triggered:Connect(function(p)
 			if plot.owner~=p then Net.event("Notice"):FireClient(p,{text="Use your own factory."}) return end
@@ -1028,18 +1038,6 @@ function G.start()
 		elapsed+=dt if elapsed<C.Tick then return end elapsed=0 local now=os.clock()
 		for p,ctx in sessions do local d=Data.get(p) if d then
 			for _,event in Rules.step(d,ctx,now,perks(p)) do visualEvent(p,event) end
-			local gemRate=Rules.gemRate(d) -- 8 Nov: Gems trickle from Exotic+ crushers in a bay
-			if gemRate>0 then
-				-- 9 Nov: whole Gems only; the remainder waits in gemDust
-				local s=d.crushers local dust=(s.gemDust or 0)+gemRate*C.Tick/60
-				local whole=math.floor(dust)
-				if whole>0 then
-					s.gems+=whole dust-=whole
-					p:SetAttribute("Gems",s.gems)
-					Analytics.gems(p,"Bays","Gameplay",whole,s.gems)
-				end
-				s.gemDust=dust
-			end
 			if now-lastAuto>=C.AutoCollectInterval and Store.hasPass(p,"AutoCollect") then
 				if d.crushers.available>0 then Rules.act(d,ctx,"Collect",{},now,random,guid,perks(p)) end
 				if d.scrap>0 then local before=d.cash Rules.act(d,ctx,"Sell",{},now,random,guid,perks(p)) Analytics.cash(p,"AutoSell","Gameplay",before,d.cash) end
@@ -1192,7 +1190,7 @@ function G.start()
 				s.gems+=math.clamp(math.floor(tonumber(arg) or 0),0,1e6) p:SetAttribute("Gems",s.gems) send(p,"+Gems (dev)") return "ok"
 			elseif what=="Rebirths" then
 				s.rebirths=math.clamp(math.floor(tonumber(arg) or 0),0,100)
-				if Rules.gemCrusher(s,guid) then Rules.markSeen(s) end
+				GemMine.refresh(p)
 				ctx.bays={} reconcile(p) send(p,"Rebirths = "..s.rebirths.." (dev)") return "ok"
 			elseif what=="RebirthReady" then
 				while C.TutorialSteps[s.tutorial] do Rules.tutorialAdvance(d,C.TutorialSteps[s.tutorial].id) end
