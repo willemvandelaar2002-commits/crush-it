@@ -73,7 +73,16 @@ local st = Style.studsImage(panel, 30, 0.88) st.ZIndex = 5 st.ImageColor3 = RGB(
 make("ImageLabel", { Name = "BannerArt", Image = G.Art.Banner, BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Slice,
 	SliceCenter = Rect.new(240, 300, 784, 724), SliceScale = 0.42, Position = UDim2.fromOffset(-26, -30), Size = UDim2.new(1, 52, 1, 56), ZIndex = 5 }, panel)
 Style.modal(panel)
-panel:SetAttribute("FitWidth", W + 20) panel:SetAttribute("FitHeight", H + 20)
+panel:SetAttribute("FitWidth", W + 20) panel:SetAttribute("FitHeight", H + 80)
+-- 9 Nov (vault: show where a currency comes from): how to earn Gems, under the panel.
+-- It turns yellow when you can't afford anything.
+local earn = make("Frame", { Name = "HowToEarn", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 1, 12), Size = UDim2.new(1, -100, 0, 46),
+	BackgroundColor3 = RGB(46, 30, 110), ZIndex = 6 }, panel)
+make("UICorner", { CornerRadius = UDim.new(0.4, 0) }, earn)
+make("UIStroke", { Thickness = 4, Color = INK }, earn)
+make("UIGradient", { Rotation = 90, Color = ColorSequence.new(RGB(120, 60, 200), RGB(50, 26, 110)) }, earn)
+make("ImageLabel", { Image = G.Art.Pile, Position = UDim2.fromOffset(8, -8), Size = UDim2.fromOffset(60, 60), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 8 }, earn)
+local earnText = words(earn, G.HowToEarn, UDim2.fromOffset(74, 6), UDim2.new(1, -88, 1, -12), 22, 2.5)
 gemIcon(panel, UDim2.fromOffset(22, 12), UDim2.fromOffset(60, 60), 8)
 local title = words(panel, "GEM SHOP", UDim2.fromOffset(90, 14), UDim2.fromOffset(300, 54), 46, 4)
 title.TextXAlignment = Enum.TextXAlignment.Left
@@ -164,6 +173,12 @@ local function refresh()
 	local label = hud:FindFirstChild("Label") :: TextLabel?
 	if label then label.Text = tostring(gems) end -- the button is the gem: just the count
 	local canOpen = gems >= G.Crate.Cost
+	local cheapest = G.Crate.Cost
+	for _, u in G.Upgrades do
+		local c = G.cost(u.id, (last and last.gemUps and last.gemUps[u.id]) or 0)
+		if c and c < cheapest then cheapest = c end
+	end
+	earnText.TextColor3 = if gems < cheapest then RGB(255, 236, 90) else Color3.new(1, 1, 1)
 	Style.setButtonColor(open, if canOpen then Style.GREEN else RGB(120, 124, 140))
 	openText.Text = "OPEN  " .. G.Crate.Cost
 	for _, u in G.Upgrades do
@@ -211,6 +226,26 @@ Net.event("CrusherState").OnClientEvent:Connect(function(v)
 	refresh()
 end)
 me:GetAttributeChangedSignal("Gems"):Connect(refresh)
+-- 9 Nov (vault: animate gains toward the counter): "+N" pops off the GEMS button
+-- whenever Gems come in (rebirth, the per-minute trickle), so players learn the source
+local TweenService = game:GetService("TweenService")
+local shownGems = tonumber(me:GetAttribute("Gems"))
+me:GetAttributeChangedSignal("Gems"):Connect(function()
+	local now = tonumber(me:GetAttribute("Gems")) or 0
+	local gained = if shownGems then now - shownGems else 0
+	shownGems = now
+	if gained <= 0 or not hud.Visible then return end
+	local pos = hud.AbsolutePosition + Vector2.new(hud.AbsoluteSize.X * 0.5, hud.AbsoluteSize.Y * 0.2)
+	local pop = make("TextLabel", { Text = "+" .. gained, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromOffset(pos.X, pos.Y),
+		Size = UDim2.fromOffset(90, 34), BackgroundTransparency = 1, TextScaled = true, ZIndex = 20 }, gui)
+	Style.text(pop, 3)
+	pop.TextColor3 = RGB(255, 150, 240)
+	local stroke = pop:FindFirstChildOfClass("UIStroke")
+	local info = TweenInfo.new(1.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	TweenService:Create(pop, info, { Position = UDim2.fromOffset(pos.X, pos.Y + 60), TextTransparency = 1 }):Play()
+	if stroke then TweenService:Create(stroke, info, { Transparency = 1 }):Play() end
+	task.delay(1.2, function() pop:Destroy() end)
+end)
 me:GetAttributeChangedSignal("GemRate"):Connect(refresh)
 me:GetAttributeChangedSignal("Rebirths"):Connect(showHud)
 showHud()

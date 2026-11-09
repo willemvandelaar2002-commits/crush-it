@@ -90,5 +90,13 @@ return function()
 	local found = 0 for _, v in old.crushers.owned do if v.type == "GemCrusher" then found += 1 end end
 	check(found == 1 and #R.migrate(R.copy(old), id).crushers.owned == #old.crushers.owned, "a rebirth 7 save gets one Gem Crusher, once")
 	for _, r in C.Rarities do for _, t in r.types do check(not C.gemCrusher(t), "the Gem Crusher is never rolled") end end
+	-- 9 Nov: the first rebirth pays enough for something in the Gem Shop
+	local cheapest = G.Crate.Cost for _, u in G.Upgrades do cheapest = math.min(cheapest, G.cost(u.id, 0)) end
+	check(G.forRebirth(1) == 25 and G.forRebirth(1) >= G.Crate.Cost and G.forRebirth(2) == 15 and G.forRebirth(10) == 55, "rebirth 1 pays 25 (a crate or an upgrade), later ones unchanged")
+	-- 9 Nov: Gems are whole numbers; old fractional saves split into gems + gemDust
+	local f = R.migrate({ cash = 10 }, id) f.crushers.gems = 12.75 f = R.migrate(f, id)
+	check(f.crushers.gems == 12 and math.abs(f.crushers.gemDust - 0.75) < 1e-9, "12.75 Gems -> 12 Gems + 0.75 dust")
+	f.crushers.gems = 3.5 f.crushers.gemDust = 0.75 f = R.migrate(f, id)
+	check(f.crushers.gems == 4 and math.abs(f.crushers.gemDust - 0.25) < 1e-9, "dust over 1 becomes a Gem")
 	print("Gems spec: " .. checks .. " checks passed")
 end
