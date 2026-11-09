@@ -833,6 +833,7 @@ local function action(p,name,args)
 	if ok and name=="GemUpgrade" and type(result)=="table" then
 		Analytics.custom(p,"GemUpgrade",result.level,result.id)
 		Analytics.gems(p,"GemUpgrade:"..tostring(result.id),"Shop",-(result.cost or 0),d.crushers.gems)
+		GemMine.refresh(p) -- 10 Nov: a mine upgrade (speed, magnet...) applies at once
 	end
 	if ok and name=="GemCrate" and type(result)=="table" then
 		Analytics.custom(p,"GemCrate",1,result.rarity)

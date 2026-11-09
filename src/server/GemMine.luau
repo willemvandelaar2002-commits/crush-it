@@ -110,7 +110,7 @@ local function buildWorld()
 	root.Name = "GemMine"
 	local o = Mine.Origin
 	-- floor: a crystal cave platform with a rim of rocks and crystal clusters
-	local floor = Build.block(root, "MineFloor", Vector3.new(Mine.Radius * 2, 4, Mine.Radius * 2), o * CFrame.new(0, -2, 0), RGB(54, 40, 92))
+	local floor = Build.block(root, "MineFloor", Vector3.new(Mine.Radius * 2, 4, Mine.Radius * 2), o * CFrame.new(0, -2, 0), RGB(112, 86, 170))
 	floor.Shape = Enum.PartType.Cylinder
 	floor.Size = Vector3.new(4, Mine.Radius * 2, Mine.Radius * 2)
 	floor.CFrame = o * CFrame.new(0, -2, 0) * CFrame.Angles(0, 0, math.rad(90))
@@ -130,6 +130,12 @@ local function buildWorld()
 	portal.Shape = Enum.PartType.Cylinder portal.Material = Enum.Material.Metal
 	local ring = Build.block(root, "HomeRing", Vector3.new(1.2, 9, 9), o * CFrame.new(0, 0.6, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
 	ring.Shape = Enum.PartType.Cylinder ring.Material = Enum.Material.Neon
+	-- 10 Nov: the mine was too dark at night; lights at the middle and on every pad
+	local function light(at: BasePart, range: number, color: Color3)
+		local att = Instance.new("Attachment") att.Parent = at att.WorldPosition = at.Position + Vector3.new(0, 12, 0)
+		local l = Instance.new("PointLight") l.Range = range l.Brightness = 2.2 l.Color = color l.Shadows = false l.Parent = att
+	end
+	light(ring, 40, RGB(255, 170, 240))
 	label(portal, "BACK TO YOUR FACTORY", RGB(255, 236, 120), 6, Vector2.new(18, 3))
 	prompt(portal, "Go home", "Gem Mine").Triggered:Connect(function(p) api.home(p) end)
 	-- the six pads
@@ -140,6 +146,7 @@ local function buildWorld()
 		local cf = CFrame.lookAt(pos, o.Position) -- LookVector points to the middle (= -Z)
 		local padPart = Build.block(root, "Pad" .. i, Vector3.new(16, 1, 14), cf * CFrame.new(0, 0.5, 2), NAVY)
 		local m, ram, crystals = buildCrusher(root, cf * CFrame.new(0, 1, 3))
+		light(padPart, 32, RGB(220, 200, 255))
 		m.Name = "GemCrusher" .. i
 		local shop = Build.block(root, "UpgradeSign" .. i, Vector3.new(4, 5, 0.6), cf * CFrame.new(9.5, 3.5, -2) * CFrame.Angles(0, math.rad(-25), 0), GOLD)
 		label(shop, "GEM UPGRADES", RGB(255, 236, 120), 4, Vector2.new(10, 2.2))
