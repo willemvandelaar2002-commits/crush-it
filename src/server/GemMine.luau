@@ -15,7 +15,10 @@
 --     and a rate budget (vault: Collectible Pickup FX - server owns records, validates
 --     batched requests; per-player pickups are never server instances).
 --   * Rebirth 5 awakens your crusher: x1.5 gem value, and on your screen it turns opal.
---   * Stand-in machine built from parts until Willem's Gem Crusher model is imported.
+--   * 10 Nov: Willem's models (ChatGPT + Blender: GemCoreColossus crusher with a moving Ram and
+--     two pistons, teleporter pad, pickup gem, crystal clusters, cave rocks) live in the place
+--     file under ReplicatedStorage.GemMineMeshes (not in Git; pre-sized, upright, front -Z).
+--     Anything missing there falls back to the part-built stand-ins below.
 --
 -- Remote "GemMine": server -> client {kind="sync"|"add"|"collected"|"openShop"};
 -- client -> server ("collect", {ids}) / ("sync").
@@ -72,7 +75,23 @@ end
 -- the stand-in Gem Crusher (Willem's concept: navy arch, gold pistons, magenta core and
 -- crystal pressing block over an anvil), k times the bay size. Front faces -Z of `cf`.
 -- The crystal parts (Inlay, Core, Anvil, Ram) are what the client recolours when awake.
+local Meshes = RS:FindFirstChild("GemMineMeshes")
+local function tpl(name: string): Instance?
+	return Meshes and Meshes:FindFirstChild(name)
+end
+
 local function buildCrusher(parent: Instance, cf: CFrame, k: number): (Model, BasePart)
+	local t = tpl("GemCrusher")
+	if t and t:IsA("Model") and t:FindFirstChild("Frame") and t:FindFirstChild("Ram") then
+		-- Willem's model: Frame stays, Ram + Piston_L + Piston_R move (the client plays it)
+		local m = t:Clone()
+		m.Name = "GemCrusher"
+		for _, d in m:GetDescendants() do if d:IsA("BasePart") then d.Anchored = true end end
+		m.PrimaryPart = m:FindFirstChild("Frame") :: BasePart
+		m:PivotTo(cf)
+		m.Parent = parent
+		return m, m:FindFirstChild("Ram") :: BasePart
+	end
 	local m = Instance.new("Model")
 	m.Name = "GemCrusher"
 	local function part(name: string, size: Vector3, at: CFrame, color: Color3, mat: Enum.Material?): Part
@@ -94,6 +113,7 @@ local function buildCrusher(parent: Instance, cf: CFrame, k: number): (Model, Ba
 	local ram = part("Ram", Vector3.new(6.4, 1.6, 4.2), CFrame.new(0, 6.6, -0.2), MAGENTA, Enum.Material.Glass)
 	m.PrimaryPart = m:FindFirstChild("Base") :: BasePart
 	m:SetAttribute("Strike", 3.3 * k) -- how far the ram comes down (the client plays it)
+	m:SetAttribute("Height", 12.2 * k)
 	m.Parent = parent
 	return m, ram
 end
@@ -101,6 +121,22 @@ end
 -- the portal (the same look on your plot and in the mine): navy base, neon ring, gold frame
 local function buildPortal(parent: Instance, at: CFrame, title: string, action: string): (Model, TextLabel, ProximityPrompt)
 	local m = Instance.new("Model")
+	local padT = tpl("TeleporterPad")
+	if padT and padT:IsA("BasePart") then
+		-- Willem's pad (one mesh for both ends); an invisible anchor above the deck holds the
+		-- prompt and the sign
+		local pad = padT:Clone()
+		pad.Name = "Pad" pad.Anchored = true
+		pad:PivotTo(at * CFrame.new(0, pad.Size.Y / 2, 0))
+		pad.Parent = m
+		local anchor = Build.block(m, "Base", Vector3.new(6, 0.4, 6), at * CFrame.new(0, pad.Size.Y + 0.3, 0), MAGENTA)
+		anchor.Transparency = 1 anchor.CanCollide = false anchor.CanQuery = false
+		local text = label(anchor, title, RGB(255, 170, 245), 6.5, Vector2.new(14, 3))
+		local pr = prompt(anchor, action, "Gem Mine")
+		m.PrimaryPart = anchor
+		m.Parent = parent
+		return m, text, pr
+	end
 	local base = Build.block(m, "Base", Vector3.new(1, 9, 9), at * CFrame.new(0, 0.5, 0) * CFrame.Angles(0, 0, math.rad(90)), NAVY)
 	base.Shape = Enum.PartType.Cylinder
 	local ring = Build.block(m, "Ring", Vector3.new(1.1, 7, 7), at * CFrame.new(0, 0.6, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
@@ -126,8 +162,24 @@ local function buildWorld()
 	for i = 1, 22 do
 		local a = i / 22 * math.pi * 2
 		local at = o * CFrame.new(math.cos(a) * (Mine.Radius - 4), 0, math.sin(a) * (Mine.Radius - 4))
-		Build.rock(root, at, 2.2 + rng:NextNumber() * 1.6, { rock = ROCK }, rng)
-		if i % 2 == 0 then
+		local rockT = tpl(({ "CaveRockSmall", "CaveRockWide", "CaveRockTall" })[i % 3 + 1])
+		if rockT and rockT:IsA("BasePart") then
+			-- Willem's props: a few scaled, turned variants (one shared texture)
+			local r = rockT:Clone() r.Anchored = true
+			r.Size *= 1.6 + rng:NextNumber() * 1.4
+			r:PivotTo(at * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0) * CFrame.new(0, r.Size.Y / 2 - 0.3, 0))
+			r.Parent = root
+		else
+			Build.rock(root, at, 2.2 + rng:NextNumber() * 1.6, { rock = ROCK }, rng)
+		end
+		local crystalT = tpl(if i % 4 == 0 then "CrystalClusterLarge" else "CrystalClusterSmall")
+		if i % 2 == 0 and crystalT and crystalT:IsA("BasePart") then
+			local c = crystalT:Clone() c.Anchored = true c.CanCollide = false
+			c.Size *= 2 + rng:NextNumber() * 1.5
+			local inward = o * CFrame.new(math.cos(a) * (Mine.Radius - 10), 0, math.sin(a) * (Mine.Radius - 10))
+			c:PivotTo(inward * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0) * CFrame.new(0, c.Size.Y / 2 - 0.2, 0))
+			c.Parent = root
+		elseif i % 2 == 0 then
 			local h = 6 + rng:NextNumber() * 8
 			local c = Build.block(root, "Crystal", Vector3.new(2.2, h, 2.2), at * CFrame.new(0, h / 2, 0) * CFrame.Angles(math.rad(rng:NextNumber(-20, 20)), a, math.rad(rng:NextNumber(-20, 20))), if i % 4 == 0 then CYAN else PINK)
 			c.Material = Enum.Material.Neon c.CanCollide = false
@@ -145,8 +197,11 @@ local function buildWorld()
 	disc.Shape = Enum.PartType.Cylinder disc.CanCollide = false disc.CanQuery = false
 	-- the one Gem Crusher in the middle, its front towards the portal (+Z of the origin)
 	local m, ram = buildCrusher(root, o * CFrame.Angles(0, math.rad(180), 0), Mine.CrusherScale)
-	light(m.PrimaryPart :: BasePart, 26, 60, RGB(230, 200, 255))
-	label(m.PrimaryPart :: BasePart, "GEM CRUSHER", RGB(255, 200, 250), 24, Vector2.new(22, 3.4))
+	local height = tonumber(m:GetAttribute("Height")) or 22
+	local base = m.PrimaryPart :: BasePart
+	local above = height - (base.Position.Y - o.Position.Y) -- from the part's centre to the top
+	light(base, above + 4, 60, RGB(230, 200, 255))
+	label(base, "GEM CRUSHER", RGB(255, 200, 250), above + 3, Vector2.new(22, 3.4))
 	-- the portal: you arrive on it and press E on it to go home
 	local portalAt = o * CFrame.new(0, 0, Mine.PortalZ)
 	local portal, _, pr = buildPortal(root, portalAt, "BACK TO YOUR FACTORY", "Go home")

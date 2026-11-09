@@ -29,21 +29,34 @@ local function machine(): Model?
 	return mine and mine:FindFirstChild("GemCrusher") :: Model?
 end
 
-local ramRest: CFrame? = nil
+-- the moving parts: the Ram (and on Willem's model both pistons) go down together by the
+-- model's Strike attribute, along the machine's own up axis, then back to the captured pose
+local rests: { [BasePart]: CFrame } = {}
 local striking = false
 local function strike()
 	local m = machine()
-	local ram = m and m:FindFirstChild("Ram") :: BasePart?
-	if not m or not ram or striking then return end
-	ramRest = ramRest or ram.CFrame
-	local rest = ramRest :: CFrame
-	local down = rest * CFrame.new(0, -(tonumber(m:GetAttribute("Strike")) or 3.3), 0)
+	if not m or striking then return end
+	local moving = {}
+	for _, n in { "Ram", "Piston_L", "Piston_R" } do
+		local part = m:FindFirstChild(n)
+		if part and part:IsA("BasePart") then
+			rests[part] = rests[part] or part.CFrame
+			table.insert(moving, part)
+		end
+	end
+	if #moving == 0 then return end
+	local pivot = m:GetPivot()
+	local offset = pivot.UpVector * -(tonumber(m:GetAttribute("Strike")) or 3.3)
 	striking = true
-	TweenService:Create(ram, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { CFrame = down }):Play()
+	for _, part in moving do
+		TweenService:Create(part, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { CFrame = rests[part] + offset }):Play()
+	end
 	task.delay(0.26, function()
-		local up = TweenService:Create(ram, TweenInfo.new(0.4, Enum.EasingStyle.Quad), { CFrame = rest })
-		up.Completed:Connect(function() striking = false end)
-		up:Play()
+		for i, part in moving do
+			local up = TweenService:Create(part, TweenInfo.new(0.4, Enum.EasingStyle.Quad), { CFrame = rests[part] })
+			if i == 1 then up.Completed:Connect(function() striking = false end) end
+			up:Play()
+		end
 	end)
 end
 
@@ -52,24 +65,46 @@ local function paint()
 	local m = machine()
 	if not m then return end
 	local awake = me:GetAttribute("GemAwake") == true
-	for _, c in m:GetChildren() do
-		if c:IsA("BasePart") and (c.Name == "Inlay" or c.Name == "Core" or c.Name == "Anvil" or c.Name == "Ram") then
-			c.Color = if not awake then MAGENTA elseif c.Name == "Core" or c.Name == "Inlay" then CYAN else OPAL
+	if m:FindFirstChild("Frame") then
+		-- Willem's textured model: an opal glow over it instead of recolouring
+		local h = m:FindFirstChild("AwakeGlow") :: Highlight?
+		if awake and not h then
+			local nh = Instance.new("Highlight")
+			nh.Name = "AwakeGlow" nh.FillColor = OPAL nh.FillTransparency = 0.7
+			nh.OutlineColor = CYAN nh.OutlineTransparency = 0.2
+			nh.DepthMode = Enum.HighlightDepthMode.Occluded
+			nh.Parent = m
+		elseif not awake and h then
+			h:Destroy()
+		end
+	else
+		for _, c in m:GetChildren() do
+			if c:IsA("BasePart") and (c.Name == "Inlay" or c.Name == "Core" or c.Name == "Anvil" or c.Name == "Ram") then
+				c.Color = if not awake then MAGENTA elseif c.Name == "Core" or c.Name == "Inlay" then CYAN else OPAL
+			end
 		end
 	end
-	local base = m:FindFirstChild("Base")
+	local base = m.PrimaryPart or m:FindFirstChild("Base")
 	local text = base and base:FindFirstChild("Text", true) :: TextLabel?
 	if text then text.Text = if awake then "YOUR AWAKENED GEM CRUSHER" else "GEM CRUSHER" end
 end
 me:GetAttributeChangedSignal("GemAwake"):Connect(paint)
 workspace.DescendantAdded:Connect(function(d) if d.Name == "GemCrusher" and d:IsA("Model") then task.defer(paint) end end)
 
+-- Willem's pickup gem (ReplicatedStorage.GemMineMeshes.GemPickup, 46 triangles) or a neon cube
+local meshes = RS:FindFirstChild("GemMineMeshes")
+local gemTemplate = meshes and meshes:FindFirstChild("GemPickup") :: BasePart?
 local function makePart(): BasePart
-	local p = Instance.new("Part")
+	local p: BasePart
+	if gemTemplate then
+		p = gemTemplate:Clone()
+	else
+		p = Instance.new("Part")
+		p.Material = Enum.Material.Neon
+		p.Color = COLOR
+	end
 	p.Name = "Gem"
 	p.Size = Vector3.new(1, 1, 1)
-	p.Material = Enum.Material.Neon
-	p.Color = COLOR
 	p.Anchored = true p.CanCollide = false p.CanQuery = false p.CanTouch = false p.CastShadow = false
 	p.Parent = folder
 	return p
@@ -79,8 +114,8 @@ local function add(id: number, pos: Vector3, value: number, from: Vector3?)
 	if gems[id] then return end
 	local part = makePart()
 	-- bigger gems for bigger values
-	local s = math.clamp(0.8 + 0.25 * (value - 1), 0.8, 1.6)
-	part.Size = Vector3.new(s, s, s)
+	local s = math.clamp(0.8 + 0.25 * (value - 1), 0.8, 1.6) * (if gemTemplate then 1.5 else 1)
+	part.Size = if gemTemplate then gemTemplate.Size.Unit * s * math.sqrt(3) else Vector3.new(s, s, s)
 	gems[id] = { part = part, pos = pos, value = value, born = os.clock(), from = from, pulling = false, pull = 0, pending = false }
 end
 
