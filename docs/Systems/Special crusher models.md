@@ -160,3 +160,11 @@ lite), and a UIStroke rim has a rotating gradient. Divine colours are kept deep 
 ## 6 Nov: Lucky Weekend pack
 Three more templates (CloverOverdrive, HorseshoeComet, JackpotFoundry) with motion in Shared/LimitedCrusherAssets;
 motions can now carry their own `keys` instead of a named curve. See Lucky Weekend crushers.
+
+## 9 Nov: performance check (vault: Art Budgets, Triangle Budget)
+- Triangles per model: Exotic 2.1k-5k, Secret/Divine 3k-8.4k, Astral Leviathan 9k (cut from 102k). Vault: a hero
+  piece 5k-10k, Roblox limit 20k per mesh, a phone scene 300k-600k; copies multiply (60 special bays ~300k).
+- All 134 template MeshParts: RenderFidelity Automatic (Roblox's own LOD). CollisionFidelity is Default on all of
+  them although clones never collide; scripts can't change it: set Box by hand (select the MeshParts under
+  ServerStorage.SpecialCrusherMeshes, Properties > CollisionFidelity = Box), then publish.
+- DEV "Fill with specials" fills every open bay with Exotic/Secret/Divine models for a lag test (phone).
