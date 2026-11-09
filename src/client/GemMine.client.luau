@@ -4,8 +4,11 @@
 -- GemMagnet) and sends the picked ones to the server in small batches; the server checks
 -- them and adds the Gems (vault: Collectible Pickup FX - idle glint, magnet pull, collect pop;
 -- one shared loop, no per-gem tweens, no server Touched).
+-- 10 Nov: one Gem Crusher that everyone uses. Its strike plays here, for your crushes only
+-- (your pace), and it turns opal on your screen once yours is awakened (attribute GemAwake).
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local RS = game:GetService("ReplicatedStorage")
 local Net = require(RS.Shared.Net)
 
@@ -19,6 +22,47 @@ type Gem = { part: BasePart, pos: Vector3, value: number, born: number, from: Ve
 local gems: { [number]: Gem } = {}
 local queue: { number } = {}
 local COLOR = Color3.fromRGB(255, 90, 230)
+
+-- the shared crusher (streams in only near the mine)
+local function machine(): Model?
+	local mine = workspace:FindFirstChild("GemMine")
+	return mine and mine:FindFirstChild("GemCrusher") :: Model?
+end
+
+local ramRest: CFrame? = nil
+local striking = false
+local function strike()
+	local m = machine()
+	local ram = m and m:FindFirstChild("Ram") :: BasePart?
+	if not m or not ram or striking then return end
+	ramRest = ramRest or ram.CFrame
+	local rest = ramRest :: CFrame
+	local down = rest * CFrame.new(0, -(tonumber(m:GetAttribute("Strike")) or 3.3), 0)
+	striking = true
+	TweenService:Create(ram, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { CFrame = down }):Play()
+	task.delay(0.26, function()
+		local up = TweenService:Create(ram, TweenInfo.new(0.4, Enum.EasingStyle.Quad), { CFrame = rest })
+		up.Completed:Connect(function() striking = false end)
+		up:Play()
+	end)
+end
+
+local OPAL, CYAN, MAGENTA = Color3.fromRGB(240, 236, 255), Color3.fromRGB(140, 240, 255), Color3.fromRGB(225, 60, 210)
+local function paint()
+	local m = machine()
+	if not m then return end
+	local awake = me:GetAttribute("GemAwake") == true
+	for _, c in m:GetChildren() do
+		if c:IsA("BasePart") and (c.Name == "Inlay" or c.Name == "Core" or c.Name == "Anvil" or c.Name == "Ram") then
+			c.Color = if not awake then MAGENTA elseif c.Name == "Core" or c.Name == "Inlay" then CYAN else OPAL
+		end
+	end
+	local base = m:FindFirstChild("Base")
+	local text = base and base:FindFirstChild("Text", true) :: TextLabel?
+	if text then text.Text = if awake then "YOUR AWAKENED GEM CRUSHER" else "GEM CRUSHER" end
+end
+me:GetAttributeChangedSignal("GemAwake"):Connect(paint)
+workspace.DescendantAdded:Connect(function(d) if d.Name == "GemCrusher" and d:IsA("Model") then task.defer(paint) end end)
 
 local function makePart(): BasePart
 	local p = Instance.new("Part")
@@ -50,7 +94,9 @@ remote.OnClientEvent:Connect(function(msg)
 	if msg.kind == "sync" then
 		for id in gems do remove(id) end
 		for _, d in msg.drops or {} do add(d.id, d.pos, d.value, nil) end
+		paint()
 	elseif msg.kind == "add" then
+		strike()
 		for _, d in msg.drops or {} do add(d.id, d.pos, d.value, d.from) end
 	elseif msg.kind == "collected" then
 		for _, id in msg.ids or {} do remove(id) end
