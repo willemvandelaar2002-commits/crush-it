@@ -151,7 +151,10 @@ C.Merge = { MaxStars = 3, Mult = 1.5 }
 -- is the most common mistake"): cash x1.5 per rebirth (x1.5, x2.25, x3.4...), cost x4
 -- (Willem, 3 Nov; was x3), so each run takes about 2.7x as long as the one before (was ~5x with +0.5 / x8).
 -- (x2 / x4 was tried first: Willem found x32 at 5 rebirths way too much)
-C.Rebirth = { MinPlot = 3, Cost = 150e6, Growth = 4, Mult = 1.5, LuckPer = 0.25, StartCash = 1000 }
+-- 9 Nov (Willem: runs a bit shorter; vault: Progression and Pacing - run time grows by
+-- Growth / Mult per rebirth): cost x3 per rebirth (was x4), so each run is ~2x the last
+-- instead of ~2.7x. The price drops for everyone mid-run; nothing else changes.
+C.Rebirth = { MinPlot = 3, Cost = 150e6, Growth = 3, Mult = 1.5, LuckPer = 0.25, StartCash = 1000 }
 function C.rebirthCost(n) return math.floor(C.Rebirth.Cost*C.Rebirth.Growth^(n or 0)) end
 function C.rebirthMult(n) return C.Rebirth.Mult^(n or 0) end
 -- 2 Nov evening (Willem): each rebirth also +25% luck (multiplies the rare-or-better odds, like the Lucky pass)
