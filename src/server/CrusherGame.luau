@@ -1187,6 +1187,24 @@ function G.start()
 			elseif what=="CrateReady" then
 				if type(d.crate)=="table" and d.crate.readyAt then d.crate.readyAt=os.time()-1 end
 				return "ok"
+			-- 9 Nov: Gems tests (Willem: "make it so I can test it in the dev panel")
+			elseif what=="Gems" then
+				s.gems+=math.clamp(math.floor(tonumber(arg) or 0),0,1e6) p:SetAttribute("Gems",s.gems) send(p,"+Gems (dev)") return "ok"
+			elseif what=="Rebirths" then
+				s.rebirths=math.clamp(math.floor(tonumber(arg) or 0),0,100)
+				if Rules.gemCrusher(s,guid) then Rules.markSeen(s) end
+				ctx.bays={} reconcile(p) send(p,"Rebirths = "..s.rebirths.." (dev)") return "ok"
+			elseif what=="RebirthReady" then
+				while C.TutorialSteps[s.tutorial] do Rules.tutorialAdvance(d,C.TutorialSteps[s.tutorial].id) end
+				s.goal=math.max(s.goal or 1,C.MainGoals+1)
+				s.plotLevel=math.max(s.plotLevel or 0,C.Rebirth.MinPlot) s.bays=math.max(s.bays,C.bayCapacity(s.plotLevel))
+				d.cash=math.max(d.cash,C.rebirthCost(s.rebirths or 0))
+				ctx.bays={} reconcile(p) send(p,"Rebirth ready (dev)") return "ok"
+			elseif what=="RebirthNow" then
+				local ok,message=action(p,"Rebirth",{}) return tostring(ok)..tostring(message)
+			elseif what=="GemUps" then
+				for _,u in Gems.Upgrades do s.gemUps[u.id]=if arg=="max" then u.max else 0 end
+				ctx.bays={} reconcile(p) send(p,"Gem upgrades "..tostring(arg).." (dev)") return "ok"
 			elseif what=="Weekend" then
 				workspace:SetAttribute("WeekendTest",if workspace:GetAttribute("WeekendTest")=="active" then nil else "active")
 				return tostring(workspace:GetAttribute("WeekendTest"))

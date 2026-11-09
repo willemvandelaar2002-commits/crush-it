@@ -395,8 +395,11 @@ local function act(d,session,action,args,now,random,guid,perks)
 		local cost=C.rebirthCost(n)
 		if d.cash<cost then return false,"Rebirth needs "..C.money(cost).." cash." end
 		local keep=s.equipped["1"]
-		d.cash=R2.StartCash d.scrap=0 s.available=0
-		s.plotLevel=0 s.bays=1 s.equipped={} if keep then s.equipped["1"]=keep end
+		-- 9 Nov: Gem upgrades HEAD START (start a Factory further, its earlier bays open) and
+		-- NEST EGG (start with a share of the rebirth price)
+		local head=math.min(Gems.headStart(s),R2.MinPlot-1)
+		d.cash=R2.StartCash+math.floor(cost*Gems.nestEgg(s)) d.scrap=0 s.available=0
+		s.plotLevel=head s.bays=if head>0 then C.bayCapacity(head-1) else 1 s.equipped={} if keep then s.equipped["1"]=keep end
 		for _,id in {"Damage","Speed","Yield"} do s.upgrades[id]=0 end
 		for _,item in s.owned do item.level=1 end
 		if s.fusion and s.fusion.item then s.fusion.item.level=1 end
@@ -406,6 +409,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		local gem,how=R.gemCrusher(s,guid)
 		local extra=if how=="new" then " You got the GEM CRUSHER!" elseif how=="awakened" then " Your Gem Crusher AWAKENED!" else ""
 		if gem then R.markSeen(s) end
+		if head>0 then extra=extra.." Head Start: "..C.PlotUpgrade.Names[head].."!" end
 		return true,"REBIRTH "..s.rebirths.."! Income x"..C.rebirthMult(s.rebirths)..", luck x"..C.rebirthLuck(s.rebirths).." forever. +"..gems.." Gems!"..extra,s.rebirths
 	elseif action=="GemUpgrade" then
 		-- 8 Nov: permanent Gem upgrades (GemConfig.Upgrades), kept through rebirths

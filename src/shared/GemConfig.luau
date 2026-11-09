@@ -28,6 +28,8 @@ G.Art = {
 		Luck = art("94629274904889"), -- decal 125402540072740
 		Rolls = art("119021304569499"), -- decal 76405017429071 (stopwatch)
 		Pedestal = art("89027718081950"), -- decal 77978521877906
+		HeadStart = art("90818789034514"), -- (the REBIRTH icon until Willem draws one)
+		NestEgg = art("98244872810376"), -- (the cash icon until Willem draws one)
 	},
 }
 G.Icon = G.Art.Icon
@@ -74,6 +76,14 @@ G.Crate = {
 G.Upgrades = {
 	{ id = "Cash", title = "Gem Cash", line = "+10% cash per level", per = 0.10, max = 10, base = 15, growth = 1.5 },
 	{ id = "Luck", title = "Gem Luck", line = "+10% luck per level", per = 0.10, max = 10, base = 15, growth = 1.5 },
+	-- 9 Nov (rebirth data: 170 players at rebirth 1, 66 at rebirth 2: starting over is where
+	-- players stop; vault: Progression and Pacing - a rebirth keeps "fast travel to the start
+	-- of the furthest region"). HEAD START: each level, a rebirth starts one Factory further
+	-- with the bays before it already open (lv 1: FACTORY II + 12 bays; lv 2: FACTORY III + 24).
+	-- Never past the factory before the rebirth one (Rebirth.MinPlot), so a rebirth always
+	-- needs a run. NEST EGG: start each rebirth with 1% of its price per level (max 5%).
+	{ id = "HeadStart", title = "Head Start", line = "Rebirth into the next Factory, bays open", per = 1, max = 2, base = 40, growth = 3 },
+	{ id = "NestEgg", title = "Nest Egg", line = "Start a rebirth with +1% of its price", per = 0.01, max = 5, base = 25, growth = 1.6 },
 	{ id = "Rolls", title = "Quick Rolls", line = "Rolls 0.25 s faster per level", per = 0.25, max = 4, base = 20, growth = 2 },
 	-- 8 Nov: a 6th roll pedestal (the purple one in front of the roll machine)
 	{ id = "Pedestal", title = "Gem Pedestal", line = "+1 pedestal: 6 choices per roll", per = 1, max = 1, base = 60, growth = 1 },
@@ -92,5 +102,7 @@ function G.cashMult(s: any): number return 1 + 0.10 * ((s.gemUps and s.gemUps.Ca
 function G.luckMult(s: any): number return 1 + 0.10 * ((s.gemUps and s.gemUps.Luck) or 0) end
 function G.rollCut(s: any): number return 0.25 * ((s.gemUps and s.gemUps.Rolls) or 0) end
 function G.extraPedestals(s: any): number return (s.gemUps and s.gemUps.Pedestal) or 0 end
+function G.headStart(s: any): number return (s.gemUps and s.gemUps.HeadStart) or 0 end
+function G.nestEgg(s: any): number return 0.01 * ((s.gemUps and s.gemUps.NestEgg) or 0) end
 
 return G
