@@ -61,7 +61,7 @@ return function()
 
 	-- 9 Nov: THE GEM MINE numbers (GemConfig.Mine; the server part is server/GemMine)
 	local m = R.migrate({ cash = 10 }, id) local ms = m.crushers
-	check(G.mineCrushSeconds(ms) == G.Mine.CrushSeconds and G.mineDrops(ms) == 1 and G.mineValue(ms) == 1 and G.mineMagnet(ms) == G.Mine.Magnet, "a fresh mine: base numbers")
+	check(G.mineCrushSeconds(ms) == G.Mine.CrushSeconds and G.mineDrops(ms) == G.Mine.Drops and G.mineValue(ms) == 1 and G.mineMagnet(ms) == G.Mine.Magnet, "a fresh mine: base numbers")
 	check(math.abs(G.minePerMinute(ms) - 60) < 1e-9, "base: 60 Gems a minute (10 Nov: a crush every 2 s, 2 gems)")
 	for _, u in G.Upgrades do if u.group == "mine" then ms.gemUps[u.id] = u.max end end
 	check(G.mineCrushSeconds(ms) >= 1 and G.mineDrops(ms) == 4 and G.mineValue(ms) == 2 and G.mineMagnet(ms) == 20, "every mine upgrade has a cap")
