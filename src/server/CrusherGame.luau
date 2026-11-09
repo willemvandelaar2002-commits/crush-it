@@ -1205,6 +1205,23 @@ function G.start()
 			elseif what=="GemUps" then
 				for _,u in Gems.Upgrades do s.gemUps[u.id]=if arg=="max" then u.max else 0 end
 				ctx.bays={} reconcile(p) send(p,"Gem upgrades "..tostring(arg).." (dev)") return "ok"
+			-- 9 Nov: preview an Eternal model (not a crusher type yet) in bay 1, biting every 2 s.
+			-- "Clear" puts the bay's real crusher back.
+			elseif what=="EternalPreview" then
+				local bay=ctx.plot.bays[1] if not bay then return "no bay" end
+				local equipped=s.equipped["1"] local item=equipped and Rules.find(d,equipped)
+				if arg=="clear" then buildBay(p,1,item) return "ok" end
+				local v=Special.build(bay.origin,tostring(arg))
+				if not v then return "template or metadata missing: "..tostring(arg) end
+				local old=ctx.visuals[1] if old then old.model:Destroy() end
+				v.model.Name="EquippedCrusher" v.model:SetAttribute("Preview",true) v.model.Parent=bay.model
+				local t=item and C.typeById(item.type)
+				v.id=item and item.id or "preview" v.tier=t and t.input or 1 v.rarity="Preview"
+				ctx.visuals[1]=v
+				task.spawn(function()
+					while v.model.Parent do Special.strike(v,{cycle=1.8,completed=true}) task.wait(2) end
+				end)
+				send(p,"Preview: "..tostring(arg).." in bay 1 (dev)") return "ok"
 			elseif what=="Weekend" then
 				workspace:SetAttribute("WeekendTest",if workspace:GetAttribute("WeekendTest")=="active" then nil else "active")
 				return tostring(workspace:GetAttribute("WeekendTest"))

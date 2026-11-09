@@ -156,4 +156,8 @@ end
 for id, entry in require(script.Parent.ExoticCrusherAssets) do
 	Assets[id] = entry
 end
+-- 9 Nov: Eternal models (preview only until the tier exists)
+for id, entry in require(script.Parent.EternalCrusherAssets) do
+	Assets[id] = entry
+end
 return Assets
