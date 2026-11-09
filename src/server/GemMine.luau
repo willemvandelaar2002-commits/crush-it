@@ -4,8 +4,11 @@
 --
 --   * One shared area far outside the toy room (it only streams in when you are there).
 --     Six pads on a ring, one per plot index; your pad holds your Gem Crusher.
---   * A teleporter on every plot (front left) opens at rebirth 1; a portal in the middle of
---     the mine takes you home. Server-side ProximityPrompts, server-side teleports.
+--   * A teleporter on every plot (front left) opens at rebirth 1. You arrive on the same
+--     portal on your pad and press E on it to go home (10 Nov, Willem). Server-side
+--     ProximityPrompts, server-side teleports.
+--   * 10 Nov (Willem: "it should just be the gem crusher"): a pad is only your crusher, a
+--     glowing pickup zone in front of it where the gems land, and your portal.
 --   * Every crush the server makes your gems: records only (position, value), at most
 --     MaxDrops waiting. Your client draws them (only you see your gems) and picks them up
 --     when you walk within the magnet radius; the server checks each pickup's distance
@@ -14,7 +17,7 @@
 --   * Rebirth 5 awakens the crusher (opal crystals, x1.5 gem value).
 --   * Stand-in machine built from parts until Willem's Gem Crusher model is imported.
 --
--- Remote "GemMine": server -> client {kind="sync"|"add"|"collected"|"openShop"|"crush"};
+-- Remote "GemMine": server -> client {kind="sync"|"add"|"collected"};
 -- client -> server ("collect", {ids}).
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -41,14 +44,13 @@ local api: Api
 type Drop = { pos: Vector3, value: number }
 type State = { nextCrush: number, drops: { [number]: Drop }, count: number, nextId: number, budget: number, budgetAt: number }
 local states: { [Player]: State } = {}
-type Pad = { index: number, cf: CFrame, model: Model, ram: BasePart, ramRest: CFrame, crystals: { BasePart }, label: TextLabel, awake: boolean? }
+type Pad = { index: number, cf: CFrame, zone: Vector3, portal: CFrame, model: Model, ram: BasePart, ramRest: CFrame, crystals: { BasePart }, label: TextLabel, awake: boolean? }
 local pads: { [number]: Pad } = {}
 local root: Folder
 
 local RGB = Color3.fromRGB
-local NAVY, GOLD, MAGENTA, PINK = RGB(38, 34, 78), RGB(255, 196, 40), RGB(225, 60, 210), RGB(255, 140, 235)
+local NAVY, GOLD, MAGENTA = RGB(38, 34, 78), RGB(255, 196, 40), RGB(225, 60, 210)
 local OPAL, CYAN = RGB(240, 236, 255), RGB(140, 240, 255)
-local ROCK = RGB(70, 52, 112)
 
 local function label(adornee: BasePart, text: string, color: Color3, y: number, size: Vector2): TextLabel
 	local gui = Build.label(adornee, text, color, y, size)
@@ -105,56 +107,56 @@ local function awaken(pad: Pad, awake: boolean)
 	for _, c in pad.crystals do c.Color = if awake then (if c.Name == "Core" or c.Name == "Inlay" then CYAN else OPAL) else MAGENTA end
 end
 
+-- the portal (the same look on your plot and on your pad): navy base, neon ring, gold frame
+local function buildPortal(parent: Instance, at: CFrame, title: string, action: string): (Model, TextLabel, ProximityPrompt)
+	local m = Instance.new("Model")
+	local base = Build.block(m, "Base", Vector3.new(1, 9, 9), at * CFrame.new(0, 0.5, 0) * CFrame.Angles(0, 0, math.rad(90)), NAVY)
+	base.Shape = Enum.PartType.Cylinder
+	local ring = Build.block(m, "Ring", Vector3.new(1.1, 7, 7), at * CFrame.new(0, 0.6, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
+	ring.Shape = Enum.PartType.Cylinder ring.Material = Enum.Material.Neon
+	for _, x in { -4, 4 } do Build.block(m, "Post", Vector3.new(0.8, 7, 0.8), at * CFrame.new(x, 4, 0), GOLD).Material = Enum.Material.Metal end
+	local top = Build.block(m, "Top", Vector3.new(9, 0.8, 1), at * CFrame.new(0, 7.8, 0), GOLD)
+	top.Material = Enum.Material.Metal
+	local text = label(top, title, RGB(255, 170, 245), 3.5, Vector2.new(14, 3))
+	local pr = prompt(base, action, "Gem Mine")
+	m.PrimaryPart = base
+	m.Parent = parent
+	return m, text, pr
+end
+
 local function buildWorld()
 	root = Instance.new("Folder")
 	root.Name = "GemMine"
 	local o = Mine.Origin
-	-- floor: a crystal cave platform with a rim of rocks and crystal clusters
-	local floor = Build.block(root, "MineFloor", Vector3.new(Mine.Radius * 2, 4, Mine.Radius * 2), o * CFrame.new(0, -2, 0), RGB(112, 86, 170))
+	-- a plain crystal-cave floor; the six pads stand on it
+	local floor = Build.block(root, "MineFloor", Vector3.new(4, Mine.Radius * 2, Mine.Radius * 2), o * CFrame.new(0, -2, 0) * CFrame.Angles(0, 0, math.rad(90)), RGB(112, 86, 170))
 	floor.Shape = Enum.PartType.Cylinder
-	floor.Size = Vector3.new(4, Mine.Radius * 2, Mine.Radius * 2)
-	floor.CFrame = o * CFrame.new(0, -2, 0) * CFrame.Angles(0, 0, math.rad(90))
-	local rng = Random.new(9)
-	for i = 1, 26 do
-		local a = i / 26 * math.pi * 2
-		local at = o * CFrame.new(math.cos(a) * (Mine.Radius - 4), 0, math.sin(a) * (Mine.Radius - 4))
-		Build.rock(root, at, 2.2 + rng:NextNumber() * 1.6, { rock = ROCK }, rng)
-		if i % 2 == 0 then
-			local h = 6 + rng:NextNumber() * 8
-			local c = Build.block(root, "Crystal", Vector3.new(2.2, h, 2.2), at * CFrame.new(0, h / 2, 0) * CFrame.Angles(math.rad(rng:NextNumber(-20, 20)), a, math.rad(rng:NextNumber(-20, 20))), if i % 4 == 0 then CYAN else PINK)
-			c.Material = Enum.Material.Neon c.CanCollide = false
-		end
-	end
-	-- the way home: a portal in the middle
-	local portal = Build.block(root, "HomePortal", Vector3.new(1, 12, 12), o * CFrame.new(0, 0.5, 0) * CFrame.Angles(0, 0, math.rad(90)), GOLD)
-	portal.Shape = Enum.PartType.Cylinder portal.Material = Enum.Material.Metal
-	local ring = Build.block(root, "HomeRing", Vector3.new(1.2, 9, 9), o * CFrame.new(0, 0.6, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
-	ring.Shape = Enum.PartType.Cylinder ring.Material = Enum.Material.Neon
-	-- 10 Nov: the mine was too dark at night; lights at the middle and on every pad
 	local function light(at: BasePart, range: number, color: Color3)
 		local att = Instance.new("Attachment") att.Parent = at att.WorldPosition = at.Position + Vector3.new(0, 12, 0)
 		local l = Instance.new("PointLight") l.Range = range l.Brightness = 2.2 l.Color = color l.Shadows = false l.Parent = att
 	end
-	light(ring, 40, RGB(255, 170, 240))
-	label(portal, "BACK TO YOUR FACTORY", RGB(255, 236, 120), 6, Vector2.new(18, 3))
-	prompt(portal, "Go home", "Gem Mine").Triggered:Connect(function(p) api.home(p) end)
-	-- the six pads
 	for i = 1, 6 do
 		local a = (i - 1) / 6 * math.pi * 2
 		local pos = (o * CFrame.new(math.cos(a) * Mine.PadRing, 0, math.sin(a) * Mine.PadRing)).Position
 		-- the crusher's back faces outward, its front (-Z) towards the middle
-		local cf = CFrame.lookAt(pos, o.Position) -- LookVector points to the middle (= -Z)
-		local padPart = Build.block(root, "Pad" .. i, Vector3.new(16, 1, 14), cf * CFrame.new(0, 0.5, 2), NAVY)
+		local cf = CFrame.lookAt(pos, o.Position)
+		local padPart = Build.block(root, "Pad" .. i, Vector3.new(16, 1, 10), cf * CFrame.new(0, 0.5, 3), NAVY)
 		local m, ram, crystals = buildCrusher(root, cf * CFrame.new(0, 1, 3))
-		light(padPart, 32, RGB(220, 200, 255))
 		m.Name = "GemCrusher" .. i
-		local shop = Build.block(root, "UpgradeSign" .. i, Vector3.new(4, 5, 0.6), cf * CFrame.new(9.5, 3.5, -2) * CFrame.Angles(0, math.rad(-25), 0), GOLD)
-		label(shop, "GEM UPGRADES", RGB(255, 236, 120), 4, Vector2.new(10, 2.2))
-		prompt(shop, "Upgrades", "Gem Shop").Triggered:Connect(function(p)
-			Net.event("GemMine"):FireClient(p, { kind = "openShop" })
-		end)
-		local pad: Pad = { index = i, cf = cf, model = m, ram = ram, ramRest = ram.CFrame, crystals = crystals,
-			label = label(padPart, "", RGB(255, 200, 250), 14, Vector2.new(20, 3)) }
+		light(padPart, 34, RGB(220, 200, 255))
+		-- the pickup zone: a glowing rim with a darker disc inside; the gems land in here
+		local zc = cf * CFrame.new(0, 0, Mine.Zone.z)
+		local rim = Build.block(root, "ZoneRim" .. i, Vector3.new(0.2, Mine.Zone.radius * 2 + 1.2, Mine.Zone.radius * 2 + 1.2), zc * CFrame.new(0, 0.1, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
+		rim.Shape = Enum.PartType.Cylinder rim.Material = Enum.Material.Neon rim.CanCollide = false rim.CanQuery = false
+		local disc = Build.block(root, "Zone" .. i, Vector3.new(0.24, Mine.Zone.radius * 2, Mine.Zone.radius * 2), zc * CFrame.new(0, 0.12, 0) * CFrame.Angles(0, 0, math.rad(90)), RGB(70, 40, 120))
+		disc.Shape = Enum.PartType.Cylinder disc.CanCollide = false disc.CanQuery = false
+		-- your portal home, beside the zone (you arrive here too)
+		local portalAt = cf * CFrame.new(-Mine.Zone.radius - 7, 0, Mine.Zone.z + 4) * CFrame.Angles(0, math.rad(-60), 0)
+		local portal, _, pr = buildPortal(root, portalAt, "BACK TO YOUR FACTORY", "Go home")
+		portal.Name = "Portal" .. i
+		pr.Triggered:Connect(function(p) api.home(p) end)
+		local pad: Pad = { index = i, cf = cf, zone = zc.Position, model = m, ram = ram, ramRest = ram.CFrame, crystals = crystals,
+			label = label(padPart, "", RGB(255, 200, 250), 14, Vector2.new(20, 3)), portal = portalAt }
 		pads[i] = pad
 	end
 	root.Parent = workspace
@@ -164,20 +166,10 @@ end
 local function buildTeleporters()
 	for _, plot in api.plots() do
 		local at = plot.origin * CFrame.new(Mine.Teleporter.x, 0, Mine.Teleporter.z)
-		local m = Instance.new("Model")
+		local m, text, pr = buildPortal(plot.model, at, "GEM MINE", "Teleport")
 		m.Name = "GemMineTeleporter"
-		local base = Build.block(m, "Base", Vector3.new(1, 9, 9), at * CFrame.new(0, 0.5, 0) * CFrame.Angles(0, 0, math.rad(90)), NAVY)
-		base.Shape = Enum.PartType.Cylinder
-		local ring = Build.block(m, "Ring", Vector3.new(1.1, 7, 7), at * CFrame.new(0, 0.6, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
-		ring.Shape = Enum.PartType.Cylinder ring.Material = Enum.Material.Neon
-		for _, x in { -4, 4 } do Build.block(m, "Post", Vector3.new(0.8, 7, 0.8), at * CFrame.new(x, 4, 0), GOLD).Material = Enum.Material.Metal end
-		local top = Build.block(m, "Top", Vector3.new(9, 0.8, 1), at * CFrame.new(0, 7.8, 0), GOLD)
-		top.Material = Enum.Material.Metal
-		local text = label(top, "GEM MINE", RGB(255, 170, 245), 3.5, Vector2.new(14, 3))
-		local pr = prompt(base, "Teleport", "Gem Mine")
-		pr.Triggered:Connect(function(p) M.enter(p) end)
 		m:SetAttribute("PlotIndex", plot.index)
-		m.Parent = plot.model
+		pr.Triggered:Connect(function(p) M.enter(p) end)
 		plot.gemTeleporter = { text = text, prompt = pr }
 	end
 end
@@ -201,9 +193,9 @@ function M.enter(p: Player)
 		return
 	end
 	local pad = pads[plot.index] if not pad then return end
-	-- stand in front of your crusher, facing it
-	local spot = pad.cf * CFrame.new(0, 3, -12)
-	api.teleport(p, CFrame.lookAt(spot.Position, pad.cf.Position + Vector3.new(0, 3, 0)))
+	-- arrive on your portal, facing your crusher's pickup zone
+	local spot = pad.portal * CFrame.new(0, 3, -5)
+	api.teleport(p, CFrame.lookAt(spot.Position, pad.zone + Vector3.new(0, 3, 0)))
 	M.refresh(p)
 end
 
@@ -244,9 +236,10 @@ local function crush(p: Player, d: any, st: State, now: number)
 	local value = Gems.mineValue(s)
 	for _ = 1, math.min(Gems.mineDrops(s), Mine.MaxDrops - st.count) do
 		st.nextId += 1
-		local a = (math.random() - 0.5) * math.rad(110)
-		local r = 4 + math.random() * Mine.Scatter
-		local pos = (pad.cf * CFrame.Angles(0, a, 0) * CFrame.new(0, 1.2, -r)).Position
+		-- anywhere inside the pickup zone (uniform over the disc, a stud in from the rim)
+		local a = math.random() * math.pi * 2
+		local r = math.sqrt(math.random()) * (Mine.Zone.radius - 1)
+		local pos = pad.zone + Vector3.new(math.cos(a) * r, 1.2, math.sin(a) * r)
 		st.drops[st.nextId] = { pos = pos, value = value }
 		st.count += 1
 		table.insert(add, { id = st.nextId, pos = pos, value = value, from = pad.ramRest.Position })

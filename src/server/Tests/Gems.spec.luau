@@ -24,8 +24,8 @@ return function()
 	-- rebirth pays Gems and keeps Gems + upgrades
 	s.plotLevel = C.Rebirth.MinPlot d.cash = C.rebirthCost(0)
 	check(act(d, "Rebirth") and s.rebirths == 1 and s.gems == 0, "9 Nov: rebirths pay no Gems (the Gem Mine does)")
-	s.gems = 1000
-	check(act(d, "GemUpgrade", { id = "Cash" }) and s.gemUps.Cash == 1 and s.gems == 1000 - G.cost("Cash", 0), "Gem Cash level 1 charges its cost")
+	s.gems = 10000
+	check(act(d, "GemUpgrade", { id = "Cash" }) and s.gemUps.Cash == 1 and s.gems == 10000 - G.cost("Cash", 0), "Gem Cash level 1 charges its cost")
 	check(not act(d, "GemUpgrade", { id = "Nope" }), "unknown upgrade refused")
 	s.plotLevel = C.Rebirth.MinPlot d.cash = C.rebirthCost(1)
 	local before = s.gems
@@ -53,7 +53,7 @@ return function()
 	local q = R.migrate({ cash = 10 }, id) local qs = q.crushers
 	qs.upgrades.Pedestals = C.upgradeMax("Pedestals")
 	check(R.pedestalCount(qs) == C.MaxPedestals, "five pedestals from the board")
-	qs.rebirths = 1 qs.gems = 1000
+	qs.rebirths = 1 qs.gems = 10000
 	check(act(q, "GemUpgrade", { id = "Pedestal" }) and R.pedestalCount(qs) == C.MaxPedestals + 1 and #C.PedestalSpots == C.MaxPedestals + 1, "Gem Pedestal: a 6th pedestal")
 	check(not act(q, "GemUpgrade", { id = "Pedestal" }), "only one Gem Pedestal")
 	local _, _, offers = R.act(q, {}, "Roll", {}, 100, function() return 0.5 end, id, {})
@@ -61,15 +61,15 @@ return function()
 
 	-- 9 Nov: THE GEM MINE numbers (GemConfig.Mine; the server part is server/GemMine)
 	local m = R.migrate({ cash = 10 }, id) local ms = m.crushers
-	check(G.mineCrushSeconds(ms) == G.Mine.CrushSeconds and G.mineDrops(ms) == 1 and G.mineValue(ms) == 1 and G.mineMagnet(ms) == G.Mine.Magnet, "a fresh mine: base numbers")
-	check(math.abs(G.minePerMinute(ms) - 10) < 1e-9, "base: 10 Gems a minute")
+	check(G.mineCrushSeconds(ms) == G.Mine.CrushSeconds and G.mineDrops(ms) == G.Mine.Drops and G.mineValue(ms) == 1 and G.mineMagnet(ms) == G.Mine.Magnet, "a fresh mine: base numbers")
+	check(math.abs(G.minePerMinute(ms) - 60) < 1e-9, "base: 60 Gems a minute (10 Nov: a crush every 2 s, 2 gems)")
 	for _, u in G.Upgrades do if u.group == "mine" then ms.gemUps[u.id] = u.max end end
-	check(G.mineCrushSeconds(ms) >= 2.5 and G.mineDrops(ms) == 3 and G.mineValue(ms) == 2 and G.mineMagnet(ms) == 20, "every mine upgrade has a cap")
+	check(G.mineCrushSeconds(ms) >= 1 and G.mineDrops(ms) == 4 and G.mineValue(ms) == 2 and G.mineMagnet(ms) == 20, "every mine upgrade has a cap")
 	ms.rebirths = G.Mine.AwakenRebirths
 	check(G.mineAwake(ms) and G.mineValue(ms) == 2 * G.Mine.AwakenValue, "rebirth 5 awakens the crusher (x1.5 value)")
-	check(G.minePerMinute(ms) <= 220, "fully upgraded and awake stays under ~220 Gems a minute (" .. math.floor(G.minePerMinute(ms)) .. ")")
+	check(G.minePerMinute(ms) <= 750, "fully upgraded and awake stays under ~750 Gems a minute (" .. math.floor(G.minePerMinute(ms)) .. ")")
 	check(G.upgrade("MineSpeed").group == "mine" and G.Upgrades[1].group == "mine", "mine upgrades are listed first in the Gem Shop")
-	check(G.Crate.Cost >= 100, "the Gem Crate costs more now that the mine pays Gems")
+	check(G.Crate.Cost >= 1000, "the Gem Crate costs more now that the mine pays Gems")
 	for _, r in C.Rarities do for _, t in r.types do check(not C.gemCrusher(t), "no bay Gem Crusher any more") end end
 	local reb = R.migrate({ cash = 10 }, id) reb.crushers.plotLevel = C.Rebirth.MinPlot reb.cash = C.rebirthCost(0)
 	local okR, msgR = act(reb, "Rebirth")
@@ -92,8 +92,8 @@ return function()
 	check(rebirthOnce() and hs.plotLevel == 2 and hs.bays == C.bayCapacity(1), "Head Start 2: FACTORY III with 24 bays open")
 	check(h.cash == C.Rebirth.StartCash + math.floor(price * 0.05), "Nest Egg 5: start with 5% of the rebirth price")
 	check(hs.plotLevel < C.Rebirth.MinPlot and not act(h, "Rebirth"), "a Head Start never skips the run to the next rebirth")
-	hs.gems = 1000 hs.gemUps.HeadStart = 0
+	hs.gems = 10000 hs.gemUps.HeadStart = 0
 	check(act(h, "GemUpgrade", { id = "HeadStart" }) and act(h, "GemUpgrade", { id = "HeadStart" }) and not act(h, "GemUpgrade", { id = "HeadStart" })
-		and hs.gems == 1000 - G.cost("HeadStart", 0) - G.cost("HeadStart", 1), "Head Start: two levels, 40 + 120 Gems")
+		and hs.gems == 10000 - G.cost("HeadStart", 0) - G.cost("HeadStart", 1), "Head Start: two levels, 240 + 720 Gems")
 	print("Gems spec: " .. checks .. " checks passed")
 end
