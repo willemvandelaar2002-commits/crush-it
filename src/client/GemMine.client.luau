@@ -185,5 +185,55 @@ RunService.RenderStepped:Connect(function(dt)
 	end
 end)
 
+-- 10 Nov (Willem: "you can still see the normal plots from a distance... maybe a dark sky above
+-- the gem island"): while you are in the mine your sky turns into a starry purple night with a
+-- dense haze, so the far-away factories fade out. Local only; restored when you leave. If a
+-- factory event's night is already on (BearEventSky), that night stays and nothing is swapped.
+local Lighting = game:GetService("Lighting")
+local GemConfig = require(RS.Shared.GemConfig)
+local MINE_NIGHT = { ClockTime = 0, Brightness = 2, Ambient = Color3.fromRGB(110, 80, 150),
+	OutdoorAmbient = Color3.fromRGB(130, 95, 180), ExposureCompensation = 0.1 }
+local mineSky: Sky? = nil
+local mineAtmo: Atmosphere? = nil
+local saved: { props: { [string]: any }, kids: { Instance } }? = nil
+local function inMine(): boolean
+	local char = me.Character
+	local r = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not r then return false end
+	local o = GemConfig.Mine.Origin.Position
+	return (Vector3.new(r.Position.X, 0, r.Position.Z) - Vector3.new(o.X, 0, o.Z)).Magnitude < GemConfig.Mine.Radius + 40
+end
+local function mineLookOn()
+	if saved or Lighting:FindFirstChild("BearEventSky") then return end
+	local sv = { props = {}, kids = {} }
+	for k in MINE_NIGHT do sv.props[k] = (Lighting :: any)[k] end
+	for _, c in Lighting:GetChildren() do
+		if c:IsA("Sky") or c:IsA("Atmosphere") then table.insert(sv.kids, c) c.Parent = nil end
+	end
+	local sky = Instance.new("Sky") sky.Name = "GemMineSky"
+	sky.StarCount = 5000 sky.SunAngularSize = 0 sky.MoonAngularSize = 14 sky.Parent = Lighting
+	local atmo = Instance.new("Atmosphere") atmo.Name = "GemMineAtmosphere"
+	atmo.Density = 0.42 atmo.Offset = 0.1 atmo.Color = Color3.fromRGB(70, 40, 110) atmo.Decay = Color3.fromRGB(25, 12, 45)
+	atmo.Glare = 0 atmo.Haze = 2.2 atmo.Parent = Lighting
+	mineSky, mineAtmo = sky, atmo
+	saved = sv
+	TweenService:Create(Lighting, TweenInfo.new(0.5), MINE_NIGHT):Play()
+end
+local function mineLookOff()
+	local sv = saved
+	if mineSky then mineSky.Parent = nil end
+	if mineAtmo then mineAtmo.Parent = nil end
+	if not sv then return end
+	saved = nil
+	for _, c in sv.kids do if c.Parent == nil then pcall(function() c.Parent = Lighting end) end end
+	TweenService:Create(Lighting, TweenInfo.new(0.8), sv.props):Play()
+end
+task.spawn(function()
+	while true do
+		task.wait(0.5)
+		if inMine() then mineLookOn() elseif saved or (mineSky and mineSky.Parent) then mineLookOff() end
+	end
+end)
+
 -- ask for our gems once everything is up (the server also syncs on teleport / rebirth)
 task.delay(3, function() remote:FireServer("sync") end)
