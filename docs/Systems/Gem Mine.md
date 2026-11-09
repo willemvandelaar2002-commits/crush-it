@@ -31,6 +31,18 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
 - 10 Nov: with 6x the Gems, every Gem price went x6: Gem Crate 1500, Cash/Luck 90, Head Start 240, Nest Egg 150,
   Quick Rolls 120, Gem Pedestal 360 (the next level still x growth). Dev panel Gems +100/+1000/+10000.
 - Lights over the crusher and the portal, so the mine is readable at night.
+- **Mine sky (10 Nov, Willem: "you can still see the normal plots from a distance"):** while you are in the mine your
+  sky is a starry purple night with a dense haze (local Sky + Atmosphere, `GemMine.client`), so the factories fade
+  out; your normal sky comes back when you leave. A factory event's night, if already on, is left alone. Lag: the
+  plots already stream out there (26,000 -> ~4,000 parts on the client after 20 s; the persistent `World` model,
+  ~2,200 parts, stays), so the sky is mostly about the look.
+- **Willem's models (10 Nov):** ChatGPT + Blender pack (GemCoreColossus crusher 12k triangles: Frame 9k, Ram 3k,
+  two 60-triangle pistons; teleporter pad 1.3k; pickup gem 46; crystal clusters and cave rocks 20-130). Checked in
+  Blender: clean, within the vault's budget for one shared hero machine (Triangle Budget: 20k per mesh hard cap).
+  They go in `ReplicatedStorage.GemMineMeshes` (place file, not Git): GemCrusher (Model: Frame, Ram, Piston_L,
+  Piston_R; attributes Strike, Height), TeleporterPad, GemPickup, CrystalClusterSmall/Large, CaveRockSmall/Wide/Tall.
+  Missing ones fall back to the part-built stand-ins. Awakened look: a recoloured texture
+  (GemCrusher_Color_Awakened.png, made by Claude: pink crystals -> light blue/white), swapped on your screen only.
 - **Stand-ins until Willem's models:** the crusher, teleporter and gem pickups are built from parts.
   To do: the image-to-3D Gem Crusher (Blender pass like the Astral Leviathan), teleporter, gem pickup, scenery.
 - **Later:** a capped cash upgrade "Gem Yield" in the normal world; an Auto Walk Robux pass.
