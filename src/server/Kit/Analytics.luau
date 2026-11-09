@@ -8,6 +8,7 @@
 --   Analytics.funnel(player, funnel, sessionId, step, name) -- recurring funnel (e.g. the shop)
 --   Analytics.cash(player, sku, tx, before, after)   -- a cash change with its reason
 --   Analytics.cashBalance(player, cash)              -- every few s: unexplained change = "Passive"/"Other"
+--   Analytics.gems(player, sku, tx, delta, after)     -- 9 Nov: a Gems change (second currency)
 --
 -- Economy (2 Nov, vault: Analytics and Funnels): sources and sinks of the one
 -- soft currency "Cash", summed per player / flow / reason and sent once a
@@ -68,19 +69,21 @@ end
 local Players = game:GetService("Players")
 local CURRENCY = "Cash"
 local FLUSH = 60
-type Bucket = { flow: Enum.AnalyticsEconomyFlowType, tx: string, sku: string, amount: number }
+type Bucket = { flow: Enum.AnalyticsEconomyFlowType, tx: string, sku: string, amount: number, currency: string }
 local accounted: { [Player]: number } = {}
 local buckets: { [Player]: { [string]: Bucket } } = {}
 local balance: { [Player]: number } = {}
+local gemBalance: { [Player]: number } = {} -- 9 Nov: "Gems", the second currency
 
-local function add(player: Player, delta: number, tx: string, sku: string)
+local function add(player: Player, delta: number, tx: string, sku: string, currency: string?)
 	if delta ~= delta or math.abs(delta) < 1 or math.abs(delta) == math.huge then return end
+	local cur = currency or CURRENCY
 	local flow = if delta > 0 then Enum.AnalyticsEconomyFlowType.Source else Enum.AnalyticsEconomyFlowType.Sink
-	local key = flow.Name .. "|" .. tx .. "|" .. sku
+	local key = cur .. "|" .. flow.Name .. "|" .. tx .. "|" .. sku
 	local list = buckets[player]
 	if not list then list = {} buckets[player] = list end
 	local b = list[key]
-	if not b then b = { flow = flow, tx = tx, sku = sku, amount = 0 } list[key] = b end
+	if not b then b = { flow = flow, tx = tx, sku = sku, amount = 0, currency = cur } list[key] = b end
 	b.amount += math.abs(delta)
 end
 
@@ -88,12 +91,12 @@ local function flush(player: Player)
 	local list = buckets[player]
 	buckets[player] = nil
 	if not list then return end
-	local ending = balance[player] or 0
 	for _, b in list do
+		local ending = if b.currency == CURRENCY then balance[player] or 0 else gemBalance[player] or 0
 		safe("economy", function()
-			AnalyticsService:LogEconomyEvent(player, b.flow, CURRENCY, math.floor(b.amount), math.floor(ending), b.tx, b.sku)
+			AnalyticsService:LogEconomyEvent(player, b.flow, b.currency, math.floor(b.amount), math.floor(ending), b.tx, b.sku)
 		end)
-		if DEBUG then print(`[Analytics] {player.Name} economy {b.flow.Name} {b.tx} {b.sku} {math.floor(b.amount)}`) end
+		if DEBUG then print(`[Analytics] {player.Name} economy {b.currency} {b.flow.Name} {b.tx} {b.sku} {math.floor(b.amount)}`) end
 	end
 end
 
@@ -103,6 +106,14 @@ function Analytics.cash(player: Player, sku: string, tx: string, before: number,
 	add(player, after - before, tx, sku)
 	accounted[player] = (accounted[player] or before) + (after - before)
 	balance[player] = after
+end
+
+-- 9 Nov (vault: Currency Architecture - analytics for every currency): a Gems change.
+-- sku: "Rebirth", "Bays" (the per-minute trickle) / "GemCrate", "GemUpgrade:<id>".
+function Analytics.gems(player: Player, sku: string, tx: string, delta: number, after: number)
+	if type(delta) ~= "number" or type(after) ~= "number" then return end
+	add(player, delta, tx, sku, "Gems")
+	gemBalance[player] = after
 end
 
 -- Called every few seconds with the real balance: the part no Analytics.cash
@@ -124,7 +135,7 @@ task.spawn(function()
 end)
 Players.PlayerRemoving:Connect(function(player)
 	flush(player)
-	accounted[player] = nil balance[player] = nil
+	accounted[player] = nil balance[player] = nil gemBalance[player] = nil
 end)
 
 return Analytics

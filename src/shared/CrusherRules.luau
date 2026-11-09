@@ -166,6 +166,10 @@ function R.migrate(d, guid)
 	s.rebirths=integer(s.rebirths,0,1000) -- 2 Nov evening: crusher-era rebirths (not the legacy d.rebirths)
 	-- 8 Nov: GEMS (Shared/GemConfig). Fractional while the trickle fills; kept through rebirths.
 	s.gems=number(s.gems,0,1e9)
+	-- 9 Nov (vault: whole-number amounts): Gems are whole; the per-minute trickle
+	-- collects in gemDust until it makes a whole Gem (old fractional saves split here)
+	s.gemDust=number(s.gemDust,0,1)+(s.gems-math.floor(s.gems)) s.gems=math.floor(s.gems)
+	if s.gemDust>=1 then s.gems+=math.floor(s.gemDust) s.gemDust-=math.floor(s.gemDust) end
 	local ups=if type(s.gemUps)=="table" then s.gemUps else {}
 	s.gemUps={} for _,u in Gems.Upgrades do s.gemUps[u.id]=math.clamp(integer(ups[u.id],0,u.max),0,u.max) end
 	local owned,ids={},{}

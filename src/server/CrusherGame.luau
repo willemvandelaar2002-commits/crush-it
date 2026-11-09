@@ -821,6 +821,7 @@ local function action(p,name,args)
 		Turbo.resetPeak(p)
 		Analytics.custom(p,"CrusherRebirth",d.crushers.rebirths)
 		Analytics.custom(p,"GemsEarned",Gems.forRebirth(d.crushers.rebirths),"Rebirth") -- 8 Nov
+		Analytics.gems(p,"Rebirth","Gameplay",Gems.forRebirth(d.crushers.rebirths),d.crushers.gems) -- 9 Nov: economy dashboard
 		Net.event("RarePull"):FireAllClients({text=p.DisplayName.." REBIRTHED! (x"..C.rebirthMult(d.crushers.rebirths).." income, x"..C.rebirthLuck(d.crushers.rebirths).." luck)",userId=p.UserId,color=Color3.fromRGB(255,170,60)})
 		Net.event("RebirthDone"):FireClient(p,{rebirths=d.crushers.rebirths,mult=C.rebirthMult(d.crushers.rebirths),luck=C.rebirthLuck(d.crushers.rebirths)})
 		-- 8 Nov: the Gem Crusher (rebirth 5) and its awakening (rebirth 10) are announced
@@ -830,9 +831,13 @@ local function action(p,name,args)
 		end end
 	end
 	-- 8 Nov: Gem Shop analytics; a Gem Crate Exotic or better is announced to the server
-	if ok and name=="GemUpgrade" and type(result)=="table" then Analytics.custom(p,"GemUpgrade",result.level,result.id) end
+	if ok and name=="GemUpgrade" and type(result)=="table" then
+		Analytics.custom(p,"GemUpgrade",result.level,result.id)
+		Analytics.gems(p,"GemUpgrade:"..tostring(result.id),"Shop",-(result.cost or 0),d.crushers.gems)
+	end
 	if ok and name=="GemCrate" and type(result)=="table" then
 		Analytics.custom(p,"GemCrate",1,result.rarity)
+		Analytics.gems(p,"GemCrate","Shop",-Gems.Crate.Cost,d.crushers.gems)
 		local r=C.rarity(result.rarity)
 		if r and r.rank>=4.25 then Net.event("RarePull"):FireAllClients({text=p.DisplayName.." opened a "..string.upper(result.rarity).." "..C.typeById(result.type).name.." from the Gem Crate!",userId=p.UserId,color=r.color}) end
 	end
@@ -1025,8 +1030,15 @@ function G.start()
 			for _,event in Rules.step(d,ctx,now,perks(p)) do visualEvent(p,event) end
 			local gemRate=Rules.gemRate(d) -- 8 Nov: Gems trickle from Exotic+ crushers in a bay
 			if gemRate>0 then
-				local before=math.floor(d.crushers.gems) d.crushers.gems+=gemRate*C.Tick/60
-				if math.floor(d.crushers.gems)>before then p:SetAttribute("Gems",math.floor(d.crushers.gems)) end
+				-- 9 Nov: whole Gems only; the remainder waits in gemDust
+				local s=d.crushers local dust=(s.gemDust or 0)+gemRate*C.Tick/60
+				local whole=math.floor(dust)
+				if whole>0 then
+					s.gems+=whole dust-=whole
+					p:SetAttribute("Gems",s.gems)
+					Analytics.gems(p,"Bays","Gameplay",whole,s.gems)
+				end
+				s.gemDust=dust
 			end
 			if now-lastAuto>=C.AutoCollectInterval and Store.hasPass(p,"AutoCollect") then
 				if d.crushers.available>0 then Rules.act(d,ctx,"Collect",{},now,random,guid,perks(p)) end

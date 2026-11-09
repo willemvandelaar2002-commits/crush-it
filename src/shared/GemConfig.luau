@@ -45,10 +45,15 @@ end
 G.Emoji = "💎"
 G.UnlockRebirths = 1 -- the Gem Shop opens after this many rebirths
 
--- Gems for reaching rebirth n (1, 2, 3, ...): 10, 15, 20, ... 55 at rebirth 10
+-- Gems for reaching rebirth n (1, 2, 3, ...): 10, 15, 20, ... 55 at rebirth 10.
+-- 9 Nov (vault: time to afford): the first rebirth pays FirstBonus extra (25), so the
+-- first Gem Shop visit can buy something (cheapest: an upgrade 15, the crate 25).
+G.FirstBonus = 15
 function G.forRebirth(n: number): number
-	return 10 + 5 * (math.max(1, n) - 1)
+	return 10 + 5 * (math.max(1, n) - 1) + (if n == 1 then G.FirstBonus else 0)
 end
+-- Where Gems come from (shown in the Gem Shop; vault: show where a currency comes from)
+G.HowToEarn = "Earn Gems: REBIRTH · Exotic or better crushers in a bay · the GEM CRUSHER"
 
 -- Gems per minute for each crusher of these rarities that sits in a bay
 G.Trickle = { Exotic = 0.1, Mythic = 0.15, Secret = 0.25, Divine = 0.5 }
