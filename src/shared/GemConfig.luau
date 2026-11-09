@@ -82,8 +82,8 @@ G.Upgrades = {
 	-- with the bays before it already open (lv 1: FACTORY II + 12 bays; lv 2: FACTORY III + 24).
 	-- Never past the factory before the rebirth one (Rebirth.MinPlot), so a rebirth always
 	-- needs a run. NEST EGG: start each rebirth with 1% of its price per level (max 5%).
-	{ id = "HeadStart", title = "Head Start", line = "Rebirth into the next Factory, bays open", per = 1, max = 2, base = 40, growth = 3 },
-	{ id = "NestEgg", title = "Nest Egg", line = "Start a rebirth with +1% of its price", per = 0.01, max = 5, base = 25, growth = 1.6 },
+	{ id = "HeadStart", title = "Head Start", line = "Rebirth 1 Factory further on", per = 1, max = 2, base = 40, growth = 3 },
+	{ id = "NestEgg", title = "Nest Egg", line = "Rebirth with +1% of its price", per = 0.01, max = 5, base = 25, growth = 1.6 },
 	{ id = "Rolls", title = "Quick Rolls", line = "Rolls 0.25 s faster per level", per = 0.25, max = 4, base = 20, growth = 2 },
 	-- 8 Nov: a 6th roll pedestal (the purple one in front of the roll machine)
 	{ id = "Pedestal", title = "Gem Pedestal", line = "+1 pedestal: 6 choices per roll", per = 1, max = 1, base = 60, growth = 1 },
