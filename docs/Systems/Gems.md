@@ -5,9 +5,9 @@ Second currency for players who have rebirthed (added 8 Nov 2026). Numbers live 
 UI in `src/client/GemShop.client.luau`, tests in `Server/Tests/Gems.spec.luau`.
 
 - **Job:** progress after the first rebirth. Never sold for Robux, so the crate is not a paid random item (odds still shown).
-- **Faucet (10 Nov):** only the **Gem Mine** (see `Gem Mine.md`): base 10 Gems a minute from rebirth 1. Rebirths pay no Gems and bays make none any more.
+- **Faucet (10 Nov):** only the **Gem Mine** (see `Gem Mine.md`): base 60 Gems a minute from rebirth 1 (10 Nov; prices x6 with it, see `Gem Mine.md`). Rebirths pay no Gems and bays make none any more.
 - **Sink, the Gem Shop** (GEMS button in the HUD row after REBIRTH, shown from rebirth 1):
-  - Gem Crate, 250 Gems (was 25 before the mine): Legendary 60% / Exotic 30% / Secret 8% / Divine 2%, Standard finish, refused when the inventory is full. Exotic+ results are announced server-wide.
+  - Gem Crate, 1500 Gems (25 before the mine; all Gem prices x6 on 10 Nov): Legendary 60% / Exotic 30% / Secret 8% / Divine 2%, Standard finish, refused when the inventory is full. Exotic+ results are announced server-wide.
   - Mine upgrades first: Crush Speed, More Gems, Gem Value, Gem Magnet (see `Gem Mine.md`).
   - Gem Cash and Gem Luck: +10% per level, max 10, cost `15 * 1.5^level`.
   - Quick Rolls: roll cooldown -0.25 s per level (never below 1 s), max 4, cost `20 * 2^level`.
