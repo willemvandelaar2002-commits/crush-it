@@ -288,9 +288,18 @@ local function buildWorld()
 		local g = signGem:Clone() g.Anchored = true g.Size *= 2.2 deco(g)
 		g.CFrame = signAt * CFrame.new(0, 8.2, 0) g.Parent = root
 	end
-	local signText = label(shop, "GEM UPGRADES", RGB(255, 236, 120), 0, Vector2.new(5, 2.2))
-	local signGui = signText.Parent :: BillboardGui
-	signGui.AlwaysOnTop = true signGui.MaxDistance = 90 -- on the board, not hidden by it
+	-- the words printed on both faces of the board (a floating label hid behind it)
+	for _, face in { Enum.NormalId.Back, Enum.NormalId.Front } do
+		local sg = Instance.new("SurfaceGui")
+		sg.Face = face sg.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud sg.PixelsPerStud = 60
+		sg.LightInfluence = 0 sg.MaxDistance = 120
+		local t = Instance.new("TextLabel")
+		t.Size = UDim2.fromScale(0.92, 0.8) t.Position = UDim2.fromScale(0.04, 0.1) t.BackgroundTransparency = 1
+		t.Text = "GEM\nUPGRADES" t.TextScaled = true t.Font = Enum.Font.FredokaOne t.TextColor3 = RGB(255, 236, 120)
+		local st = Instance.new("UIStroke") st.Thickness = 5 st.Color = RGB(40, 20, 60) st.Parent = t
+		t.Parent = sg
+		sg.Parent = shop
+	end
 	prompt(shop, "Upgrades", "Gem Shop").Triggered:Connect(function(p)
 		Net.event("GemMine"):FireClient(p, { kind = "openShop" })
 	end)
