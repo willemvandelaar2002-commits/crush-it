@@ -185,6 +185,8 @@ for i, u in G.Upgrades do
 end
 
 local last: any = nil
+-- 11 Nov: the mine upgrades' max grows with rebirths (GemConfig.RebirthCap)
+local function rebirthsNow(): number return tonumber(me:GetAttribute("Rebirths")) or 0 end
 local function refresh()
 	local gems = math.floor(tonumber(me:GetAttribute("Gems")) or 0)
 	local rate = tonumber(me:GetAttribute("GemRate")) or 0
@@ -194,7 +196,7 @@ local function refresh()
 	local canOpen = gems >= G.Crate.Cost
 	local cheapest = G.Crate.Cost
 	for _, u in G.Upgrades do
-		local c = G.cost(u.id, (last and last.gemUps and last.gemUps[u.id]) or 0)
+		local c = G.cost(u.id, (last and last.gemUps and last.gemUps[u.id]) or 0, rebirthsNow())
 		if c and c < cheapest then cheapest = c end
 	end
 	earnText.TextColor3 = if gems < cheapest then RGB(255, 236, 90) else Color3.new(1, 1, 1)
@@ -203,8 +205,11 @@ local function refresh()
 	for _, u in G.Upgrades do
 		local r = rows[u.id]
 		local level = (last and last.gemUps and last.gemUps[u.id]) or 0
-		r.level.Text = "Level " .. level .. " / " .. u.max
-		local cost = G.cost(u.id, level)
+		local rb = rebirthsNow()
+		r.level.Text = "Level " .. level .. " / " .. G.maxLevel(u, rb)
+		local cost = G.cost(u.id, level, rb)
+		local nextCap = G.nextCapRebirth(u, rb)
+		if not cost and nextCap then r.level.Text ..= "  (+1 at rebirth " .. nextCap .. ")" end
 		if not cost then
 			r.cost.Text = "MAX"
 			Style.setButtonColor(r.buy, RGB(120, 124, 140))
@@ -266,6 +271,7 @@ me:GetAttributeChangedSignal("Gems"):Connect(function()
 	task.delay(1.2, function() pop:Destroy() end)
 end)
 me:GetAttributeChangedSignal("GemRate"):Connect(refresh)
+me:GetAttributeChangedSignal("Rebirths"):Connect(refresh) -- (11 Nov: the mine caps grow with rebirths)
 me:GetAttributeChangedSignal("Rebirths"):Connect(showHud)
 showHud()
 refresh()

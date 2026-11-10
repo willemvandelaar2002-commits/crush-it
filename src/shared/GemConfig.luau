@@ -98,9 +98,9 @@ G.Crate = {
 G.Upgrades = {
 	-- 9 Nov: GEM MINE upgrades (group "mine", listed first): what your Gem Crusher makes
 	{ id = "MineSpeed", group = "mine", title = "Crush Speed", line = "Crushes 0.25 s faster", per = 0.25, max = 4, base = 60, growth = 1.6 },
-	{ id = "MineDrops", group = "mine", title = "More Gems", line = "+1 gem per crush", per = 1, max = 2, base = 180, growth = 4 },
-	{ id = "MineValue", group = "mine", title = "Gem Value", line = "Gems worth +50%", per = 0.5, max = 2, base = 240, growth = 4 },
-	{ id = "Magnet", group = "mine", title = "Gem Magnet", line = "Pick up from 3 studs further", per = 3, max = 5, base = 45, growth = 1.6 },
+	{ id = "MineDrops", group = "mine", title = "More Gems", line = "+1 gem per crush", per = 1, max = 2, base = 180, growth = 4, rebirthBonus = true },
+	{ id = "MineValue", group = "mine", title = "Gem Value", line = "Gems worth +50%", per = 0.5, max = 2, base = 240, growth = 4, rebirthBonus = true },
+	{ id = "Magnet", group = "mine", title = "Gem Magnet", line = "Pick up from 3 studs further", per = 3, max = 5, base = 45, growth = 1.6, rebirthBonus = true },
 	{ id = "Cash", title = "Gem Cash", line = "+10% cash per level", per = 0.10, max = 10, base = 45, growth = 1.5 },
 	{ id = "Luck", title = "Gem Luck", line = "+10% luck per level", per = 0.10, max = 10, base = 45, growth = 1.5 },
 	-- 9 Nov (rebirth data: 170 players at rebirth 1, 66 at rebirth 2: starting over is where
@@ -119,9 +119,25 @@ function G.upgrade(id: string): any
 	for _, u in G.Upgrades do if u.id == id then return u end end
 	return nil
 end
-function G.cost(id: string, level: number): number?
+-- 11 Nov (Willem: "do maxes increase with rebirth level?"; vault Progression and Pacing: each rebirth
+-- should bring a new source to aim for, every category capped on its own): every 5 rebirths
+-- raises the max of More Gems, Gem Value and Gem Magnet by 1, at most +2 (rebirth 10). Crush
+-- Speed stays at its max (1 s). Worst case: 5 gems x 3 value x1.5 awake a second = 1,350 a minute.
+G.RebirthCap = { every = 5, most = 2 }
+function G.capBonus(u: any, rebirths: number?): number
+	if not u.rebirthBonus then return 0 end
+	return math.min(G.RebirthCap.most, math.floor((rebirths or 0) / G.RebirthCap.every))
+end
+function G.maxLevel(u: any, rebirths: number?): number return u.max + G.capBonus(u, rebirths) end
+function G.absoluteMax(u: any): number return u.max + (if u.rebirthBonus then G.RebirthCap.most else 0) end
+-- the rebirth count that raises this upgrade's max next (nil when it can't go higher)
+function G.nextCapRebirth(u: any, rebirths: number?): number?
+	if not u.rebirthBonus or G.capBonus(u, rebirths) >= G.RebirthCap.most then return nil end
+	return (G.capBonus(u, rebirths) + 1) * G.RebirthCap.every
+end
+function G.cost(id: string, level: number, rebirths: number?): number?
 	local u = G.upgrade(id)
-	if not u or level >= u.max then return nil end
+	if not u or level >= G.maxLevel(u, rebirths) then return nil end
 	return math.floor(u.base * u.growth ^ level + 0.5)
 end
 -- multipliers from the saved levels (s = d.crushers)
