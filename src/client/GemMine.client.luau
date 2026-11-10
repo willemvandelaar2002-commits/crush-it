@@ -167,6 +167,28 @@ remote.OnClientEvent:Connect(function(msg)
 	end
 end)
 
+-- 10 Nov (Willem: "we need sounds for the gems picking up"): a crystal ding per gem you pick up.
+-- Quick pickups in a row climb in pitch (a streak, like coins in a platformer); a gem worth more
+-- rings a little lower and louder. At most one ding per 0.05 s (a magnet sweep stays a tune, not noise).
+local Config = require(RS.Shared.Config)
+local SoundService = game:GetService("SoundService")
+local streak, lastDing, lastPick = 0, 0, 0
+local function ding(value: number)
+	local now = os.clock()
+	streak = if now - lastPick < 0.7 then math.min(streak + 1, 12) else 0
+	lastPick = now
+	if now - lastDing < 0.05 then return end
+	lastDing = now
+	local snd = Instance.new("Sound")
+	snd.SoundId = "rbxassetid://" .. tostring(Config.Sounds.GemPickup)
+	snd.Volume = if value > 1 then 0.6 else 0.45
+	snd.PlaybackSpeed = (1 + streak * 0.04) * (if value > 1 then 0.92 else 1) * (0.98 + math.random() * 0.04)
+	snd.Parent = SoundService
+	snd:Play()
+	snd.Ended:Connect(function() snd:Destroy() end)
+	task.delay(3, function() if snd.Parent then snd:Destroy() end end)
+end
+
 local lastSend = 0
 RunService.RenderStepped:Connect(function(dt)
 	local now = os.clock()
@@ -195,6 +217,7 @@ RunService.RenderStepped:Connect(function(dt)
 			if (target - g.part.Position).Magnitude < 1.6 then
 				g.pending = true g.part.Transparency = 1
 				table.insert(queue, id)
+				ding(g.value)
 			end
 		else
 			g.part.CFrame = CFrame.new(rest) * spin

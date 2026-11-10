@@ -472,3 +472,4 @@
 - 2026-11-10: The other five Eternal models (Chrono Colossus, Worldbreaker, Infinity Engine, Rift Monarch, Reality Splitter) game-ready like the Astral Leviathan: cut, capped, ~3,200 triangles each, motion rigs, templates in ServerStorage.SpecialCrusherMeshes, dev preview buttons. Tested in bay 1. Still preview-only until the Eternal tier is decided.
 - 2026-11-10: ETERNAL rarity (Willem): above Divine, 1 in 500,000 for any of the six (1 in 3M each), value 580/input (between Divine and Mythic; Mythic stays strongest). Its own big roll cinematic (rift, portal rings, orbiting shards, collapse to black, burst), longer than Divine's; server aftershock x2 for 45 s.
 - 2026-11-10: Gem Mine music: Willem's Suno song (129703295050685) plays in the mine.
+- 2026-11-10: Gem Mine: a ding when you pick up a gem (pitch climbs on a streak) and a polished amethyst tile floor with glowing joints (Willem: the studs looked unfinished).
