@@ -40,7 +40,7 @@ local C = {
 	CashPacks = { CashSmall = 60, CashMedium = 300, CashLarge = 1200 },
 	-- Complete one physical six-bay row with a single rarity. Scrap only;
 	-- applies to that row, never stacks across rows or changes roll odds.
-	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40, Exotic=.44, Limited=.48, Secret=.48, Divine=.54, Mythic=.60 }, -- (6 Nov: Limited like Secret)
+	RowBonuses = { Common=.05, Uncommon=.10, Rare=.15, Epic=.25, Legendary=.40, Exotic=.44, Limited=.48, Secret=.48, Divine=.54, Eternal=.57, Mythic=.60 }, -- (6 Nov: Limited like Secret)
 }
 -- Stadium banks: ground bays open to the plaza, the upper row steps back on
 -- top of them (its walkway is the ground bays' roof). Local plot coordinates,
@@ -267,7 +267,7 @@ C.Types = {
 	{ id = "Toyzilla", name = "Toyzilla", template="Toyzilla", tier=11, input=3, damage=40, hp=120, value=220, cycle=1.8 },
 }
 C.Rarities = {
-	{ name = "Common", price = 30, weight = 69.9512, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
+	{ name = "Common", price = 30, weight = 69.951, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
 	{ name = "Uncommon", price = 150, weight = 22, rank = 1, types = { "Cobalt", "RocketPress" }, mult = 1.15, color = Color3.fromRGB(99, 210, 132) },
 	{ name = "Rare", price = 900, weight = 6, rank = 2, types = { "Mega", "Magnetron" }, mult = 1.35, color = Color3.fromRGB(75, 148, 255) },
 	{ name = "Epic", price = 6000, weight = 1.8, rank = 3, types = { "Titan", "TwinTitan" }, mult = 1.65, color = Color3.fromRGB(187, 105, 246) },
@@ -290,6 +290,12 @@ C.Rarities = {
 	-- C.ChaseTypes below.
 	{ name = "Secret", price = 750000, weight = 0.008, rank = 5, types = {}, mult = 2.2, color = Color3.fromRGB(120, 122, 150) },
 	{ name = "Divine", price = 7500000, weight = 0.0008, rank = 6, types = {}, mult = 2.4, color = Color3.fromRGB(110, 225, 255) },
+	-- 10 Nov (Willem: "more rare than divine, we just needed new crushers. so cooler animation
+	-- than divine"): ETERNAL, the six cosmic crushers (C.EternalTypes). Weight .0002 = 1 in
+	-- 500,000 rolls for any Eternal, 1 in 3,000,000 for each, before luck (Divine: 1 in
+	-- 125,000 / 500,000). Common gave up the .0002. rank 6.5: between Divine and Mythic for
+	-- luck and pity; Mythic stays the strongest and LAST.
+	{ name = "Eternal", price = 30000000, weight = 0.0002, rank = 6.5, types = {}, mult = 2.5, color = Color3.fromRGB(205, 185, 255) },
 	-- Mythic: never rolled (weight 0). Only from the Robux shop, a rare Daily
 	-- Spin prize, crates and rare playtime/daily reward drops. 3x Legendary
 	-- output, still the strongest tier. Keep it LAST in this list.
@@ -356,7 +362,7 @@ C.ChaseTypes = {
 	{ id = "ArchangelAnvil", name = "Archangel Anvil", rarity = "Divine", template = "ArchangelAnvil" },
 	{ id = "AuroraPress", name = "Aurora Press", rarity = "Divine", template = "AuroraPress" },
 }
-C.ChaseValue = { Secret = 330, Divine = 500 }
+C.ChaseValue = { Secret = 330, Divine = 500, Eternal = 580 } -- 10 Nov: Eternal between Divine and Mythic (660)
 do
 	local band
 	for _, existing in C.Types do if existing.id == "Quantum" then band = existing break end end
@@ -387,6 +393,17 @@ do
 		for _, rarity in C.Rarities do if rarity.name == "Limited" then table.insert(rarity.types, entry.id) break end end
 	end
 end
+-- 10 Nov: the six ETERNAL crushers (Willem's ChatGPT models, Claude's Blender pass; models in
+-- ServerStorage.SpecialCrusherMeshes, motion in Shared/EternalCrusherAssets). Rollable like
+-- Secret and Divine; appended to C.Types so every older catalogue index stays the same.
+C.EternalTypes = {
+	{ id = "AstralLeviathan", name = "Astral Leviathan", template = "AstralLeviathan" },
+	{ id = "ChronoColossus", name = "Chrono Colossus", template = "ChronoColossus" },
+	{ id = "Worldbreaker", name = "Worldbreaker", template = "Worldbreaker" },
+	{ id = "InfinityEngine", name = "Infinity Engine", template = "InfinityEngine" },
+	{ id = "RiftMonarch", name = "Rift Monarch", template = "RiftMonarch" },
+	{ id = "RealitySplitter", name = "Reality Splitter", template = "RealitySplitter" },
+}
 -- 8 Nov: Exotic models are permanent regular rolls, not weekend or crate rewards.
 -- Append types to preserve every existing catalogue index used by legacy saves.
 C.ExoticTypes = {
@@ -411,6 +428,20 @@ do
   table.insert(rarity.types, entry.id)
  end
 end
+do -- (after the Exotics, so their catalogue indexes stay put too)
+	local band
+	for _, existing in C.Types do if existing.id == "Quantum" then band = existing break end end
+	local rarity
+	for _, entry in C.Rarities do if entry.name == "Eternal" then rarity = entry break end end
+	assert(band and rarity, "Missing Eternal band or rarity")
+	for _, entry in C.EternalTypes do
+		local def = table.clone(band)
+		def.id = entry.id def.name = entry.name def.template = entry.template
+		def.design = nil def.value = C.ChaseValue.Eternal
+		table.insert(C.Types, def)
+		table.insert(rarity.types, entry.id)
+	end
+end
 -- 9 Nov: the Gem Crusher is no longer a bay crusher: it lives in the GEM MINE (GemConfig.Mine,
 -- server/GemMine). C.gemCrusher stays for old calls and always says no.
 function C.gemCrusher(_typeId) return nil end
@@ -428,6 +459,7 @@ C.RarityObjects = {
 	Secret = { "House", "Statue" },
 	Limited = { "House", "Statue" },
 	Divine = { "Plane", "Ship" },
+	Eternal = { "Ship", "Planet" },
 	Mythic = { "Planet" },
 }
 C.Modifiers = {
@@ -487,13 +519,16 @@ C.Hold = { Size = 3.6, Forward = 2.7, Up = 0.5, Stroke = 1.1, Pump = 0.22 }
 -- 8 Nov (Willem): SKIP ANIMATION in the Auto Roller: while Auto Roll runs, the pedestal
 -- flicker, die spin and reveal flash are skipped and the next roll comes SkipSeconds after the last
 -- (normal: RollSeconds 3). The Secret/Divine/Limited cinematics still play.
-C.AutoRoll = { SkipSeconds = 1.5, Default = { "Legendary", "Exotic", "Limited", "Secret", "Divine" },
-	Rarities = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Exotic", "Limited", "Secret", "Divine" } }
+C.AutoRoll = { SkipSeconds = 1.5, Default = { "Legendary", "Exotic", "Limited", "Secret", "Divine", "Eternal" },
+	Rarities = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Exotic", "Limited", "Secret", "Divine", "Eternal" } }
 -- 7 Nov (Willem: "should be special luck animation"): Limited (rank 4.5, under MinRank)
 -- gets its own cinematic too: three giant slot reels stop on clovers (client/BigRoll).
 C.BigRoll = { MinRank = 5, PillarSeconds = 30,
 	Limited = { Hold = 5.2 },
-	Secret = { Hold = 4.6 }, Divine = { Hold = 6.4, AftershockLuck = 1.5, AftershockSeconds = 30 } }
+	Secret = { Hold = 4.6 }, Divine = { Hold = 6.4, AftershockLuck = 1.5, AftershockSeconds = 30 },
+	-- 10 Nov: ETERNAL (client/BigRoll: reality tears open, the crusher rises out of it) and a
+	-- bigger aftershock for the whole server than a Divine's
+	Eternal = { Hold = 9, AftershockLuck = 2, AftershockSeconds = 45 } }
 -- 5 Nov (Willem): a bay holding a Secret or Divine crusher glows (client/SpecialBayFx; 6 Nov: Limited too):
 -- a light plate on the pedestal, a colour wash up the back wall, rising sparkles;
 -- Divine adds two soft light shafts. Colours match the models (Secret neon purple/pink,
@@ -504,6 +539,8 @@ C.SpecialBay = {
 	Divine = { main = Color3.fromRGB(255, 205, 80), accent = Color3.fromRGB(120, 235, 255), sparkles = 9, shafts = true },
 	-- 6 Nov: Limited (Lucky Weekend): clover green and gold
 	Limited = { main = Color3.fromRGB(70, 225, 100), accent = Color3.fromRGB(255, 205, 60), sparkles = 7, shafts = false },
+	-- 10 Nov: Eternal: deep cosmic violet and starlight, with shafts
+	Eternal = { main = Color3.fromRGB(150, 90, 255), accent = Color3.fromRGB(235, 245, 255), sparkles = 11, shafts = true },
 	-- 8 Nov (Willem: "mythic should feel more special"): the top tier gets everything, in a
 	-- rainbow that keeps shifting (rainbow = true: plate, wash, shafts and sparkles cycle hues)
 	Mythic = { main = Color3.fromRGB(255, 70, 190), accent = Color3.fromRGB(80, 230, 255), sparkles = 12, shafts = true, rainbow = true },
@@ -514,6 +551,7 @@ C.SpecialBay = {
 		Exotic = { Color3.fromRGB(160, 48, 28), Color3.fromRGB(255, 112, 55), Color3.fromRGB(255, 175, 100), Color3.fromRGB(65, 195, 152), Color3.fromRGB(160, 48, 28) },
 		Secret = { Color3.fromRGB(58, 18, 112), Color3.fromRGB(150, 40, 210), Color3.fromRGB(235, 60, 190), Color3.fromRGB(40, 170, 230), Color3.fromRGB(58, 18, 112) },
 		Divine = { Color3.fromRGB(190, 110, 20), Color3.fromRGB(235, 165, 40), Color3.fromRGB(250, 205, 90), Color3.fromRGB(60, 150, 230), Color3.fromRGB(190, 110, 20) },
+		Eternal = { Color3.fromRGB(30, 14, 70), Color3.fromRGB(110, 60, 230), Color3.fromRGB(235, 225, 255), Color3.fromRGB(80, 210, 255), Color3.fromRGB(30, 14, 70) },
 		Limited = { Color3.fromRGB(20, 110, 50), Color3.fromRGB(40, 170, 70), Color3.fromRGB(200, 160, 30), Color3.fromRGB(40, 170, 70), Color3.fromRGB(20, 110, 50) },
 		Mythic = { Color3.fromRGB(255, 60, 120), Color3.fromRGB(255, 170, 40), Color3.fromRGB(255, 235, 70), Color3.fromRGB(70, 220, 110),
 			Color3.fromRGB(60, 190, 255), Color3.fromRGB(170, 90, 255), Color3.fromRGB(255, 60, 120) },

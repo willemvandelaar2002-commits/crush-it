@@ -59,7 +59,7 @@ end
 row("Plot level (skips tutorial + goals, unlocks its bays)", { { "1", send("Plot", 1) }, { "2", send("Plot", 2) }, { "3", send("Plot", 3) }, { "4", send("Plot", 4) }, { "5", send("Plot", 5) }, { "6", send("Plot", 6) } })
 row("Skip", { { "Tutorial", send("Skip", "") }, { "+ Goals", send("Skip", "goals") } })
 row("Cash", { { "+1M", send("Cash", 1e6) }, { "+1B", send("Cash", 1e9) }, { "+1T", send("Cash", 1e12) } })
-row("Big roll", { { "Secret", send("BigRoll", "Secret") }, { "Divine", send("BigRoll", "Divine") }, { "Limited", send("BigRoll", "Limited") } })
+row("Big roll", { { "Secret", send("BigRoll", "Secret") }, { "Divine", send("BigRoll", "Divine") }, { "Eternal", send("BigRoll", "Eternal") }, { "Limited", send("BigRoll", "Limited") } })
 -- 9 Nov: Gems / rebirth tests
 row("Gems", { { "+100", send("Gems", 100) }, { "+1000", send("Gems", 1000) }, { "+10000", send("Gems", 10000) } })
 row("Rebirths (1+: Gem Mine, 5+: awakened)", { { "0", send("Rebirths", 0) }, { "1", send("Rebirths", 1) }, { "3", send("Rebirths", 3) }, { "5", send("Rebirths", 5) }, { "10", send("Rebirths", 10) } })

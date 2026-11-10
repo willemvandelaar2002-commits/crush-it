@@ -623,7 +623,7 @@ local function rollShow(p,offers)
 			Net.event("RarePull"):FireAllClients({player=p.DisplayName,rarity=best.name,name=def and def.name or best.item.type,color=best.color,userId=p.UserId})
 			if big and big.AftershockLuck then
 				ServerLuck.aftershock(p,big.AftershockLuck,big.AftershockSeconds)
-				Net.event("RarePull"):FireAllClients({text="DIVINE AFTERSHOCK: +"..math.floor((big.AftershockLuck-1)*100+.5).."% luck for EVERYONE for "..big.AftershockSeconds.." seconds!",
+				Net.event("RarePull"):FireAllClients({text=string.upper(best.name).." AFTERSHOCK: +"..math.floor((big.AftershockLuck-1)*100+.5).."% luck for EVERYONE for "..big.AftershockSeconds.." seconds!",
 					userId=p.UserId,color=best.color})
 			end
 		end)
@@ -1152,7 +1152,7 @@ function G.start()
 			local p=Players:GetPlayerByUserId(source.UserId) local ctx=p and sessions[p]
 			if not p or not ctx then return end
 			local arg=string.lower(string.split(text," ")[2] or "secret")
-			local rarity=if arg=="divine" then "Divine" elseif arg=="limited" then "Limited" else "Secret"
+			local rarity=if arg=="divine" then "Divine" elseif arg=="limited" then "Limited" elseif arg=="eternal" then "Eternal" else "Secret"
 			ctx.forceRarity=rarity
 			local ok,message=action(p,"Roll",{})
 			if not ok then ctx.forceRarity=nil end
@@ -1179,7 +1179,7 @@ function G.start()
 			elseif what=="Cash" then
 				api.addCash(p,math.clamp(tonumber(arg) or 0,0,1e15)) send(p,"+cash (dev)") return "ok"
 			elseif what=="BigRoll" then
-				ctx.forceRarity=if arg=="Divine" or arg=="Limited" then arg else "Secret"
+				ctx.forceRarity=if arg=="Divine" or arg=="Limited" or arg=="Eternal" then arg else "Secret"
 				local ok,message=action(p,"Roll",{}) if not ok then ctx.forceRarity=nil end
 				return tostring(message)
 			elseif what=="CrateReady" then
@@ -1228,7 +1228,7 @@ function G.start()
 					local keep=s.equipped["1"] s.equipped={} if keep then s.equipped["1"]=keep end
 				else
 					local heavy={}
-					for _,r in C.Rarities do if r.name=="Exotic" or r.name=="Secret" or r.name=="Divine" then for _,t in r.types do table.insert(heavy,{t,r.name}) end end end
+					for _,r in C.Rarities do if r.name=="Exotic" or r.name=="Secret" or r.name=="Divine" or r.name=="Eternal" then for _,t in r.types do table.insert(heavy,{t,r.name}) end end end
 					for i=1,s.bays do if not s.equipped[tostring(i)] then
 						local typeId,rarity
 						if arg=="specials" and #heavy>0 then local h=heavy[(i-1)%#heavy+1] typeId,rarity=h[1],h[2]

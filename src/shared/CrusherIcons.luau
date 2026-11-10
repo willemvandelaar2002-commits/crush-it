@@ -43,7 +43,9 @@ I.Overrides={
 	MaglevMauler="rbxassetid://126673838144880",OrigamiClamp="rbxassetid://81631247983925",
 	ScrewStamper="rbxassetid://107469672913843",WreckingWinch="rbxassetid://128684710178111",
 } :: {[string]: string}
-I.Ready={MaglevMauler=true,OrigamiClamp=true,WreckingWinch=true,CamCruncher=true,ScrewStamper=true,DrawbridgeCrusher=true,Titan=true,Laser=true,Plasma=true,Gravity=true,Quake=true,Cyclone=true,Mecha=true,
+-- 10 Nov: the six Eternals load by name (Willem's Asset Manager import of Eternal\Icons: Crusher_<Id>)
+I.Ready={AstralLeviathan=true,ChronoColossus=true,Worldbreaker=true,InfinityEngine=true,RiftMonarch=true,RealitySplitter=true,
+	MaglevMauler=true,OrigamiClamp=true,WreckingWinch=true,CamCruncher=true,ScrewStamper=true,DrawbridgeCrusher=true,Titan=true,Laser=true,Plasma=true,Gravity=true,Quake=true,Cyclone=true,Mecha=true,
 	Quantum=true,Starforge=true,DragonJaw=true,BlackHole=true,Clockwork=true,FactoryHeart=true,
 	Mega=true,Thunder=true,Frost=true,Furnace=true,ScrapShark=true,SteamHammer=true,JunkyardJaw=true,
 	Cobalt=true,Gearbox=true,Flywheel=true,Pneumatic=true,DoubleStamp=true,Boiler=true,Conveyor=true,

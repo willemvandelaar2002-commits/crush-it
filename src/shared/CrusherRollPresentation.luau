@@ -12,6 +12,7 @@ local profiles={
 	Limited={rank=4.5,duration=1.5,lift=1.4,pitch=.87},
 	Secret={rank=5,duration=1.6,lift=1.5,pitch=.84},
 	Divine={rank=6,duration=1.85,lift=1.7,pitch=.8},
+	Eternal={rank=6.5,duration=1.9,lift=1.7,pitch=.79},
 	Mythic={rank=7,duration=1.9,lift=1.7,pitch=.78},
 }
 function P.profile(rarity) return profiles[rarity] or profiles.Common end

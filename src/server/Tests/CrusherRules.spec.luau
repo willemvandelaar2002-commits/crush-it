@@ -143,11 +143,11 @@ return function()
 	end
 	-- Forty real, reachable definitions; model additions must not silently
 	-- change legacy IDs, saved instance stats or the existing rarity weights.
-	check(#C.Types==40+#C.Mythics+#C.CrateTypes+#C.ChaseTypes+#C.LimitedTypes+#C.ExoticTypes,"complete catalogue including Exotic")
+	check(#C.Types==40+#C.Mythics+#C.CrateTypes+#C.ChaseTypes+#C.LimitedTypes+#C.ExoticTypes+#C.EternalTypes,"complete catalogue including Exotic")
 	local seen={} local cumulative=0 local total=0 for _,r in C.Rarities do total+=r.weight end
 	for _,r in C.Rarities do
 		local chase=0 for _,e in C.ChaseTypes do if e.rarity==r.name then chase+=1 end end
-		check(#r.types==(if r.exclusive then #C.Mythics elseif r.event then #C.LimitedTypes elseif r.name=="Exotic" then #C.ExoticTypes elseif chase>0 then chase else 8),"eight types per rollable rarity (chase tiers: their chase crushers)")
+		check(#r.types==(if r.exclusive then #C.Mythics elseif r.event then #C.LimitedTypes elseif r.name=="Exotic" then #C.ExoticTypes elseif r.name=="Eternal" then #C.EternalTypes elseif chase>0 then chase else 8),"eight types per rollable rarity (chase tiers: their chase crushers)")
 		if r.exclusive then for _,t in r.types do check(C.typeById(t)~=nil and not seen[t],"real Mythic type") seen[t]=true end continue end
 		if r.event then for _,t in r.types do check(C.typeById(t)~=nil and not seen[t] and C.typeById(t).event==r.event,"real Limited type") seen[t]=true end continue end
 		for position,typeId in r.types do
