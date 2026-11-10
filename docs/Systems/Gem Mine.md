@@ -11,11 +11,12 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   sign "REBIRTH 1 TO UNLOCK" before that. You arrive on the same portal on your pad; press E on it to go home.
 - **One Gem Crusher that everyone uses** (10 Nov, Willem: "just 1 crusher that everyone uses"; later "gem crusher a
   bit further back and then the platform in the front"): the crusher stands at the back (`Mine.CrusherZ` -26), facing
-  a raised round **gem platform** in front of it (`Mine.Zone`: radius 16, 1 stud high, gold trim, neon ring, glass
+  a raised round **gem platform** in front of it (`Mine.Zone`: radius 22 since 10 Nov (was 16), centre 5 studs forward, 1 stud high, gold trim, neon ring, glass
   top with a gold facet star, small crystals round its edge, sparkles). Every gem lands on the platform. One portal
   further in front (`Mine.PortalZ` 42: you arrive on it and press E on it to go home) and a GEM UPGRADES sign
-  (navy board, gold frame, a gem on top) beside it.
-- **Looks (10 Nov, Willem: "more gem like ... it looks kinda plain"):** dark slate floor with a neon edge, 14
+  (navy board, gold frame, a gem on top; the words printed on the board) beside it.
+- **Looks (10 Nov, Willem: "more gem like ... it looks kinda plain"):** a studded floor (the game's own Studs material, 10 Nov: Willem didn't like the slate) in deep
+  amethyst with clear checker tiles and a neon edge, 14
   glowing pink/cyan veins running from the platform to the rim, cave rocks with crystal clusters on the rim, big
   glowing crystal spires (none on the portal side), and floating gems on the left and right that spin and bob on
   your screen. The view from the portal to the crusher is kept clear.
