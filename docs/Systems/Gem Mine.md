@@ -80,9 +80,23 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   the server when a gem starts flying to you, not when it arrives (the vault's "laggy players fail validation"
   mistake); the ding still plays on arrival. The server no longer sends an empty message every crush while your mine
   is full. Left as is: gems are destroyed instead of pooled (at most 60, fine).
-- **Upgrade caps:** the mine upgrades have fixed maxes (Speed 4, More Gems 2, Value 2, Magnet 5); they do not grow
-  with rebirths (an idea: raise a max at rebirth milestones).
-- **Later:** a capped cash upgrade "Gem Yield" in the normal world; an Auto Walk Robux pass.
+- **Upgrade caps grow with rebirths (11 Nov, Willem: "if the vault says that yes"; vault Progression and Pacing: each
+  rebirth should bring something new to aim for, every category capped on its own):** every 5 rebirths raises the max
+  of More Gems, Gem Value and Gem Magnet by 1, at most +2 (rebirth 10): More Gems 2 -> 4 (5 a crush), Gem Value
+  2 -> 4 (x3), Magnet 5 -> 7 (26 studs, still under 3/4 of the platform radius). Crush Speed stays at 4 (1 s).
+  `GemConfig.RebirthCap`, `G.maxLevel(u, rebirths)`; the server checks the level against your rebirths; old saves
+  keep levels up to the highest possible max. The Gem Shop shows "Level 2 / 3" and, once maxed, "(+1 at rebirth 10)".
+  Worst case at rebirth 10, all maxed and awake: 1,350 Gems a minute (was 540); the extra levels cost 11.5k-61k
+  Gems (More Gems, Gem Value; growth x4) and 470-750 (Magnet). Spec: 8 new checks.
+- **AUTO WALK (11 Nov, Willem; game pass 2079272256, R$ 49, `Store` perk AutoWalk, hidden from the shop list):** in the
+  mine you walk to your nearest waiting gem by yourself, gem after gem (`Humanoid:MoveTo`, client/GemMine). Steering
+  yourself pauses it for a second (seen as walking another way than Auto Walk sent you; this game has no standard
+  PlayerModule). Same magnet and server checks as walking yourself. Sold by a board left of the portal (the same look
+  as the GEM UPGRADES sign, a pink gem on top): not owned, E or a click opens the pass purchase and the board shows
+  the price; owned, it switches Auto Walk on and off (attribute AutoWalkOn, on by default) and shows ON / OFF.
+  Tested in Play: switched on it walked from the portal and picked up 9 gems in 12 s; off, or without the pass, it
+  stays still; the board shows the price / ON; specs pass.
+- **Later:** a capped cash upgrade "Gem Yield" in the normal world.
 - Tested in Studio 10 Nov: teleporter lock/unlock, teleport, crushing every 6 s, pickup (10 walked over = +10),
   sign opens the shop, Magnet 5 -> 8 at once, awakened label at rebirth 5, specs pass.
 - Tested 10 Nov (second pass): arrive on your portal, 20 gems all inside the zone, walking the zone gave +34 in 4 s,

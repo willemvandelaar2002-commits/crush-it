@@ -34,6 +34,10 @@ Store.Passes = {
 	-- grants the contents (Shared/OfferConfig FirstBuy) once, by server/Offers. Hidden from
 	-- the pass lists; sold by its own HUD button (client/FirstBuy).
 	{ perk = "FirstBuy", gamePassId = 2074832519, price = 5, title = "First Buy Deal", desc = "Gumball Gobbler (Epic crusher) + 15 min 2x Cash + 15 min 2x Luck. Only once!", color = Color3.fromRGB(255, 90, 200), hidden = true },
+	-- 11 Nov (Willem): AUTO WALK, pass 2079272256 (R$ 49): in the Gem Mine you walk to your gems by
+	-- yourself (client/GemMine; steering yourself pauses it). Hidden from the shop list: it is sold
+	-- by its board beside the gem platform, where it is useful (vault: sell at the point of need).
+	{ perk = "AutoWalk", gamePassId = 2079272256, price = 49, title = "Auto Walk", desc = "In the Gem Mine you walk to your gems by yourself", color = Color3.fromRGB(255, 90, 230), hidden = true },
 	{ perk = "Lucky", gamePassId = 2041580327, price = 49, title = "Lucky", desc = "2x luck on crusher rolls: Uncommon or better about 30% -> 46% of rolls", color = Color3.fromRGB(255, 200, 50) },
 	{ perk = "AutoCollect", gamePassId = 2057934074, price = 69, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
 	-- 4 Nov (monetization round 2, vault: Price Points "the 299-599 rung was empty"; Willem):

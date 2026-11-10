@@ -405,3 +405,5 @@ right side only has the cash ladder button. First Buy Deal: now game pass `First
 lists; server/Offers grants O.FirstBuy once when it sees the pass owned.
 
 - 2026-11-08 (Willem, "impatient kid" playtest): the R$ 5 deal and the 2x/4x/8x/16x cash button show from goal C.RobuxButtonsGoal (5), read from the HudStage attribute (client/HudReveal). The starter pack no longer pops up 3 minutes in: only once all main goals are done (after Factory II), still once per session.
+
+- 2026-11-11: AUTO WALK pass (`AutoWalk`, 2079272256, R$ 49), hidden from the pass lists: sold by its board beside the gem platform in the Gem Mine (see [[Systems/Gem Mine]]).

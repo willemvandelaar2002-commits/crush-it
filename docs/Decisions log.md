@@ -478,3 +478,4 @@
 - 2026-11-10: Gem ding quieter (.22) and instant: preloaded copies, starts 0.07 s in where the sound is already loud (Willem: too loud, delayed).
 - 2026-11-11: New models for the seven Mythics (Willem's pack, textured, ~3,200 triangles): presses slide and their shafts stretch, Phantom Pirate's lid bites, Kraken's tentacles close. Visual only (ids, odds, stats, icons unchanged). Old templates kept in ServerStorage.OldMythicMeshes.
 - 2026-11-11: Gem Mine bigger (Willem: you could stand in the middle and get every gem): platform radius 22 -> 38, floor 70 -> 100, crusher x1.5. Vault check: pickups now asked for when the pull starts, not on arrival.
+- 2026-11-11: Gem Mine caps grow with rebirths (vault): +1 max on More Gems, Gem Value and Magnet every 5 rebirths, at most +2. AUTO WALK pass (2079272256, R$ 49): you walk to your gems by yourself in the mine; a board beside the platform sells it and switches it on/off.

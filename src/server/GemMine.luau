@@ -27,6 +27,8 @@ local RunService = game:GetService("RunService")
 local RS = game:GetService("ReplicatedStorage")
 
 local Gems = require(RS.Shared.GemConfig)
+local Store = require(RS.Shared.Store)
+local MarketplaceService = game:GetService("MarketplaceService")
 local Net = require(RS.Shared.Net)
 local Build = require(script.Parent.Kit.Build)
 local Analytics = require(script.Parent.Kit.Analytics)
@@ -317,6 +319,49 @@ local function buildWorld()
 	prompt(shop, "Upgrades", "Gem Shop").Triggered:Connect(function(p)
 		Net.event("GemMine"):FireClient(p, { kind = "openShop" })
 	end)
+	-- 11 Nov (Willem): the AUTO WALK board on the other side of the portal (the same look as the
+	-- upgrades sign). Not owned: E / click opens the pass purchase. Owned: it switches Auto Walk
+	-- on and off (attribute AutoWalkOn). Each player's own text (price / ON / OFF) is set on
+	-- their screen (client/GemMine), the board says what it does.
+	local walkAt = portalAt * CFrame.new(-11, 0, -2) * CFrame.Angles(0, math.rad(-20), 0)
+	for _, x in { -2.6, 2.6 } do Build.block(root, "WalkPost", Vector3.new(0.6, 6, 0.6), walkAt * CFrame.new(x, 3, 0), GOLD).Material = Enum.Material.Metal end
+	local wframe = Build.block(root, "WalkFrame", Vector3.new(6, 4, 0.5), walkAt * CFrame.new(0, 5, 0), GOLD)
+	wframe.Material = Enum.Material.Metal
+	local walk = Build.block(root, "AutoWalkSign", Vector3.new(5.2, 3.2, 0.6), walkAt * CFrame.new(0, 5, 0), NAVY)
+	local shoe = Build.block(root, "WalkGem", Vector3.new(1.4, 1.4, 1.4), walkAt * CFrame.new(0, 7.8, 0) * CFrame.Angles(math.rad(45), 0, math.rad(45)), MAGENTA)
+	shoe.Material = Enum.Material.Neon deco(shoe)
+	for _, face in { Enum.NormalId.Back, Enum.NormalId.Front } do
+		local sg = Instance.new("SurfaceGui")
+		sg.Name = "AutoWalkGui" sg.Face = face sg.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud sg.PixelsPerStud = 60
+		sg.LightInfluence = 0 sg.MaxDistance = 120
+		local t = Instance.new("TextLabel")
+		t.Name = "Title" t.Size = UDim2.fromScale(0.92, 0.5) t.Position = UDim2.fromScale(0.04, 0.06) t.BackgroundTransparency = 1
+		t.Text = "AUTO WALK" t.TextScaled = true t.Font = Enum.Font.FredokaOne t.TextColor3 = RGB(255, 170, 245)
+		local st = Instance.new("UIStroke") st.Thickness = 5 st.Color = RGB(40, 20, 60) st.Parent = t
+		t.Parent = sg
+		local sub = Instance.new("TextLabel")
+		sub.Name = "Status" sub.Size = UDim2.fromScale(0.92, 0.36) sub.Position = UDim2.fromScale(0.04, 0.58) sub.BackgroundTransparency = 1
+		sub.Text = "walks to your gems" sub.TextScaled = true sub.Font = Enum.Font.FredokaOne sub.TextColor3 = RGB(255, 236, 120)
+		local st2 = Instance.new("UIStroke") st2.Thickness = 4 st2.Color = RGB(40, 20, 60) st2.Parent = sub
+		sub.Parent = sg
+		sg.Parent = walk
+	end
+	local function onWalkBoard(p: Player)
+		if Store.hasPass(p, "AutoWalk") then
+			p:SetAttribute("AutoWalkOn", p:GetAttribute("AutoWalkOn") == false)
+			return
+		end
+		local pass = Store.passByPerk("AutoWalk")
+		if pass and pass.gamePassId ~= 0 then
+			Analytics.custom(p, "SignClicked", nil, "AutoWalk")
+			MarketplaceService:PromptGamePassPurchase(p, pass.gamePassId)
+		end
+	end
+	local walkPrompt = prompt(walk, "Auto Walk", "Gem Mine")
+	walkPrompt.Name = "AutoWalkPrompt"
+	walkPrompt.Triggered:Connect(onWalkBoard)
+	local click = Instance.new("ClickDetector") click.MaxActivationDistance = 40 click.Parent = walk
+	click.MouseClick:Connect(onWalkBoard)
 	crusher = { model = m, center = zc.Position + Vector3.new(0, Mine.Zone.height, 0), ramRest = ram.CFrame,
 		arrive = CFrame.lookAt((portalAt * CFrame.new(0, 3, -6)).Position, zc.Position + Vector3.new(0, 3, 0)) }
 	root.Parent = workspace

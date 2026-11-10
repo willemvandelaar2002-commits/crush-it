@@ -171,7 +171,7 @@ function R.migrate(d, guid)
 	s.gemDust=number(s.gemDust,0,1)+(s.gems-math.floor(s.gems)) s.gems=math.floor(s.gems)
 	if s.gemDust>=1 then s.gems+=math.floor(s.gemDust) s.gemDust-=math.floor(s.gemDust) end
 	local ups=if type(s.gemUps)=="table" then s.gemUps else {}
-	s.gemUps={} for _,u in Gems.Upgrades do s.gemUps[u.id]=math.clamp(integer(ups[u.id],0,u.max),0,u.max) end
+	s.gemUps={} for _,u in Gems.Upgrades do local top=Gems.absoluteMax(u) s.gemUps[u.id]=math.clamp(integer(ups[u.id],0,top),0,top) end
 	local owned,ids={},{}
 	-- crate crushers have one fixed tier: copies saved under an older tier follow it
 	local function fixTier(v) local def=C.typeById(v.type) if def and (def.crate or def.gem) and def.rarity and C.rarity(def.rarity) then v.rarity=def.rarity end end
@@ -413,7 +413,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if (s.rebirths or 0)<Gems.UnlockRebirths then return false,"The Gem Shop opens after your first rebirth." end
 		local u=type(args.id)=="string" and Gems.upgrade(args.id) if not u then return false,"Unknown upgrade." end
 		local lv=s.gemUps[u.id] or 0
-		local cost=Gems.cost(u.id,lv) if not cost then return false,u.title.." is at its maximum level." end
+		local cost=Gems.cost(u.id,lv,s.rebirths) if not cost then return false,u.title.." is at its maximum level." end
 		if s.gems<cost then return false,"Need "..cost.." Gems." end
 		s.gems-=cost s.gemUps[u.id]=lv+1
 		return true,u.title.." level "..(lv+1).."!",{id=u.id,level=lv+1,cost=cost}

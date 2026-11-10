@@ -356,3 +356,71 @@ end)
 
 -- ask for our gems once everything is up (the server also syncs on teleport / rebirth)
 task.delay(3, function() remote:FireServer("sync") end)
+
+-- 11 Nov (Willem): AUTO WALK (game pass 2079272256, Store perk "AutoWalk"): while you are in the
+-- mine you walk to your nearest gem by yourself, gem after gem. Steering yourself (keys, stick,
+-- thumbstick) pauses it for a moment; the board beside the platform buys it, or switches it on and
+-- off once you own it (attribute AutoWalkOn, on by default). Only walks: the magnet and the
+-- server's distance checks are the same as when you walk yourself.
+local Store = require(RS.Shared.Store)
+local function walkOn(): boolean
+	return Store.hasPass(me, "AutoWalk") and me:GetAttribute("AutoWalkOn") ~= false
+end
+-- the board's text, for you: the price, or ON / OFF
+local function boardText()
+	local mine = workspace:FindFirstChild("GemMine")
+	local sign = mine and mine:FindFirstChild("AutoWalkSign")
+	if not sign then return end
+	local owned = Store.hasPass(me, "AutoWalk")
+	local pass = Store.passByPerk("AutoWalk")
+	for _, sg in sign:GetChildren() do
+		local status = sg:IsA("SurfaceGui") and sg:FindFirstChild("Status") :: TextLabel?
+		if status then
+			status.Text = if not owned then "R$ " .. tostring(pass and pass.price or 49) .. "  - tap to buy"
+				elseif walkOn() then "ON - tap to turn off" else "OFF - tap to turn on"
+			status.TextColor3 = if owned and walkOn() then Color3.fromRGB(120, 255, 140) else Color3.fromRGB(255, 236, 120)
+		end
+	end
+	local pr = sign:FindFirstChild("AutoWalkPrompt") :: ProximityPrompt?
+	if pr then pr.ActionText = if not owned then "Buy Auto Walk" elseif walkOn() then "Turn off" else "Turn on" end
+end
+me:GetAttributeChangedSignal(Store.passAttr("AutoWalk")):Connect(boardText)
+me:GetAttributeChangedSignal("AutoWalkOn"):Connect(boardText)
+local pausedUntil, walking, heading = 0, false, Vector3.zero
+task.spawn(function()
+	while true do
+		task.wait(0.2)
+		if inMine() then boardText() end
+		local char = me.Character
+		local hum = char and char:FindFirstChildOfClass("Humanoid")
+		local root = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if not (hum and root and hum.Health > 0 and walkOn() and inMine()) then
+			if walking and hum and root then hum:MoveTo(root.Position) end
+			walking = false
+			continue
+		end
+		-- you steer: Auto Walk waits until you have let go for a second. (This game has no standard
+		-- PlayerModule, so steering shows as walking in another direction than Auto Walk sent you.)
+		local md = hum.MoveDirection
+		local own = md.Magnitude > 0.1 and (not walking or heading.Magnitude < 0.1 or md.Unit:Dot(heading) < 0.6)
+		if own then pausedUntil = os.clock() + 1 walking = false continue end
+		if os.clock() < pausedUntil then continue end
+		-- the nearest gem that is still waiting (not already flying to you)
+		local best, bestD = nil, math.huge
+		for _, g in gems do
+			if not g.pulling and not g.pending and not (g.from and os.clock() - g.born < 0.7) then
+				local d = (g.pos - root.Position).Magnitude
+				if d < bestD then best, bestD = g, d end
+			end
+		end
+		if best then
+			local to = Vector3.new(best.pos.X, root.Position.Y, best.pos.Z)
+			local flat = Vector3.new(to.X - root.Position.X, 0, to.Z - root.Position.Z)
+			heading = if flat.Magnitude > 0.1 then flat.Unit else Vector3.zero
+			hum:MoveTo(to)
+			walking = true
+		elseif walking then
+			hum:MoveTo(root.Position) walking = false
+		end
+	end
+end)
