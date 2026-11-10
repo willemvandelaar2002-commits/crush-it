@@ -54,9 +54,11 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   9 studs; pickup 1 stud; rocks 4-8, crystals 3.7-4.6 before the random 1.6-3.5x), turned upright and given a
   plain pivot (crusher: bottom centre, front -Z). Pistons coloured gold. Frame and rocks collide as boxes; the
   ram, pistons, crystals and pickups don't. The crusher streams in whole (Atomic). Zone widened to 15-27 studs.
-  **Willem must Save to Roblox: the models are only in the place file.** Awakened look: a recoloured texture
-  (GemCrusher_Color_Awakened.png, made by Claude: pink crystals -> light blue/white; `docs/art/`), swapped on your
-  screen only via `GemMineMeshes.AwakenedLook` (a SurfaceAppearance). Until that exists: an opal glow (Highlight).
+  **Willem must Save to Roblox: the models are only in the place file.** Awakened look (10 Nov): Willem's ChatGPT pack "Awakened Gem
+  Crusher" (same geometry, white opal / pastel rainbow crystals, navy and gold kept). Only its SurfaceAppearance is
+  used: `GemMineMeshes.AwakenedLook` (colour rbxassetid://72609987677019), swapped onto Frame and Ram on your screen
+  only from rebirth 5 (the normal one comes back below 5; tested both ways). Without it: an opal glow (Highlight).
+  Claude's earlier recolour (`docs/art/GemCrusher_Color_Awakened_1024.png`) is not used.
 - **Stand-ins until Willem's models:** the crusher, teleporter and gem pickups are built from parts.
   To do: the image-to-3D Gem Crusher (Blender pass like the Astral Leviathan), teleporter, gem pickup, scenery.
 - **Later:** a capped cash upgrade "Gem Yield" in the normal world; an Auto Walk Robux pass.
