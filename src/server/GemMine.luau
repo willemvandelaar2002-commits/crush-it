@@ -29,6 +29,7 @@ local RS = game:GetService("ReplicatedStorage")
 local Gems = require(RS.Shared.GemConfig)
 local Net = require(RS.Shared.Net)
 local Build = require(script.Parent.Kit.Build)
+local Style = require(RS.Shared.Kit.Style)
 local Analytics = require(script.Parent.Kit.Analytics)
 
 local M = {}
@@ -176,8 +177,16 @@ local function buildWorld()
 
 	-- 10 Nov (Willem: "more gem like ... it looks kinda plain"): a dark crystal-cave floor
 	-- with glowing crystal veins, big crystal spires and floating gems around the rim
-	local floor = Build.block(root, "MineFloor", Vector3.new(4, Mine.Radius * 2, Mine.Radius * 2), o * CFrame.new(0, -2, 0) * CFrame.Angles(0, 0, math.rad(90)), RGB(58, 40, 96))
-	floor.Shape = Enum.PartType.Cylinder floor.Material = Enum.Material.Slate
+	-- 10 Nov (Willem: "i dont really like the ground, maybe something with studs"): the game's
+	-- own Studs material (Build.block) in a deep amethyst, with the kit's checker tiles
+	local floor = Build.block(root, "MineFloor", Vector3.new(4, Mine.Radius * 2, Mine.Radius * 2), o * CFrame.new(0, -2, 0) * CFrame.Angles(0, 0, math.rad(90)), RGB(84, 56, 140))
+	floor.Shape = Enum.PartType.Cylinder
+	Style.checker(floor)
+	local tiles = floor:FindFirstChild("Checker") :: Texture?
+	if tiles then
+		-- the cylinder lies on its side: its top is the Right face; a clearer checker than the plots'
+		tiles.Face = Enum.NormalId.Right tiles.Transparency = 0.35 tiles.Color3 = RGB(56, 34, 100)
+	end
 	local edge = Build.block(root, "MineEdge", Vector3.new(3.6, Mine.Radius * 2 + 3, Mine.Radius * 2 + 3), o * CFrame.new(0, -2.3, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
 	edge.Shape = Enum.PartType.Cylinder edge.Material = Enum.Material.Neon deco(edge)
 	-- glowing veins from the platform out to the rim

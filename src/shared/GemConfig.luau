@@ -65,7 +65,7 @@ G.Mine = {
 	Radius = 70, -- floor radius (rocks and crystals on the rim)
 	CrusherScale = 1.8, -- the stand-in crusher, x the bay size (Willem's model is 22 studs tall, 24 x 13)
 	CrusherZ = -26, -- 10 Nov (Willem): the crusher at the back ...
-	Zone = { center = CFrame.new(0, 0, 0), radius = 16, height = 1 }, -- ... and the platform in front, where gems land
+	Zone = { center = CFrame.new(0, 0, 5), radius = 22, height = 1 }, -- ... and the platform in front, where gems land (10 Nov: bigger)
 	PortalZ = 42, -- the portal (arrive / go home) and the GEM UPGRADES sign, in front of the platform
 	-- 10 Nov (Willem: "just drop 1 at a time at the start"): 1 gem per crush (base 30 a minute)
 	CrushSeconds = 2, Drops = 1, Value = 1, Magnet = 5,
