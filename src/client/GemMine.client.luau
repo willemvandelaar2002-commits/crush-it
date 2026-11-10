@@ -173,20 +173,34 @@ end)
 local Config = require(RS.Shared.Config)
 local SoundService = game:GetService("SoundService")
 local streak, lastDing, lastPick = 0, 0, 0
+-- 10 Nov evening (Willem: "a little too loud and have a delay"): a new Sound per ding had to
+-- load first (0.3 s) and the file swells in (its peak is ~0.13 s in). Now a few copies are made
+-- and preloaded up front and used in turn, each ding starts 0.07 s in (where it is already loud),
+-- and it is quieter.
+local DING_START, DING_VOLUME = 0.07, 0.22
+local dings: { Sound } = {}
+for i = 1, 6 do
+	local snd = Instance.new("Sound")
+	snd.Name = "GemDing" snd.SoundId = "rbxassetid://" .. tostring(Config.Sounds.GemPickup)
+	snd.Volume = DING_VOLUME
+	snd.Parent = SoundService
+	dings[i] = snd
+end
+task.spawn(function() pcall(function() game:GetService("ContentProvider"):PreloadAsync({ dings[1] }) end) end)
+local nextDing = 1
 local function ding(value: number)
 	local now = os.clock()
 	streak = if now - lastPick < 0.7 then math.min(streak + 1, 12) else 0
 	lastPick = now
 	if now - lastDing < 0.05 then return end
 	lastDing = now
-	local snd = Instance.new("Sound")
-	snd.SoundId = "rbxassetid://" .. tostring(Config.Sounds.GemPickup)
-	snd.Volume = if value > 1 then 0.6 else 0.45
+	local snd = dings[nextDing]
+	nextDing = nextDing % #dings + 1
+	snd.Volume = if value > 1 then DING_VOLUME * 1.3 else DING_VOLUME
 	snd.PlaybackSpeed = (1 + streak * 0.04) * (if value > 1 then 0.92 else 1) * (0.98 + math.random() * 0.04)
-	snd.Parent = SoundService
+	snd.TimePosition = DING_START
 	snd:Play()
-	snd.Ended:Connect(function() snd:Destroy() end)
-	task.delay(3, function() if snd.Parent then snd:Destroy() end end)
+	snd.TimePosition = DING_START
 end
 
 local lastSend = 0
