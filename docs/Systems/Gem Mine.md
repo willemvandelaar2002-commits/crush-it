@@ -9,27 +9,34 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
 - **Where:** one shared mine in the same place at `CFrame(1800, 0, 0)` (vault: a same-place area beats a
   multi-place teleport for a small game). A teleporter on every plot (front left, `Mine.Teleporter`), locked
   sign "REBIRTH 1 TO UNLOCK" before that. You arrive on the same portal on your pad; press E on it to go home.
-- **One Gem Crusher that everyone uses** (10 Nov, Willem: "just 1 crusher that everyone uses"): a big
-  stand-in crusher (1.8x the bay size) in the middle, a glowing pickup zone around it where the gems land
-  (between 13 and 25 studs from it, `Mine.Zone`), a rim of rocks and crystals, one portal (`Mine.PortalZ`: you
-  arrive on it and press E on it to go home) and a GEM UPGRADES sign beside it (opens the Gem Shop).
+- **One Gem Crusher that everyone uses** (10 Nov, Willem: "just 1 crusher that everyone uses"; later "gem crusher a
+  bit further back and then the platform in the front"): the crusher stands at the back (`Mine.CrusherZ` -26), facing
+  a raised round **gem platform** in front of it (`Mine.Zone`: radius 16, 1 stud high, gold trim, neon ring, glass
+  top with a gold facet star, small crystals round its edge, sparkles). Every gem lands on the platform. One portal
+  further in front (`Mine.PortalZ` 42: you arrive on it and press E on it to go home) and a GEM UPGRADES sign
+  (navy board, gold frame, a gem on top) beside it.
+- **Looks (10 Nov, Willem: "more gem like ... it looks kinda plain"):** dark slate floor with a neon edge, 14
+  glowing pink/cyan veins running from the platform to the rim, cave rocks with crystal clusters on the rim, big
+  glowing crystal spires (none on the portal side), and floating gems on the left and right that spin and bob on
+  your screen. The view from the portal to the crusher is kept clear.
 - **Your own pace on a shared machine:** each player's crushes run on their own timer (their upgrades). The
   ram's strike plays on your screen for your crushes only, and once yours is awakened the crusher turns opal
   and reads "YOUR AWAKENED GEM CRUSHER" on your screen only. Everyone's gems are private.
-- **Crushing (10 Nov, was 1 gem per 6 s):** every 2 s the ram drops 2 gems worth 1 (base 60 Gems a minute).
+- **Crushing (10 Nov, was 1 gem per 6 s):** every 2 s the crusher drops 1 gem worth 1 (base 30 Gems a minute; Willem:
+  "just drop 1 at a time at the start"). Gems are bigger (about 2 studs).
   It keeps crushing while you are away, up to 60 gems waiting, so there is a reason to come back.
 - **Private gems:** only you see your gems (client-rendered in `workspace.MyGems`). Pick up by walking over them;
   the magnet pulls them in from 5 studs. The server checks every pickup (distance <= magnet + 6 slack, max 30
   per second) and refuses the rest (vault: server-validated batched collection).
 - **Upgrades** (Gem Shop, listed first; kept through rebirths):
-  - Crush Speed: -0.25 s per level, max 4 (1 s), 120 Gems x1.6 per level.
-  - More Gems: +1 gem per crush, max 2 (4 per crush), 360 / 1440.
-  - Gem Value: +50% per level, max 2, 480 / 1920.
-  - Gem Magnet: +3 studs, max 5 (20 studs), 90 Gems x1.6 per level.
-  - Everything maxed and awakened: 720 Gems a minute (the spec keeps it under 750).
+  - Crush Speed: -0.25 s per level, max 4 (1 s), 60 Gems x1.6 per level.
+  - More Gems: +1 gem per crush, max 2 (3 per crush), 180 / 720.
+  - Gem Value: +50% per level, max 2, 240 / 960.
+  - Gem Magnet: +3 studs, max 5 (20 studs), 45 Gems x1.6 per level.
+  - Everything maxed and awakened: 540 Gems a minute (the spec keeps it under 750).
   - A purchase takes effect at once (`GemMine.refresh`).
-- 10 Nov: with 6x the Gems, every Gem price went x6: Gem Crate 1500, Cash/Luck 90, Head Start 240, Nest Egg 150,
-  Quick Rolls 120, Gem Pedestal 360 (the next level still x growth). Dev panel Gems +100/+1000/+10000.
+- 10 Nov: Gem prices are x3 the pre-mine prices (base 30 a minute, was 10): Gem Crate 750, Cash/Luck 45, Head Start
+  120, Nest Egg 75, Quick Rolls 60, Gem Pedestal 180 (the next level still x growth). (x6 for one evening at 60/min.) Dev panel Gems +100/+1000/+10000.
 - Lights over the crusher and the portal, so the mine is readable at night.
 - **Mine sky (10 Nov, Willem: "you can still see the normal plots from a distance"):** while you are in the mine your
   sky is a starry purple night with a dense haze (local Sky + Atmosphere, `GemMine.client`), so the factories fade
