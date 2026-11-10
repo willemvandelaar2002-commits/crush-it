@@ -71,4 +71,5 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   round the zone picked up 24, rebirth 5 turns it opal with the awakened label, E on the portal sends you home, specs pass.
 - **Music (10 Nov):** the mine has its own song slot, `GemConfig.Mine.Music` (0 = the normal music keeps playing).
   In the mine it fades in and the normal/event music pauses; it resumes when you leave. It is in the Music volume
-  group in Settings. Willem makes the song in Suno and uploads it; then the id goes in.
+  group in Settings. The song: Willem's Suno track, rbxassetid://129703295050685 (2:44, loops; tested 10 Nov:
+  plays in the mine at 0.3, the normal music pauses and resumes at home).
