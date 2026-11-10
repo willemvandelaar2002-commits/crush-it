@@ -22,8 +22,6 @@ function P.needed(d) return C.bayCapacity(level(d)) end
 function P.expand(d)
 	local now=level(d)
 	if now>=C.PlotUpgrade.MaxLevel then return false,"Your plot is fully expanded." end
-	local need=C.plotRebirths(now+1)
-	if (d.crushers.rebirths or 0)<need then return false,C.PlotUpgrade.Names[now+1].." unlocks at REBIRTH "..need.."." end
 	if not P.full(d) then return false,"Fill all "..P.needed(d).." bays before upgrading your plot." end
 	local cost=C.plotCost(now+1)
 	if d.cash<cost then return false,"Not enough cash for the plot upgrade." end

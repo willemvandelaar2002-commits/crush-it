@@ -21,7 +21,7 @@ UI in `src/client/GemShop.client.luau`, tests in `Server/Tests/Gems.spec.luau`.
   - The upgrade list scrolls (6 rows, 4 visible).
 - Gems and upgrades survive every rebirth.
 - DEV panel (Studio): Gems +25/+100/+1000, set Rebirths 0/1/3/5/10 (1+: Gem Mine, 5+: awakened),
-  Rebirth "Make ready" / "Rebirth now", Gem upgrades all max / all 0, plot level 6 (Annex).
+  Rebirth "Make ready" / "Rebirth now", Gem upgrades all max / all 0. (The Annex and its plot level 6 were removed 10 Nov.)
 - Analytics: custom `GemsEarned`, `GemUpgrade`, `GemCrate`; since 9 Nov also economy events in currency
   **"Gems"** (`Analytics.gems`): sources Mine (were Rebirth / Bays before 10 Nov), sinks GemCrate / GemUpgrade:<id>.
 - Whole numbers (9 Nov): fractions (Gem Value) collect in `s.gemDust` and pay whole Gems.
@@ -31,5 +31,5 @@ UI in `src/client/GemShop.client.luau`, tests in `Server/Tests/Gems.spec.luau`.
     `CrusherRules.pedestalCount`. The 6th pedestal only shows after a rebirth.
 - Art (8 Nov): Willem's images in `GemConfig.Art` (the image ids behind his decals; decal ids in the comments):
   gem icon (HUD, prices), banner (shop frame, 9-sliced), pink card (crate), crate, upgrade icons, gem pile
-  (rebirth), locked sign (Annex gate), Gem Crusher / Awakened.
+  (rebirth), locked sign (padlock), Gem Crusher / Awakened.
 - Gem Crusher and pickup: see `Gem Mine.md`.

@@ -99,7 +99,7 @@ make("ImageLabel", { Name = "Background", Image = ART.Background, Size = UDim2.f
 Style.modal(panel)
 panel:SetAttribute("FitWidth", W) panel:SetAttribute("FitHeight", H * 1.16)
 -- 8 Nov: under the panel, what the next rebirth also gives: Gems (Willem's gem pile) and
--- the next unlock (Gem Shop / Annex / Gem Crusher / Awakened) with its art
+-- the next unlock (Gem Mine / Awakened Gem Crusher) with its art
 local extras = make("Frame", { Name = "NextRewards", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 1, -4), Size = UDim2.fromScale(0.86, 0.13),
 	BackgroundColor3 = RGB(46, 30, 110), ZIndex = 6 }, panel)
 make("UICorner", { CornerRadius = UDim.new(0.3, 0) }, extras)

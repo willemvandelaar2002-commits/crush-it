@@ -474,3 +474,4 @@
 - 2026-11-10: Gem Mine music: Willem's Suno song (129703295050685) plays in the mine.
 - 2026-11-10: Gem Mine: a ding when you pick up a gem (pitch climbs on a streak) and a polished amethyst tile floor with glowing joints (Willem: the studs looked unfinished).
 - 2026-11-10: Willem's new icon set for 23 crushers (chase, Exotic, Eternal, Lucky Weekend); every crusher now has an icon that loads.
+- 2026-11-10: THE ANNEX (Factory VII, 12 bays behind the rear yard, rebirth 3) removed (Willem): it was the old gem plan's rebirth-3 reward. 5 plot upgrades / 60 bays again; saves with it drop to Factory VI, crushers kept in the inventory. Gem milestones R1 Gem Mine, R5 Awakened.

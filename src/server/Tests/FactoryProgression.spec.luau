@@ -20,7 +20,7 @@ return function()
 	end
 	local d=fresh() local before=d.cash
 	-- 2 Nov plot split: six stages, the start is the ground floor only
-	check(C.StartBays==12 and C.MaxBays==72 and C.bayCapacity(0)==12 and C.bayCapacity(1)==24 and C.bayCapacity(2)==36 and C.bayCapacity(3)==48 and C.bayCapacity(4)==54 and C.bayCapacity(5)==60 and C.bayCapacity(6)==72,"seven stages: 12, 24, 36, 48, 54, 60, 72 bays")
+	check(C.StartBays==12 and C.MaxBays==60 and C.bayCapacity(0)==12 and C.bayCapacity(1)==24 and C.bayCapacity(2)==36 and C.bayCapacity(3)==48 and C.bayCapacity(4)==54 and C.bayCapacity(5)==60,"six stages: 12, 24, 36, 48, 54, 60 bays")
 	check(not P.expand(d) and d.cash==before,"incomplete plot cannot expand or charge")
 	d=full() check(P.full(d),"mixed rarities qualify when all original rows are occupied")
 	d.crushers.equipped["12"]=nil
@@ -76,26 +76,12 @@ return function()
 	check(P.expand(f) and f.crushers.plotLevel==4 and f.crushers.bays==48,"Factory V opens rear upper left")
 	f.crushers.bays=54 fill(f,49,54) f.cash=C.plotCost(5)
 	check(P.expand(f) and f.crushers.plotLevel==5 and f.crushers.bays==54,"Factory VI opens rear upper right")
-	f.crushers.bays=60 fill(f,55,60) f.cash=C.plotCost(6) f.crushers.rebirths=2
+	f.crushers.bays=60
 	ok,message=P.expand(f)
-	check(not ok and message=="FACTORY VII unlocks at REBIRTH 3." and f.crushers.plotLevel==5 and f.cash==C.plotCost(6),"8 Nov: the Annex needs rebirth 3")
+	check(not ok and message=="Your plot is fully expanded.","no plot upgrade after Factory VI")
 	check(R.migrate(R.copy(f),id).crushers.bays==60,"Factory VI survives migration")
-	f.crushers.rebirths=3
-	check(P.expand(f) and f.crushers.plotLevel==6 and f.crushers.bays==60 and f.cash==0,"Factory VII opens the Annex at rebirth 3")
-	f.crushers.bays=72
-	ok,message=P.expand(f)
-	check(not ok and message=="Your plot is fully expanded.","no plot upgrade after Factory VII")
-	check(R.migrate(R.copy(f),id).crushers.bays==72,"Factory VII survives migration")
 	check(C.plotCost(1)<C.plotCost(2) and C.plotCost(2)<C.plotCost(3) and C.plotCost(3)<C.plotCost(4) and C.plotCost(4)<C.plotCost(5),"each plot upgrade costs more")
-	for bay=C.Annex.First,C.MaxBays do local layout=C.bayLayout(bay)
-		check(layout.annex and layout.rear and layout.tier==1 and layout.y==0 and layout.z==C.Layout.BayZ+C.Annex.Shift,"annex: one ground floor behind the rear yard")
-		check(math.abs(layout.x)-C.Layout.BayWidth/2>C.Layout.RoadHalf and layout.z+C.Layout.BayDepth/2<C.Layout.YardBack-12,"annex bays clear the road and the rear yard")
-		check(layout.z-C.Layout.BayDepth/2-C.Layout.UpperBack>C.Layout.AnnexBack,"annex banks fit the annex yard")
-	end
-	check(C.annexStart(1)==61 and C.annexStart(2)==67 and C.bayName(61)=="Annex left 1" and C.bayName(72)=="Annex right 6","annex numbering")
-	check(Rows.snapshot(f).rows[11].name=="ANNEX LEFT","annex rows")
-	check(C.BayCosts[C.Annex.First]==C.Annex.BayStart and C.BayCosts[72]>C.BayCosts[61],"annex bay prices")
-	for bay=C.RearFirst,C.Annex.First-1 do local layout=C.bayLayout(bay)
+	for bay=C.RearFirst,C.MaxBays do local layout=C.bayLayout(bay)
 		check(layout.rear and layout.tier<=2 and layout.z==C.Layout.BayZ+C.Layout.RearShift-(layout.tier-1)*C.Layout.UpperBack,"rear yard banks: max two floors")
 		check(math.abs(layout.x)-C.Layout.BayWidth/2>C.Layout.RoadHalf and math.abs(layout.x)+C.Layout.BayWidth/2<78,"rear yard bays clear the road and fit the plot width")
 		check(C.bayFrame(layout)==CFrame.new(),"rear yard is not tilted")
