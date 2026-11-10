@@ -88,6 +88,7 @@ local function buildCrusher(parent: Instance, cf: CFrame, k: number): (Model, Ba
 		m.Name = "GemCrusher"
 		for _, d in m:GetDescendants() do if d:IsA("BasePart") then d.Anchored = true end end
 		m.PrimaryPart = m:FindFirstChild("Frame") :: BasePart
+		m.ModelStreamingMode = Enum.ModelStreamingMode.Atomic -- streams in whole (the client's strike/awake look)
 		m:PivotTo(cf)
 		m.Parent = parent
 		return m, m:FindFirstChild("Ram") :: BasePart
