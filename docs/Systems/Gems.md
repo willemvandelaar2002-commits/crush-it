@@ -6,7 +6,9 @@ UI in `src/client/GemShop.client.luau`, tests in `Server/Tests/Gems.spec.luau`.
 
 - **Job:** progress after the first rebirth. Never sold for Robux, so the crate is not a paid random item (odds still shown).
 - **Faucet (10 Nov):** only the **Gem Mine** (see `Gem Mine.md`): base 30 Gems a minute from rebirth 1 (10 Nov; prices x3 with it, see `Gem Mine.md`). Rebirths pay no Gems and bays make none any more.
-- **Sink, the Gem Shop** (GEMS button in the HUD row after REBIRTH, shown from rebirth 1):
+- **HUD (10 Nov, Willem):** your Gems show bottom left just above the cash, in the same style (gem icon, big pink
+  number); tap it to open the Gem Shop. Shown from rebirth 1. (Was a GEMS button in the top-left row.)
+- **Sink, the Gem Shop** (open it from the Gems counter or the GEM UPGRADES sign in the mine):
   - Gem Crate, 750 Gems (25 before the mine; all Gem prices x3 on 10 Nov): Legendary 60% / Exotic 30% / Secret 8% / Divine 2%, Standard finish, refused when the inventory is full. Exotic+ results are announced server-wide.
   - Mine upgrades first: Crush Speed, More Gems, Gem Value, Gem Magnet (see `Gem Mine.md`).
   - Gem Cash and Gem Luck: +10% per level, max 10, cost `15 * 1.5^level`.

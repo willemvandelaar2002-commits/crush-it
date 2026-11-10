@@ -550,7 +550,7 @@ end
 -- 6 Nov: the first free slot after the visible buttons of the top-left row (buttons
 -- that come and go: Rebirth appears later, the deal disappears once bought). `names`
 -- are the row's buttons that sit before `btn`, anywhere in the PlayerGui.
-Style.HudRow = { "BookButton", "ShopButton", "RewardsButton", "RebirthButton", "GemsButton", "FirstBuyButton", "SettingsButton" } -- 8 Nov: GemsButton (client/GemShop)
+Style.HudRow = { "BookButton", "ShopButton", "RewardsButton", "RebirthButton", "FirstBuyButton", "SettingsButton" } -- 10 Nov: Gems moved above the cash (client/GemShop)
 
 -- 6 Nov: the SCREEN SHAKE setting (client/Settings); camera-shake code checks this
 function Style.shakeOn(): boolean

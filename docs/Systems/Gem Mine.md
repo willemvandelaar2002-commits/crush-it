@@ -66,3 +66,6 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   E on the portal sends you home, specs pass.
 - Tested 10 Nov (third pass, one shared crusher): all gems land in the zone, the ram strikes at your pace, a lap
   round the zone picked up 24, rebirth 5 turns it opal with the awakened label, E on the portal sends you home, specs pass.
+- **Music (10 Nov):** the mine has its own song slot, `GemConfig.Mine.Music` (0 = the normal music keeps playing).
+  In the mine it fades in and the normal/event music pauses; it resumes when you leave. It is in the Music volume
+  group in Settings. Willem makes the song in Suno and uploads it; then the id goes in.
