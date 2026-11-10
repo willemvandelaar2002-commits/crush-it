@@ -20,7 +20,7 @@ G.Art = {
 	Card = art("108447205790507"), -- decal 91253976184327: pink framed card (Gem Crate background)
 	Banner = art("81713506028869"), -- decal 83889563134831: blue framed banner (Gem Shop background)
 	Crate = art("123864848157453"), -- decal 132339925831398: the Gem Crate
-	Gate = art("131395997076419"), -- decal 101919176235230: locked sign (Annex gate, Gem Crusher stand)
+	Gate = art("131395997076419"), -- decal 101919176235230: locked sign (Willem's padlock art)
 	Crusher = art("83451761817246"), -- decal 136649559216027: the Gem Crusher (Index icon)
 	Awakened = art("112011297282058"), -- decal 140060527339386: the Awakened Gem Crusher
 	Concept = art("81563709177293"), -- decal 138446926529109: concept art (grey background, reference only)
@@ -39,7 +39,6 @@ G.Icon = G.Art.Icon
 -- What rebirths unlock (the rebirth panel shows the next one; 8 Nov)
 G.Milestones = {
 	{ rebirths = 1, text = "GEM MINE", art = G.Art.Crusher },
-	{ rebirths = 3, text = "THE ANNEX", art = G.Art.Gate },
 	{ rebirths = 5, text = "AWAKENED GEM CRUSHER", art = G.Art.Awakened },
 }
 function G.nextMilestone(rebirths: number): any

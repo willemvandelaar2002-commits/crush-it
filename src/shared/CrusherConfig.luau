@@ -70,18 +70,10 @@ C.TopFirst = C.BaseMaxBays+1
 C.RearFirst = C.TopFirst+C.Layout.Wings*C.Layout.PerWing
 C.MaxBays = C.RearFirst-1+2*C.Layout.Wings*C.Layout.PerWing
 C.Layout.RearShift = -90 -- rear yard banks: ground bays at BayZ+RearShift (8 Nov, Willem: more room behind the wings; was -78)
--- 8 Nov (Willem: "the plot gets longer" after rebirth 3): THE ANNEX, bays 61..72,
--- two ground banks (left, then right) behind the rear yard, past a gate. It is
--- Factory VII, the plot upgrade after Factory VI, and can only be bought from
--- RequireRebirths rebirths on. Bays here are cheaper than the x1.36 curve would
--- make them (BayStart x BayGrowth per bay), so a rebirthed run can afford it.
-C.Annex = { First = C.MaxBays+1, Bays = 2*C.Layout.PerWing, Shift = C.Layout.RearShift-44, RequireRebirths = 3, -- (was -128 with RearShift -78)
-	BayStart = 2e9, BayGrowth = 1.25,
-	SignImage = "rbxassetid://131395997076419" } -- 8 Nov: Willem's locked-sign art (decal 101919176235230)
-C.MaxBays = C.Annex.First-1+C.Annex.Bays
--- back edge of the rear yard and of the annex yard (plot-local z)
+-- (8 Nov: THE ANNEX, Factory VII with 12 more bays behind the rear yard, came here; removed
+-- 10 Nov: it was the rebirth-3 reward of the old gem plan, the Gem Mine replaced that.)
+-- back edge of the rear yard (plot-local z)
 C.Layout.YardBack = C.Layout.BayZ+C.Layout.RearShift-C.Layout.UpperBack-C.Layout.BayDepth/2-6
-C.Layout.AnnexBack = C.Layout.BayZ+C.Annex.Shift-C.Layout.UpperBack-C.Layout.BayDepth/2-3 -- (3: plot 2's supply belt is right behind)
 C.Layout.RoadHalf = 6 -- central road half-width (rear yard banks keep clear of it)
 C.LegacyTypes={"Bumper","Steel","Cobalt","Mega","Titan","Quantum"}
 -- 1 Nov: the first 24 bays are much cheaper (funnel: only 5.5% reached Factory II),
@@ -106,7 +98,6 @@ for i=3,C.MaxBays do
 	-- (bay 36 ~$6.4M was $35M, bay 60 ~$10B was $1.4T)
 	local w=if C.FlatBayCurve then 0 else math.clamp((i-C.BaseMaxBays)/24,0,1)
 	C.BayCosts[i]=math.floor(early^(1-w)*old^w)
-	if i>=C.Annex.First then C.BayCosts[i]=math.floor(C.Annex.BayStart*C.Annex.BayGrowth^(i-C.Annex.First)) end
 end
 -- Caps[n] = upgrade caps from plot level n on: factory/roll upgrades (global)
 -- and each crusher's level. Below plot level 1 the base MaxGlobal/MaxLevel apply.
@@ -118,26 +109,21 @@ end
 -- its first new bay, with the older discounts kept (Factory III $5M, IV-VI x0.8 /
 -- x0.7 / x0.6). Old saves moved up one level (CrusherRules.migrate, plotsV).
 C.StartBays = C.Layout.Wings*C.Layout.PerWing -- ground floor: 12 bays
-C.PlotUpgrade = {MaxLevel=6,
+C.PlotUpgrade = {MaxLevel=5,
 	-- 2 Nov evening: every factory = 10x its first new bay (no hand-set exceptions):
 	-- ~$39K, $2.2M, $87M, $3.5B, $22B (was $39K, $5M, $452M, $167B, $1.33T)
 	Costs={math.floor(C.BayCosts[C.StartBays+1]*10),math.floor(C.BayCosts[C.TopFirst]*10),math.floor(C.BayCosts[C.RearFirst]*10),
-		math.floor(C.BayCosts[C.RearFirst+12]*10),math.floor(C.BayCosts[C.RearFirst+18]*10),
-		math.floor(C.BayCosts[C.Annex.First]*10)},
-	Names={"FACTORY II","FACTORY III","FACTORY IV","FACTORY V","FACTORY VI","FACTORY VII"},
-	Titles={"UPPER FLOOR","REINFORCED WORKSHOP","FUSION WORKSHOP","ADVANCED FACTORY","MASTER FACTORY","THE ANNEX"},
-	Adds={12,12,12,6,6,12},
-	-- plot levels that need rebirths first (8 Nov: the annex from rebirth 3)
-	Rebirths={[6]=C.Annex.RequireRebirths},
+		math.floor(C.BayCosts[C.RearFirst+12]*10),math.floor(C.BayCosts[C.RearFirst+18]*10)},
+	Names={"FACTORY II","FACTORY III","FACTORY IV","FACTORY V","FACTORY VI"},
+	Titles={"UPPER FLOOR","REINFORCED WORKSHOP","FUSION WORKSHOP","ADVANCED FACTORY","MASTER FACTORY"},
+	Adds={12,12,12,6,6},
 	-- what each upgrade adds besides bays (cutscene text) and its accent colour
-	Sections={"UPPER FLOOR","3RD FLOOR","REAR YARD","REAR UPPER LEFT","REAR UPPER RIGHT","THE ANNEX"},
-	Unlocks={"COATING LAB",nil,"FUSION MACHINE",nil,"MASTER FACTORY LOOK",nil},
-	Accents={Color3.fromRGB(80,190,255),Color3.fromRGB(255,222,24),Color3.fromRGB(255,140,40),Color3.fromRGB(205,215,228),Color3.fromRGB(255,210,68),Color3.fromRGB(190,90,255)},
+	Sections={"UPPER FLOOR","3RD FLOOR","REAR YARD","REAR UPPER LEFT","REAR UPPER RIGHT"},
+	Unlocks={"COATING LAB",nil,"FUSION MACHINE",nil,"MASTER FACTORY LOOK"},
+	Accents={Color3.fromRGB(80,190,255),Color3.fromRGB(255,222,24),Color3.fromRGB(255,140,40),Color3.fromRGB(205,215,228),Color3.fromRGB(255,210,68)},
 	-- 2 Nov evening (doc: a capped-out player had nothing to buy for hours): much
 	-- higher caps; prices keep rising (x1.65 / x1.38 per level), so it stays a choice
-	Caps={{global=30,level=60},{global=40,level=80},{global=55,level=110},{global=70,level=140},{global=90,level=180},{global=90,level=180}}} -- (8 Nov: the Annex adds bays, not caps)
--- 8 Nov: rebirths needed for a plot level (0 = none)
-function C.plotRebirths(level) return C.PlotUpgrade.Rebirths[level] or 0 end
+	Caps={{global=30,level=60},{global=40,level=80},{global=55,level=110},{global=70,level=140},{global=90,level=180}}}
 -- plot levels where things unlock (2 Nov: each one level later than before)
 C.CoatingPlotLevel = 1 -- 2 Nov evening: the Coating Lab comes with Factory II (was III)
 -- 2 Nov evening: MERGE was live for a short while and is removed again (Willem:
@@ -182,12 +168,6 @@ function C.bayCapacity(level)
 end
 function C.bayLayout(index)
 	local l=C.Layout local n=index-1 local perTier=l.Wings*l.PerWing
-	if index>=C.Annex.First then
-		local k=index-C.Annex.First local wing=math.floor(k/l.PerWing) local row=k%l.PerWing
-		local side=if wing==0 then -1 else 1
-		return {x=side*(l.WingX+(row-(l.PerWing-1)/2)*l.Pitch),y=0,z=l.BayZ+C.Annex.Shift,
-			yaw=0,tier=1,wing=wing+1,row=row+1,side=side,rear=true,annex=true}
-	end
 	if index>=C.RearFirst then
 		local k=index-C.RearFirst local tier=math.floor(k/perTier) local j=k%perTier
 		local wing=math.floor(j/l.PerWing) local row=j%l.PerWing
@@ -222,7 +202,6 @@ function C.bayFrame(layout)
 	return C.wingFrame(layout.side)
 end
 -- First bay of a rear yard bank (tier 1 = Factory IV ground, 2 = Factory V upper).
-function C.annexStart(wing) return C.Annex.First+(wing-1)*C.Layout.PerWing end
 function C.rearStart(tier,wing) return C.RearFirst+(tier-1)*C.Layout.Wings*C.Layout.PerWing+(wing-1)*C.Layout.PerWing end
 -- First bay of an upper wing (buying it builds that wing's upper floor).
 function C.floorStart(tier,wing) local l=C.Layout
@@ -231,7 +210,6 @@ function C.floorStart(tier,wing) local l=C.Layout
 end
 function C.bayName(index)
 	local v=C.bayLayout(index)
-	if v.annex then return "Annex "..(if v.wing==1 then "left" else "right").." "..v.row end
 	if v.rear then return "Rear "..(if v.tier==2 then "upper " else "")..(if v.wing==1 then "left" else "right").." "..v.row end
 	return (if v.tier==1 then "Ground" elseif v.tier==2 then "Upper" else "Top").." "..(if v.wing==1 then "left" else "right").." "..v.row
 end
@@ -709,7 +687,7 @@ function C.rollSeconds() return C.RollSeconds end
 -- Caps grow with the plot upgrade (PlotUpgrade.Caps). Pedestals keep their own max.
 -- Luck keeps the older, lower caps (start, Factory II..VI): its effect grows
 -- with the rank of the tier, so the 2 Nov cap raise is for the cash upgrades only
-C.LuckCaps={20,25,30,40,50,60,60}
+C.LuckCaps={20,25,30,40,50,60}
 function C.upgradeMax(id,plotLevel)
 	local u=C.Upgrades[id] if u.max then return u.max end
 	if id=="Luck" then return C.LuckCaps[math.clamp(math.floor(plotLevel or 0),0,#C.LuckCaps-1)+1] end

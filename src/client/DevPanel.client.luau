@@ -56,7 +56,7 @@ local function send(what: string, arg: any): () -> ()
 	return function() remote:FireServer(what, arg) end
 end
 
-row("Plot level (skips tutorial + goals, unlocks its bays)", { { "1", send("Plot", 1) }, { "2", send("Plot", 2) }, { "3", send("Plot", 3) }, { "4", send("Plot", 4) }, { "5", send("Plot", 5) }, { "6", send("Plot", 6) } })
+row("Plot level (skips tutorial + goals, unlocks its bays)", { { "1", send("Plot", 1) }, { "2", send("Plot", 2) }, { "3", send("Plot", 3) }, { "4", send("Plot", 4) }, { "5", send("Plot", 5) } })
 row("Skip", { { "Tutorial", send("Skip", "") }, { "+ Goals", send("Skip", "goals") } })
 row("Cash", { { "+1M", send("Cash", 1e6) }, { "+1B", send("Cash", 1e9) }, { "+1T", send("Cash", 1e12) } })
 row("Big roll", { { "Secret", send("BigRoll", "Secret") }, { "Divine", send("BigRoll", "Divine") }, { "Eternal", send("BigRoll", "Eternal") }, { "Limited", send("BigRoll", "Limited") } })
