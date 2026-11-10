@@ -75,7 +75,7 @@ G.Mine = {
 	CollectPerSecond = 30, -- most pickups the server accepts per second
 	Teleporter = { x = -40, z = 96 }, -- plot-local spot (front left, inside the entrance)
 	-- 10 Nov: the mine's own song (Willem makes it in Suno and uploads it); 0 = keep the normal music
-	Music = 0, MusicVolume = 0.3,
+	Music = 129703295050685, MusicVolume = 0.3, -- Willem's Suno song (10 Nov)
 }
 
 -- The Gem Crate: one crusher per open, rarity by these chances (they add up to 1)
