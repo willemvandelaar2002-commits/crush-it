@@ -10,7 +10,7 @@ local E = {
 	Announce = 13, Assemble = 8, Active = 180, Finale = 7, Victory = 8, Recover = 3, -- 29 Oct: Victory 11 -> 8 (reels shorter) -- Victory 11: room for the reward reels -- 28 Oct: Announce+Assemble = the intro cutscene
 	Tick = .2, Broadcast = .5, Strike = 2,
 	TargetSeconds = 90, MinimumActive = 30, MinimumHits = 10,
-	Points = {Common=1, Uncommon=2, Rare=3, Epic=4, Legendary=5, Exotic=5.5, Limited=6, Secret=6, Divine=7, Mythic=8},
+	Points = {Common=1, Uncommon=2, Rare=3, Epic=4, Legendary=5, Exotic=5.5, Limited=6, Secret=6, Divine=7, Eternal=7.5, Mythic=8},
 	Grades = { -- points change the silhouette, never the saved crusher rarity
 		{points=0, name="SUPER PRESS"}, {points=15, name="TWIN HYDRAULIC"},
 		{points=45, name="REACTOR PRESS"}, {points=100, name="TITAN ENGINE"},

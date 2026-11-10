@@ -11,6 +11,12 @@
 --   7 Nov (Willem: "should be special luck animation"): Limited (Lucky Weekend) gets
 --   three giant slot reels over the pedestal that stop one by one on clovers, then
 --   a burst and a rain of gold and clover-green sparkles.
+--   10 Nov (Willem: "cooler animation than divine"): ETERNAL. Near-black and violet; a crack
+--   tears open above the pedestal, three portal rings spin up around it on different axes,
+--   crystal shards orbit faster and faster while stars stream in, the camera circles; then
+--   everything collapses into the rift, the screen goes black, and the crusher bursts out in a
+--   white flash with a double shockwave, a ring of light rays and a rainbow supernova. The
+--   title shimmers.
 --   Everyone else: a light pillar over that pedestal (and the RarePull banner).
 -- Skip: from the second big roll in a session. Reduced Motion: no flash, no shake.
 local Players = game:GetService("Players")
@@ -27,7 +33,7 @@ local Style = require(RS.Shared.Kit.Style)
 
 local me = Players.LocalPlayer
 local WHITE = Color3.new(1, 1, 1)
-local LADDER = { "Rare", "Epic", "Legendary", "Exotic", "Secret", "Divine" }
+local LADDER = { "Rare", "Epic", "Legendary", "Exotic", "Secret", "Divine", "Eternal" }
 
 local function now(): number return workspace:GetServerTimeNow() end
 local function colorOf(name: string): Color3
@@ -81,6 +87,7 @@ local function cinematic(msg: any)
 	local color = colorOf(rarity)
 	local divine = rarity == "Divine"
 	local limited = rarity == "Limited"
+	local eternal = rarity == "Eternal"
 	-- 5 Nov (Willem): skippable once you've watched this rarity's cinematic before (the server
 	-- remembers it in your save); the session table also covers older servers
 	local canSkip = msg.canSkip == true or seen[rarity] == true
@@ -112,7 +119,9 @@ local function cinematic(msg: any)
 		end
 	end
 	local cc = Instance.new("ColorCorrectionEffect") cc.Name = "BigRollDim" cc.Parent = Lighting
-	TweenService:Create(cc, TweenInfo.new(0.6), { Brightness = -0.32, Saturation = -0.55, Contrast = 0.1, TintColor = WHITE:Lerp(color, 0.15) }):Play()
+	TweenService:Create(cc, TweenInfo.new(if eternal then 1.2 else 0.6), if eternal
+		then { Brightness = -0.48, Saturation = -0.75, Contrast = 0.18, TintColor = Color3.fromRGB(190, 170, 255) }
+		else { Brightness = -0.32, Saturation = -0.55, Contrast = 0.1, TintColor = WHITE:Lerp(color, 0.15) }):Play()
 	sound(Config.Sounds.BoomHit, 0.5, 0.6)
 
 	local gui = Instance.new("ScreenGui") gui.Name = "BigRollHud" gui.IgnoreGuiInset = true gui.DisplayOrder = 60 gui.ResetOnSpawn = false
@@ -131,6 +140,15 @@ local function cinematic(msg: any)
 	title.Position = UDim2.fromScale(0.5, 0.24) title.Size = UDim2.fromScale(0.6, 0.09) title.TextScaled = true title.Text = string.upper(rarity)
 	title.TextColor3 = color:Lerp(WHITE, 0.35) title.TextTransparency = 1 Style.text(title, 4) title.Parent = gui
 	local titleScale = Instance.new("UIScale") titleScale.Scale = 0.4 titleScale.Parent = title
+	if eternal then
+		-- a shimmer of starlight colours sliding through the title
+		title.TextColor3 = WHITE
+		local g = Instance.new("UIGradient")
+		g.Color = ColorSequence.new({ ColorSequenceKeypoint.new(0, Color3.fromRGB(170, 120, 255)), ColorSequenceKeypoint.new(0.35, WHITE),
+			ColorSequenceKeypoint.new(0.65, Color3.fromRGB(110, 230, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 150, 230)) })
+		g.Parent = title
+		task.spawn(function() while g.Parent do g.Offset = Vector2.new(math.sin(os.clock() * 1.6) * 0.4, 0) g.Rotation = (os.clock() * 40) % 360 task.wait() end end)
+	end
 	local flash = Instance.new("Frame") flash.Size = UDim2.fromScale(1, 1) flash.BackgroundColor3 = WHITE flash.BackgroundTransparency = 1 flash.BorderSizePixel = 0 flash.ZIndex = 5 flash.Parent = gui
 	local skip = Instance.new("TextButton") skip.Name = "Skip" skip.AnchorPoint = Vector2.new(1, 1) skip.Position = UDim2.new(1, -24, 1, -24)
 	skip.Size = UDim2.fromOffset(150, 52) skip.Text = "Skip" skip.Visible = canSkip skip.ZIndex = 6 skip.Parent = gui
@@ -175,7 +193,7 @@ local function cinematic(msg: any)
 	local final = "1 in " .. number
 	local ladder = if limited then { "Rare", "Epic", "Legendary", "Exotic", "Limited" } else LADDER
 	local top = table.find(ladder, rarity) or #ladder
-	local countFrom, countTo = 0.7, math.max(1.4, impactIn - (if divine then 2.6 elseif limited then 2.2 else 0.9))
+	local countFrom, countTo = 0.7, math.max(1.4, impactIn - (if eternal then 3.4 elseif divine then 2.6 elseif limited then 2.2 else 0.9))
 	local tier = 0
 	table.insert(conns, RunService.RenderStepped:Connect(function()
 		local t = os.clock() - started
@@ -308,6 +326,155 @@ local function cinematic(msg: any)
 			end
 			TweenService:Create(frame, TweenInfo.new(0.6), { Transparency = 1 }):Play()
 		end)
+	elseif eternal then
+		-- 3d. Eternal: a rift tears open, portal rings and shards spin up, everything collapses
+		-- into it, black, then the crusher bursts out
+		local orbP = P + Vector3.new(0, 10, 0)
+		local VIOLET, CYAN, PINK = Color3.fromRGB(150, 90, 255), Color3.fromRGB(100, 230, 255), Color3.fromRGB(255, 140, 230)
+		local fx = Instance.new("Model") fx.Name = "BigRollEternal" fx.Parent = workspace table.insert(trash, fx)
+		local face = flat
+		local side = Vector3.yAxis:Cross(face).Unit
+		-- the rift: a white-hot crack with a violet glow, growing tall and flickering
+		local crack = part("Rift", Vector3.new(0.35, 0.1, 0.35), CFrame.new(orbP), WHITE) crack.Parent = fx
+		local crackGlow = part("RiftGlow", Vector3.new(1.6, 0.1, 1.6), CFrame.new(orbP), VIOLET) crackGlow.Transparency = 0.35 crackGlow.Parent = fx
+		local riftLight = Instance.new("PointLight") riftLight.Color = VIOLET riftLight.Range = 30 riftLight.Brightness = 4 riftLight.Parent = crack
+		task.delay(0.5, function()
+			if finished then return end
+			sound(Config.Sounds.BoomHit, 0.7, 0.45)
+			TweenService:Create(crack, TweenInfo.new(1.1, Enum.EasingStyle.Back), { Size = Vector3.new(0.35, 17, 0.35) }):Play()
+			TweenService:Create(crackGlow, TweenInfo.new(1.1, Enum.EasingStyle.Back), { Size = Vector3.new(1.8, 19, 1.8) }):Play()
+		end)
+		-- three portal rings (24 glowing segments each) on different axes
+		local rings = {}
+		for i, spec in { { r = 6.5, c = VIOLET, axis = Vector3.new(1, 0, 0), speed = 1.6 }, { r = 9, c = CYAN, axis = Vector3.new(0, 0, 1), speed = -1.2 },
+			{ r = 11.5, c = WHITE, axis = Vector3.new(1, 0, 1).Unit, speed = 0.9 } } do
+			local ring = Instance.new("Model") ring.Name = "Ring" .. i ring.Parent = fx
+			local n = 24
+			local segs = {}
+			for k = 1, n do
+				local a = (k - 1) / n * math.pi * 2
+				local seg = part("Seg", Vector3.new(0.45, 0.45, spec.r * 2 * math.pi / n * 1.05), CFrame.new(), spec.c)
+				seg.Transparency = 1 seg.Parent = ring
+				segs[k] = { part = seg, a = a }
+			end
+			rings[i] = { segs = segs, r = spec.r, axis = spec.axis, speed = spec.speed, angle = 0, scale = 0, alpha = 1 }
+		end
+		-- crystal shards circling the pedestal
+		local shards = {}
+		for k = 1, 12 do
+			local c = if k % 3 == 0 then CYAN elseif k % 3 == 1 then VIOLET else PINK
+			local sh = part("Shard", Vector3.new(0.7, 1.9, 0.7), CFrame.new(orbP), c, Enum.Material.Glass)
+			sh.Transparency = 1 sh.Reflectance = 0.2 sh.Parent = fx
+			shards[k] = { part = sh, a = k / 12 * math.pi * 2, r = 7 + (k % 4) * 1.4, h = (k % 5 - 2) * 1.6, spin = math.random() * 6 }
+		end
+		-- stars streaming in towards the rift
+		local shell = part("StarShell", Vector3.new(40, 40, 40), CFrame.new(orbP), WHITE) shell.Shape = Enum.PartType.Ball shell.Transparency = 1 shell.Parent = fx
+		local stream = Instance.new("ParticleEmitter") stream.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		stream.Shape = Enum.ParticleEmitterShape.Sphere stream.ShapeInOut = Enum.ParticleEmitterShapeInOut.Inward
+		stream.Color = ColorSequence.new(WHITE, VIOLET) stream.LightEmission = 1 stream.Rate = 0
+		stream.Speed = NumberRange.new(14, 22) stream.Lifetime = NumberRange.new(0.9, 1.2)
+		stream.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(1, 0.05) })
+		stream.Parent = shell
+		local t0 = os.clock()
+		local collapseAt = impactIn - 1.3
+		local spinUp = 0
+		table.insert(conns, RunService.Heartbeat:Connect(function(dt)
+			local t = os.clock() - t0
+			if t > 1.3 and t < collapseAt then spinUp = math.min(1, spinUp + dt * 0.35) end
+			local speed = 1 + spinUp * (if still then 1 else 4)
+			-- the rift flickers
+			if crack.Parent and not still then crackGlow.Transparency = 0.3 + math.random() * 0.25 end
+			-- rings: appear one after another, spin faster, then collapse to the centre
+			for i, r in rings do
+				local appear = math.clamp((t - 1.1 - i * 0.35) / 0.6, 0, 1)
+				local collapse = math.clamp((t - collapseAt) / 0.9, 0, 1)
+				r.scale = appear * (1 - collapse * collapse)
+				r.angle += dt * r.speed * speed
+				local frame = CFrame.new(orbP) * CFrame.fromAxisAngle(r.axis, r.angle)
+				for _, sg in r.segs do
+					local pos = frame:PointToWorldSpace(Vector3.new(math.cos(sg.a), 0, math.sin(sg.a)) * r.r * math.max(0.02, r.scale))
+					local tangent = frame:VectorToWorldSpace(Vector3.new(-math.sin(sg.a), 0, math.cos(sg.a)))
+					sg.part.CFrame = CFrame.lookAt(pos, pos + tangent)
+					sg.part.Transparency = 1 - appear * 0.85 * (1 - collapse)
+				end
+			end
+			-- shards orbit faster, then get pulled in
+			for _, sh in shards do
+				local appear = math.clamp((t - 1.6) / 0.8, 0, 1)
+				local collapse = math.clamp((t - collapseAt) / 1.0, 0, 1)
+				sh.a += dt * 1.4 * speed
+				local r = sh.r * (1 - collapse)
+				local pos = orbP + Vector3.new(math.cos(sh.a) * r, sh.h * (1 - collapse) + math.sin(t * 2 + sh.a) * 0.6, math.sin(sh.a) * r)
+				sh.part.CFrame = CFrame.new(pos) * CFrame.Angles(t * sh.spin, t * 2, 0)
+				sh.part.Transparency = 1 - appear * 0.9 * (1 - collapse)
+			end
+			stream.Rate = if t > 1.4 and t < collapseAt then (if still then 20 else 60) * (0.5 + spinUp) else 0
+		end))
+		-- the camera slowly circles the pedestal while it builds
+		if not still then
+			local orbit = Instance.new("NumberValue") orbit.Value = 0 table.insert(trash, orbit)
+			local dist = (shot.Position - P).Magnitude
+			orbit.Changed:Connect(function(a)
+				if finished then return end
+				local dir = (CFrame.Angles(0, a, 0)):VectorToWorldSpace(flat)
+				shot = CFrame.lookAt(P + dir * (dist - a * 6) + Vector3.new(0, 8 + a * 4, 0), P + Vector3.new(0, 7, 0))
+				if shake <= 0.02 then camera.CFrame = shot end
+			end)
+			task.delay(0.9, function()
+				if finished then return end
+				TweenService:Create(orbit, TweenInfo.new(math.max(1, collapseAt - 0.9), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Value = 0.9 }):Play()
+			end)
+		end
+		-- collapse: the rift snaps shut, then black
+		local black = Instance.new("Frame") black.Size = UDim2.fromScale(1, 1) black.BackgroundColor3 = Color3.new(0, 0, 0) black.BackgroundTransparency = 1
+		black.BorderSizePixel = 0 black.ZIndex = 4 black.Parent = gui
+		task.delay(math.max(0, collapseAt), function()
+			if finished then return end
+			sound(Config.Sounds.Hiss, 0.8, 0.5)
+			TweenService:Create(crack, TweenInfo.new(0.9, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = Vector3.new(0.1, 0.1, 0.1) }):Play()
+			TweenService:Create(crackGlow, TweenInfo.new(0.9, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = Vector3.new(0.2, 0.1, 0.2) }):Play()
+			if not still then TweenService:Create(black, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { BackgroundTransparency = 0 }):Play() end
+		end)
+		task.delay(math.max(0, impactIn - 0.25), function()
+			if finished then return end
+			for _, x in fx:GetChildren() do if x ~= shell then x:Destroy() end end
+		end)
+		task.delay(impactIn, function()
+			if finished then return end
+			black.BackgroundTransparency = 1
+			impact()
+			if still then return end
+			shake = 2
+			sound(Config.Sounds.BoomCrush, 1, 0.55)
+			-- a second, wider shockwave in the other colour
+			local ring2 = part("Shockwave2", Vector3.new(0.4, 3, 3), CFrame.new(P + Vector3.new(0, 1.2, 0)) * CFrame.Angles(0, 0, math.pi / 2), CYAN)
+			ring2.Shape = Enum.PartType.Cylinder ring2.Transparency = 0.15 ring2.Parent = workspace table.insert(trash, ring2)
+			TweenService:Create(ring2, TweenInfo.new(1.1, Enum.EasingStyle.Quad), { Size = Vector3.new(0.4, 80, 80), Transparency = 1 }):Play()
+			-- a ring of light rays bursting outward and turning
+			local rays = Instance.new("Model") rays.Name = "EternalRays" rays.Parent = workspace table.insert(trash, rays)
+			for k = 1, 10 do
+				local a = k / 10 * math.pi * 2
+				local dir = Vector3.new(math.cos(a), 0.25, math.sin(a)).Unit
+				local ray = part("Ray", Vector3.new(0.6, 0.6, 2), CFrame.lookAt(P + Vector3.new(0, 4, 0), P + Vector3.new(0, 4, 0) + dir), if k % 2 == 0 then WHITE else VIOLET)
+				ray.Transparency = 0.2 ray.Parent = rays
+				TweenService:Create(ray, TweenInfo.new(1.4, Enum.EasingStyle.Quad), { Size = Vector3.new(1.4, 1.4, 70), CFrame = CFrame.lookAt(P + Vector3.new(0, 4, 0) + dir * 35, P + Vector3.new(0, 4, 0) + dir * 36), Transparency = 1 }):Play()
+			end
+			-- a rainbow supernova
+			local at = Instance.new("Attachment") at.WorldPosition = P + Vector3.new(0, 4, 0) at.Parent = workspace.Terrain table.insert(trash, at)
+			local nova = Instance.new("ParticleEmitter") nova.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+			local keys = {}
+			for i = 0, 6 do keys[i + 1] = ColorSequenceKeypoint.new(i / 6, Color3.fromHSV((0.72 + i / 6) % 1, 0.55, 1)) end
+			nova.Color = ColorSequence.new(keys) nova.LightEmission = 1 nova.Rate = 0
+			nova.Speed = NumberRange.new(30, 60) nova.SpreadAngle = Vector2.new(180, 180) nova.Lifetime = NumberRange.new(1, 1.8) nova.Drag = 2.5
+			nova.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1.6), NumberSequenceKeypoint.new(1, 0) }) nova.Rotation = NumberRange.new(0, 360)
+			nova.Parent = at nova:Emit(160)
+			-- starlight keeps drifting up around the crusher for a moment
+			local drift = Instance.new("ParticleEmitter") drift.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+			drift.Color = ColorSequence.new(WHITE, VIOLET) drift.LightEmission = 1 drift.Rate = 40
+			drift.Speed = NumberRange.new(3, 7) drift.SpreadAngle = Vector2.new(25, 25) drift.Lifetime = NumberRange.new(1.4, 2.2)
+			drift.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.7), NumberSequenceKeypoint.new(1, 0) }) drift.Parent = at
+			task.delay(2.2, function() if drift.Parent then drift.Enabled = false end end)
+		end)
 	elseif not divine then
 		local press = Instance.new("Model") press.Name = "BigRollPress" press.Parent = workspace table.insert(trash, press)
 		local high = P + Vector3.new(0, 70, 0)
@@ -395,7 +562,7 @@ local function cinematic(msg: any)
 		TweenService:Create(s, TweenInfo.new(0.4, Enum.EasingStyle.Back), { Scale = 1 }):Play()
 		skip.Visible = true
 	end)
-	task.delay(impactIn + 3.4, finish)
+	task.delay(impactIn + (if eternal then 4.2 else 3.4), finish)
 	task.delay(impactIn + 8, finish) -- safety net
 end
 

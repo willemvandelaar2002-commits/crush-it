@@ -129,6 +129,14 @@ local LOOKS = {
 		rays = { count = 12, width = 0.11, alpha = 0.52, spin = 28, colors = { Color3.new(1, 1, 1), rgb(255, 230, 140) } },
 		second = { count = 8, width = 0.05, alpha = 0.5, spin = -16 },
 	},
+	-- 10 Nov: Eternal: deep space violet with starlight and a cyan rift, a white-violet halo
+	Eternal = {
+		fill = seq(rgb(24, 10, 60), rgb(130, 70, 240), rgb(235, 228, 255), rgb(70, 200, 255), rgb(20, 8, 50)),
+		rim = seq(rgb(255, 255, 255), rgb(180, 140, 255), rgb(110, 230, 255)), sparkles = 7,
+		halo = seq(rgb(150, 90, 255), rgb(235, 240, 255), rgb(90, 220, 255)),
+		rays = { count = 13, width = 0.11, alpha = 0.5, spin = 32, colors = { Color3.new(1, 1, 1), rgb(190, 160, 255) } },
+		second = { count = 9, width = 0.05, alpha = 0.48, spin = -20 },
+	},
 	Mythic = {
 		rainbowFill = true, rainbow = true, sparkles = 8,
 		rays = { count = 14, width = 0.12, alpha = 0.45, spin = 38, rainbowRays = true },
