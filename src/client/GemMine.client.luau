@@ -250,10 +250,43 @@ local function mineLookOff()
 	for _, c in sv.kids do if c.Parent == nil then pcall(function() c.Parent = Lighting end) end end
 	TweenService:Create(Lighting, TweenInfo.new(0.8), sv.props):Play()
 end
+-- the mine's own song (GemConfig.Mine.Music): fades in while you are in the mine; the normal
+-- (and an event's) music pauses meanwhile and carries on where it was when you leave
+local SoundService = game:GetService("SoundService")
+local mineSong: Sound? = nil
+if (GemConfig.Mine.Music or 0) ~= 0 then
+	local snd = Instance.new("Sound")
+	snd.Name = "MineMusic" snd.SoundId = "rbxassetid://" .. tostring(GemConfig.Mine.Music)
+	snd.Looped = true snd.Volume = 0 snd.Parent = SoundService
+	mineSong = snd
+end
+local paused: { Sound } = {}
+local songOn = false
+local function mineMusic(on: boolean)
+	local snd = mineSong
+	if not snd or on == songOn then return end
+	songOn = on
+	if on then
+		for _, n in { "BackgroundMusic", "EventMusic" } do
+			local other = SoundService:FindFirstChild(n)
+			if other and other:IsA("Sound") and other.IsPlaying then other:Pause() table.insert(paused, other) end
+		end
+		if not snd.IsPlaying then snd:Play() end
+		TweenService:Create(snd, TweenInfo.new(1.2), { Volume = GemConfig.Mine.MusicVolume or 0.3 }):Play()
+	else
+		TweenService:Create(snd, TweenInfo.new(0.8), { Volume = 0 }):Play()
+		task.delay(0.8, function() if not songOn then snd:Pause() end end)
+		for _, other in paused do other:Resume() end
+		paused = {}
+	end
+end
+
 task.spawn(function()
 	while true do
 		task.wait(0.5)
-		if inMine() then mineLookOn() elseif saved or (mineSky and mineSky.Parent) then mineLookOff() end
+		local here = inMine()
+		if here then mineLookOn() elseif saved or (mineSky and mineSky.Parent) then mineLookOff() end
+		mineMusic(here)
 	end
 end)
 

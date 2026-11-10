@@ -1,7 +1,8 @@
 --!strict
 -- 8 Nov: the GEM SHOP (Shared/GemConfig; server rules "GemCrate" / "GemUpgrade").
--- A GEMS button in the top-left row appears after the first rebirth and shows how
--- many Gems you have. The panel: the Gem Crate (every chance listed before you open
+-- After the first rebirth your Gems show bottom left, just above your cash and in the
+-- same style (10 Nov, Willem: "put the gems above cash in the same way instead of at the
+-- top"); tap/click it to open the shop. The panel: the Gem Crate (every chance listed before you open
 -- it) and the permanent Gem upgrades (kept through rebirths). The server decides.
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
@@ -54,12 +55,25 @@ end
 
 local gui = make("ScreenGui", { Name = "GemShopHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
 
--- HUD button (after REBIRTH in the top-left row)
-local hud = Style.iconButton(gui, { name = "GemsButton", image = G.Icon, icon = G.Emoji, label = "GEMS", a = RGB(255, 140, 230), b = RGB(150, 50, 220) })
-hud.Visible = false
-local function place() if hud.Visible then Style.placeAfterHudRow(hud) end end
-Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(place)
-task.spawn(function() while true do place() task.wait(2) end end)
+-- the Gems counter: above the cash (client/CashHud), same font, outline and layout per device
+local camera = Workspace.CurrentCamera
+for _ = 1, 40 do if camera.ViewportSize.X > 10 then break end task.wait(0.05) end -- real size first
+local TOUCH = Style.compact()
+local TABLET = not TOUCH and game:GetService("UserInputService").TouchEnabled
+local rowH = if TOUCH then 28 elseif TABLET then 40 else 52
+local hud = make("TextButton", { Name = "GemsCounter", Text = "", AutoButtonColor = false, BackgroundTransparency = 1,
+	AnchorPoint = if TABLET then Vector2.new(0, 0) else Vector2.new(0, 1),
+	-- desktop: cash is 64 tall ending 42 above the bottom; phones: 32 tall ending 34 above;
+	-- tablets: cash sits top-left with Friend Boost under it, so Gems go under that
+	Position = if TOUCH then UDim2.new(0, 12, 1, -70) elseif TABLET then UDim2.new(0, 14, 0, 274) else UDim2.new(0, 16, 1, -110),
+	Size = UDim2.fromOffset(if TOUCH then 160 elseif TABLET then 260 else 330, rowH), Visible = false }, gui)
+make("ImageLabel", { Name = "GemIcon", Image = G.Icon, BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit,
+	Size = UDim2.fromOffset(rowH, rowH), Rotation = if TOUCH then 0 else -10 }, hud)
+local hudLabel = make("TextLabel", { Name = "Label", Position = UDim2.fromOffset(if TOUCH then rowH + 4 else rowH + 16, 0),
+	Size = UDim2.new(1, -(rowH + 16), 1, 0), BackgroundTransparency = 1, Font = Enum.Font.FredokaOne, TextScaled = true,
+	TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = RGB(255, 130, 238), Text = "0" }, hud)
+make("UIStroke", { Thickness = 4, Color = RGB(45, 12, 50) }, hudLabel)
+Style.bold(hudLabel, 4)
 
 -- panel
 local W, H = 780, 500
@@ -176,7 +190,7 @@ local function refresh()
 	local rate = tonumber(me:GetAttribute("GemRate")) or 0
 	have.Text = tostring(gems) .. (if rate > 0 then string.format("   +%.1f/min", rate) else "")
 	local label = hud:FindFirstChild("Label") :: TextLabel?
-	if label then label.Text = tostring(gems) end -- the button is the gem: just the count
+	if label then label.Text = tostring(gems) end -- just the count, like the cash
 	local canOpen = gems >= G.Crate.Cost
 	local cheapest = G.Crate.Cost
 	for _, u in G.Upgrades do
@@ -205,7 +219,7 @@ end
 local function showHud()
 	local rebirths = tonumber(me:GetAttribute("Rebirths")) or 0
 	local should = rebirths >= G.UnlockRebirths
-	if hud.Visible ~= should then hud.Visible = should place() end
+	if hud.Visible ~= should then hud.Visible = should end
 end
 Net.event("CrusherState").OnClientEvent:Connect(function(v)
 	if type(v) == "table" and type(v.gemUps) == "table" then
@@ -240,14 +254,14 @@ me:GetAttributeChangedSignal("Gems"):Connect(function()
 	local gained = if shownGems then now - shownGems else 0
 	shownGems = now
 	if gained <= 0 or not hud.Visible then return end
-	local pos = hud.AbsolutePosition + Vector2.new(hud.AbsoluteSize.X * 0.5, hud.AbsoluteSize.Y * 0.2)
+	local pos = hudLabel.AbsolutePosition + Vector2.new(hudLabel.TextBounds.X + 50, hudLabel.AbsoluteSize.Y * 0.5)
 	local pop = make("TextLabel", { Text = "+" .. gained, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromOffset(pos.X, pos.Y),
 		Size = UDim2.fromOffset(90, 34), BackgroundTransparency = 1, TextScaled = true, ZIndex = 20 }, gui)
 	Style.text(pop, 3)
 	pop.TextColor3 = RGB(255, 150, 240)
 	local stroke = pop:FindFirstChildOfClass("UIStroke")
 	local info = TweenInfo.new(1.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	TweenService:Create(pop, info, { Position = UDim2.fromOffset(pos.X, pos.Y + 60), TextTransparency = 1 }):Play()
+	TweenService:Create(pop, info, { Position = UDim2.fromOffset(pos.X, pos.Y - 40), TextTransparency = 1 }):Play()
 	if stroke then TweenService:Create(stroke, info, { Transparency = 1 }):Play() end
 	task.delay(1.2, function() pop:Destroy() end)
 end)

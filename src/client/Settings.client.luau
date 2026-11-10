@@ -37,7 +37,7 @@ local function get(key: string): any
 end
 
 -- sound groups ----------------------------------------------------------------------
-local MUSIC_NAMES = { BackgroundMusic = true, EventMusic = true }
+local MUSIC_NAMES = { BackgroundMusic = true, EventMusic = true, MineMusic = true } -- 10 Nov: MineMusic (client/GemMine)
 local musicGroup = make("SoundGroup", { Name = "Music", Volume = 1 }, SoundService)
 local sfxGroup = make("SoundGroup", { Name = "Sounds", Volume = 1 }, SoundService)
 local function sort(d: Instance)
