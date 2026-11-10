@@ -136,7 +136,7 @@ local function add(id: number, pos: Vector3, value: number, from: Vector3?)
 	if gems[id] then return end
 	local part = makePart()
 	-- bigger gems for bigger values
-	local s = math.clamp(0.8 + 0.25 * (value - 1), 0.8, 1.6) * (if gemTemplate then 1.5 else 1)
+	local s = math.clamp(0.8 + 0.25 * (value - 1), 0.8, 1.6) * (if gemTemplate then 2.2 else 1.3) -- 10 Nov: bigger (Willem)
 	part.Size = if gemTemplate then gemTemplate.Size.Unit * s * math.sqrt(3) else Vector3.new(s, s, s)
 	gems[id] = { part = part, pos = pos, value = value, born = os.clock(), from = from, pulling = false, pull = 0, pending = false }
 end
@@ -254,6 +254,23 @@ task.spawn(function()
 	while true do
 		task.wait(0.5)
 		if inMine() then mineLookOn() elseif saved or (mineSky and mineSky.Parent) then mineLookOff() end
+	end
+end)
+
+-- the floating gems around the mine: a slow spin and bob (one loop, only while you are there)
+local floatRest: { [BasePart]: CFrame } = {}
+RunService.Heartbeat:Connect(function()
+	if not saved then return end -- (saved = the mine sky is on = you are in the mine)
+	local mine = workspace:FindFirstChild("GemMine")
+	local f = mine and mine:FindFirstChild("FloatGems")
+	if not f then return end
+	local now = os.clock()
+	for i, g in f:GetChildren() do
+		if g:IsA("BasePart") then
+			local rest = floatRest[g] or g.CFrame
+			floatRest[g] = rest
+			g.CFrame = CFrame.new(rest.Position + Vector3.new(0, math.sin(now * 0.8 + i) * 1.2, 0)) * CFrame.Angles(0, now * 0.6 + i, 0)
+		end
 	end
 end)
 

@@ -57,15 +57,18 @@ G.HowToEarn = "Earn Gems in the GEM MINE: take the teleporter on your plot, pick
 -- CrushSeconds (your own upgrades) it crushes out Drops gems worth Value each for you into the
 -- glowing zone around it (each player sees only their own); they wait (up to MaxDrops) until you
 -- walk within Magnet studs. Rebirth 5 awakens your crusher (x AwakenValue).
--- 10 Nov (Willem: "1 every 6 seconds seems very slow"): a crush every 2 s with 2 gems, base
--- 60 Gems a minute; every Gem price went x6 with it. The mine upgrades reach ~12x, capped.
+-- 10 Nov (Willem: "1 every 6 seconds seems very slow"): a crush every 2 s; later that day
+-- "just drop 1 at a time at the start": 1 gem per crush, base 30 Gems a minute, so every Gem
+-- price is x3 the pre-mine price (x6 for one evening at 60 a minute). Upgrades reach ~18x, capped.
 G.Mine = {
 	Origin = CFrame.new(1800, 0, 0), -- far outside the toy room (map spans +-505; streaming 1024)
 	Radius = 70, -- floor radius (rocks and crystals on the rim)
-	CrusherScale = 1.8, -- the one crusher, x the bay stand-in's size
-	Zone = { inner = 15, radius = 27 }, -- gems land between these distances from the crusher (Willem's model is 24 x 13 studs)
-	PortalZ = 44, -- the portal (arrive / go home) and the GEM UPGRADES sign, in front of the crusher
-	CrushSeconds = 2, Drops = 2, Value = 1, Magnet = 5,
+	CrusherScale = 1.8, -- the stand-in crusher, x the bay size (Willem's model is 22 studs tall, 24 x 13)
+	CrusherZ = -26, -- 10 Nov (Willem): the crusher at the back ...
+	Zone = { center = CFrame.new(0, 0, 0), radius = 16, height = 1 }, -- ... and the platform in front, where gems land
+	PortalZ = 42, -- the portal (arrive / go home) and the GEM UPGRADES sign, in front of the platform
+	-- 10 Nov (Willem: "just drop 1 at a time at the start"): 1 gem per crush (base 30 a minute)
+	CrushSeconds = 2, Drops = 1, Value = 1, Magnet = 5,
 	MaxDrops = 60,
 	AwakenRebirths = 5, AwakenValue = 1.5,
 	CollectSlack = 6, -- server distance tolerance (studs) over the magnet radius
@@ -75,7 +78,7 @@ G.Mine = {
 
 -- The Gem Crate: one crusher per open, rarity by these chances (they add up to 1)
 G.Crate = {
-	Cost = 1500, -- 10 Nov: the mine pays ~60-720 Gems a minute (was 250 at 10-180; 25 before the mine)
+	Cost = 750, -- 10 Nov: the mine pays ~30-540 Gems a minute (25 before the mine)
 	Odds = {
 		{ rarity = "Legendary", chance = 0.60 },
 		{ rarity = "Exotic", chance = 0.30 },
@@ -88,23 +91,23 @@ G.Crate = {
 -- base * growth ^ level.
 G.Upgrades = {
 	-- 9 Nov: GEM MINE upgrades (group "mine", listed first): what your Gem Crusher makes
-	{ id = "MineSpeed", group = "mine", title = "Crush Speed", line = "Crushes 0.25 s faster", per = 0.25, max = 4, base = 120, growth = 1.6 },
-	{ id = "MineDrops", group = "mine", title = "More Gems", line = "+1 gem per crush", per = 1, max = 2, base = 360, growth = 4 },
-	{ id = "MineValue", group = "mine", title = "Gem Value", line = "Gems worth +50%", per = 0.5, max = 2, base = 480, growth = 4 },
-	{ id = "Magnet", group = "mine", title = "Gem Magnet", line = "Pick up from 3 studs further", per = 3, max = 5, base = 90, growth = 1.6 },
-	{ id = "Cash", title = "Gem Cash", line = "+10% cash per level", per = 0.10, max = 10, base = 90, growth = 1.5 },
-	{ id = "Luck", title = "Gem Luck", line = "+10% luck per level", per = 0.10, max = 10, base = 90, growth = 1.5 },
+	{ id = "MineSpeed", group = "mine", title = "Crush Speed", line = "Crushes 0.25 s faster", per = 0.25, max = 4, base = 60, growth = 1.6 },
+	{ id = "MineDrops", group = "mine", title = "More Gems", line = "+1 gem per crush", per = 1, max = 2, base = 180, growth = 4 },
+	{ id = "MineValue", group = "mine", title = "Gem Value", line = "Gems worth +50%", per = 0.5, max = 2, base = 240, growth = 4 },
+	{ id = "Magnet", group = "mine", title = "Gem Magnet", line = "Pick up from 3 studs further", per = 3, max = 5, base = 45, growth = 1.6 },
+	{ id = "Cash", title = "Gem Cash", line = "+10% cash per level", per = 0.10, max = 10, base = 45, growth = 1.5 },
+	{ id = "Luck", title = "Gem Luck", line = "+10% luck per level", per = 0.10, max = 10, base = 45, growth = 1.5 },
 	-- 9 Nov (rebirth data: 170 players at rebirth 1, 66 at rebirth 2: starting over is where
 	-- players stop; vault: Progression and Pacing - a rebirth keeps "fast travel to the start
 	-- of the furthest region"). HEAD START: each level, a rebirth starts one Factory further
 	-- with the bays before it already open (lv 1: FACTORY II + 12 bays; lv 2: FACTORY III + 24).
 	-- Never past the factory before the rebirth one (Rebirth.MinPlot), so a rebirth always
 	-- needs a run. NEST EGG: start each rebirth with 1% of its price per level (max 5%).
-	{ id = "HeadStart", title = "Head Start", line = "Rebirth 1 Factory further on", per = 1, max = 2, base = 240, growth = 3 },
-	{ id = "NestEgg", title = "Nest Egg", line = "Rebirth with +1% of its price", per = 0.01, max = 5, base = 150, growth = 1.6 },
-	{ id = "Rolls", title = "Quick Rolls", line = "Rolls 0.25 s faster per level", per = 0.25, max = 4, base = 120, growth = 2 },
+	{ id = "HeadStart", title = "Head Start", line = "Rebirth 1 Factory further on", per = 1, max = 2, base = 120, growth = 3 },
+	{ id = "NestEgg", title = "Nest Egg", line = "Rebirth with +1% of its price", per = 0.01, max = 5, base = 75, growth = 1.6 },
+	{ id = "Rolls", title = "Quick Rolls", line = "Rolls 0.25 s faster per level", per = 0.25, max = 4, base = 60, growth = 2 },
 	-- 8 Nov: a 6th roll pedestal (the purple one in front of the roll machine)
-	{ id = "Pedestal", title = "Gem Pedestal", line = "+1 pedestal: 6 choices per roll", per = 1, max = 1, base = 360, growth = 1 },
+	{ id = "Pedestal", title = "Gem Pedestal", line = "+1 pedestal: 6 choices per roll", per = 1, max = 1, base = 180, growth = 1 },
 }
 function G.upgrade(id: string): any
 	for _, u in G.Upgrades do if u.id == id then return u end end
