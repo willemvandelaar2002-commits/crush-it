@@ -394,3 +394,11 @@ Willem: more room behind the wings. `Layout.RearShift` -78 -> -90: the rear yard
 stairs) stand 12 studs further from the main wings; the annex moves with them (6 studs, its yard
 back edge 3 studs behind its banks instead of 6) and plot 2's toy supply belt sits 1 stud nearer
 the wall (`World.luau`, HALF - 11). Checked: no world decor inside any plot's rear yard or annex.
+
+## 10 Nov: THE ANNEX removed
+Willem: "we dont need that backrow anymore then if we changed the plan for the gems". The Annex (Factory VII,
+12 bays behind the rear yard, rebirth 3) was the rebirth-3 reward of the old gem plan; the Gem Mine replaced
+that plan, so it is gone again (commit 13314a3 reverted; the rear yard keeps RearShift -90). Back to 5 plot
+upgrades (Factory II..VI), 60 bays. A save that had bought it drops to Factory VI with 60 bays: crushers in
+bays 61-72 go to the inventory (none lost), crusher levels and upgrade caps stay (Factory VI had the same caps).
+Gem milestones: R1 Gem Mine, R5 Awakened Gem Crusher. Dev panel Plot row ends at 5.
