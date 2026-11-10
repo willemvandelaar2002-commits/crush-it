@@ -61,11 +61,16 @@ G.HowToEarn = "Earn Gems in the GEM MINE: take the teleporter on your plot, pick
 -- price is x3 the pre-mine price (x6 for one evening at 60 a minute). Upgrades reach ~18x, capped.
 G.Mine = {
 	Origin = CFrame.new(1800, 0, 0), -- far outside the toy room (map spans +-505; streaming 1024)
-	Radius = 70, -- floor radius (rocks and crystals on the rim)
-	CrusherScale = 1.8, -- the stand-in crusher, x the bay size (Willem's model is 22 studs tall, 24 x 13)
-	CrusherZ = -26, -- 10 Nov (Willem): the crusher at the back ...
-	Zone = { center = CFrame.new(0, 0, 5), radius = 22, height = 1 }, -- ... and the platform in front, where gems land (10 Nov: bigger)
-	PortalZ = 42, -- the portal (arrive / go home) and the GEM UPGRADES sign, in front of the platform
+	-- 11 Nov (Willem: "make the gem area bigger ... now i can just stand in the middle and i will get
+	-- all of the gems ... the total area bigger as well then and the crusher too"): the platform
+	-- 22 -> 38 studs radius (3x the area; even a maxed 20-stud magnet covers about a quarter of it
+	-- from the middle), the floor 70 -> 100, the crusher x1.5 (33 studs tall), everything moved out.
+	Radius = 100, -- floor radius (rocks and crystals on the rim)
+	CrusherScale = 1.8, -- the stand-in crusher (no model), x the bay size
+	ModelScale = 1.5, -- Willem's Gem Crusher model (22 studs tall as imported) x this
+	CrusherZ = -46, -- the crusher at the back ...
+	Zone = { center = CFrame.new(0, 0, 8), radius = 38, height = 1 }, -- ... the platform in front, where gems land
+	PortalZ = 60, -- the portal (arrive / go home) and the GEM UPGRADES sign, in front of the platform
 	-- 10 Nov (Willem: "just drop 1 at a time at the start"): 1 gem per crush (base 30 a minute)
 	CrushSeconds = 2, Drops = 1, Value = 1, Magnet = 5,
 	MaxDrops = 60,

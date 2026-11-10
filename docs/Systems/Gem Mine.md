@@ -66,8 +66,22 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   used: `GemMineMeshes.AwakenedLook` (colour rbxassetid://72609987677019), swapped onto Frame and Ram on your screen
   only from rebirth 5 (the normal one comes back below 5; tested both ways). Without it: an opal glow (Highlight).
   Claude's earlier recolour (`docs/art/GemCrusher_Color_Awakened_1024.png`) is not used.
-- **Stand-ins until Willem's models:** the crusher, teleporter and gem pickups are built from parts.
-  To do: the image-to-3D Gem Crusher (Blender pass like the Astral Leviathan), teleporter, gem pickup, scenery.
+- **Stand-ins:** without Willem's models (GemMineMeshes) the crusher, teleporter and gem pickups are built from parts.
+- **Bigger (11 Nov, Willem: "make the gem area bigger ... now i can just stand in the middle and i will get all of
+  the gems ... the total area bigger as well then and the crusher too"):** platform radius 22 -> 38 (centre 8 studs
+  forward; 3x the area: a maxed 20-stud magnet covers about a quarter of it from the middle, the base 5 studs ~2%),
+  floor radius 70 -> 100 (bigger tiles, 252 of them; 30 rim rocks), Willem's crusher x1.5 (`Mine.ModelScale`: 36 x 33
+  x 20 studs, its strike grows with it) at z -46, the portal at z 60. Gems fly out in a higher, slightly longer arc.
+  Tested in Play: standing in the middle with magnet 5 got nothing in 30 s; walking to 39 gems picked up 38 (the
+  last one had just landed); specs pass.
+- **Vault check (11 Nov, Collectible Pickup FX, Economies and Currencies, AFK reward rules):** already right: the server
+  owns the records, gems are client-only and private, pickups are batched (40 max, every 0.12 s) and checked by
+  distance and rate, waiting gems are capped (60) so being away pays a little, not a lot. Fixed: the client now asks
+  the server when a gem starts flying to you, not when it arrives (the vault's "laggy players fail validation"
+  mistake); the ding still plays on arrival. The server no longer sends an empty message every crush while your mine
+  is full. Left as is: gems are destroyed instead of pooled (at most 60, fine).
+- **Upgrade caps:** the mine upgrades have fixed maxes (Speed 4, More Gems 2, Value 2, Magnet 5); they do not grow
+  with rebirths (an idea: raise a max at rebirth milestones).
 - **Later:** a capped cash upgrade "Gem Yield" in the normal world; an Auto Walk Robux pass.
 - Tested in Studio 10 Nov: teleporter lock/unlock, teleport, crushing every 6 s, pickup (10 walked over = +10),
   sign opens the shop, Magnet 5 -> 8 at once, awakened label at rebirth 5, specs pass.

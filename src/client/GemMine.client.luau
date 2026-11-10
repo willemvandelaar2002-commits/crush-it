@@ -18,7 +18,7 @@ local folder = Instance.new("Folder")
 folder.Name = "MyGems"
 folder.Parent = workspace
 
-type Gem = { part: BasePart, pos: Vector3, value: number, born: number, from: Vector3?, pulling: boolean, pull: number, pending: boolean }
+type Gem = { part: BasePart, pos: Vector3, value: number, born: number, from: Vector3?, pulling: boolean, pull: number, pending: boolean, sent: boolean?, confirmed: boolean? }
 local gems: { [number]: Gem } = {}
 local queue: { number } = {}
 local COLOR = Color3.fromRGB(255, 90, 230)
@@ -156,10 +156,14 @@ remote.OnClientEvent:Connect(function(msg)
 		strike()
 		for _, d in msg.drops or {} do add(d.id, d.pos, d.value, d.from) end
 	elseif msg.kind == "collected" then
-		for _, id in msg.ids or {} do remove(id) end
+		-- the server's answer can come while the gem is still flying in: it goes when it arrives
+		for _, id in msg.ids or {} do
+			local g = gems[id]
+			if g and g.pending then remove(id) elseif g then g.confirmed = true end
+		end
 		for _, id in msg.refused or {} do
 			local g = gems[id]
-			if g then g.pending = false g.pulling = false g.pull = 0 g.part.Transparency = 0 end
+			if g then g.pending = false g.sent = false g.pulling = false g.pull = 0 g.part.Transparency = 0 end
 		end
 	elseif msg.kind == "openShop" then
 		local hud = me.PlayerGui:FindFirstChild("GemShopHud")
@@ -213,15 +217,21 @@ RunService.RenderStepped:Connect(function(dt)
 		if g.pending then continue end
 		local age = now - g.born
 		local spin = CFrame.Angles(math.rad(45), now * 2 + id, math.rad(35))
-		if g.from and age < 0.5 then
-			-- flies out of the crusher in an arc
-			local t = age / 0.5
-			local p = g.from:Lerp(g.pos, t) + Vector3.new(0, math.sin(t * math.pi) * 4, 0)
+		if g.from and age < 0.7 then
+			-- flies out of the crusher in an arc (11 Nov: higher and longer for the bigger platform)
+			local t = age / 0.7
+			local arc = 4 + (g.pos - g.from).Magnitude * 0.12
+			local p = g.from:Lerp(g.pos, t) + Vector3.new(0, math.sin(t * math.pi) * arc, 0)
 			g.part.CFrame = CFrame.new(p) * spin
 			continue
 		end
 		local rest = g.pos + Vector3.new(0, math.sin(now * 3 + id) * 0.25, 0)
-		if root and not g.pulling and (root.Position - g.pos).Magnitude <= magnet then g.pulling = true end
+		if root and not g.pulling and (root.Position - g.pos).Magnitude <= magnet then
+			g.pulling = true
+			-- vault audit 11 Nov (Collectible Pickup FX): ask the server when the pull STARTS, while
+			-- you are surely in range, not on arrival (laggy players would be refused)
+			if not g.sent then g.sent = true table.insert(queue, id) end
+		end
 		if g.pulling and root then
 			g.pull = math.min(1, g.pull + dt * 3) -- accelerates: not a sticky constant lerp
 			local cur = g.part.Position
@@ -230,8 +240,8 @@ RunService.RenderStepped:Connect(function(dt)
 			g.part.CFrame = CFrame.new(cur + step) * spin
 			if (target - g.part.Position).Magnitude < 1.6 then
 				g.pending = true g.part.Transparency = 1
-				table.insert(queue, id)
 				ding(g.value)
+				if g.confirmed then remove(id) end
 			end
 		else
 			g.part.CFrame = CFrame.new(rest) * spin
