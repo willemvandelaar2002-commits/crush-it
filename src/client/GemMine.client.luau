@@ -363,10 +363,6 @@ task.delay(3, function() remote:FireServer("sync") end)
 -- off once you own it (attribute AutoWalkOn, on by default). Only walks: the magnet and the
 -- server's distance checks are the same as when you walk yourself.
 local Store = require(RS.Shared.Store)
-local controls: any = nil
-pcall(function()
-	controls = require((me:WaitForChild("PlayerScripts") :: any):WaitForChild("PlayerModule")):GetControls()
-end)
 local function walkOn(): boolean
 	return Store.hasPass(me, "AutoWalk") and me:GetAttribute("AutoWalkOn") ~= false
 end
@@ -390,7 +386,7 @@ local function boardText()
 end
 me:GetAttributeChangedSignal(Store.passAttr("AutoWalk")):Connect(boardText)
 me:GetAttributeChangedSignal("AutoWalkOn"):Connect(boardText)
-local pausedUntil, walking = 0, false
+local pausedUntil, walking, heading = 0, false, Vector3.zero
 task.spawn(function()
 	while true do
 		task.wait(0.2)
@@ -403,9 +399,11 @@ task.spawn(function()
 			walking = false
 			continue
 		end
-		-- you steer: Auto Walk waits until you have let go for a second
-		local steer = controls and controls:GetMoveVector() or Vector3.zero
-		if steer.Magnitude > 0.1 then pausedUntil = os.clock() + 1 walking = false continue end
+		-- you steer: Auto Walk waits until you have let go for a second. (This game has no standard
+		-- PlayerModule, so steering shows as walking in another direction than Auto Walk sent you.)
+		local md = hum.MoveDirection
+		local own = md.Magnitude > 0.1 and (not walking or heading.Magnitude < 0.1 or md.Unit:Dot(heading) < 0.6)
+		if own then pausedUntil = os.clock() + 1 walking = false continue end
 		if os.clock() < pausedUntil then continue end
 		-- the nearest gem that is still waiting (not already flying to you)
 		local best, bestD = nil, math.huge
@@ -416,7 +414,10 @@ task.spawn(function()
 			end
 		end
 		if best then
-			hum:MoveTo(Vector3.new(best.pos.X, root.Position.Y, best.pos.Z))
+			local to = Vector3.new(best.pos.X, root.Position.Y, best.pos.Z)
+			local flat = Vector3.new(to.X - root.Position.X, 0, to.Z - root.Position.Z)
+			heading = if flat.Magnitude > 0.1 then flat.Unit else Vector3.zero
+			hum:MoveTo(to)
 			walking = true
 		elseif walking then
 			hum:MoveTo(root.Position) walking = false
