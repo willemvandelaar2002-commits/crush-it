@@ -28,6 +28,9 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
 - **Pickup sound (10 Nov):** a crystal ding per gem (`Config.Sounds.GemPickup`, Creator Store "gem_pickup"
   4612375233), in the Sounds volume group. Quick pickups in a row climb in pitch (+4% each, up to 12); a gem worth
   more rings a bit lower and louder; at most one ding per 0.05 s. Tested: 7 gems gave 5 dings climbing 1.00 -> 1.16.
+  10 Nov evening (Willem: "a little too loud and have a delay"): volume .45 -> .22; six copies made and preloaded
+  up front and used in turn (a new Sound per ding had to load first, ~0.3 s); each ding starts 0.07 s into the
+  file (measured with an AudioAnalyzer: it swells in and peaks ~0.13 s in).
   It keeps crushing while you are away, up to 60 gems waiting, so there is a reason to come back.
 - **Private gems:** only you see your gems (client-rendered in `workspace.MyGems`). Pick up by walking over them;
   the magnet pulls them in from 5 studs. The server checks every pickup (distance <= magnet + 6 slack, max 30

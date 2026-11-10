@@ -215,7 +215,7 @@ Config.Sounds = {
 	RevealBig = 9067124098, -- Legendary and up: fanfare
 	Equip = 9125788628, -- a crusher clunks into a bay / is bought
 	CounterTick = 87437544236708, -- the money number over your bin ticking up
-	GemPickup = 4612375233, -- 10 Nov: a gem in the Gem Mine (client/GemMine; pitch climbs on a streak)
+	GemPickup = 4612375233, -- 10 Nov: a gem in the Gem Mine (client/GemMine: 6 preloaded copies, starts 0.07 s in, volume .22; pitch climbs on a streak)
 }
 
 -- How each kind of object reacts. Sounds name Config.Sounds keys; the client
