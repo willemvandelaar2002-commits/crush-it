@@ -201,16 +201,19 @@ local function buildWorld()
 		if i % 2 == 0 then
 			clone(if i % 4 == 0 then "CrystalClusterLarge" else "CrystalClusterSmall", 2 + rng:NextNumber() * 1.5, inward * turn, false)
 		end
-		if i % 4 == 1 then
+		local front = math.sin(a) > 0.6 -- the side with the portal: keep the view open
+		if i % 4 == 1 and not front then
 			-- a big spire with a glow
-			local spire = clone("CrystalClusterLarge", 5 + rng:NextNumber() * 3, at * CFrame.new(0, 0, 0) * turn, false)
+			local spire = clone("CrystalClusterLarge", 3.5 + rng:NextNumber() * 1.5, at * turn, false)
 			if spire and i % 8 == 1 then light(spire, 6, 34, if i % 16 == 1 then CYAN else PINK, 1.6) end
 		end
 	end
 	-- floating gems around the mine (the client spins and bobs them)
 	local float = Instance.new("Folder") float.Name = "FloatGems" float.Parent = root
-	for i = 1, 10 do
-		local a = i / 10 * math.pi * 2 + 0.3
+	for i = 1, 14 do
+		local a = i / 14 * math.pi * 2 + 0.2
+		-- only on the left and right: not over the crusher (back) or the portal (front)
+		if math.abs(math.sin(a)) > 0.55 then continue end
 		local r = Mine.Radius - 18 + rng:NextNumber(-4, 4)
 		local t = tpl("GemPickup")
 		local g: BasePart
@@ -234,7 +237,7 @@ local function buildWorld()
 	-- facet tiles: a star of thin gold lines on the platform
 	for i = 1, 8 do
 		local line = Build.block(root, "Facet", Vector3.new(0.25, 0.06, zr * 2 - 2), zc * CFrame.new(0, Mine.Zone.height + 0.2, 0) * CFrame.Angles(0, i / 8 * math.pi, 0), GOLD)
-		line.Material = Enum.Material.Neon line.Transparency = 0.55 deco(line)
+		line.Material = Enum.Material.Neon line.Transparency = 0.7 deco(line)
 	end
 	-- small crystals around the platform edge, leaving the front (to the portal) open
 	for i = 1, 10 do
