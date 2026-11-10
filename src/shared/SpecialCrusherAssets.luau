@@ -18,25 +18,8 @@ local Assets = {
  Toyzilla={size=Vector3.new(11.8,13.2,8.4),bedTop=2.5,rams={
   {name="Ram",stroke=2.63},
  }},
- -- Mythics: Willem's Blender models, built in studs, fronts face -Z like the others
- -- grow: scale up to fill the bay.
- -- lift: the ram rests this much higher (opened) and strokes back down.
- -- side: moves with the ram but is not above the bed (ignored for toy space).
- JackpotPress={size=Vector3.new(7.53,7.52,4.73),bedTop=1.24,grow=true,rams={
-  {name="Ram",stroke=1.35},{name="PistonShaft",stroke=1.35},
- }},
- SeraphPress={size=Vector3.new(8.35,8.65,5.44),bedTop=1.41,grow=true,rams={
-  {name="Ram",stroke=1.35},{name="PistonShaft",stroke=1.35},
- }},
- PrismMech={size=Vector3.new(7.36,7.92,6.06),bedTop=1.45,grow=true,rams={
-  {name="Ram",stroke=1.1},{name="PistonShaft",stroke=1.1},
- }},
- PhantomPirate={size=Vector3.new(7.9,7.75,5.76),bedTop=2.26,grow=true,rams={
-  {name="Jaw",stroke=1.6,lift=1.6},{name="HydraulicRod_L",stroke=1.6,lift=1.6,side=true},{name="HydraulicRod_R",stroke=1.6,lift=1.6,side=true},
- }},
- CandyColossus={size=Vector3.new(7.7,8.49,5.96),bedTop=1.45,grow=true,rams={
-  {name="Ram",stroke=1.5},{name="PistonShaft",stroke=1.5},
- }},
+ -- Mythics (JackpotPress, SeraphPress, PrismMech, PhantomPirate, CandyColossus, DiscoDestroyer,
+ -- KrakenClamp): 10 Nov models, motion metadata in MythicCrusherAssets.
 -- Crate crushers (27 Oct pack, assets/crate-crushers): kit="motion" rigs.
 -- All numbers in FBX export space (x, y up, z; = Blender (x, z, -y)), studs at
 -- fit 1; Studio's importer turns the meshes 180 degrees, SpecialCrushers works
@@ -111,39 +94,8 @@ local Assets = {
   },
   contact={"Claw_L","Claw_R"},
  },
- DiscoDestroyer={size=Vector3.new(7.8,6.375,6),bedTop=1.42,grow=true,kit="motion",
-  parts={
-   Deck_L={center=Vector3.new(-2.78,1.25,2.15),size=Vector3.new(1.1,0.2,1.1),origin=Vector3.new(-2.78,1.21,2.15)},
-   Deck_R={center=Vector3.new(2.78,1.25,2.15),size=Vector3.new(1.1,0.2,1.1),origin=Vector3.new(2.78,1.21,2.15)},
-   Frame={center=Vector3.new(0,3.1875,0),size=Vector3.new(7.8,6.375,6),origin=Vector3.new(0,0,0)},
-   PistonShaft={center=Vector3.new(0,5.48,0),size=Vector3.new(0.56,0.2,0.56),origin=Vector3.new(0,5.58,0)},
-   Ram={center=Vector3.new(0,3.85,0),size=Vector3.new(3.55,3.2,3.55),origin=Vector3.new(0,3.88,0)},
-  },
-  motion={
-   {name="Ram",kind="move",vector=Vector3.new(0,-0.75,0),curve="press"},
-   {name="PistonShaft",kind="extend",axis="Y",ratio=4.75,curve="press"},
-   {name="Ram",kind="rotate",axis=Vector3.new(0,1,0),angle=3.14159,curve="wind"},
-   {name="Deck_L",kind="rotate",axis=Vector3.new(0,1,0),angle=3.14159,curve="wind"},
-   {name="Deck_R",kind="rotate",axis=Vector3.new(0,1,0),angle=-3.14159,curve="wind"},
-  },
-  contact={"Ram"},
- },
- KrakenClamp={size=Vector3.new(7.8,6.99,5.8),bedTop=1.42,grow=true,kit="motion",
-  parts={
-   Frame={center=Vector3.new(0,3.495,0),size=Vector3.new(7.8,6.99,5.8),origin=Vector3.new(0,0,0)},
-   Jaw_L={center=Vector3.new(-2.0835,3.1732,0.2719),size=Vector3.new(3.1362,2.9493,2.1784),origin=Vector3.new(-2.93,4.38,-0.42)},
-   Jaw_R={center=Vector3.new(2.0835,3.1732,0.2719),size=Vector3.new(3.1362,2.9493,2.1784),origin=Vector3.new(2.93,4.38,-0.42)},
-   SidePiston_L={center=Vector3.new(-2.25,3,-0.75),size=Vector3.new(0.9,0.26,0.26),origin=Vector3.new(-2.7,3,-0.75)},
-   SidePiston_R={center=Vector3.new(2.25,3,-0.75),size=Vector3.new(0.9,0.26,0.26),origin=Vector3.new(2.7,3,-0.75)},
-  },
-  motion={
-   {name="Jaw_L",kind="move",vector=Vector3.new(0.65,0,0),curve="press"},
-   {name="Jaw_R",kind="move",vector=Vector3.new(-0.65,0,0),curve="press"},
-   {name="SidePiston_L",kind="extend",axis="X",ratio=1.72222,curve="press"},
-   {name="SidePiston_R",kind="extend",axis="X",ratio=1.72222,curve="press"},
-  },
-  contact={"Jaw_L","Jaw_R"},
- },
+
+
 }
 -- Secret/Divine chase crushers (29 Oct pack): motion metadata in ChaseCrusherAssets.
 for id, entry in require(script.Parent.ChaseCrusherAssets) do
@@ -158,6 +110,10 @@ for id, entry in require(script.Parent.ExoticCrusherAssets) do
 end
 -- 9 Nov: Eternal models (preview only until the tier exists)
 for id, entry in require(script.Parent.EternalCrusherAssets) do
+	Assets[id] = entry
+end
+-- 10 Nov: the seven Mythics' new models
+for id, entry in require(script.Parent.MythicCrusherAssets) do
 	Assets[id] = entry
 end
 return Assets
