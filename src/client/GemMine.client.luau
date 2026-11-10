@@ -61,12 +61,34 @@ local function strike()
 end
 
 local OPAL, CYAN, MAGENTA = Color3.fromRGB(240, 236, 255), Color3.fromRGB(140, 240, 255), Color3.fromRGB(225, 60, 210)
+local stashed: { [Instance]: Instance? } = {}
 local function paint()
 	local m = machine()
 	if not m then return end
 	local awake = me:GetAttribute("GemAwake") == true
-	if m:FindFirstChild("Frame") then
-		-- Willem's textured model: an opal glow over it instead of recolouring
+	local look = RS:FindFirstChild("GemMineMeshes") and RS.GemMineMeshes:FindFirstChild("AwakenedLook")
+	if m:FindFirstChild("Frame") and look and look:IsA("SurfaceAppearance") then
+		-- Willem's model: swap Frame's and Ram's SurfaceAppearance for the recoloured one (a
+		-- SurfaceAppearance's maps can't be set by a script, but a whole one can be swapped)
+		for _, n in { "Frame", "Ram" } do
+			local part = m:FindFirstChild(n)
+			if part then
+				local normal = part:FindFirstChild("NormalLook") or part:FindFirstChildWhichIsA("SurfaceAppearance")
+				if normal and normal.Name ~= "AwakenedLook" then normal.Name = "NormalLook" end
+				local awakeSA = part:FindFirstChild("AwakenedLook")
+				if awake and not awakeSA then
+					if normal then normal.Parent = nil end
+					look:Clone().Parent = part
+					stashed[part] = normal
+				elseif not awake and awakeSA then
+					awakeSA:Destroy()
+					local back = stashed[part]
+					if back then back.Parent = part stashed[part] = nil end
+				end
+			end
+		end
+	elseif m:FindFirstChild("Frame") then
+		-- no recoloured texture: an opal glow over it instead
 		local h = m:FindFirstChild("AwakeGlow") :: Highlight?
 		if awake and not h then
 			local nh = Instance.new("Highlight")

@@ -63,7 +63,7 @@ G.Mine = {
 	Origin = CFrame.new(1800, 0, 0), -- far outside the toy room (map spans +-505; streaming 1024)
 	Radius = 70, -- floor radius (rocks and crystals on the rim)
 	CrusherScale = 1.8, -- the one crusher, x the bay stand-in's size
-	Zone = { inner = 13, radius = 25 }, -- gems land between these distances from the crusher
+	Zone = { inner = 15, radius = 27 }, -- gems land between these distances from the crusher (Willem's model is 24 x 13 studs)
 	PortalZ = 44, -- the portal (arrive / go home) and the GEM UPGRADES sign, in front of the crusher
 	CrushSeconds = 2, Drops = 2, Value = 1, Magnet = 5,
 	MaxDrops = 60,
