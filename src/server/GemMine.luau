@@ -46,7 +46,8 @@ local api: Api
 type Drop = { pos: Vector3, value: number }
 type State = { nextCrush: number, drops: { [number]: Drop }, count: number, nextId: number, budget: number, budgetAt: number }
 local states: { [Player]: State } = {}
-type Crusher = { model: Model, center: Vector3, ramRest: CFrame, arrive: CFrame }
+type Crusher = { model: Model, center: Vector3, -- center: the platform's top middle
+	 ramRest: CFrame, arrive: CFrame }
 local crusher: Crusher
 local root: Folder
 
@@ -156,48 +157,106 @@ local function buildWorld()
 	root = Instance.new("Folder")
 	root.Name = "GemMine"
 	local o = Mine.Origin
-	-- floor: a crystal cave platform with a rim of rocks and crystal clusters
-	local floor = Build.block(root, "MineFloor", Vector3.new(4, Mine.Radius * 2, Mine.Radius * 2), o * CFrame.new(0, -2, 0) * CFrame.Angles(0, 0, math.rad(90)), RGB(112, 86, 170))
-	floor.Shape = Enum.PartType.Cylinder
 	local rng = Random.new(9)
+	local function light(at: BasePart, height: number, range: number, color: Color3, brightness: number?)
+		local att = Instance.new("Attachment") att.Parent = at att.WorldPosition = at.Position + Vector3.new(0, height, 0)
+		local l = Instance.new("PointLight") l.Range = range l.Brightness = brightness or 2.2 l.Color = color l.Shadows = false l.Parent = att
+	end
+	local function deco(p: BasePart) p.CanCollide = false p.CanQuery = false p.CanTouch = false p.CastShadow = false end
+	local function clone(name: string, size: number, at: CFrame, collide: boolean): BasePart?
+		local t = tpl(name)
+		if not (t and t:IsA("BasePart")) then return nil end
+		local c = t:Clone() c.Anchored = true
+		c.Size *= size
+		c:PivotTo(at * CFrame.new(0, c.Size.Y / 2 - 0.2, 0))
+		if not collide then deco(c) end
+		c.Parent = root
+		return c
+	end
+
+	-- 10 Nov (Willem: "more gem like ... it looks kinda plain"): a dark crystal-cave floor
+	-- with glowing crystal veins, big crystal spires and floating gems around the rim
+	local floor = Build.block(root, "MineFloor", Vector3.new(4, Mine.Radius * 2, Mine.Radius * 2), o * CFrame.new(0, -2, 0) * CFrame.Angles(0, 0, math.rad(90)), RGB(58, 40, 96))
+	floor.Shape = Enum.PartType.Cylinder floor.Material = Enum.Material.Slate
+	local edge = Build.block(root, "MineEdge", Vector3.new(3.6, Mine.Radius * 2 + 3, Mine.Radius * 2 + 3), o * CFrame.new(0, -2.3, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
+	edge.Shape = Enum.PartType.Cylinder edge.Material = Enum.Material.Neon deco(edge)
+	-- glowing veins from the platform out to the rim
+	for i = 1, 14 do
+		local a = i / 14 * math.pi * 2 + rng:NextNumber(-0.15, 0.15)
+		local r0 = Mine.Zone.radius + 3
+		local len = rng:NextNumber(18, Mine.Radius - r0 - 8)
+		local mid = Mine.Zone.center * CFrame.Angles(0, a, 0) * CFrame.new(0, 0.03, -(r0 + len / 2))
+		local v = Build.block(root, "Vein", Vector3.new(rng:NextNumber(0.35, 0.7), 0.1, len), o * mid, if i % 3 == 0 then CYAN else PINK)
+		v.Material = Enum.Material.Neon v.Transparency = 0.25 deco(v)
+	end
+	-- the rim: cave rocks with crystal clusters in front of them, and big crystal spires
 	for i = 1, 22 do
 		local a = i / 22 * math.pi * 2
 		local at = o * CFrame.new(math.cos(a) * (Mine.Radius - 4), 0, math.sin(a) * (Mine.Radius - 4))
-		local rockT = tpl(({ "CaveRockSmall", "CaveRockWide", "CaveRockTall" })[i % 3 + 1])
-		if rockT and rockT:IsA("BasePart") then
-			-- Willem's props: a few scaled, turned variants (one shared texture)
-			local r = rockT:Clone() r.Anchored = true
-			r.Size *= 1.6 + rng:NextNumber() * 1.4
-			r:PivotTo(at * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0) * CFrame.new(0, r.Size.Y / 2 - 0.3, 0))
-			r.Parent = root
-		else
+		local turn = CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0)
+		if not clone(({ "CaveRockSmall", "CaveRockWide", "CaveRockTall" })[i % 3 + 1], 1.8 + rng:NextNumber() * 1.6, at * turn, true) then
 			Build.rock(root, at, 2.2 + rng:NextNumber() * 1.6, { rock = ROCK }, rng)
 		end
-		local crystalT = tpl(if i % 4 == 0 then "CrystalClusterLarge" else "CrystalClusterSmall")
-		if i % 2 == 0 and crystalT and crystalT:IsA("BasePart") then
-			local c = crystalT:Clone() c.Anchored = true c.CanCollide = false
-			c.Size *= 2 + rng:NextNumber() * 1.5
-			local inward = o * CFrame.new(math.cos(a) * (Mine.Radius - 10), 0, math.sin(a) * (Mine.Radius - 10))
-			c:PivotTo(inward * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0) * CFrame.new(0, c.Size.Y / 2 - 0.2, 0))
-			c.Parent = root
-		elseif i % 2 == 0 then
-			local h = 6 + rng:NextNumber() * 8
-			local c = Build.block(root, "Crystal", Vector3.new(2.2, h, 2.2), at * CFrame.new(0, h / 2, 0) * CFrame.Angles(math.rad(rng:NextNumber(-20, 20)), a, math.rad(rng:NextNumber(-20, 20))), if i % 4 == 0 then CYAN else PINK)
-			c.Material = Enum.Material.Neon c.CanCollide = false
+		local inward = o * CFrame.new(math.cos(a) * (Mine.Radius - 11), 0, math.sin(a) * (Mine.Radius - 11))
+		if i % 2 == 0 then
+			clone(if i % 4 == 0 then "CrystalClusterLarge" else "CrystalClusterSmall", 2 + rng:NextNumber() * 1.5, inward * turn, false)
+		end
+		local front = math.sin(a) > 0.6 -- the side with the portal: keep the view open
+		if i % 4 == 1 and not front then
+			-- a big spire with a glow
+			local spire = clone("CrystalClusterLarge", 3.5 + rng:NextNumber() * 1.5, at * turn, false)
+			if spire and i % 8 == 1 then light(spire, 6, 34, if i % 16 == 1 then CYAN else PINK, 1.6) end
 		end
 	end
-	local function light(at: BasePart, height: number, range: number, color: Color3)
-		local att = Instance.new("Attachment") att.Parent = at att.WorldPosition = at.Position + Vector3.new(0, height, 0)
-		local l = Instance.new("PointLight") l.Range = range l.Brightness = 2.2 l.Color = color l.Shadows = false l.Parent = att
+	-- floating gems around the mine (the client spins and bobs them)
+	local float = Instance.new("Folder") float.Name = "FloatGems" float.Parent = root
+	for i = 1, 14 do
+		local a = i / 14 * math.pi * 2 + 0.2
+		-- only on the left and right: not over the crusher (back) or the portal (front)
+		if math.abs(math.sin(a)) > 0.55 then continue end
+		local r = Mine.Radius - 18 + rng:NextNumber(-4, 4)
+		local t = tpl("GemPickup")
+		local g: BasePart
+		if t and t:IsA("BasePart") then g = t:Clone() :: BasePart g.Size *= rng:NextNumber(3.5, 6)
+		else g = Build.block(float, "Gem", Vector3.new(3, 3, 3), CFrame.new(), PINK) g.Material = Enum.Material.Neon end
+		g.Name = "FloatGem" g.Anchored = true deco(g)
+		g.CFrame = o * CFrame.new(math.cos(a) * r, rng:NextNumber(14, 24), math.sin(a) * r)
+		g.Parent = float
 	end
-	-- the pickup zone around the crusher: a glowing rim with a darker disc inside
-	local z = Mine.Zone.radius
-	local rim = Build.block(root, "ZoneRim", Vector3.new(0.2, z * 2 + 1.4, z * 2 + 1.4), o * CFrame.new(0, 0.1, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
-	rim.Shape = Enum.PartType.Cylinder rim.Material = Enum.Material.Neon rim.CanCollide = false rim.CanQuery = false
-	local disc = Build.block(root, "Zone", Vector3.new(0.24, z * 2, z * 2), o * CFrame.new(0, 0.12, 0) * CFrame.Angles(0, 0, math.rad(90)), RGB(70, 40, 120))
-	disc.Shape = Enum.PartType.Cylinder disc.CanCollide = false disc.CanQuery = false
-	-- the one Gem Crusher in the middle, its front towards the portal (+Z of the origin)
-	local m, ram = buildCrusher(root, o * CFrame.Angles(0, math.rad(180), 0), Mine.CrusherScale)
+
+	-- THE PLATFORM in front of the crusher (Willem: "gem crusher a bit further back and then the
+	-- platform in the front"): your gems land on it. Raised, gold trim, a glowing ring.
+	local zc = o * Mine.Zone.center
+	local zr = Mine.Zone.radius
+	local trim = Build.block(root, "ZoneTrim", Vector3.new(Mine.Zone.height, zr * 2 + 2, zr * 2 + 2), zc * CFrame.new(0, Mine.Zone.height / 2, 0) * CFrame.Angles(0, 0, math.rad(90)), GOLD)
+	trim.Shape = Enum.PartType.Cylinder trim.Material = Enum.Material.Metal
+	local ring = Build.block(root, "ZoneRim", Vector3.new(Mine.Zone.height + 0.1, zr * 2 + 0.8, zr * 2 + 0.8), zc * CFrame.new(0, Mine.Zone.height / 2 + 0.03, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
+	ring.Shape = Enum.PartType.Cylinder ring.Material = Enum.Material.Neon deco(ring)
+	local top = Build.block(root, "Zone", Vector3.new(Mine.Zone.height + 0.2, zr * 2, zr * 2), zc * CFrame.new(0, Mine.Zone.height / 2 + 0.05, 0) * CFrame.Angles(0, 0, math.rad(90)), RGB(78, 46, 132))
+	top.Shape = Enum.PartType.Cylinder top.Material = Enum.Material.Glass top.Reflectance = 0.1
+	-- facet tiles: a star of thin gold lines on the platform
+	for i = 1, 8 do
+		local line = Build.block(root, "Facet", Vector3.new(0.25, 0.06, zr * 2 - 2), zc * CFrame.new(0, Mine.Zone.height + 0.2, 0) * CFrame.Angles(0, i / 8 * math.pi, 0), GOLD)
+		line.Material = Enum.Material.Neon line.Transparency = 0.7 deco(line)
+	end
+	-- small crystals around the platform edge, leaving the front (to the portal) open
+	for i = 1, 10 do
+		local a = math.rad(-120 + (i - 1) * 26)
+		local at = zc * CFrame.Angles(0, a, 0) * CFrame.new(0, 0, -(zr + 2.2))
+		clone(if i % 3 == 0 then "CrystalClusterLarge" else "CrystalClusterSmall", 1.1 + rng:NextNumber() * 0.5, at * CFrame.Angles(0, rng:NextNumber(0, 6.28), 0), false)
+	end
+	-- sparkles over the platform (one emitter)
+	local sparkHost = Build.block(root, "Sparkles", Vector3.new(zr * 1.6, 0.2, zr * 1.6), zc * CFrame.new(0, Mine.Zone.height + 6, 0), PINK)
+	sparkHost.Transparency = 1 deco(sparkHost)
+	local pe = Instance.new("ParticleEmitter")
+	pe.Rate = 8 pe.Lifetime = NumberRange.new(1.5, 2.5) pe.Speed = NumberRange.new(0.5, 1.5)
+	pe.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.5, 0.45), NumberSequenceKeypoint.new(1, 0) })
+	pe.Color = ColorSequence.new(RGB(255, 170, 245), CYAN) pe.LightEmission = 1 pe.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	pe.SpreadAngle = Vector2.new(180, 180) pe.Parent = sparkHost
+	light(top, 8, 36, RGB(255, 150, 240), 1.8)
+
+	-- the one Gem Crusher at the back of the platform, its front towards the portal (+Z)
+	local m, ram = buildCrusher(root, o * CFrame.new(0, 0, Mine.CrusherZ) * CFrame.Angles(0, math.rad(180), 0), Mine.CrusherScale)
 	local height = tonumber(m:GetAttribute("Height")) or 22
 	local base = m.PrimaryPart :: BasePart
 	local above = height - (base.Position.Y - o.Position.Y) -- from the part's centre to the top
@@ -209,14 +268,25 @@ local function buildWorld()
 	portal.Name = "Portal"
 	pr.Triggered:Connect(function(p) api.home(p) end)
 	light(portal.PrimaryPart :: BasePart, 10, 30, RGB(255, 170, 240))
-	-- the Gem Shop sign beside the portal
-	local shop = Build.block(root, "UpgradeSign", Vector3.new(5, 6, 0.6), portalAt * CFrame.new(10, 3.5, 0) * CFrame.Angles(0, math.rad(20), 0), GOLD)
-	label(shop, "GEM UPGRADES", RGB(255, 236, 120), 4.5, Vector2.new(11, 2.4))
+	-- the Gem Shop sign beside the portal: a navy board with a gold frame and a gem on top
+	local signAt = portalAt * CFrame.new(11, 0, -2) * CFrame.Angles(0, math.rad(20), 0)
+	for _, x in { -2.6, 2.6 } do Build.block(root, "SignPost", Vector3.new(0.6, 6, 0.6), signAt * CFrame.new(x, 3, 0), GOLD).Material = Enum.Material.Metal end
+	local frame = Build.block(root, "SignFrame", Vector3.new(6, 4, 0.5), signAt * CFrame.new(0, 5, 0), GOLD)
+	frame.Material = Enum.Material.Metal
+	local shop = Build.block(root, "UpgradeSign", Vector3.new(5.2, 3.2, 0.6), signAt * CFrame.new(0, 5, 0), NAVY)
+	local signGem = tpl("GemPickup")
+	if signGem and signGem:IsA("BasePart") then
+		local g = signGem:Clone() g.Anchored = true g.Size *= 2.2 deco(g)
+		g.CFrame = signAt * CFrame.new(0, 8.2, 0) g.Parent = root
+	end
+	local signText = label(shop, "GEM UPGRADES", RGB(255, 236, 120), 0, Vector2.new(5, 2.2))
+	local signGui = signText.Parent :: BillboardGui
+	signGui.AlwaysOnTop = true signGui.MaxDistance = 90 -- on the board, not hidden by it
 	prompt(shop, "Upgrades", "Gem Shop").Triggered:Connect(function(p)
 		Net.event("GemMine"):FireClient(p, { kind = "openShop" })
 	end)
-	crusher = { model = m, center = o.Position, ramRest = ram.CFrame,
-		arrive = CFrame.lookAt((portalAt * CFrame.new(0, 3, -6)).Position, o.Position + Vector3.new(0, 3, 0)) }
+	crusher = { model = m, center = zc.Position + Vector3.new(0, Mine.Zone.height, 0), ramRest = ram.CFrame,
+		arrive = CFrame.lookAt((portalAt * CFrame.new(0, 3, -6)).Position, zc.Position + Vector3.new(0, 3, 0)) }
 	root.Parent = workspace
 end
 
@@ -280,10 +350,9 @@ local function crush(p: Player, d: any, st: State, now: number)
 	local value = Gems.mineValue(s)
 	for _ = 1, math.min(Gems.mineDrops(s), Mine.MaxDrops - st.count) do
 		st.nextId += 1
-		-- anywhere in the ring between the crusher and the zone's rim (uniform over the area)
+		-- anywhere on the platform in front of the crusher (uniform over the disc)
 		local a = math.random() * math.pi * 2
-		local r0, r1 = Mine.Zone.inner, Mine.Zone.radius - 1
-		local r = math.sqrt(r0 * r0 + math.random() * (r1 * r1 - r0 * r0))
+		local r = math.sqrt(math.random()) * (Mine.Zone.radius - 1.5)
 		local pos = crusher.center + Vector3.new(math.cos(a) * r, 1.2, math.sin(a) * r)
 		st.drops[st.nextId] = { pos = pos, value = value }
 		st.count += 1
