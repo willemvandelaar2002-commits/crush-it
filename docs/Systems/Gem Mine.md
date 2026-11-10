@@ -15,9 +15,9 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   top with a gold facet star, small crystals round its edge, sparkles). Every gem lands on the platform. One portal
   further in front (`Mine.PortalZ` 42: you arrive on it and press E on it to go home) and a GEM UPGRADES sign
   (navy board, gold frame, a gem on top; the words printed on the board) beside it.
-- **Looks (10 Nov, Willem: "more gem like ... it looks kinda plain"):** a studded floor (the game's own Studs material, 10 Nov: Willem didn't like the slate) in deep
-  amethyst with clear checker tiles and a neon edge, 14
-  glowing pink/cyan veins running from the platform to the rim, cave rocks with crystal clusters on the rim, big
+- **Looks (10 Nov, Willem: "more gem like ... it looks kinda plain"):** a polished amethyst tile floor (10 Nov, third try: slate was plain, studs looked unfinished):
+  ~200 diamond-set tiles in two tones (Glass, a little reflectance) over a dark violet neon base that glows through
+  the 0.7-stud joints; none under the gem platform; a neon edge, cave rocks with crystal clusters on the rim, big
   glowing crystal spires (none on the portal side), and floating gems on the left and right that spin and bob on
   your screen. The view from the portal to the crusher is kept clear.
 - **Your own pace on a shared machine:** each player's crushes run on their own timer (their upgrades). The
@@ -25,6 +25,9 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   and reads "YOUR AWAKENED GEM CRUSHER" on your screen only. Everyone's gems are private.
 - **Crushing (10 Nov, was 1 gem per 6 s):** every 2 s the crusher drops 1 gem worth 1 (base 30 Gems a minute; Willem:
   "just drop 1 at a time at the start"). Gems are bigger (about 2 studs).
+- **Pickup sound (10 Nov):** a crystal ding per gem (`Config.Sounds.GemPickup`, Creator Store "gem_pickup"
+  4612375233), in the Sounds volume group. Quick pickups in a row climb in pitch (+4% each, up to 12); a gem worth
+  more rings a bit lower and louder; at most one ding per 0.05 s. Tested: 7 gems gave 5 dings climbing 1.00 -> 1.16.
   It keeps crushing while you are away, up to 60 gems waiting, so there is a reason to come back.
 - **Private gems:** only you see your gems (client-rendered in `workspace.MyGems`). Pick up by walking over them;
   the magnet pulls them in from 5 studs. The server checks every pickup (distance <= magnet + 6 slack, max 30
