@@ -32,7 +32,7 @@ return {
 		contact = {"UpperJaw"},
 	},
 	["ChronoColossus"] = {kit = "motion", grow = true, size = Vector3.new(4.5903, 5.9985, 4.2767),
-		inputCenter = Vector3.new(0, 3.1, 0), inputSize = 0.35,
+		inputCenter = Vector3.new(0, 3.1, 0), inputSize = 0.35, bedTop = 2.925,
 		parts = {
 			["Frame"] = {center = Vector3.new(-0.0034, 3.0006, -0.0019), size = Vector3.new(4.5903, 5.9985, 4.2767), origin = Vector3.new(0, 0, 0)},
 			["UpperPress"] = {center = Vector3.new(-0.0002, 4, 0.0015), size = Vector3.new(2.1008, 1.1004, 1.7941), origin = Vector3.new(0, 0, 0)},
@@ -43,7 +43,7 @@ return {
 		contact = {"UpperPress"},
 	},
 	["Worldbreaker"] = {kit = "motion", grow = true, size = Vector3.new(4.4894, 6.0017, 4.188),
-		inputCenter = Vector3.new(-0.75, 2.25, 0), inputSize = 0.4,
+		inputCenter = Vector3.new(-0.75, 2.25, 0), inputSize = 0.4, bedTop = 2.05,
 		parts = {
 			["Frame"] = {center = Vector3.new(0.0004, 2.6289, -0), size = Vector3.new(4.4894, 5.2618, 4.188), origin = Vector3.new(0, 0, 0)},
 			["Boulder"] = {center = Vector3.new(-0.4605, 4.2998, -0.3076), size = Vector3.new(3.521, 3.3996, 2.426), origin = Vector3.new(1.45, 4.85, 0)},
@@ -54,7 +54,7 @@ return {
 		contact = {"Boulder"},
 	},
 	["InfinityEngine"] = {kit = "motion", grow = true, size = Vector3.new(4.9375, 5.993, 3.9823),
-		inputCenter = Vector3.new(0, 1.38, 0), inputSize = 0.3,
+		inputCenter = Vector3.new(0, 1.38, 0), inputSize = 0.3, bedTop = 1.23,
 		parts = {
 			["Frame"] = {center = Vector3.new(-0, 2.9967, -0.0005), size = Vector3.new(4.9375, 5.993, 3.9823), origin = Vector3.new(0, 0, 0)},
 			["Crossbar"] = {center = Vector3.new(-0.0005, 2.0617, 0.0189), size = Vector3.new(2.9011, 0.7305, 1.1131), origin = Vector3.new(0, 0, 0)},
@@ -65,7 +65,7 @@ return {
 		contact = {"Crossbar"},
 	},
 	["RiftMonarch"] = {kit = "motion", grow = true, size = Vector3.new(3.3742, 6.0034, 3.8464),
-		inputCenter = Vector3.new(0, 3.25, -0.7), inputSize = 0.45,
+		inputCenter = Vector3.new(0, 3.25, -0.7), inputSize = 0.45, bedTop = 3.025,
 		parts = {
 			["Frame"] = {center = Vector3.new(0.0003, 3.0055, 0.2), size = Vector3.new(3.3742, 6.0034, 3.4461), origin = Vector3.new(0, 0, 0)},
 			["UpperClaw"] = {center = Vector3.new(-0.0584, 3.9334, -0.8616), size = Vector3.new(2.9847, 1.7667, 2.1233), origin = Vector3.new(0, 4, 0.2)},
@@ -78,7 +78,7 @@ return {
 		contact = {"UpperClaw", "LowerClaw"},
 	},
 	["RealitySplitter"] = {kit = "motion", grow = true, size = Vector3.new(4.9071, 6.0035, 4.1189),
-		inputCenter = Vector3.new(0, 4.3, 0.1), inputSize = 0.45,
+		inputCenter = Vector3.new(0, 4.3, 0.1), inputSize = 0.45, bedTop = 4.075,
 		parts = {
 			["Frame"] = {center = Vector3.new(0.0036, 1.2988, -0.0001), size = Vector3.new(3.9354, 2.6025, 4.1189), origin = Vector3.new(0, 0, 0)},
 			["LeftJaw"] = {center = Vector3.new(1.3831, 4.0755, -0.3439), size = Vector3.new(2.1426, 3.851, 1.6453), origin = Vector3.new(1.4, 1.85, 0)},
