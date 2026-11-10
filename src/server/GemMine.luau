@@ -279,7 +279,9 @@ local function buildWorld()
 		local g = signGem:Clone() g.Anchored = true g.Size *= 2.2 deco(g)
 		g.CFrame = signAt * CFrame.new(0, 8.2, 0) g.Parent = root
 	end
-	label(shop, "GEM UPGRADES", RGB(255, 236, 120), 0, Vector2.new(5, 2.2))
+	local signText = label(shop, "GEM UPGRADES", RGB(255, 236, 120), 0, Vector2.new(5, 2.2))
+	local signGui = signText.Parent :: BillboardGui
+	signGui.AlwaysOnTop = true signGui.MaxDistance = 90 -- on the board, not hidden by it
 	prompt(shop, "Upgrades", "Gem Shop").Triggered:Connect(function(p)
 		Net.event("GemMine"):FireClient(p, { kind = "openShop" })
 	end)
