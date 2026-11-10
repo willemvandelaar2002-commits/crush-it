@@ -29,7 +29,6 @@ local RS = game:GetService("ReplicatedStorage")
 local Gems = require(RS.Shared.GemConfig)
 local Net = require(RS.Shared.Net)
 local Build = require(script.Parent.Kit.Build)
-local Style = require(RS.Shared.Kit.Style)
 local Analytics = require(script.Parent.Kit.Analytics)
 
 local M = {}
@@ -177,26 +176,32 @@ local function buildWorld()
 
 	-- 10 Nov (Willem: "more gem like ... it looks kinda plain"): a dark crystal-cave floor
 	-- with glowing crystal veins, big crystal spires and floating gems around the rim
-	-- 10 Nov (Willem: "i dont really like the ground, maybe something with studs"): the game's
-	-- own Studs material (Build.block) in a deep amethyst, with the kit's checker tiles
-	local floor = Build.block(root, "MineFloor", Vector3.new(4, Mine.Radius * 2, Mine.Radius * 2), o * CFrame.new(0, -2, 0) * CFrame.Angles(0, 0, math.rad(90)), RGB(84, 56, 140))
-	floor.Shape = Enum.PartType.Cylinder
-	Style.checker(floor)
-	local tiles = floor:FindFirstChild("Checker") :: Texture?
-	if tiles then
-		-- the cylinder lies on its side: its top is the Right face; a clearer checker than the plots'
-		tiles.Face = Enum.NormalId.Right tiles.Transparency = 0.35 tiles.Color3 = RGB(56, 34, 100)
-	end
+	-- 10 Nov (Willem: the studs "looks kinda unfinished"): a polished amethyst tile floor. A
+	-- dark violet base glows faintly through the joints; diamond-set tiles in two tones on top
+	-- (one part per tile, ~200 in all; none under the gem platform).
+	local floor = Build.block(root, "MineFloor", Vector3.new(4, Mine.Radius * 2, Mine.Radius * 2), o * CFrame.new(0, -2, 0) * CFrame.Angles(0, 0, math.rad(90)), RGB(66, 26, 118))
+	floor.Shape = Enum.PartType.Cylinder floor.Material = Enum.Material.Neon
 	local edge = Build.block(root, "MineEdge", Vector3.new(3.6, Mine.Radius * 2 + 3, Mine.Radius * 2 + 3), o * CFrame.new(0, -2.3, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
 	edge.Shape = Enum.PartType.Cylinder edge.Material = Enum.Material.Neon deco(edge)
-	-- glowing veins from the platform out to the rim
-	for i = 1, 14 do
-		local a = i / 14 * math.pi * 2 + rng:NextNumber(-0.15, 0.15)
-		local r0 = Mine.Zone.radius + 3
-		local len = rng:NextNumber(18, Mine.Radius - r0 - 8)
-		local mid = Mine.Zone.center * CFrame.Angles(0, a, 0) * CFrame.new(0, 0.03, -(r0 + len / 2))
-		local v = Build.block(root, "Vein", Vector3.new(rng:NextNumber(0.35, 0.7), 0.1, len), o * mid, if i % 3 == 0 then CYAN else PINK)
-		v.Material = Enum.Material.Neon v.Transparency = 0.25 deco(v)
+	local tileFolder = Instance.new("Folder") tileFolder.Name = "FloorTiles" tileFolder.Parent = root
+	local STEP, TILE = 8, 7.3 -- 0.7-stud glowing joints
+	local platformAt = (o * Mine.Zone.center).Position
+	local n = math.ceil(Mine.Radius / STEP) + 1
+	for gx = -n, n do
+		for gz = -n, n do
+			-- a diamond grid: the square grid turned 45 degrees
+			local lx, lz = (gx - gz) * STEP / math.sqrt(2), (gx + gz) * STEP / math.sqrt(2)
+			local at = o * CFrame.new(lx, 0, lz)
+			local flat = Vector3.new(lx, 0, lz)
+			local fromPlatform = Vector3.new(at.Position.X - platformAt.X, 0, at.Position.Z - platformAt.Z).Magnitude
+			if flat.Magnitude < Mine.Radius - 4 and fromPlatform > Mine.Zone.radius - 2 then
+				local dark = (gx + gz) % 2 == 0
+				local t = Build.block(tileFolder, "Tile", Vector3.new(TILE, 0.4, TILE), at * CFrame.new(0, 0.2, 0) * CFrame.Angles(0, math.rad(45), 0),
+					if dark then RGB(70, 44, 126) else RGB(98, 62, 166))
+				t.Material = Enum.Material.Glass t.Reflectance = 0.12 t.MaterialVariant = ""
+				t.CanTouch = false t.CastShadow = false
+			end
+		end
 	end
 	-- the rim: cave rocks with crystal clusters in front of them, and big crystal spires
 	for i = 1, 22 do
