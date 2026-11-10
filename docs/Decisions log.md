@@ -476,3 +476,4 @@
 - 2026-11-10: Willem's new icon set for 23 crushers (chase, Exotic, Eternal, Lucky Weekend); every crusher now has an icon that loads.
 - 2026-11-10: THE ANNEX (Factory VII, 12 bays behind the rear yard, rebirth 3) removed (Willem): it was the old gem plan's rebirth-3 reward. 5 plot upgrades / 60 bays again; saves with it drop to Factory VI, crushers kept in the inventory. Gem milestones R1 Gem Mine, R5 Awakened.
 - 2026-11-10: Gem ding quieter (.22) and instant: preloaded copies, starts 0.07 s in where the sound is already loud (Willem: too loud, delayed).
+- 2026-11-11: New models for the seven Mythics (Willem's pack, textured, ~3,200 triangles): presses slide and their shafts stretch, Phantom Pirate's lid bites, Kraken's tentacles close. Visual only (ids, odds, stats, icons unchanged). Old templates kept in ServerStorage.OldMythicMeshes.

@@ -1,5 +1,24 @@
 # Imported special crushers — 2026-10-22
 
+## 11 Nov: new models for the seven Mythics
+Willem's ChatGPT pack "Mythic Models" (image-to-3D, 3,000 triangles, 1024 PBR maps) replaces
+the old flat-coloured models of Jackpot Press, Candy Colossus, Prism Mech, Seraph Press,
+Phantom Pirate, Disco Destroyer and Kraken Clamp. Visual only: type ids, rarities, stats,
+offers, saves and icons unchanged.
+- Claude's Blender pass (same routine as the Eternals): straight cuts only around the moving
+  parts, caps, ~3,200 triangles each, the explicit Metalness/Roughness maps wired in so the FBX
+  brings all four maps. Files: `Downloads\CrushIt-Coating-and-Plot-Props\Mythic` (FBX + GameReady .blend).
+- Motion (`Shared/MythicCrusherAssets`, kit "motion", every entry has bedTop + inputCenter):
+  the five presses slide their Ram down onto the bed while the PistonShaft stretches out of the
+  fixed sleeve; Phantom Pirate's lid (teeth, skull crest) bites 30° about the rear hinge, hull and
+  mast stay; Kraken Clamp's two tentacles swing 12° inward about their gold shoulder hubs.
+- Templates: `ServerStorage.SpecialCrusherMeshes.<Id>` (Willem's import, ×100 cm, PrimaryPart nil,
+  WorldPivot on the Frame's ground, anchored, no collision). The old templates are in
+  `ServerStorage.OldMythicMeshes` as a fallback (can be deleted).
+- Checked in Play: all seven build and fit the bay (≤ 8.6 × 9.3 × 8.0), rams/lid/jaws reach the
+  scrap at contact, everything returns exactly to rest, previews (carried, Index) and the Prism
+  showroom use the new models, 22 specs pass.
+
 ## 27 Oct: six crate crushers (assets/crate-crushers)
 Ducky Dynamo, Wind-Up Wrecker, Gumball Gobbler (Epic, Titan band) and Arcade
 Claw (Legendary, Quantum band); Disco Destroyer and Kraken Clamp (Mythic since 29 Oct, Mythic production band). **Crate-only**:
