@@ -41,8 +41,15 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   Blender: clean, within the vault's budget for one shared hero machine (Triangle Budget: 20k per mesh hard cap).
   They go in `ReplicatedStorage.GemMineMeshes` (place file, not Git): GemCrusher (Model: Frame, Ram, Piston_L,
   Piston_R; attributes Strike, Height), TeleporterPad, GemPickup, CrystalClusterSmall/Large, CaveRockSmall/Wide/Tall.
-  Missing ones fall back to the part-built stand-ins. Awakened look: a recoloured texture
-  (GemCrusher_Color_Awakened.png, made by Claude: pink crystals -> light blue/white), swapped on your screen only.
+  Missing ones fall back to the part-built stand-ins.
+  Imported 10 Nov by Willem (3D Importer), prepared by Claude: the importer brings them in at 100x (cm) with a
+  pivot turned 90 degrees, so they were scaled (crusher 22 studs tall, 24 x 13 footprint, strike 1.39 studs; pad
+  9 studs; pickup 1 stud; rocks 4-8, crystals 3.7-4.6 before the random 1.6-3.5x), turned upright and given a
+  plain pivot (crusher: bottom centre, front -Z). Pistons coloured gold. Frame and rocks collide as boxes; the
+  ram, pistons, crystals and pickups don't. The crusher streams in whole (Atomic). Zone widened to 15-27 studs.
+  **Willem must Save to Roblox: the models are only in the place file.** Awakened look: a recoloured texture
+  (GemCrusher_Color_Awakened.png, made by Claude: pink crystals -> light blue/white; `docs/art/`), swapped on your
+  screen only via `GemMineMeshes.AwakenedLook` (a SurfaceAppearance). Until that exists: an opal glow (Highlight).
 - **Stand-ins until Willem's models:** the crusher, teleporter and gem pickups are built from parts.
   To do: the image-to-3D Gem Crusher (Blender pass like the Astral Leviathan), teleporter, gem pickup, scenery.
 - **Later:** a capped cash upgrade "Gem Yield" in the normal world; an Auto Walk Robux pass.
