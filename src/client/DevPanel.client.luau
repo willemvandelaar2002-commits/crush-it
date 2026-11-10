@@ -68,7 +68,8 @@ row("Gem upgrades", { { "All max", send("GemUps", "max") }, { "All 0", send("Gem
 -- 9 Nov: fill every open bay
 row("Bays (all open bays)", { { "Fill all rows", send("FillRows", "rows") }, { "Fill with specials", send("FillRows", "specials") }, { "Empty all", send("FillRows", "empty") } })
 -- 9 Nov: Eternal model preview (bay 1)
-row("Eternal preview (bay 1)", { { "Astral Leviathan", send("EternalPreview", "AstralLeviathan") }, { "Clear", send("EternalPreview", "clear") } })
+row("Eternal preview (bay 1)", { { "Leviathan", send("EternalPreview", "AstralLeviathan") }, { "Chrono", send("EternalPreview", "ChronoColossus") }, { "World", send("EternalPreview", "Worldbreaker") }, { "Clear", send("EternalPreview", "clear") } })
+row("Eternal preview 2", { { "Infinity", send("EternalPreview", "InfinityEngine") }, { "Rift", send("EternalPreview", "RiftMonarch") }, { "Reality", send("EternalPreview", "RealitySplitter") } })
 row("Other", { { "Crate ready", send("CrateReady") }, { "Weekend on/off", send("Weekend") } })
 
 open.Activated:Connect(function() panel.Visible = not panel.Visible end)
