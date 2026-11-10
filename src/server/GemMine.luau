@@ -90,6 +90,15 @@ local function buildCrusher(parent: Instance, cf: CFrame, k: number): (Model, Ba
 		for _, d in m:GetDescendants() do if d:IsA("BasePart") then d.Anchored = true end end
 		m.PrimaryPart = m:FindFirstChild("Frame") :: BasePart
 		m.ModelStreamingMode = Enum.ModelStreamingMode.Atomic -- streams in whole (the client's strike/awake look)
+		-- 11 Nov: bigger (Mine.ModelScale); the strike and height grow with it
+		local k2 = Mine.ModelScale or 1
+		if k2 ~= 1 then
+			m:ScaleTo(m:GetScale() * k2)
+			for _, a in { "Strike", "Height" } do
+				local v = tonumber(m:GetAttribute(a))
+				if v then m:SetAttribute(a, v * k2) end
+			end
+		end
 		m:PivotTo(cf)
 		m.Parent = parent
 		return m, m:FindFirstChild("Ram") :: BasePart
@@ -184,7 +193,7 @@ local function buildWorld()
 	local edge = Build.block(root, "MineEdge", Vector3.new(3.6, Mine.Radius * 2 + 3, Mine.Radius * 2 + 3), o * CFrame.new(0, -2.3, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
 	edge.Shape = Enum.PartType.Cylinder edge.Material = Enum.Material.Neon deco(edge)
 	local tileFolder = Instance.new("Folder") tileFolder.Name = "FloorTiles" tileFolder.Parent = root
-	local STEP, TILE = 8, 7.3 -- 0.7-stud glowing joints
+	local STEP, TILE = 10, 9.2 -- 0.8-stud glowing joints (11 Nov: bigger tiles for the bigger floor)
 	local platformAt = (o * Mine.Zone.center).Position
 	local n = math.ceil(Mine.Radius / STEP) + 1
 	for gx = -n, n do
@@ -204,8 +213,8 @@ local function buildWorld()
 		end
 	end
 	-- the rim: cave rocks with crystal clusters in front of them, and big crystal spires
-	for i = 1, 22 do
-		local a = i / 22 * math.pi * 2
+	for i = 1, 30 do -- (11 Nov: 22 -> 30 for the bigger rim)
+		local a = i / 30 * math.pi * 2
 		local at = o * CFrame.new(math.cos(a) * (Mine.Radius - 4), 0, math.sin(a) * (Mine.Radius - 4))
 		local turn = CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0)
 		if not clone(({ "CaveRockSmall", "CaveRockWide", "CaveRockTall" })[i % 3 + 1], 1.8 + rng:NextNumber() * 1.6, at * turn, true) then
@@ -254,8 +263,8 @@ local function buildWorld()
 		line.Material = Enum.Material.Neon line.Transparency = 0.7 deco(line)
 	end
 	-- small crystals around the platform edge, leaving the front (to the portal) open
-	for i = 1, 10 do
-		local a = math.rad(-120 + (i - 1) * 26)
+	for i = 1, 14 do
+		local a = math.rad(-120 + (i - 1) * 18.5)
 		local at = zc * CFrame.Angles(0, a, 0) * CFrame.new(0, 0, -(zr + 2.2))
 		clone(if i % 3 == 0 then "CrystalClusterLarge" else "CrystalClusterSmall", 1.1 + rng:NextNumber() * 0.5, at * CFrame.Angles(0, rng:NextNumber(0, 6.28), 0), false)
 	end
@@ -267,7 +276,7 @@ local function buildWorld()
 	pe.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.5, 0.45), NumberSequenceKeypoint.new(1, 0) })
 	pe.Color = ColorSequence.new(RGB(255, 170, 245), CYAN) pe.LightEmission = 1 pe.Texture = "rbxasset://textures/particles/sparkles_main.dds"
 	pe.SpreadAngle = Vector2.new(180, 180) pe.Parent = sparkHost
-	light(top, 8, 36, RGB(255, 150, 240), 1.8)
+	light(top, 10, 60, RGB(255, 150, 240), 1.8) -- (PointLight range tops out at 60)
 
 	-- the one Gem Crusher at the back of the platform, its front towards the portal (+Z)
 	local m, ram = buildCrusher(root, o * CFrame.new(0, 0, Mine.CrusherZ) * CFrame.Angles(0, math.rad(180), 0), Mine.CrusherScale)
@@ -381,7 +390,8 @@ local function crush(p: Player, d: any, st: State, now: number)
 		st.count += 1
 		table.insert(add, { id = st.nextId, pos = pos, value = value, from = crusher.ramRest.Position })
 	end
-	Net.event("GemMine"):FireClient(p, { kind = "add", drops = add })
+	-- (vault audit 11 Nov: nothing sent while your mine is full)
+	if #add > 0 then Net.event("GemMine"):FireClient(p, { kind = "add", drops = add }) end
 end
 
 local function collect(p: Player, ids: any)
