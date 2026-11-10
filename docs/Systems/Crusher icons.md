@@ -90,3 +90,9 @@ had no portrait. The corresponding manifest records uploaded-verified-in-studio.
 This supersedes the pending-load/manual-permission status above. No more asset
 permission changes or reuploads are required for these 35. Output contained only
 the existing asset 203785492 warning. Rojo build and whitespace checks passed.
+
+## 10 Nov: Willem's new matching set
+Willem made a new icon set in one style for 23 crushers: the Secret/Divine chase crushers (replacing the 29 Oct
+renders), the six Exotics (replacing 8 Nov), the six Eternals, and the three Lucky Weekend crushers (no icon
+before). He uploaded them as decals; `CrusherIcons.Overrides` uses the image ids behind them (found with
+InsertService:LoadAsset -> Decal.Texture). Checked 10 Nov: all 74 crushers have an icon and all load.

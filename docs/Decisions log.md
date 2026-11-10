@@ -473,3 +473,4 @@
 - 2026-11-10: ETERNAL rarity (Willem): above Divine, 1 in 500,000 for any of the six (1 in 3M each), value 580/input (between Divine and Mythic; Mythic stays strongest). Its own big roll cinematic (rift, portal rings, orbiting shards, collapse to black, burst), longer than Divine's; server aftershock x2 for 45 s.
 - 2026-11-10: Gem Mine music: Willem's Suno song (129703295050685) plays in the mine.
 - 2026-11-10: Gem Mine: a ding when you pick up a gem (pitch climbs on a streak) and a polished amethyst tile floor with glowing joints (Willem: the studs looked unfinished).
+- 2026-11-10: Willem's new icon set for 23 crushers (chase, Exotic, Eternal, Lucky Weekend); every crusher now has an icon that loads.

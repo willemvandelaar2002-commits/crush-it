@@ -33,15 +33,21 @@ I.Overrides={
 	WindUpWrecker="rbxassetid://76820861604914",KrakenClamp="rbxassetid://118908620786900",
 	GumballGobbler="rbxassetid://97847833312808",DuckyDynamo="rbxassetid://95075734278359",
 	DiscoDestroyer="rbxassetid://98862753364198",ArcadeClaw="rbxassetid://76980432342314",
-	-- Secret / Divine chase crushers (29 Oct pack, renders of the real models)
-	VoidVise="rbxassetid://107106493858843",ShadowShredder="rbxassetid://77738155515531",
-	NightRipper="rbxassetid://118145357442002",HaloHammer="rbxassetid://110923909916533",
-	EclipseEngine="rbxassetid://93138181415241",CelestialCrusher="rbxassetid://106945409122885",
-	AuroraPress="rbxassetid://86411239858094",ArchangelAnvil="rbxassetid://71903745878843",
-	-- 8 Nov: Willem's Exotic icons (the image ids behind his decal uploads)
-	CamCruncher="rbxassetid://122886848157283",DrawbridgeCrusher="rbxassetid://95168633052661",
-	MaglevMauler="rbxassetid://126673838144880",OrigamiClamp="rbxassetid://81631247983925",
-	ScrewStamper="rbxassetid://107469672913843",WreckingWinch="rbxassetid://128684710178111",
+	-- 10 Nov: Willem's new matching set (the image ids behind his decal uploads): the Secret/Divine chase crushers
+	-- (were 29 Oct renders), the Exotics (were 8 Nov), the six Eternals and the Lucky Weekend three
+	-- (no icon before).
+	AstralLeviathan="rbxassetid://85265348836647",ArchangelAnvil="rbxassetid://81204722224449",
+	OrigamiClamp="rbxassetid://92175483553785",RiftMonarch="rbxassetid://73265822162790",
+	Worldbreaker="rbxassetid://111754069511137",RealitySplitter="rbxassetid://71408698764769",
+	ChronoColossus="rbxassetid://96351543847117",InfinityEngine="rbxassetid://88479980666829",
+	MaglevMauler="rbxassetid://116974647311097",WreckingWinch="rbxassetid://114101580700974",
+	DrawbridgeCrusher="rbxassetid://102044781944167",CamCruncher="rbxassetid://73723252070774",
+	ScrewStamper="rbxassetid://75407297769558",ShadowShredder="rbxassetid://96666882667645",
+	VoidVise="rbxassetid://97155601435606",EclipseEngine="rbxassetid://79394832262598",
+	HaloHammer="rbxassetid://107400526500870",NightRipper="rbxassetid://79860465863804",
+	CelestialCrusher="rbxassetid://122800380371458",AuroraPress="rbxassetid://107445261283624",
+	HorseshoeComet="rbxassetid://125219510469476",CloverOverdrive="rbxassetid://140183467587517",
+	JackpotFoundry="rbxassetid://96009213996199",
 } :: {[string]: string}
 -- 10 Nov: the six Eternals load by name (Willem's Asset Manager import of Eternal\Icons: Crusher_<Id>)
 I.Ready={AstralLeviathan=true,ChronoColossus=true,Worldbreaker=true,InfinityEngine=true,RiftMonarch=true,RealitySplitter=true,
