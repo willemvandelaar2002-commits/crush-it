@@ -12,6 +12,8 @@ return function()
 		for rank,rarity in C.Rarities do for _,id in rarity.types do
 			if rarity.event and not weekend then continue end -- (Limited: only during its event, checked below)
 			if rarity.weight<=0 and not rarity.event then check(P.odds(id,luck,lucky,false,bonus)==0,"exclusive types have no roll odds") continue end
+			-- 11 Nov: a big luck multiplier can push a common rarity to 0% (all rolls better)
+			if weights[rank]<=0 then check(P.odds(id,luck,lucky,false,bonus)==0,"a rarity at 0% shows no odds") continue end
 			local odds=P.odds(id,luck,lucky,false,bonus)
 			-- 2 Nov: the Index shows the same odds, rounded
 			check(C.effectiveOdds(id,luck,lucky,bonus,weekend)==math.max(1,math.floor(odds+.5)),"Index odds match the roll")
@@ -30,9 +32,8 @@ return function()
 			check(C.effectiveOdds(id,luck,2,0,true)==math.max(1,math.floor(total/at*#lim.types+.5)),"Index weekend odds match")
 		end
 	end
-	-- Lucky pass and 2x Luck boost stack: 4x weight on every non-Common rarity
-	local base,both=R.weights(0,1),R.weights(0,4)
-	check(both[1]==base[1] and math.abs(both[2]-4*base[2])<1e-9,"pass + boost = 4x non-Common weight")
+	-- Lucky pass and 2x Luck boost stack: 4x the chance of each rarity-or-better (11 Nov)
+	check(math.abs(C.chanceAtLeast(4,20,4)-4*C.chanceAtLeast(4,20,1))<1e-9,"pass + boost = 4x Legendary-or-better")
 	for _,rarity in C.Rarities do
 		for _,id in rarity.types do check((P.odds(id,20,true,true)>0)==(rarity.name==C.FirstRoll.Rarity),"first roll is the C.FirstRoll rarity only") end
 		local p=P.profile(rarity.name)

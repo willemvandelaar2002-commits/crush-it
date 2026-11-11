@@ -44,7 +44,16 @@ return function()
 	check(yield.value>speed.value and yield.damage==speed.damage and yield.cycle==speed.cycle,"yield is distinct")
 	local w0,w20=R.weights(0,false),R.weights(20,false) local sum0,sum20=0,0 for _,w in w0 do sum0+=w end for _,w in w20 do sum20+=w end
 	check(w20[5]/sum20>w0[5]/sum0,"luck improves rare probability")
-	local lucky=R.weights(0,true) check(lucky[1]==w0[1] and lucky[2]==w0[2]*2,"paid lucky weights")
+	-- 11 Nov: a luck multiplier multiplies the chance of every rarity-or-better, at any Luck level
+	for _,lv in {0,10,40} do for _,rank in {4,5,6.5} do
+		local plain,two=C.chanceAtLeast(rank,lv,1),C.chanceAtLeast(rank,lv,2)
+		check(plain<.5 and math.abs(two/plain-2)<1e-6,"2x luck doubles rank "..rank.."+ at Luck "..lv)
+	end end
+	check(math.abs(C.chanceAtLeast(1,0,2)-2*C.chanceAtLeast(1,0,1))<1e-6,"2x luck: Uncommon+ 30% -> 60% at Luck 0")
+	local capped=C.chanceAtLeast(4,40,99) check(math.abs(capped-math.min(1,C.LuckMultCap*C.chanceAtLeast(4,40,1)))<1e-6,"multipliers count up to C.LuckMultCap")
+	local sum=0 for _,row in C.oddsTable(40,3,0.1,true) do sum+=row.percent end check(math.abs(sum-100)<1e-6,"odds table adds up to 100%")
+	check(C.luckPreview(40,1,0,2):match("^%a+ or better: [%d%.]+%% %-> [%d%.]+%%$")~=nil,"luck preview names a tier and two percentages")
+	check(C.luckPreview(40,C.LuckMultCap,0,2):find("maximum")~=nil,"luck preview says when the cap is reached")
 	d=fresh() s={} act(d,s,"Upgrade",{id="Pedestals"}) local _,_,two=act(d,s,"Roll",{},10)
 	check(#two==C.StartPedestals+1,"pedestal upgrade adds an offer per roll")
 	check(not act(d,s,"Roll",{},s.nextRoll-.01),"animation cannot bypass interval")

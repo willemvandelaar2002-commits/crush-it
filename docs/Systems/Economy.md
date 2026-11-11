@@ -36,3 +36,29 @@ Ship, Statue, Planet.
 Kit/Analytics `cash(player, sku, tx, before, after)` logs every cash change with its reason, summed per player and sent once a minute (and on leave); `cashBalance` (every second) logs whatever no call explained as `Passive` (gain) or `Other` (loss). Currency "Cash". Sources: SellScrap, AutoSell, GoalReward (Onboarding), Gift / GiftBonus / DailySpin / OfflineCash / TimeSkip / Code (TimedReward), IndexReward, FactoryEvent, QuestShop, cash packs and OfflineMultiplier / OfferPack (IAP), Passive. Sinks: UnlockBay, BuyCrusher (Shop), FactoryUpgrade, LevelUp, PlotUpgrade, Coating, Fusion, RollUpgrade.
 
 5 Nov: the Luck board shows Legendary+ odds up to Luck 39 and Secret+ odds from Luck 40 (C.LuckBoardSecretFrom), where Legendary+ barely moves per level.
+
+## 11 Nov: luck multipliers and the ROLL ODDS window (audit findings 1 and 3)
+- **Multipliers work at every Luck level now.** Before, the Lucky pass, 2x Luck Boost, Server Luck, the
+  weekend, rebirth luck, Gem Luck and Index luck multiplied every non-Common weight by the same number,
+  which only shrank the Common share: after Luck ~10 a paid "2x luck" changed Legendary+ by about 10%.
+  Now `C.rollWeights` multiplies the chance of every rarity-or-better: x2 = twice the chance of Rare or
+  better, of Legendary or better, of Secret or better, of Eternal (each capped at 100%; the rarity below
+  then gets less and Common can drop to 0%). All multipliers together count up to `C.LuckMultCap` = 10.
+  The Luck upgrade still shapes the base (`C.luckFactor`). Server roll, pedestal odds, Index, Auto Roller
+  and the Luck board all use this one function.
+- **Effect (per pedestal):** rebirth 3 + Lucky pass (Luck 30, x3.5): Legendary+ 1 in 5, Secret+ 1 in 63,
+  Eternal 1 in 1,243 (was about 1 in 4,200 with or without the pass). Rebirth 10 (Luck 50, x3.5):
+  Eternal 1 in 315 (was 1 in 1,082). Rebirth 5 + pass + boost (x9): Eternal 1 in 238. Top rarities get
+  more common for players with several multipliers: tune with `C.LuckMultCap` / `C.LuckGrowth` (open
+  item, audit finding 4).
+- **Texts from the player's own odds:** the shop (Lucky pass, Server Luck, 2x Luck Boost, Super Boost),
+  the quick shop and the Boosts window show what 2x does for YOU now, e.g. "Exotic or better: 11% -> 16%"
+  (the most common tier still under 40% for you), or that your luck is already at the maximum.
+  `C.luckPreview` / `C.luckPreviewFor(player)`; the server publishes RollLuck, RollLuckMult and
+  RollLuckBonus every second.
+- **ROLL ODDS window** (client/RollOdds): the gold ODDS button top right on the roll machine. Every rarity
+  that can roll right now with its chance per pedestal in percent (at least four digits after the first
+  non-zero one; they add up to 100%), "1 in N" and the number of crushers; luck level and multiplier
+  below, with a rounding note. Updates while a boost, Server Luck or the weekend starts or ends.
+- Paid luck for players where paid random items are restricted: left as is (Willem: the luck also works
+  on rolling, which is free).

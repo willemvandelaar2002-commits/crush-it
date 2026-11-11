@@ -178,7 +178,7 @@ function Quick.build(gui: ScreenGui, deps: Deps)
 				if firstPass then section(nextOrder(), "FOREVER (GAME PASSES)") firstPass = false end
 				local p = price("pass", pass.gamePassId, function() if panel.Visible then rebuild() end end)
 				local icon = ({ AutoCrush = Icons.AutoCrush, DoubleCash = Icons.DoubleCash, CashX4 = Icons.DoubleCash, CashX8 = Icons.DoubleCash, CashX16 = Icons.DoubleCash, Lucky = Icons.Lucky, AutoCollect = Icons.Cash, VIP = Icons.Trophy } :: any)[pass.perk] or Icons.Shop
-				row(nextOrder(), pass.color, icon, string.upper(pass.title), pass.desc,
+				row(nextOrder(), pass.color, icon, string.upper(pass.title), if pass.perk == "Lucky" then "2x luck forever. " .. require(RS.Shared.CrusherConfig).luckPreviewFor(player, 2) else pass.desc,
 					if pass.gamePassId == 0 then "SOON" else robux(p), pass.gamePassId ~= 0, function() deps.buyPass(pass.perk) end)
 			end
 		end
@@ -202,7 +202,9 @@ function Quick.build(gui: ScreenGui, deps: Deps)
 			if product and (product.productId ~= 0 or (id ~= "ServerLuck" and id ~= "TurboNow")) then
 				local p = price("product", product.productId, function() if panel.Visible then rebuild() end end)
 				local icon = if id == "BoostLuck" or id == "ServerLuck" then Icons.Lucky elseif id == "BoostSuper" then Icons.Golden elseif id == "TurboNow" then Icons.Speed else Icons.DoubleCash
-				row(nextOrder(), product.color, icon, string.upper(product.title), product.desc,
+				-- 11 Nov: luck rows show what 2x does for you now
+				local luckDesc = if id == "ServerLuck" or id == "BoostLuck" or id == "BoostSuper" then (if id == "ServerLuck" then "Everyone, 15 min. " elseif id == "BoostSuper" then "2x cash + luck, 15 min. " else "15 min. ") .. require(RS.Shared.CrusherConfig).luckPreviewFor(player, 2) else nil
+				row(nextOrder(), product.color, icon, string.upper(product.title), luckDesc or product.desc,
 					if product.productId == 0 then "SOON" else robux(p), product.productId ~= 0, function() deps.buyProduct(id) end)
 			end
 		end

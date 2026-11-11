@@ -71,7 +71,7 @@ label(close, "X", UDim2.fromScale(0.15, 0.08), UDim2.fromScale(0.7, 0.84), 3).ZI
 local freeLine = label(panel, "", UDim2.fromOffset(20, 88), UDim2.new(1, -40, 0, 32), 2.5)
 freeLine.TextColor3 = C(150, 255, 130)
 
-type Card = { time: TextLabel, free: TextButton, buy: TextButton, glow: UIStroke, b: any }
+type Card = { time: TextLabel, free: TextButton, buy: TextButton, glow: UIStroke, b: any, desc: TextLabel }
 local cards: { Card } = {}
 local CARD_W = (W - 20 - 2 * 12 - 20) / 3
 for i, b in B.List do
@@ -108,7 +108,7 @@ for i, b in B.List do
 			for _, d in { -4, 4, -3, 3, 0 } do TweenService:Create(buy, TweenInfo.new(0.04), { Rotation = d }):Play() task.wait(0.04) end
 		end
 	end)
-	cards[i] = { time = time, free = free, buy = buy, glow = glow, b = b }
+	cards[i] = { time = time, free = free, buy = buy, glow = glow, b = b, desc = desc }
 end
 
 -- Active boost chips (left side, under the menu buttons) ------------------------------------
@@ -136,6 +136,10 @@ local function refresh()
 		c.time.Text = if left > 0 then "Active: " .. clock(left) else ""
 		c.glow.Color = if left > 0 then Color3.new(1, 1, 1) else INK
 		c.free.Visible = free
+		-- 11 Nov: the luck card shows what 2x does for you now
+		if c.b.id == "Luck" or c.b.id == "Super" then
+			c.desc.Text = (if c.b.id == "Super" then "2x cash. " else "") .. require(game:GetService("ReplicatedStorage").Shared.CrusherConfig).luckPreviewFor(me, 2)
+		end
 	end
 	for id, t in chipFor do
 		local left = ((me:GetAttribute(B.attr(id)) :: number?) or 0) - now

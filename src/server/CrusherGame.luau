@@ -289,6 +289,8 @@ local function send(p,message,result)
 	p:SetAttribute("Cash",d.cash) p:SetAttribute("Scrap",d.scrap) p:SetAttribute("AvailableScrap",s.available)
 	p:SetAttribute("Plot",ctx.plot.index) p:SetAttribute("Crushed",d.crushed) p:SetAttribute("Tier",d.tier)
 	p:SetAttribute("CashRate",cps(p,d)) p:SetAttribute("AutoOn",true) p:SetAttribute("GoldenRush",d.goldenRush) p:SetAttribute("Rebirths",s.rebirths or 0)
+	-- 11 Nov: your roll luck, for the odds panel and the luck texts in the shop (C.luckPreviewFor)
+	do local pk=perks(p) p:SetAttribute("RollLuck",s.upgrades.Luck or 0) p:SetAttribute("RollLuckMult",pk.lucky) p:SetAttribute("RollLuckBonus",pk.indexLuck or 0) end
 	p:SetAttribute("Gems",math.floor(s.gems or 0)) p:SetAttribute("GemRate",if (s.rebirths or 0)>=Gems.UnlockRebirths then Gems.minePerMinute(s) else 0) -- 9 Nov: the Gem Mine's rate
 	local goalHave,goalNeed=nil,nil
 	if s.goal and C.Goals2[s.goal] then goalHave,goalNeed=goalCount(d,C.Goals2[s.goal]) end

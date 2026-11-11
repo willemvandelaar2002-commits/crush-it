@@ -199,6 +199,10 @@ function H.start()
      -- 7 Nov: the AUTO ROLL console by the roll machine opens the Auto Roller window
      local hud=p.PlayerGui:FindFirstChild("AutoRollHud") local open=hud and hud:FindFirstChild("Open")
      if open then (open :: BindableEvent):Fire() end
+    elseif action=="Odds" then
+     -- 11 Nov: the ODDS button on the roll machine opens the ROLL ODDS window (client/RollOdds)
+     local hud=p.PlayerGui:FindFirstChild("RollOddsHud") local open=hud and hud:FindFirstChild("Open")
+     if open then (open :: BindableEvent):Fire() end
     elseif action=="TimeSkip" then
      purchase("TimeSkip",{})
     else act(action,{id=v:GetAttribute("UpgradeId")}) end
