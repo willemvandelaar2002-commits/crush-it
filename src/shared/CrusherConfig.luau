@@ -612,7 +612,9 @@ C.Goals2 = {
 	-- 4 Nov (Willem; vault FTUE "the end of the tutorial needs a successor"): after
 	-- Factory II the goals go on QUIETLY (quiet=true): a small "NEXT GOAL" line, no
 	-- arrows, no trail, no hints - just a little direction. Not in the funnel.
-	{ id="Fill18", check="fill", n=18, quiet=true, title="Fill 18 bays", text="", reward={cash=120,min=3000} },
+	-- 12 Nov (Willem: "almost there"; vault sawtooth: the wait drops at a milestone): halfway to
+	-- FACTORY III pays a 2x CASH boost for 10 minutes (was 120 s of income)
+	{ id="Fill18", check="fill", n=18, quiet=true, title="Fill 18 bays", text="", reward={boost="Cash",minutes=10} },
 	{ id="Coat", check="coat", quiet=true, title="Coat a crusher", text="The Coating Lab opened with Factory II.", reward={cash=120,min=3000} },
 	{ id="Upgrades20", check="upgrades", n=20, quiet=true, title="Upgrade your factory", text="", reward={cash=150,min=5000} },
 	{ id="Fill24", check="fill", n=24, quiet=true, title="Fill all 24 bays", text="", reward={cash=150,min=5000} },

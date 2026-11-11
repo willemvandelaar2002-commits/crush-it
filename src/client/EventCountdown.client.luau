@@ -41,7 +41,15 @@ local function place()
 		-- centre: top right, just under the travel buttons
 		chip.AnchorPoint = Vector2.new(1, 0) chip.Position = UDim2.new(1, -10, 0, 100) chip.Size = UDim2.fromOffset(150, 46)
 	else
-		chip.AnchorPoint = Vector2.new(1, 1) chip.Position = UDim2.new(1, -12, 1, -12) chip.Size = UDim2.fromOffset(200, 58)
+		chip.AnchorPoint = Vector2.new(1, 1) chip.Size = UDim2.fromOffset(200, 58)
+		-- 12 Nov: the 2X CASH / pass offers stack sits bottom right on PC: go just above it
+		local shop = player.PlayerGui:FindFirstChild("ShopHud")
+		local offers = shop and shop:FindFirstChild("Offers") :: GuiObject?
+		if offers and offers.Visible and offers.AbsoluteSize.Y > 0 then
+			chip.Position = UDim2.new(1, -12, 0, offers.AbsolutePosition.Y - gui.AbsolutePosition.Y - 8)
+		else
+			chip.Position = UDim2.new(1, -12, 1, -12)
+		end
 	end
 end
 place()
@@ -64,6 +72,7 @@ while true do
 		local show = phase == "Idle" and left > 0
 		chip.Visible = show
 		if show then
+			place()
 			local look = E.variant(state:GetAttribute("Variant") :: string?)
 			local s = math.ceil(left)
 			local soon = s <= 60
