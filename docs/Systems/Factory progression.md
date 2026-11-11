@@ -402,3 +402,5 @@ that plan, so it is gone again (commit 13314a3 reverted; the rear yard keeps Rea
 upgrades (Factory II..VI), 60 bays. A save that had bought it drops to Factory VI with 60 bays: crushers in
 bays 61-72 go to the inventory (none lost), crusher levels and upgrade caps stay (Factory VI had the same caps).
 Gem milestones: R1 Gem Mine, R5 Awakened Gem Crusher. Dev panel Plot row ends at 5.
+
+- 11 Nov (Willem): the Coating booth moved out of the plot into its own **Coating wing** outside the right rim (like the fusion wing on the left, nearer the stairs: plot-local z 30-64, `C.CoatingWing`), front toward the plot. The right rim opens into it (doorway z 33-61; rim parts, trim collars, wall runs and the low pipe leave a gap) and the wing shows with the lab (Factory II), stashed before that.

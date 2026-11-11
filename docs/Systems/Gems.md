@@ -11,7 +11,8 @@ UI in `src/client/GemShop.client.luau`, tests in `Server/Tests/Gems.spec.luau`.
 - **Sink, the Gem Shop** (open it from the Gems counter or the GEM UPGRADES sign in the mine):
   - Gem Crate, 750 Gems (25 before the mine; all Gem prices x3 on 10 Nov): Legendary 60% / Exotic 30% / Secret 8% / Divine 2%, Standard finish, refused when the inventory is full. Exotic+ results are announced server-wide.
   - Mine upgrades first: Crush Speed, More Gems, Gem Value, Gem Magnet (see `Gem Mine.md`).
-  - Gem Cash and Gem Luck: +10% per level, max 10, cost `15 * 1.5^level`.
+  - Gem Cash and Gem Luck: +10% per level, max 10, cost `80 * 1.7^level` (11 Nov, was `45 * 1.5^level`; ~23,000 Gems each).
+  - Mine upgrades (11 Nov, Willem: each level clearly dearer): Crush Speed `15 * 1.32^lv`, More Gems and Gem Value `45 * 1.5^lv`, Gem Magnet `20 * 1.35^lv`; all of them ~27,000 Gems, about 2.4 h of perfect mine play (was ~3,400, ~25 min).
   - Quick Rolls: roll cooldown -0.25 s per level (never below 1 s), max 4, cost `20 * 2^level`.
   - Head Start (9 Nov): a rebirth starts 1 Factory further per level with the earlier bays open
     (lv 1: FACTORY II + 12 bays, lv 2: FACTORY III + 24), max 2 (never at Rebirth.MinPlot), 40 / 120 Gems.

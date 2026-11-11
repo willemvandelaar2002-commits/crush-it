@@ -110,12 +110,16 @@ G.Upgrades = {
 	-- +2 gems a crush, x2 value, 20-stud magnet) and about the same Gems to get there; old levels
 	-- are converted once (x5, the magnet x3: CrusherRules migrate, gemUpsV 2). More Gems adds 0.2
 	-- of a gem a level: the fraction is the chance of one more gem per crush.
-	{ id = "MineSpeed", group = "mine", title = "Crush Speed", line = "Crushes 0.05 s faster", per = 0.05, max = 20, base = 6, growth = 1.15, oldFactor = 5 },
-	{ id = "MineDrops", group = "mine", title = "More Gems", line = "+0.2 gems per crush", per = 0.2, max = 10, base = 16, growth = 1.35, rebirthBonus = 5, oldFactor = 5 },
-	{ id = "MineValue", group = "mine", title = "Gem Value", line = "Gems worth +10%", per = 0.1, max = 10, base = 22, growth = 1.35, rebirthBonus = 5, oldFactor = 5 },
-	{ id = "Magnet", group = "mine", title = "Gem Magnet", line = "Pick up from 1 stud further", per = 1, max = 15, base = 10, growth = 1.2, rebirthBonus = 3, oldFactor = 3 },
-	{ id = "Cash", title = "Gem Cash", line = "+10% cash per level", per = 0.10, max = 10, base = 45, growth = 1.5 },
-	{ id = "Luck", title = "Gem Luck", line = "+10% luck per level", per = 0.10, max = 10, base = 45, growth = 1.5 },
+	-- 11 Nov (Willem: "gems upgrade should scale higher, instead of like +1 cost the whole time, it
+	-- should take longer before you complete it"): each level costs clearly more than the last
+	-- (x1.3-1.5 a level, was x1.15-1.35). All mine upgrades: ~3,400 -> ~27,000 Gems, about 2.4 h
+	-- of perfect mine play (was ~25 min). Gem Cash / Luck: ~5,100 -> ~23,000 each.
+	{ id = "MineSpeed", group = "mine", title = "Crush Speed", line = "Crushes 0.05 s faster", per = 0.05, max = 20, base = 15, growth = 1.32, oldFactor = 5 },
+	{ id = "MineDrops", group = "mine", title = "More Gems", line = "+0.2 gems per crush", per = 0.2, max = 10, base = 45, growth = 1.5, rebirthBonus = 5, oldFactor = 5 },
+	{ id = "MineValue", group = "mine", title = "Gem Value", line = "Gems worth +10%", per = 0.1, max = 10, base = 45, growth = 1.5, rebirthBonus = 5, oldFactor = 5 },
+	{ id = "Magnet", group = "mine", title = "Gem Magnet", line = "Pick up from 1 stud further", per = 1, max = 15, base = 20, growth = 1.35, rebirthBonus = 3, oldFactor = 3 },
+	{ id = "Cash", title = "Gem Cash", line = "+10% cash per level", per = 0.10, max = 10, base = 80, growth = 1.7 },
+	{ id = "Luck", title = "Gem Luck", line = "+10% luck per level", per = 0.10, max = 10, base = 80, growth = 1.7 },
 	-- 9 Nov (rebirth data: 170 players at rebirth 1, 66 at rebirth 2: starting over is where
 	-- players stop; vault: Progression and Pacing - a rebirth keeps "fast travel to the start
 	-- of the furthest region"). HEAD START: each level, a rebirth starts one Factory further

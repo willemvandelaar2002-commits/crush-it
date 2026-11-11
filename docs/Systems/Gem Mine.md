@@ -131,3 +131,4 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
 - **AUTO WALK button (11 Nov, Willem):** while you are in the mine an AUTO WALK button sits above the hotbar
   (client/GemMine): owned = ON / OFF (tap to switch), not owned = BUY AUTO WALK (the server prompts the pass). It
   does the same as the board (remote GemMine "autoWalk"); the board stays.
+- 11 Nov (later): the AUTO WALK button uses the AUTO ROLL button art (green = ON), 164 x 70, words AUTO WALK / ON, OFF or BUY.

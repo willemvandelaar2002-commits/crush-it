@@ -481,6 +481,10 @@ C.CoatingQuoteSeconds=20
 -- its id, level and coating; the three copies are used up. One tier for now.
 C.Fusion = { PlotLevel=3, Copies=3, Mult=2, MachineScale=1.4, Seconds=600 } -- MachineScale: size of the fuser on the plot (28 Oct: bigger)
 C.CoatingBoothScale = 1.35 -- size of the Coating Lab booth on the plot (28 Oct: bigger)
+-- 11 Nov (Willem: "put the coater ... like the fuser but on the other side, and a bit more towards
+-- the stairs"): the Coating Lab stands in its own wing outside the right rim (plot-local x from the
+-- rim out by Width, z0..z1), the doorway in the right rim; it opens with the lab (Factory II)
+C.CoatingWing = { z0 = 30, z1 = 64, width = 34 }
 C.Upgrades = {
 	Damage = { name = "Damage", group = "Production", base = 20, growth = 1.65 },
 	Speed = { name = "Strike speed", group = "Production", base = 30, growth = 1.7 },
