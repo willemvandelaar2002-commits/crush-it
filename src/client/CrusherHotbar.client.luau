@@ -188,6 +188,37 @@ CAS:BindActionAtPriority("CrusherHotbarKeys", function(_, inputState, input)
 	return Enum.ContextActionResult.Sink
 end, false, Enum.ContextActionPriority.High.Value + 100, table.unpack(list_))
 
+-- 11 Nov (Willem's reference games: a red arrow and frame on the exact button to press):
+-- in the tutorial's "Place your crusher" step, while you aren't holding one, a red frame
+-- pulses round the first tile and a red arrow bobs above it. Gone once you pick it up
+-- (then the floor trail takes you to the bay) and after the step.
+local EQUIP_STEP = 0
+for i, st in C.TutorialSteps do if st.id == "Equip" then EQUIP_STEP = i end end
+local RED = Color3.fromRGB(255, 45, 45)
+local pointFrame = make("Frame", { Name = "TutorialFrame", BackgroundTransparency = 1, Visible = false, ZIndex = 20 }, gui)
+make("UICorner", { CornerRadius = UDim.new(0, 12) }, pointFrame)
+local pointStroke = make("UIStroke", { Color = RED, Thickness = 5 }, pointFrame)
+local pointArrow = make("TextLabel", { Name = "TutorialArrow", Text = "▼", AnchorPoint = Vector2.new(.5, 1), Size = UDim2.fromOffset(56, 56),
+	BackgroundTransparency = 1, Font = Enum.Font.FredokaOne, TextScaled = true, TextColor3 = RED, Visible = false, ZIndex = 21 }, gui)
+make("UIStroke", { Thickness = 3, Color = INK }, pointArrow)
+game:GetService("RunService").RenderStepped:Connect(function()
+	local first = order_[1] and tiles[order_[1]]
+	local on = state ~= nil and state.tutorial == EQUIP_STEP and first ~= nil and bar.Visible and heldTool() == nil
+	pointFrame.Visible = on pointArrow.Visible = on
+	if not on then return end
+	local f = first.frame :: GuiObject
+	local pos, size = f.AbsolutePosition, f.AbsoluteSize
+	local guiPos = (gui :: ScreenGui).AbsolutePosition
+	local pad = 4
+	pointFrame.Position = UDim2.fromOffset(pos.X - guiPos.X - pad, pos.Y - guiPos.Y - pad)
+	pointFrame.Size = UDim2.fromOffset(size.X + pad * 2, size.Y + pad * 2)
+	local t = os.clock()
+	pointStroke.Transparency = .25 - .25 * math.sin(t * 6)
+	local unit = math.max(28, size.X * .7)
+	pointArrow.Size = UDim2.fromOffset(unit, unit)
+	pointArrow.Position = UDim2.fromOffset(pos.X - guiPos.X + size.X / 2, pos.Y - guiPos.Y - 10 - math.abs(math.sin(t * 4)) * 12)
+end)
+
 Net.event("CrusherState").OnClientEvent:Connect(function(v)
 	if type(v) ~= "table" or type(v.items) ~= "table" then return end
 	state = v
