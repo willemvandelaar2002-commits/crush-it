@@ -82,3 +82,16 @@ Willem picked these two from the retention ideas (the Day 2 gift is close to the
   the walkway; without it the block placeholder. On opening the lid swings 105 degrees open on its rear hinge
   (client). Still to do: the icon (MysteryCrate-Icon.png) on the cards instead of the emoji.
 - Idea for later: a notification "Your Mystery Crate is ready!" (needs a second notification string from Willem).
+
+## 11 Nov: first minutes (from Willem's 3 reference games)
+- From the first second (also in the tutorial) the HUD shows the REWARDS button with the next
+  playtime gift's timer ("FREE CASH GIFT 1:51") and the next factory event as a chip
+  ("BEAR EVENT / IN 18:22", bottom right; top right on phones). The chip is always there while
+  no event runs (was: only the last 10 minutes, small text); it turns gold and pulses in the last
+  minute. Bear chip purple, Halloween chip orange (FactoryEventConfig Variants `chip`).
+  (client/HudReveal: RewardsHud and EventCountdown from stage 0.) The daily-reward pop-up still
+  waits until the tutorial is done (HudStage >= 1).
+- Tutorial step 7 "Upgrade production" opens a pop-up (client/FirstUpgrade): DAMAGE +35%, one big
+  UPGRADE $20 button and a bobbing hand. It buys at a distance (server/CrusherGame: one Production
+  upgrade is allowed away from the board while the tutorial is on that step). X closes it; the
+  arrow to the blue board still works. Once per session, only when no window or crate card is up.

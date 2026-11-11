@@ -107,8 +107,13 @@ buy.Activated:Connect(function()
 end)
 later.Activated:Connect(function() setOpen(false) end)
 
+local function crateCard(): boolean -- (the Mystery Crate card sits where the hand points)
+	local hud = me.PlayerGui:FindFirstChild("CrateHud")
+	local c = hud and hud:FindFirstChild("CrateCard")
+	return c ~= nil and (c :: GuiObject).Visible
+end
 local function calm(): boolean
-	return not Style.hasModal() and me:GetAttribute("CutscenePlaying") ~= true and me:GetAttribute("FactoryEventRunning") ~= true
+	return not Style.hasModal() and not crateCard() and me:GetAttribute("CutscenePlaying") ~= true and me:GetAttribute("FactoryEventRunning") ~= true
 end
 
 Net.event("CrusherState").OnClientEvent:Connect(function(v: any)
