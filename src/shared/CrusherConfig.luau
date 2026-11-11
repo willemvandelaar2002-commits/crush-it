@@ -245,7 +245,7 @@ C.Types = {
 	{ id = "Toyzilla", name = "Toyzilla", template="Toyzilla", tier=11, input=3, damage=40, hp=120, value=220, cycle=1.8 },
 }
 C.Rarities = {
-	{ name = "Common", price = 30, weight = 69.951, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
+	{ name = "Common", price = 30, weight = 69.959525, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
 	{ name = "Uncommon", price = 150, weight = 22, rank = 1, types = { "Cobalt", "RocketPress" }, mult = 1.15, color = Color3.fromRGB(99, 210, 132) },
 	{ name = "Rare", price = 900, weight = 6, rank = 2, types = { "Mega", "Magnetron" }, mult = 1.35, color = Color3.fromRGB(75, 148, 255) },
 	{ name = "Epic", price = 6000, weight = 1.8, rank = 3, types = { "Titan", "TwinTitan" }, mult = 1.65, color = Color3.fromRGB(187, 105, 246) },
@@ -256,24 +256,34 @@ C.Rarities = {
 	{ name = "Exotic", price = 200000, weight = 0.04, rank = 4.25, types = {}, mult = 2.1, color = Color3.fromRGB(255, 112, 55) },
 	-- 6 Nov (Willem's Lucky Weekend pack): LIMITED. Only rollable while the LUCKY WEEKEND
 	-- is on (Shared/WeekendConfig; the roll passes `limited`): then eventWeight gives
-	-- about 1 in 5,000 rolls for one of its three crushers (1 in 15,000 per crusher),
+	-- about 1 in 25,000 rolls for one of its three crushers (11 Nov; was 1 in 5,000),
 	-- before luck. Willem: as strong as a Secret (C.LimitedTypes). rank 4.5: between
 	-- Legendary and Secret for luck and pity, no big-roll cinematic. Once owned they
 	-- stay (ownership, equipping and production don't care about the weekend).
-	{ name = "Limited", price = 750000, weight = 0, eventWeight = 0.02, event = "LuckyWeekend", rank = 4.5, types = {}, mult = 2.2, color = Color3.fromRGB(70, 215, 95) },
+	-- (11 Nov: eventWeight .02 -> .004 and luckRank 3.5, with the chase tiers below)
+	{ name = "Limited", price = 750000, weight = 0, eventWeight = 0.004, event = "LuckyWeekend", rank = 4.5, luckRank = 3.5, types = {}, mult = 2.2, color = Color3.fromRGB(70, 215, 95) },
 	-- Chase tiers above Legendary (29 Oct): rollable but very rare, and luck helps
 	-- them most (luck scales with rank). Weights give 1 in 50,000 (Secret) and
 	-- 1 in 500,000 (Divine) per crusher with four crushers each; Common was
 	-- trimmed by the same amount so the total stays 100. Their crushers are in
 	-- C.ChaseTypes below.
-	{ name = "Secret", price = 750000, weight = 0.008, rank = 5, types = {}, mult = 2.2, color = Color3.fromRGB(120, 122, 150) },
-	{ name = "Divine", price = 7500000, weight = 0.0008, rank = 6, types = {}, mult = 2.4, color = Color3.fromRGB(110, 225, 255) },
+	-- 11 Nov (audit 4, Willem: "top rarities stop being rare ... increase the odds or bring luck
+	-- down"): both. luckRank 3.5 = the Luck upgrade helps Secret, Divine and Eternal about as
+	-- much as an Epic (it used to help them most, so Luck 60 made an Eternal 1 in ~580), and the
+	-- base weights are much smaller (Common took the difference). Per pedestal: fresh (Luck 10)
+	-- Secret+ 1 in ~28,500; rebirth 1 (Luck 25) Secret+ 1 in ~11,900, Divine+ 1 in ~75,000,
+	-- Eternal 1 in ~376,000; rebirth 10 (Luck 50, x3.5) Secret+ 1 in ~2,250, Divine+ 1 in
+	-- ~14,000, Eternal 1 in ~71,000; everything maxed (x10) Eternal 1 in ~20,600.
+	-- Base (Luck 0): Secret 1 in 250,000 (each of 4: 1 in 1,000,000), Divine 1 in 1,666,667
+	-- (each 1 in 6,666,667), Eternal 1 in 6,666,667 (each of 6: 1 in 40,000,000).
+	{ name = "Secret", price = 750000, weight = 0.0004, rank = 5, luckRank = 3.5, types = {}, mult = 2.2, color = Color3.fromRGB(120, 122, 150) },
+	{ name = "Divine", price = 7500000, weight = 0.00006, rank = 6, luckRank = 3.5, types = {}, mult = 2.4, color = Color3.fromRGB(110, 225, 255) },
 	-- 10 Nov (Willem: "more rare than divine, we just needed new crushers. so cooler animation
 	-- than divine"): ETERNAL, the six cosmic crushers (C.EternalTypes). Weight .0002 = 1 in
 	-- 500,000 rolls for any Eternal, 1 in 3,000,000 for each, before luck (Divine: 1 in
 	-- 125,000 / 500,000). Common gave up the .0002. rank 6.5: between Divine and Mythic for
 	-- luck and pity; Mythic stays the strongest and LAST.
-	{ name = "Eternal", price = 30000000, weight = 0.0002, rank = 6.5, types = {}, mult = 2.5, color = Color3.fromRGB(205, 185, 255) },
+	{ name = "Eternal", price = 30000000, weight = 0.000015, rank = 6.5, luckRank = 3.5, types = {}, mult = 2.5, color = Color3.fromRGB(205, 185, 255) },
 	-- Mythic: never rolled (weight 0). Only from the Robux shop, a rare Daily
 	-- Spin prize, crates and rare playtime/daily reward drops. 3x Legendary
 	-- output, still the strongest tier. Keep it LAST in this list.
@@ -645,7 +655,7 @@ function C.rollWeights(luck,lucky,bonus,limited)
 	local base,total={},0
 	for i,v in C.Rarities do
 		local w=if v.event then (if limited then v.eventWeight or 0 else 0) else v.weight
-		base[i]=w*C.luckFactor(luck or 0,v.rank) total+=base[i]
+		base[i]=w*C.luckFactor(luck or 0,v.luckRank or v.rank) total+=base[i] -- (11 Nov: luckRank for the chase tiers)
 	end
 	if m==1 or total<=0 then return base end
 	-- rarities from rare to common; tail = chance of this rank or better

@@ -589,30 +589,38 @@ local function rollShow(p,offers)
 	-- 5 Nov: Secret and up get the big cinematic (BigRoll.client): that pedestal is
 	-- held back for C.BigRoll[rarity].Hold seconds so the impact lands on the reveal;
 	-- the next roll and buying wait as long (no rolling a Secret away by accident)
-	local big=if best and (best.rank>=C.BigRoll.MinRank or best.name=="Limited") then C.BigRoll[best.name] else nil
+	local function bigFor(r) return if r and (r.rank>=C.BigRoll.MinRank or r.name=="Limited") then C.BigRoll[r.name] else nil end
+	-- 11 Nov (Willem: "remove the cinematic roll for crushers you already own"): the cinematic
+	-- only plays for a type this save has never owned (crushers.seen); the best NEW one gets it
+	local seenSet=if type(rollData.crushers.seen)=="table" then rollData.crushers.seen else {}
+	local show=nil local showSlot=nil
+	for slot,item in offers do local r=item and C.rarity(item.rarity)
+		if bigFor(r) and not seenSet[item.type] and (not show or r.rank>show.rank) then show=table.clone(r) show.item=item showSlot=slot end
+	end
+	local big=bigFor(show)
 	-- 8 Nov: the tutorial's first roll (one Rare, C.FirstRoll) gets the big cinematic too,
 	-- only for this player (no server-wide announcement for a Rare)
 	local firstShow=false
 	if first and not best then
 		for slot,item in offers do local r=item and C.rarity(item.rarity) if r and r.name==C.FirstRoll.Rarity then best=table.clone(r) best.item=item bestSlot=slot end end
-		if best then big={Hold=C.FirstRoll.Hold} firstShow=true end
+		if best then big={Hold=C.FirstRoll.Hold} firstShow=true show=best showSlot=bestSlot end
 	end
 	local hold=if big then big.Hold else 0
 	if big then
 		ctx.nextRoll=(ctx.nextRoll or 0)+hold
 		rollData.crushers.rollReadyAt=workspace:GetServerTimeNow()+math.max(0,ctx.nextRoll-os.clock())
-		local def=C.typeById(best.item.type) local ped=st.pedestals[bestSlot]
+		local def=C.typeById(show.item.type) local ped=st.pedestals[showSlot]
 		-- 5 Nov (Willem): the cinematic counts up to the BASE odds of that crusher (no luck,
 		-- passes or boosts), so a Secret / Divine always shows how rare it really is
-		local odds=RollLook.odds(best.item.type,0,nil,false,0)
+		local odds=RollLook.odds(show.item.type,0,nil,false,0)
 		task.delay(seconds,function()
 			if ctx.rollToken~=token or sessions[p]~=ctx then return end
 			-- 5 Nov (Willem): skippable once you have watched this rarity's cinematic before (saved)
 			local cs=rollData.crushers if type(cs.bigSeen)~="table" then cs.bigSeen={} end
-			local canSkip=cs.bigSeen[best.name]==true cs.bigSeen[best.name]=true
+			local canSkip=cs.bigSeen[show.name]==true cs.bigSeen[show.name]=true
 			local fire=if firstShow then function(t) Net.event("BigRoll"):FireClient(p,t) end else function(t) Net.event("BigRoll"):FireAllClients(t) end
-			fire({canSkip=canSkip,userId=p.UserId,player=p.DisplayName,rarity=best.name,rank=best.rank,color=best.color,
-				name=def and def.name or best.item.type,type=best.item.type,odds=odds,slot=bestSlot,at=ped.top,machine=st.die:GetPivot().Position,hold=hold,
+			fire({canSkip=canSkip,userId=p.UserId,player=p.DisplayName,rarity=show.name,rank=show.rank,color=show.color,
+				name=def and def.name or show.item.type,type=show.item.type,odds=odds,slot=showSlot,at=ped.top,machine=st.die:GetPivot().Position,hold=hold,
 				revealAt=workspace:GetServerTimeNow()+hold,aftershock=big.AftershockLuck,aftershockSeconds=big.AftershockSeconds})
 		end)
 	end
@@ -621,9 +629,11 @@ local function rollShow(p,offers)
 		task.delay(seconds+hold+0.4,function()
 			if ctx.rollToken~=token then return end
 			Net.event("RarePull"):FireAllClients({player=p.DisplayName,rarity=best.name,name=def and def.name or best.item.type,color=best.color,userId=p.UserId})
-			if big and big.AftershockLuck then
-				ServerLuck.aftershock(p,big.AftershockLuck,big.AftershockSeconds)
-				Net.event("RarePull"):FireAllClients({text=string.upper(best.name).." AFTERSHOCK: +"..math.floor((big.AftershockLuck-1)*100+.5).."% luck for EVERYONE for "..big.AftershockSeconds.." seconds!",
+			-- (the Divine / Eternal aftershock stays, also when the cinematic is skipped for an owned type)
+			local after=bigFor(best)
+			if after and after.AftershockLuck then
+				ServerLuck.aftershock(p,after.AftershockLuck,after.AftershockSeconds)
+				Net.event("RarePull"):FireAllClients({text=string.upper(best.name).." AFTERSHOCK: +"..math.floor((after.AftershockLuck-1)*100+.5).."% luck for EVERYONE for "..after.AftershockSeconds.." seconds!",
 					userId=p.UserId,color=best.color})
 			end
 		end)
@@ -706,7 +716,7 @@ local function rollShow(p,offers)
 			local d=Data.get(p)
 			for slot,item in offers do
 				-- reveal the pedestals one after another, centre first
-				task.delay((if fast then 0 else (slot-1)*.12)+(if slot==bestSlot then hold else 0),function()
+				task.delay((if fast then 0 else (slot-1)*.12)+(if slot==showSlot then hold else 0),function()
 					if ctx.rollToken~=token or sessions[p]~=ctx or not item then return end
 					if not ctx.offers or ctx.offers[slot]~=item then return end -- already bought/replaced during the stagger
 					local ped=st.pedestals[slot] local r=C.rarity(item.rarity)
