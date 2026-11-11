@@ -33,7 +33,7 @@ local HEADER = math.floor(185 * K) -- the purple header strip in the frame art
 local BANNER_H = math.floor(194 * (W - 52) / SRC_W)
 local ROW, GAP = 46, 6
 local TOP = HEADER + 16 + BANNER_H + 10 + 26 + 8 + 38 + 8 -- first row
-local FOOT = 74
+local FOOT = 100
 
 -- a brighter colour per rarity for the row (Willem's design); others use the rarity colour
 local ROW_COLOR: { [string]: Color3 } = {
@@ -104,7 +104,7 @@ artLoaded()
 Style.modal(panel)
 
 -- header: the dice is in the art; title and X are live
-local title = text(panel, "ROLL ODDS", UDim2.fromOffset(math.floor(150 * K) + 16, 14), UDim2.new(1, -math.floor(150 * K) - 110, 0, HEADER - 34), 46, 4.5)
+local title = text(panel, "ROLL ODDS", UDim2.fromOffset(152, 12), UDim2.new(1, -262, 0, HEADER - 34), 50, 4.5)
 title.TextXAlignment = Enum.TextXAlignment.Left
 local close = make("TextButton", { Name = "Close", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -36, 0, 18), Size = UDim2.fromOffset(62, 62),
 	Text = "", ZIndex = 8, BackgroundColor3 = C(232, 46, 52), AutoButtonColor = false }, panel)
@@ -160,8 +160,8 @@ end
 local list = make("Frame", { Position = UDim2.fromOffset(26, TOP), Size = UDim2.new(1, -52, 0, rows * (ROW + GAP)), BackgroundTransparency = 1, ZIndex = 6 }, panel)
 make("UIListLayout", { Padding = UDim.new(0, GAP), SortOrder = Enum.SortOrder.LayoutOrder }, list)
 
-local footer = text(panel, "Updates automatically with your luck", UDim2.new(0, 30, 1, -FOOT + 6), UDim2.new(1, -60, 0, 26), 22, 2.5)
-local note = text(panel, "Each type shares its rarity's chance. Rounded values may not add up to exactly 100%.", UDim2.new(0, 30, 1, -FOOT + 34), UDim2.new(1, -60, 0, 20), 16, 1.5)
+local footer = text(panel, "Updates automatically with your luck", UDim2.new(0, 40, 1, -FOOT + 4), UDim2.new(1, -80, 0, 26), 22, 2.5)
+local note = text(panel, "Each type shares its rarity's chance · rounded, may not add up to exactly 100%", UDim2.new(0, 40, 1, -FOOT + 32), UDim2.new(1, -80, 0, 20), 16, 1.5)
 note.TextColor3 = C(196, 184, 240)
 
 type Row = { frame: Frame, grad: UIGradient, edge: Frame, gem: Frame, name: TextLabel, chance: TextLabel, oneIn: TextLabel, count: TextLabel }
