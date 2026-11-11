@@ -399,8 +399,8 @@ local pad = Instance.new("UIPadding") pad.PaddingTop = UDim.new(0, 8) pad.Paddin
 walkBtn.Activated:Connect(function() remote:FireServer("autoWalk") end)
 local function buttonText()
 	local owned = Store.hasPass(me, "AutoWalk")
-	local pass = Store.passByPerk("AutoWalk")
-	walkBtn.Text = if not owned then "AUTO WALK  R$ " .. tostring(pass and pass.price or 49)
+	-- (no "R$" here: the Robux-icon helper and a scaled button text keep re-laying each other out)
+	walkBtn.Text = if not owned then "BUY AUTO WALK"
 		elseif walkOn() then "AUTO WALK: ON" else "AUTO WALK: OFF"
 	Style.setButtonColor(walkBtn, if not owned then Style.Colors.Gold elseif walkOn() then Style.GREEN else Color3.fromRGB(130, 134, 150))
 end
