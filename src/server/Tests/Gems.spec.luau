@@ -103,6 +103,8 @@ return function()
 	local reb = R.migrate({ cash = 10 }, id) reb.crushers.plotLevel = C.Rebirth.MinPlot reb.cash = C.rebirthCost(0)
 	local okR, msgR = act(reb, "Rebirth")
 	check(okR and msgR:find("GEM MINE"), "rebirth 1 says the Gem Mine is open")
+	-- 11 Nov: the mine needs rebirth 1 AND FACTORY III in this run
+	check(not G.mineOpen({ rebirths = 1, plotLevel = 1 }) and not G.mineOpen({ rebirths = 0, plotLevel = 5 }) and G.mineOpen({ rebirths = 1, plotLevel = 2 }), "Gem Mine: rebirth 1 + Factory III")
 
 	-- 9 Nov: Gems are whole numbers; old fractional saves split into gems + gemDust
 	local f = R.migrate({ cash = 10 }, id) f.crushers.gems = 12.75 f = R.migrate(f, id)

@@ -841,6 +841,11 @@ local function action(p,name,args)
 	end
 	if ok and name=="UpgradePlot" and Progression.level(d)>levelBefore then
 		Net.event("PlotUpgraded"):FireClient(p,upgradeSummary(levelBefore,Progression.level(d)))
+		-- 11 Nov: the Gem Mine needs FACTORY III (and rebirth 1): reaching it opens the portal
+		GemMine.refresh(p)
+		if Gems.mineOpen(d.crushers) and levelBefore<Gems.UnlockPlot then
+			Net.event("Notice"):FireClient(p,{text="The GEM MINE is open! Take the portal on your plot."})
+		end
 	end
 	ctx.justRolled=ok and name=="Roll" or nil
 	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" or name=="Fuse" or name=="CollectFusion" or name=="ApplyCoating" then result else nil) ctx.justRolled=nil ctx.justDiscovered=nil

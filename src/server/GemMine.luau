@@ -131,35 +131,62 @@ local function buildCrusher(parent: Instance, cf: CFrame, k: number): (Model, Ba
 	return m, ram
 end
 
--- the portal (the same look on your plot and in the mine): navy base, neon ring, gold frame
+-- the portal (the same look on your plot and in the mine). 11 Nov (Willem: "probably a portal is
+-- better for it instead of a pad on the ground"): a standing ring portal. Willem's pad (or a navy
+-- disc) is its base; on it an upright gold ring with a pink rim and a glowing swirl inside, facing
+-- along the CFrame's Z. E on the swirl uses it.
+local PORTAL_R = 5 -- the ring's radius (studs, to the middle of the gold band)
 local function buildPortal(parent: Instance, at: CFrame, title: string, action: string): (Model, TextLabel, ProximityPrompt)
 	local m = Instance.new("Model")
+	local baseTop = 1
 	local padT = tpl("TeleporterPad")
 	if padT and padT:IsA("BasePart") then
-		-- Willem's pad (one mesh for both ends); an invisible anchor above the deck holds the
-		-- prompt and the sign
 		local pad = padT:Clone()
 		pad.Name = "Pad" pad.Anchored = true
 		pad:PivotTo(at * CFrame.new(0, pad.Size.Y / 2, 0))
 		pad.Parent = m
-		local anchor = Build.block(m, "Base", Vector3.new(6, 0.4, 6), at * CFrame.new(0, pad.Size.Y + 0.3, 0), MAGENTA)
-		anchor.Transparency = 1 anchor.CanCollide = false anchor.CanQuery = false
-		local text = label(anchor, title, RGB(255, 170, 245), 6.5, Vector2.new(14, 3))
-		local pr = prompt(anchor, action, "Gem Mine")
-		m.PrimaryPart = anchor
-		m.Parent = parent
-		return m, text, pr
+		baseTop = pad.Size.Y
+	else
+		local base = Build.block(m, "Pad", Vector3.new(1, 11, 11), at * CFrame.new(0, 0.5, 0) * CFrame.Angles(0, 0, math.rad(90)), NAVY)
+		base.Shape = Enum.PartType.Cylinder
+		local rim = Build.block(m, "PadRim", Vector3.new(1.05, 9, 9), at * CFrame.new(0, 0.52, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
+		rim.Shape = Enum.PartType.Cylinder rim.Material = Enum.Material.Neon
 	end
-	local base = Build.block(m, "Base", Vector3.new(1, 9, 9), at * CFrame.new(0, 0.5, 0) * CFrame.Angles(0, 0, math.rad(90)), NAVY)
-	base.Shape = Enum.PartType.Cylinder
-	local ring = Build.block(m, "Ring", Vector3.new(1.1, 7, 7), at * CFrame.new(0, 0.6, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
-	ring.Shape = Enum.PartType.Cylinder ring.Material = Enum.Material.Neon
-	for _, x in { -4, 4 } do Build.block(m, "Post", Vector3.new(0.8, 7, 0.8), at * CFrame.new(x, 4, 0), GOLD).Material = Enum.Material.Metal end
-	local top = Build.block(m, "Top", Vector3.new(9, 0.8, 1), at * CFrame.new(0, 7.8, 0), GOLD)
-	top.Material = Enum.Material.Metal
-	local text = label(top, title, RGB(255, 170, 245), 3.5, Vector2.new(14, 3))
-	local pr = prompt(base, action, "Gem Mine")
-	m.PrimaryPart = base
+	local centre = at * CFrame.new(0, baseTop + PORTAL_R + 0.6, 0)
+	-- the ring: 24 gold blocks round a circle, a pink neon band just inside
+	local n = 24
+	local len = 2 * math.pi * PORTAL_R / n * 1.12
+	for i = 1, n do
+		local a = (i - 0.5) / n * math.pi * 2
+		local seg = centre * CFrame.Angles(0, 0, a) * CFrame.new(0, PORTAL_R, 0)
+		local g = Build.block(m, "Ring", Vector3.new(len, 1.1, 1.4), seg, GOLD)
+		g.Material = Enum.Material.Metal
+		local inner = Build.block(m, "RingGlow", Vector3.new(len * 0.86, 0.35, 1.5), centre * CFrame.Angles(0, 0, a) * CFrame.new(0, PORTAL_R - 0.7, 0), MAGENTA)
+		inner.Material = Enum.Material.Neon inner.CanCollide = false
+	end
+	-- gems on the ring: one at the top, two at the sides
+	for _, ang in { 0, 90, -90 } do
+		local gem = Build.block(m, "RingGem", Vector3.new(1.3, 1.3, 1.3), centre * CFrame.Angles(0, 0, math.rad(ang)) * CFrame.new(0, PORTAL_R + 0.4, 0) * CFrame.Angles(math.rad(45), 0, math.rad(45)), CYAN)
+		gem.Material = Enum.Material.Neon gem.CanCollide = false
+	end
+	-- the swirl (a thin disc facing along Z) with sparkles drawn into it
+	local swirl = Build.block(m, "Swirl", Vector3.new(0.3, PORTAL_R * 2 - 1.6, PORTAL_R * 2 - 1.6), centre * CFrame.Angles(0, math.rad(90), 0), PINK)
+	swirl.Shape = Enum.PartType.Cylinder swirl.Material = Enum.Material.ForceField swirl.Transparency = 0.05
+	swirl.CanCollide = false swirl.CastShadow = false
+	local core = Build.block(m, "SwirlCore", Vector3.new(0.2, PORTAL_R * 2 - 1.7, PORTAL_R * 2 - 1.7), centre * CFrame.Angles(0, math.rad(90), 0), RGB(120, 40, 170))
+	core.Shape = Enum.PartType.Cylinder core.Material = Enum.Material.Neon core.Transparency = 0.35
+	core.CanCollide = false core.CastShadow = false
+	local pe = Instance.new("ParticleEmitter")
+	pe.Rate = 14 pe.Lifetime = NumberRange.new(0.8, 1.4) pe.Speed = NumberRange.new(-3, -2)
+	pe.Shape = Enum.ParticleEmitterShape.Disc pe.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
+	pe.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(1, 0) })
+	pe.Color = ColorSequence.new(RGB(255, 170, 245), CYAN) pe.LightEmission = 1
+	pe.Texture = "rbxasset://textures/particles/sparkles_main.dds" pe.Rotation = NumberRange.new(0, 360) pe.RotSpeed = NumberRange.new(-180, 180)
+	pe.Parent = core
+	local light = Instance.new("PointLight") light.Range = 18 light.Brightness = 1.6 light.Color = RGB(255, 150, 240) light.Shadows = false light.Parent = core
+	local text = label(swirl, title, RGB(255, 170, 245), PORTAL_R + 2.6, Vector2.new(14, 3))
+	local pr = prompt(swirl, action, "Gem Mine")
+	m.PrimaryPart = swirl
 	m.Parent = parent
 	return m, text, pr
 end
@@ -388,13 +415,13 @@ local function stateOf(p: Player): State
 	return st
 end
 
-local function unlocked(d: any): boolean return d ~= nil and (d.crushers.rebirths or 0) >= Gems.UnlockRebirths end
+local function unlocked(d: any): boolean return d ~= nil and Gems.mineOpen(d.crushers) end
 
 function M.enter(p: Player)
 	local d = api.data(p)
 	if not d then return end
 	if not unlocked(d) then
-		Net.event("Notice"):FireClient(p, { text = "The GEM MINE opens at REBIRTH " .. Gems.UnlockRebirths .. "." })
+		Net.event("Notice"):FireClient(p, { text = "The GEM MINE opens at " .. Gems.UnlockText .. "." })
 		return
 	end
 	api.teleport(p, crusher.arrive) -- on the portal, facing the crusher
@@ -408,7 +435,7 @@ function M.refresh(p: Player)
 	local s = d.crushers
 	local tp = plot and plot.gemTeleporter
 	if tp then
-		tp.text.Text = if unlocked(d) then "GEM MINE" else "GEM MINE\nREBIRTH " .. Gems.UnlockRebirths .. " TO UNLOCK"
+		tp.text.Text = if unlocked(d) then "GEM MINE" else "GEM MINE\n" .. Gems.UnlockText .. " TO UNLOCK"
 	end
 	p:SetAttribute("GemMagnet", Gems.mineMagnet(s))
 	p:SetAttribute("GemsPerMinute", math.floor(Gems.minePerMinute(s) + 0.5))

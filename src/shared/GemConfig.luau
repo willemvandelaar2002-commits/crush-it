@@ -47,6 +47,13 @@ function G.nextMilestone(rebirths: number): any
 end
 G.Emoji = "💎"
 G.UnlockRebirths = 1 -- the Gem Mine and the Gem Shop open after this many rebirths
+-- 11 Nov (Willem: "minimum plot 3 and rebirth 1"): the Gem MINE also needs FACTORY III (plot level 2)
+-- in the current run; the Gem Shop opens at rebirth 1 as before.
+G.UnlockPlot = 2
+G.UnlockText = "REBIRTH 1 + FACTORY III"
+function G.mineOpen(s: any): boolean
+	return (s.rebirths or 0) >= G.UnlockRebirths and (s.plotLevel or 0) >= G.UnlockPlot
+end
 
 -- Where Gems come from (shown in the Gem Shop; vault: show where a currency comes from)
 G.HowToEarn = "Earn Gems in the GEM MINE: take the teleporter on your plot, pick up what your Gem Crusher crushes"
