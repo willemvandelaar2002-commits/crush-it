@@ -10,7 +10,10 @@
 return {
 	-- 8 Nov (Willem: "too early" right after the tutorial): the first crate lands once the
 	-- player reaches this goal (goal 6 = "Fill 6 bays", about 5-8 minutes in)
-	AfterGoal = 6,
+	AfterGoal = 6, -- (no longer used, see AfterStep)
+	-- 11 Nov (funnel: 62% of new players never reached goal 6, so they never saw the crate):
+	-- it lands once this many tutorial steps are done (4 = after buying your first crusher)
+	AfterStep = 4,
 	FirstHours = 8,
 	Hours = 20,
 	Rewards = {

@@ -210,6 +210,13 @@ end
 local function goalDone(d,g) local have,need=goalCount(d,g) return have>=need end
 local function goalReward(p,d,g)
 	local r=g.reward
+	-- 11 Nov: the next bay, free (when there is one to unlock; else the cash below)
+	local s=d.crushers
+	if r.bay and s.bays<C.bayCapacity(s.plotLevel) then
+		s.bays+=1
+		Analytics.custom(p,"GoalFreeBay",s.bays,g.id)
+		if not r.crusher then return end
+	end
 	if r.cash then d.cash=C.money(d.cash+math.max(r.min or 0,math.floor(cps(p,d)*r.cash)))
 	elseif r.crusher then
 		local rarity=C.rarity(r.crusher)

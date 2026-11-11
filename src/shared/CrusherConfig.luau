@@ -8,7 +8,7 @@ local C = {
 	PlacingFloor = 0.7, -- 31 Oct: Strike Speed also shortens toy placing (InputDelay x SpeedFactor^level), down to 70%
 	CrushedLinger = 0.45, -- 31 Oct: seconds a flattened toy stays on the bed under the next one (visual only)
 	-- Rolling is free: it fills your unlocked pedestals with offers you can buy.
-	RollSeconds = 3, StartPedestals = 1, MaxPedestals = 5,
+	RollSeconds = 3, StartPedestals = 2, MaxPedestals = 5, -- (11 Nov: 2 to start, was 1: the "Fill" goals lost 12-18% each)
 	MaxPressEmitters = 1, PressParticleRate = 2,
 	LevelDamage = 1.12, LevelYield = 1.10, DamageFactor = 1.35, SpeedFactor = 0.94,
 	YieldPerLevel = 0.25, LuckPerLevel = 0.3, AutoCrushDamage = 1.25, -- 31 Oct: Yield 0.2 -> 0.25 per level; 2 Nov: Luck 0.12 -> 0.3 (Willem: way too weak)
@@ -99,6 +99,9 @@ for i=3,C.MaxBays do
 	local w=if C.FlatBayCurve then 0 else math.clamp((i-C.BaseMaxBays)/24,0,1)
 	C.BayCosts[i]=math.floor(early^(1-w)*old^w)
 end
+-- 11 Nov (funnel: every "Fill N bays" goal lost 12-18% of players): bays 3-12 (the ground
+-- floor) cost 35% less. Bay 13 and up, and so FACTORY II's price, stay the same.
+for i=3,12 do C.BayCosts[i]=math.floor(C.BayCosts[i]*0.65) end
 -- Caps[n] = upgrade caps from plot level n on: factory/roll upgrades (global)
 -- and each crusher's level. Below plot level 1 the base MaxGlobal/MaxLevel apply.
 -- 2 Nov (Willem): the starting factory is only the ground floor (C.StartBays =
@@ -490,7 +493,7 @@ C.Upgrades = {
 	Speed = { name = "Strike speed", group = "Production", base = 30, growth = 1.7 },
 	Yield = { name = "Scrap yield", group = "Production", base = 25, growth = 1.65 },
 	Luck = { name = "Luck", group = "Rolling", base = 50, growth = 1.75 },
-	Pedestals = { name = "Rolling pedestals", group = "Rolling", base = 150, growth = 6, max = 4 },
+	Pedestals = { name = "Rolling pedestals", group = "Rolling", base = 150, growth = 6, max = 3 }, -- (11 Nov: 3 levels, you start with 2)
 }
 C.UpgradeOrder = { "Damage", "Speed", "Yield", "Luck", "Pedestals" }
 C.UpgradeMany = 10 -- 3 Nov: the x10 button on the FACTORY UPGRADES board
@@ -594,14 +597,16 @@ C.StarterScrap = 24 -- 1 Nov: scrap waiting in a new player's bin (three toys' w
 -- "Buy FACTORY II". "upgrades n" = total factory upgrade levels (Damage + Speed + Yield).
 C.Goals2Version = 11 -- 5 Nov: after Factory II "Fill 18 bays" comes before "Coat a crusher"; Factory III prize Legendary (was Epic). 10: 5 Nov: the TURBO goal left the guide (17% churn on it; the pump stays). 9: 4 Nov: quiet goals after Factory II. 8: 3 Nov: the SMASH goal left the guide (30% churn on it; SMASH stays as a free extra)
 C.Goals2 = {
-	{ id="Fill3", check="fill", n=3, title="Fill 3 bays", text="Unlock bay 3, then roll a crusher and place it there.", target="NextBayOrEmpty", reward={cash=30,min=60} },
+	-- 11 Nov (funnel: the Fill goals lost 12-18% each): Fill 3, 5 and 9 pay the NEXT BAY, free
+	-- and unlocked at once (cash instead when no bay is left to unlock); Fill 6 adds it to its crusher
+	{ id="Fill3", check="fill", n=3, title="Fill 3 bays", text="Unlock bay 3, then roll a crusher and place it there.", target="NextBayOrEmpty", reward={bay=true,cash=30,min=60} },
 	{ id="Upgrades3", check="upgrades", n=3, title="Upgrade your factory", text="The blue FACTORY UPGRADES board makes ALL crushers better.", target="Production", reward={cash=45,min=100} },
-	{ id="Fill5", check="fill", n=5, title="Fill 5 bays", text="Unlock more bays and put a crusher in each one.", target="NextBayOrEmpty", reward={cash=45,min=150} },
+	{ id="Fill5", check="fill", n=5, title="Fill 5 bays", text="Unlock more bays and put a crusher in each one.", target="NextBayOrEmpty", reward={bay=true,cash=45,min=150} },
 	{ id="Golden", check="golden", title="Grab a golden toy", text="Golden toys land at your bays every half minute. Walk into one!", target="GoldenToy", reward={cash=45,min=150} },
-	{ id="Fill6", check="fill", n=6, title="Fill 6 bays", text="Unlock bay 6 and place a crusher. Prize: a FREE RARE crusher!", target="NextBayOrEmpty", reward={crusher="Rare"} },
+	{ id="Fill6", check="fill", n=6, title="Fill 6 bays", text="Unlock bay 6 and place a crusher. Prize: a FREE RARE crusher + bay!", target="NextBayOrEmpty", reward={crusher="Rare",bay=true} },
 	{ id="Level5", check="level", n=5, title="Level a crusher to Lv 5", text="Press LEVEL UP on a crusher's plaque. Higher level = more scrap.", target="LevelBay", reward={cash=60,min=250} },
 	{ id="Upgrades8", check="upgrades", n=8, title="Upgrade your factory", text="Factory upgrades make every crusher earn more.", target="Production", reward={cash=60,min=300} },
-	{ id="Fill9", check="fill", n=9, title="Fill 9 bays", text="Keep growing your factory!", target="NextBayOrEmpty", reward={cash=90,min=600} },
+	{ id="Fill9", check="fill", n=9, title="Fill 9 bays", text="Keep growing your factory!", target="NextBayOrEmpty", reward={bay=true,cash=90,min=600} },
 	{ id="Fill12", check="fill", n=12, title="Fill all 12 bays", text="Every bay full unlocks the FACTORY II upgrade. Prize: a FREE EPIC crusher!", target="NextBayOrEmpty", reward={crusher="Epic"} },
 	{ id="Factory2", check="plot", n=1, title="Buy FACTORY II", text="Save up and press UPGRADE on the green board. Big prize!", target="PlotUpgrade", reward={crusher="Legendary"} },
 	-- 4 Nov (Willem; vault FTUE "the end of the tutorial needs a successor"): after

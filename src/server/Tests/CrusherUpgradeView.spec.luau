@@ -44,7 +44,7 @@ return function()
 	end
 	d=fresh()
 	check(V.board(d,"Speed",{}).effect:match("^6%% faster · %+[%d%.]+%% cash$")~=nil,"speed shows its real cash gain (31 Oct)")
-	check(V.board(d,"Pedestals",{}).effect=="1 > 2 choices / roll","pedestals describe offers, not free ownership")
+	check(V.board(d,"Pedestals",{}).effect=="2 > 3 choices / roll","pedestals describe offers, not free ownership")
 	for _,lucky in {false,true} do
 		for _,lv in {0,7,C.MaxGlobal-1} do
 			d.crushers.upgrades.Luck=lv

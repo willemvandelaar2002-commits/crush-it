@@ -140,6 +140,7 @@ function M.start(api: any)
 			return
 		end
 		busy[p] = true
+		local late = now - c.readyAt -- (11 Nov: seconds between ready and opened)
 		local rarity = pick()
 		local name = api.giveCrusher(p, rarity, nil, true) or rarity
 		local cash = C.money(math.max(1, api.cashPerSecond(p)) * K.CashMinutes * 60)
@@ -155,6 +156,8 @@ function M.start(api: any)
 		mirror(p, d)
 		remote:FireClient(p, { opened = { name = name, rarity = rarity, cash = Format.cash(cash) }, readyAt = c.readyAt })
 		require(script.Parent.Kit.Analytics).custom(p, "MysteryCrateOpened", d.stats.crates, rarity)
+		-- 11 Nov: how many hours after it was ready the player opened it
+		require(script.Parent.Kit.Analytics).custom(p, "MysteryCrateOpenedLate", math.floor(math.max(0, late) / 360) / 10, if d.stats.crates == 1 then "first" else "later")
 		busy[p] = nil
 	end
 
@@ -166,12 +169,11 @@ function M.start(api: any)
 		local fresh = false
 		if not c.readyAt then
 			fresh = true
-			if (d.crushers.tutorial or 0) <= #C.TutorialSteps then return end
-			-- (8 Nov: not right after the tutorial; goal 0/nil = older saves past the goals)
-			local goal = d.crushers.goal or 0
-			if goal ~= 0 and goal < K.AfterGoal then return end
+			-- 11 Nov: once the first crusher is bought (tutorial step 4 done), was goal 6
+			if (d.crushers.tutorial or 0) <= K.AfterStep then return end
 			c.readyAt = os.time() + K.FirstHours * 3600
 			remote:FireClient(p, { arrived = true, readyAt = c.readyAt })
+			require(script.Parent.Kit.Analytics).custom(p, "MysteryCrateLanded", 1, "first")
 		end
 		if not models[p] then
 			local plot = api.eventPlot(p)
