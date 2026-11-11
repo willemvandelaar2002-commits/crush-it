@@ -181,6 +181,7 @@ function R.migrate(d, guid)
 	s.gemUpsV=2
 	-- 11 Nov: PLOT STYLES (Shared/PlotStyles): owned ones and the one your plot shows; kept through rebirths
 	s.styles=Styles.clean(s.styles)
+	s.gemKeys=integer(s.gemKeys,0,Gems.Crate.MaxKeys) -- 11 Nov: Gem Chest keys (bought for Gems, used at the chest in the mine)
 	local owned,ids={},{}
 	-- crate crushers have one fixed tier: copies saved under an older tier follow it
 	local function fixTier(v) local def=C.typeById(v.type) if def and (def.crate or def.gem) and def.rarity and C.rarity(def.rarity) then v.rarity=def.rarity end end
@@ -443,20 +444,29 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if s.gems<st.price then return false,"Need "..st.price.." Gems." end
 		s.gems-=st.price s.styles.owned[id]=true s.styles.active=id
 		return true,st.name.." style! +"..math.floor(st.cash*100+.5).."% cash forever.",id
-	elseif action=="GemCrate" then
-		-- 8 Nov: the Gem Crate: one crusher, rarity by GemConfig.Crate.Odds (shown in full in the shop)
+	elseif action=="GemKey" then
+		-- 11 Nov (Willem: "put the chest physically in the cave. then you buy 1 key, and open it
+		-- with the key"): a key for the Gem Chest costs what the crate cost
 		if (s.rebirths or 0)<Gems.UnlockRebirths then return false,"The Gem Shop opens after your first rebirth." end
 		local cost=Gems.Crate.Cost
+		if s.gemKeys>=Gems.Crate.MaxKeys then return false,"You have "..Gems.Crate.MaxKeys.." keys already. Open the Gem Chest in the mine." end
 		if s.gems<cost then return false,"Need "..cost.." Gems." end
-		if #s.owned>=C.MaxInventory then return false,"Inventory full. Recycle duplicates in the Index (RECYCLE DUPES). No Gems were spent." end
+		s.gems-=cost s.gemKeys+=1
+		return true,"Gem key bought! Open the GEM CHEST in the Gem Mine.",s.gemKeys
+	elseif action=="GemCrate" then
+		-- 8 Nov: the Gem Crate: one crusher, rarity by GemConfig.Crate.Odds (shown in full in the shop)
+		-- 11 Nov: opened at the GEM CHEST in the mine with a key (bought with GemKey)
+		if (s.rebirths or 0)<Gems.UnlockRebirths then return false,"The Gem Shop opens after your first rebirth." end
+		if s.gemKeys<1 then return false,"You need a key: buy one at GEM UPGRADES ("..Gems.Crate.Cost.." Gems)." end
+		if #s.owned>=C.MaxInventory then return false,"Inventory full. Recycle duplicates in the Index (RECYCLE DUPES). Your key was not used." end
 		local roll=random() local pick=Gems.Crate.Odds[#Gems.Crate.Odds].rarity
 		local acc=0 for _,o in Gems.Crate.Odds do acc+=o.chance if roll<acc then pick=o.rarity break end end
 		local rarity=C.rarity(pick)
-		if not rarity or #rarity.types==0 then return false,"The Gem Crate is being restocked. Try again later." end
-		s.gems-=cost
+		if not rarity or #rarity.types==0 then return false,"The Gem Chest is being restocked. Try again later." end
+		s.gemKeys-=1
 		local item={id=guid(),type=rarity.types[math.min(#rarity.types,math.floor(random()*#rarity.types)+1)],rarity=rarity.name,modifier=C.Modifiers[1].name,level=1}
 		table.insert(s.owned,item)
-		return true,"Gem Crate: "..C.typeById(item.type).name.."!",item
+		return true,"Gem Chest: "..C.typeById(item.type).name.."!",item
 	elseif action=="Recycle" then
 		local item=R.find(d,args.id) if not item then return false,"You do not own that crusher." end
 		for _,id in s.equipped do if id==item.id then return false,"Unequip this crusher before recycling it." end end

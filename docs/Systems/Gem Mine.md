@@ -132,3 +132,9 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   (client/GemMine): owned = ON / OFF (tap to switch), not owned = BUY AUTO WALK (the server prompts the pass). It
   does the same as the board (remote GemMine "autoWalk"); the board stays.
 - 11 Nov (later): the AUTO WALK button uses the AUTO ROLL button art (green = ON), 164 x 70, words AUTO WALK / ON, OFF or BUY.
+- **GEM CHEST (11 Nov, Willem: "put the chest physically in the cave. then you buy 1 key, and open it with the key"):**
+  the Gem Crate is now a chest in the mine beside the GEM UPGRADES board (code-built: navy box, gold bands, pink lock,
+  a lid that opens with a burst of sparkles). GEM UPGRADES sells a **key** (rule `GemKey`, 750 Gems, up to 99 kept in
+  `crushers.gemKeys`, attribute GemKeys); E at the chest (rule `GemCrate`, server reach 16 studs) uses one key for one
+  crusher at the same odds as before. Without a key the prompt says "Needs a key". Tested in Play: key bought, chest
+  opened, a Secret came out, the key was used.
