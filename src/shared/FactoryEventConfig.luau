@@ -74,6 +74,7 @@ E.Variants = {
 		boss = "FactoryBear", -- ReplicatedStorage.FactoryEventMeshes
 		bossWord = "bear", Boss = "Bear",
 		accent = Color3.fromRGB(173, 65, 255), -- cores, beams, port rings
+		chip = Color3.fromRGB(150, 70, 235), -- 11 Nov: the countdown chip (client/EventCountdown)
 		sky = Color3.fromRGB(120, 60, 190), skyDecay = Color3.fromRGB(60, 20, 110),
 		ambient = Color3.fromRGB(125, 95, 165), outdoor = Color3.fromRGB(140, 105, 190),
 		tint = Color3.fromRGB(235, 226, 255),
@@ -83,6 +84,7 @@ E.Variants = {
 		bossWord = "pumpkin", Boss = "Pumpkin",
 		music = 83398637668977, -- Willem's Halloween song
 		accent = Color3.fromRGB(184, 255, 68), -- lime candy energy
+		chip = Color3.fromRGB(255, 125, 30), -- pumpkin orange
 		-- 29 Oct: spooky night: violet sky, orange glow on the horizon, a big moon
 		sky = Color3.fromRGB(70, 40, 105), skyDecay = Color3.fromRGB(255, 120, 35), haze = 2.4, density = .3, moon = 22,
 		ambient = Color3.fromRGB(105, 95, 135), outdoor = Color3.fromRGB(115, 100, 145),
