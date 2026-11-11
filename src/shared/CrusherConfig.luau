@@ -245,7 +245,7 @@ C.Types = {
 	{ id = "Toyzilla", name = "Toyzilla", template="Toyzilla", tier=11, input=3, damage=40, hp=120, value=220, cycle=1.8 },
 }
 C.Rarities = {
-	{ name = "Common", price = 30, weight = 69.9595325, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
+	{ name = "Common", price = 30, weight = 69.9585, rank = 0, types = { "Bumper", "Steel" }, mult = 1, color = Color3.fromRGB(155, 179, 203) },
 	{ name = "Uncommon", price = 150, weight = 22, rank = 1, types = { "Cobalt", "RocketPress" }, mult = 1.15, color = Color3.fromRGB(99, 210, 132) },
 	{ name = "Rare", price = 900, weight = 6, rank = 2, types = { "Mega", "Magnetron" }, mult = 1.35, color = Color3.fromRGB(75, 148, 255) },
 	{ name = "Epic", price = 6000, weight = 1.8, rank = 3, types = { "Titan", "TwinTitan" }, mult = 1.65, color = Color3.fromRGB(187, 105, 246) },
@@ -277,16 +277,21 @@ C.Rarities = {
 	-- Base (Luck 0): Secret 1 in 250,000 (each of 4: 1 in 1,000,000), Divine 1 in 1,666,667
 	-- (each 1 in 6,666,667), Eternal 1 in 13,333,333 (each of 6: 1 in 80,000,000).
 	-- Later on 11 Nov (Willem: "eternal 1 in 20,000 seems like so low chance"): Eternal weight
-	-- halved and all luck multipliers together capped at x5 (C.LuckMultCap, was 10): rebirth 10
-	-- Eternal 1 in ~142,000, everything maxed 1 in ~82,600 (Secret+ 1 in ~1,300, Divine+ ~9,200).
-	{ name = "Secret", price = 750000, weight = 0.0004, rank = 5, luckRank = 3.5, types = {}, mult = 2.2, color = Color3.fromRGB(120, 122, 150) },
-	{ name = "Divine", price = 7500000, weight = 0.00006, rank = 6, luckRank = 3.5, types = {}, mult = 2.4, color = Color3.fromRGB(110, 225, 255) },
+	-- halved and luck capped at x5; that was a misread, Willem meant LESS rare ("1 in 5000 seems
+	-- better"). So now: cap back at x10, Eternal x8 (.00006), Divine x4 (.00024), Secret x3 (.0012),
+	-- each tier still rarer than the one below. Base: Secret 1 in 83,333 (each 1 in 333,333),
+	-- Divine 1 in 416,667 (each 1 in 1,666,667), Eternal 1 in 1,666,667 (each 1 in 10,000,000).
+	-- Per pedestal: rebirth 1 Secret+ ~1 in 3,760, Divine+ ~18,800, Eternal ~94,000; rebirth 10
+	-- Secret+ ~713, Divine+ ~3,560, Eternal ~17,800; maxed (x10) Secret+ ~207, Divine+ ~1,030,
+	-- Eternal ~5,160. (The numbers above these lines are older.)
+	{ name = "Secret", price = 750000, weight = 0.0012, rank = 5, luckRank = 3.5, types = {}, mult = 2.2, color = Color3.fromRGB(120, 122, 150) },
+	{ name = "Divine", price = 7500000, weight = 0.00024, rank = 6, luckRank = 3.5, types = {}, mult = 2.4, color = Color3.fromRGB(110, 225, 255) },
 	-- 10 Nov (Willem: "more rare than divine, we just needed new crushers. so cooler animation
 	-- than divine"): ETERNAL, the six cosmic crushers (C.EternalTypes). Weight .0002 = 1 in
 	-- 500,000 rolls for any Eternal, 1 in 3,000,000 for each, before luck (Divine: 1 in
 	-- 125,000 / 500,000). Common gave up the .0002. rank 6.5: between Divine and Mythic for
 	-- luck and pity; Mythic stays the strongest and LAST.
-	{ name = "Eternal", price = 30000000, weight = 0.0000075, rank = 6.5, luckRank = 3.5, types = {}, mult = 2.5, color = Color3.fromRGB(205, 185, 255) },
+	{ name = "Eternal", price = 30000000, weight = 0.00006, rank = 6.5, luckRank = 3.5, types = {}, mult = 2.5, color = Color3.fromRGB(205, 185, 255) },
 	-- Mythic: never rolled (weight 0). Only from the Robux shop, a rare Daily
 	-- Spin prize, crates and rare playtime/daily reward drops. 3x Legendary
 	-- output, still the strongest tier. Keep it LAST in this list.
@@ -648,7 +653,7 @@ C.Goals = { GroupId = 264438399, SkipMinutes = 5, SkipCooldownHours = 24, MinSki
 -- twice the chance of Legendary or better, of Secret or better, of Eternal, each capped at
 -- 100% (then the rarity below gets less). The Luck upgrade still shapes the base
 -- (C.luckFactor). All multipliers together count up to C.LuckMultCap.
-C.LuckMultCap = 5 -- (11 Nov, Willem: maxed Eternal 1 in 20,000 was too easy; was 10)
+C.LuckMultCap = 10 -- (11 Nov: briefly 5, back to 10 when Willem asked for Eternal ~1 in 5,000 maxed)
 function C.luckMult(lucky,bonus)
 	local mult=if type(lucky)=="number" then lucky elseif lucky then 2 else 1
 	return math.clamp(mult*(1+(bonus or 0)),1,C.LuckMultCap)

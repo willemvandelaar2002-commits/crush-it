@@ -89,18 +89,21 @@ Willem: "top rarities stop being rare ... either increase the odds or bring luck
 - Big roll cinematic (11 Nov, Willem): only for a type this save has never owned (`crushers.seen`); an owned
   one is revealed like any roll. The server-wide announcement and the Divine/Eternal aftershock stay.
 
-Later on 11 Nov (Willem: "eternal 1 in 20,000 seems like so low chance"): the Eternal weight is halved
-(.0000075: 1 in 13,333,333 per tier, each of 6 1 in 80,000,000) and all luck multipliers together count up
-to x5 (`C.LuckMultCap`, was 10). Per pedestal now:
+Later on 11 Nov the Eternal was made rarer still (weight .0000075, luck capped at x5, maxed 1 in ~82,600).
+That was a misread: Willem meant less rare ("1 in 5000 seems better"). Now: `C.LuckMultCap` back to 10,
+Eternal .00006 (1 in 1,666,667 per tier, each of 6 1 in 10,000,000), Divine .00024 (1 in 416,667, each of 4
+1 in 1,666,667) and Secret .0012 (1 in 83,333, each of 4 1 in 333,333), so each tier stays rarer than the
+one below. Common 69.9585. Limited unchanged. Per pedestal (checked in Studio with the real config):
 
 | Player | Legendary+ | Secret+ | Divine+ | Eternal |
 |---|---|---|---|---|
-| fresh (Luck 10) | 1 in 46 | 1 in 29,002 | 1 in 200,864 | 1 in 1,807,773 |
-| rebirth 1 (Luck 25, x1.25) | 1 in 17 | 1 in 12,058 | 1 in 83,515 | 1 in 751,638 |
-| rebirth 3 (Luck 30, x1.75) | 1 in 10 | 1 in 7,401 | 1 in 51,259 | 1 in 461,327 |
-| rebirth 3 + Lucky pass (x3.5) | 1 in 5 | 1 in 3,700 | 1 in 25,629 | 1 in 230,664 |
-| rebirth 10 (Luck 50, x3.5) | 1 in 3 | 1 in 2,286 | 1 in 15,833 | 1 in 142,495 |
-| everything maxed (Luck 60, x5 cap) | 1 in 1 | 1 in 1,325 | 1 in 9,178 | 1 in 82,602 |
+| fresh (Luck 10) | 1 in 45 | 1 in 9,039 | 1 in 45,197 | 1 in 225,987 |
+| rebirth 1 (Luck 25, x1.25) | 1 in 17 | 1 in 3,758 | 1 in 18,793 | 1 in 93,968 |
+| rebirth 3 (Luck 30, x1.75) | 1 in 10 | 1 in 2,307 | 1 in 11,535 | 1 in 57,675 |
+| rebirth 3 + Lucky pass (x3.5) | 1 in 5 | 1 in 1,153 | 1 in 5,767 | 1 in 28,837 |
+| rebirth 10 (Luck 50, x3.5) | 1 in 3 | 1 in 712 | 1 in 3,563 | 1 in 17,816 |
+| everything maxed (Luck 60, x10 cap) | 1 in 1 | 1 in 206 | 1 in 1,032 | 1 in 5,164 |
 
-With Auto Roll (~12,000-14,000 pedestals an hour) a maxed player sees an Eternal about every 6 hours, a
-rebirth-10 player about every 10-12 hours.
+Earlier maxed Eternal for comparison: ~1 in 580 (old model, before today), ~1 in 59 (first x10 tail model),
+~1 in 20,600 (first "rare again"), ~1 in 82,600 (the misread). With Auto Roll (~12,000-14,000 pedestals an
+hour) a maxed player gets about 2-3 Eternals an hour, a rebirth-10 player one about every 1.5 hours.

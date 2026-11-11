@@ -8,7 +8,7 @@ checked"), plus open items from earlier audits and sessions. Tick off here and a
 - [x] 2 Paid luck for restricted players -> left as is (Willem: luck also works on free rolls)
 - [x] 3 Odds only as "1 in N" -> ROLL ODDS window with percentages (11 Nov)
 - [x] 4 Top rarities stopped being rare -> luckRank 3.5, much rarer base odds, Eternal halved again and
-      luck multipliers capped at x5 (11 Nov; maxed Eternal 1 in ~82,600)
+      then (Willem: less rare) Eternal/Divine/Secret base up, cap back to x10 (11 Nov; maxed Eternal 1 in ~5,160)
 - [x] 5 Big roll cinematics too frequent -> no cinematic for owned types (11 Nov); and rarer with 4
 - [ ] 6 **Gems run out of purpose**: mine upgrades max in ~26 min, everything in 2-3 h. The Gem Crate is
       now a real Secret/Divine source (4 made the roll rarer); check whether that is enough or add a
