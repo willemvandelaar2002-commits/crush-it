@@ -480,3 +480,4 @@
 - 2026-11-11: Gem Mine bigger (Willem: you could stand in the middle and get every gem): platform radius 22 -> 38, floor 70 -> 100, crusher x1.5. Vault check: pickups now asked for when the pull starts, not on arrival.
 - 2026-11-11: Gem Mine caps grow with rebirths (vault): +1 max on More Gems, Gem Value and Magnet every 5 rebirths, at most +2. AUTO WALK pass (2079272256, R$ 49): you walk to your gems by yourself in the mine; a board beside the platform sells it and switches it on/off.
 - 2026-11-11: Mine upgrades get more, smaller levels (Willem): Speed 20 x -0.05 s, More Gems 10 x +0.2 (a chance of an extra gem), Value 10 x +10%, Magnet 15 x +1 stud; same totals and costs to the max; rebirth steps +5/+5/+3 levels; old levels convert once (x5, magnet x3).
+- 2026-11-11: Gem Mine opens at rebirth 1 + FACTORY IV (Willem); its portal is now a standing ring portal in the rear yard (shows from Factory IV), the mine's way home the same portal.

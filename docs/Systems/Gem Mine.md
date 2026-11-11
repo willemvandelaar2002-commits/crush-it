@@ -5,10 +5,19 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
 `GemConfig.Upgrades`; server `src/server/GemMine.luau`; client `src/client/GemMine.client.luau`; tests in
 `Tests/Gems.spec`.
 
-- **Unlock:** rebirth 1 opens it; rebirth 5 **awakens** your Gem Crusher (x1.5 gem value, gold look, announced).
+- **Unlock:** rebirth 1 **and FACTORY IV** (the rear yard) in the current run (11 Nov, Willem: "minimum plot 3 and
+  rebirth 1 ... the one where you get that plot upgrade and the back is visible"; `GemConfig.UnlockPlot` 3 /
+  `G.mineOpen`); the Gem Shop still opens at rebirth 1. Rebirth 5 **awakens** your Gem Crusher (x1.5 gem value,
+  opal look, announced). Reaching Factory IV with a rebirth says "The GEM MINE is open! Its portal is in your rear
+  yard."; a rebirth before that says it opens at Factory IV.
+- **The portal (11 Nov, Willem: "probably a portal is better for it instead of a pad on the ground"):** a standing
+  ring on the teleporter pad: 24 gold blocks with a pink neon band, three cyan gems, a ForceField swirl with
+  sparkles and a pink glow; E on the swirl. On your plot it stands on the rear yard road (plot-local 0, -108) facing
+  down the road, and only shows once you have Factory IV (before a rebirth it says "REBIRTH 1 + FACTORY IV TO
+  UNLOCK"). The mine's way home is the same portal. Tested in Play: hidden at Factory III, shown at IV, opens with
+  rebirth 1; dev /plot now refreshes it.
 - **Where:** one shared mine in the same place at `CFrame(1800, 0, 0)` (vault: a same-place area beats a
-  multi-place teleport for a small game). A teleporter on every plot (front left, `Mine.Teleporter`), locked
-  sign "REBIRTH 1 TO UNLOCK" before that. You arrive on the same portal on your pad; press E on it to go home.
+  multi-place teleport for a small game). A portal on every plot (11 Nov: in the rear yard, `Mine.Teleporter`). You arrive on the same portal on your pad; press E on it to go home.
 - **One Gem Crusher that everyone uses** (10 Nov, Willem: "just 1 crusher that everyone uses"; later "gem crusher a
   bit further back and then the platform in the front"): the crusher stands at the back (`Mine.CrusherZ` -26), facing
   a raised round **gem platform** in front of it (`Mine.Zone`: radius 22 since 10 Nov (was 16), centre 5 studs forward, 1 stud high, gold trim, neon ring, glass

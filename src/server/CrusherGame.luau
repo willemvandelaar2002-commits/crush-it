@@ -841,6 +841,11 @@ local function action(p,name,args)
 	end
 	if ok and name=="UpgradePlot" and Progression.level(d)>levelBefore then
 		Net.event("PlotUpgraded"):FireClient(p,upgradeSummary(levelBefore,Progression.level(d)))
+		-- 11 Nov: the Gem Mine needs FACTORY IV (and rebirth 1): its portal appears in the rear yard
+		GemMine.refresh(p)
+		if Gems.mineOpen(d.crushers) and levelBefore<Gems.UnlockPlot then
+			Net.event("Notice"):FireClient(p,{text="The GEM MINE is open! Its portal is in your rear yard."})
+		end
 	end
 	ctx.justRolled=ok and name=="Roll" or nil
 	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" or name=="Fuse" or name=="CollectFusion" or name=="ApplyCoating" then result else nil) ctx.justRolled=nil ctx.justDiscovered=nil
@@ -1169,6 +1174,7 @@ function G.start()
 				while C.TutorialSteps[s.tutorial] do Rules.tutorialAdvance(d,C.TutorialSteps[s.tutorial].id) end
 				s.goal=math.max(s.goal or 1,C.MainGoals+1)
 				s.plotLevel=level s.bays=math.max(s.bays,C.bayCapacity(level))
+				GemMine.refresh(p) -- (11 Nov: the Gem Mine portal shows from Factory IV)
 				ctx.bays={} reconcile(p) send(p,"Plot level "..level.." (dev)") return "ok"
 			elseif what=="Skip" then
 				while C.TutorialSteps[s.tutorial] do Rules.tutorialAdvance(d,C.TutorialSteps[s.tutorial].id) end

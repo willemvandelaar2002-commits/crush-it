@@ -411,7 +411,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 		s.rebirths=n+1
 		-- 9 Nov: rebirths no longer pay Gems (they come from the GEM MINE); they unlock it
 		-- (rebirth 1) and awaken its Gem Crusher (GemConfig.Mine.AwakenRebirths)
-		local extra=if s.rebirths==Gems.UnlockRebirths then " The GEM MINE is open!" elseif s.rebirths==Gems.Mine.AwakenRebirths then " Your Gem Crusher AWAKENED!" else ""
+		local extra=if s.rebirths==Gems.UnlockRebirths then (if Gems.mineOpen(s) then " The GEM MINE is open!" else " The GEM MINE opens at FACTORY IV!") elseif s.rebirths==Gems.Mine.AwakenRebirths then " Your Gem Crusher AWAKENED!" else ""
 		if head>0 then extra=extra.." Head Start: "..C.PlotUpgrade.Names[head].."!" end
 		return true,"REBIRTH "..s.rebirths.."! Income x"..C.rebirthMult(s.rebirths)..", luck x"..C.rebirthLuck(s.rebirths).." forever."..extra,s.rebirths
 	elseif action=="GemUpgrade" then
