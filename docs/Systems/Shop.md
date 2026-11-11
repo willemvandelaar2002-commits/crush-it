@@ -408,3 +408,12 @@ lists; server/Offers grants O.FirstBuy once when it sees the pass owned.
 
 - 2026-11-11: AUTO WALK pass (`AutoWalk`, 2079272256, R$ 49), hidden from the pass lists: sold by its board beside the gem platform in the Gem Mine (see [[Systems/Gem Mine]]).
 - 2026-11-11: Starter Pack R$ 49 -> 39 (Willem, in the dashboard: many open it, few buy). Store fallback price updated; the shop reads the live price.
+
+- **TURBO FUEL window (11 Nov, Willem's CrushIt-Turbo-UI-Parts):** client/Turbo builds it from his art: Turbo-Frame
+  (image 120165628058516), one grey Turbo-CardSkin (115663833639486) tinted per tier with a UIGradient (Turbo
+  yellow-orange, Mega red, Hyper magenta, Ultra cyan), a fuel icon per tier (Turbo 74419096420919, Mega
+  104469236304196, Hyper 81080902693562, Ultra 128016896632481, gently bobbing) and the Instant Turbo strip
+  (104719562894587, nine-sliced) with a green price button (Robux icon + live price). Titles, x CASH, the duration
+  pill, RUNNING countdown, price buttons (grey when you can't afford it), locks (navy slot, LOCKED + the factory) and
+  messages are live UI. The strongest running turbo's card gets a green edge. Rules, prices and purchases unchanged.
+  Checked in Play: Turbo + Mega bought, both running, Mega highlighted, HUD chip TURBO x3.

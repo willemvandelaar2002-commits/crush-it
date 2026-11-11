@@ -138,3 +138,10 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   `crushers.gemKeys`, attribute GemKeys); E at the chest (rule `GemCrate`, server reach 16 studs) uses one key for one
   crusher at the same odds as before. Without a key the prompt says "Needs a key". Tested in Play: key bought, chest
   opened, a Secret came out, the key was used.
+- **Gem Chest reveal (11 Nov, Willem: "make the chest reveal more special"):** client/GemChest. The opener: camera to
+  the chest, it shakes and glows in the prize's rarity colour (longer for rarer), a white flash and fanfare, the lid
+  flies open with a beam of light and sparkles, and the crusher rises on screen on a sunburst with "LEGENDARY!" and
+  its name (bigger show from Exotic, Secret, Divine). Everyone near sees the lid and beam. The server sends only the
+  result (GemMine remote kinds chestOpen / chestReveal); the "Gem Chest: ..." notice is skipped and the server-wide
+  announcement (Exotic+) waits 3.4 s. The lid turns about the chest's Hinge attribute: Willem's chest model needs a
+  separate lid part (named Lid or ChestLid) and its hinge edge. Checked in Play: a Legendary reveal, all restored after.
