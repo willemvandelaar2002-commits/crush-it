@@ -171,7 +171,13 @@ function R.migrate(d, guid)
 	s.gemDust=number(s.gemDust,0,1)+(s.gems-math.floor(s.gems)) s.gems=math.floor(s.gems)
 	if s.gemDust>=1 then s.gems+=math.floor(s.gemDust) s.gemDust-=math.floor(s.gemDust) end
 	local ups=if type(s.gemUps)=="table" then s.gemUps else {}
-	s.gemUps={} for _,u in Gems.Upgrades do local top=Gems.absoluteMax(u) s.gemUps[u.id]=math.clamp(integer(ups[u.id],0,top),0,top) end
+	-- 11 Nov: the mine upgrades got more, smaller levels; old levels convert once (x oldFactor)
+	local convert=(tonumber(s.gemUpsV) or 1)<2
+	s.gemUps={} for _,u in Gems.Upgrades do local top=Gems.absoluteMax(u)
+		local had=integer(ups[u.id],0,top*10)
+		if convert and u.oldFactor then had*=u.oldFactor end
+		s.gemUps[u.id]=math.clamp(had,0,top) end
+	s.gemUpsV=2
 	local owned,ids={},{}
 	-- crate crushers have one fixed tier: copies saved under an older tier follow it
 	local function fixTier(v) local def=C.typeById(v.type) if def and (def.crate or def.gem) and def.rarity and C.rarity(def.rarity) then v.rarity=def.rarity end end

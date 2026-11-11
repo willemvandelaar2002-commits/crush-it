@@ -425,7 +425,7 @@ local function crush(p: Player, d: any, st: State, now: number)
 	-- the strike plays on your screen only (your pace); gems only while there is room
 	local add = {}
 	local value = Gems.mineValue(s)
-	for _ = 1, math.min(Gems.mineDrops(s), Mine.MaxDrops - st.count) do
+	for _ = 1, math.min(Gems.dropsNow(s, math.random()), Mine.MaxDrops - st.count) do -- (11 Nov: 0.2-gem levels, the fraction is a chance)
 		st.nextId += 1
 		-- anywhere on the platform in front of the crusher (uniform over the disc)
 		local a = math.random() * math.pi * 2

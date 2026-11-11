@@ -70,7 +70,8 @@ return function()
 	check(G.minePerMinute(ms) <= 750, "fully upgraded and awake stays under ~750 Gems a minute (" .. math.floor(G.minePerMinute(ms)) .. ")")
 	-- 11 Nov: the max of More Gems, Gem Value and Gem Magnet grows by 1 every 5 rebirths, at most +2
 	local mags = G.upgrade("Magnet")
-	check(G.maxLevel(mags, 4) == mags.max and G.maxLevel(mags, 5) == mags.max + 1 and G.maxLevel(mags, 10) == mags.max + 2 and G.maxLevel(mags, 50) == mags.max + 2, "rebirths 5 and 10 raise the magnet max, then it stops")
+	local step = mags.rebirthBonus
+	check(G.maxLevel(mags, 4) == mags.max and G.maxLevel(mags, 5) == mags.max + step and G.maxLevel(mags, 10) == mags.max + 2 * step and G.maxLevel(mags, 50) == mags.max + 2 * step, "rebirths 5 and 10 raise the magnet max, then it stops")
 	check(G.maxLevel(G.upgrade("MineSpeed"), 50) == G.upgrade("MineSpeed").max and G.maxLevel(G.upgrade("Cash"), 50) == G.upgrade("Cash").max, "Crush Speed and the other upgrades keep their max")
 	check(G.cost("Magnet", mags.max, 4) == nil and G.cost("Magnet", mags.max, 5) ~= nil, "a level past the old max only after rebirth 5")
 	check(G.nextCapRebirth(mags, 0) == 5 and G.nextCapRebirth(mags, 7) == 10 and G.nextCapRebirth(mags, 10) == nil, "the shop can say when the next level opens")
@@ -78,8 +79,19 @@ return function()
 	cs.rebirths = 4 cs.gems = 10 ^ 7 cs.gemUps.Magnet = mags.max
 	check(not act(cap, "GemUpgrade", { id = "Magnet" }), "rebirth 4: the magnet is maxed")
 	cs.rebirths = 5
-	check(act(cap, "GemUpgrade", { id = "Magnet" }) and cs.gemUps.Magnet == mags.max + 1, "rebirth 5: one more magnet level")
+	check(act(cap, "GemUpgrade", { id = "Magnet" }) and cs.gemUps.Magnet == mags.max + 1, "rebirth 5: more magnet levels")
 	check(R.migrate(cap, id).crushers.gemUps.Magnet == mags.max + 1, "a raised level survives a reload")
+	-- 11 Nov: more, smaller levels; a save from before converts once (x5, the magnet x3)
+	local old = R.migrate({ cash = 10 }, id)
+	old.crushers.gemUpsV = nil old.crushers.gemUps = { MineSpeed = 4, MineDrops = 2, MineValue = 1, Magnet = 5, Cash = 3 }
+	local os2 = R.migrate(old, id).crushers
+	check(os2.gemUps.MineSpeed == 20 and os2.gemUps.MineDrops == 10 and os2.gemUps.MineValue == 5 and os2.gemUps.Magnet == 15 and os2.gemUps.Cash == 3, "old mine levels convert (x5, magnet x3), others stay")
+	check(G.mineCrushSeconds(os2) == 1 and G.mineDrops(os2) == 3 and G.mineValue(os2) == 1.5 and G.mineMagnet(os2) == 20, "a converted save keeps exactly what it had")
+	local again = R.migrate(old, id).crushers
+	check(again.gemUps.MineDrops == 10 and again.gemUps.Magnet == 15, "converted only once")
+	local fr = R.migrate({ cash = 10 }, id).crushers fr.gemUps.MineDrops = 3
+	local hits = 0 for i = 1, 100 do hits += G.dropsNow(fr, (i - 0.5) / 100) end
+	check(G.mineDrops(fr) > 1.59 and G.mineDrops(fr) < 1.61 and hits == 160, "More Gems level 3: 1.6 gems a crush on average (" .. hits .. " in 100)")
 	for _, u in G.Upgrades do if u.group == "mine" then ms.gemUps[u.id] = G.maxLevel(u, 10) end end
 	ms.rebirths = 10
 	check(G.minePerMinute(ms) <= 1400, "rebirth 10, everything maxed: at most ~1,350 Gems a minute (" .. math.floor(G.minePerMinute(ms)) .. ")")
