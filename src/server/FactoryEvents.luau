@@ -222,6 +222,7 @@ function Events.start(api)
 		if phase=="Announce" then roster[p]={pending=true} broadcast() return end
 		if phase~="Assemble" and phase~="Active" then return end
 		local r=snapshot(p) if not r then return end
+		require(script.Parent.GemMine).sendHome(p,"A factory event is on! Back to your factory.")
 		roster[p]=r
 		if phase=="Active" then
 			hp,maxHp=Rules.resize(hp,maxHp,totalPower()*E.TargetSeconds)
@@ -343,7 +344,13 @@ function Events.start(api)
 				-- Freeze exactly the currently equipped fleet at the assembly boundary.
 				for p in roster do roster[p]=snapshot(p) end
 				for _,p in Players:GetPlayers() do if not roster[p] then roster[p]=snapshot(p) end end
-				if count()==0 then recover("No players") else setPhase("Assemble",E.Assemble) end
+				if count()==0 then recover("No players") else
+					setPhase("Assemble",E.Assemble)
+					-- 11 Nov (Willem): players in the Gem Mine go home for the event (their plot
+					-- isn't loaded down there)
+					local Mine=require(script.Parent.GemMine)
+					for p in roster do Mine.sendHome(p,"A factory event started! Back to your factory.") end
+				end
 			elseif phase=="Assemble" then
 				maxHp=totalPower()*E.TargetSeconds hp=maxHp
 				setPhase("Active",E.Active)

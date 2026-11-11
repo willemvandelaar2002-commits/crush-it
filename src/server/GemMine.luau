@@ -527,6 +527,21 @@ local function buildWorld()
 	root.Parent = workspace
 end
 
+-- 11 Nov (Willem: an event starting while you're in the cave "does weird, it doesn't load"):
+-- the event happens on your plot, which isn't streamed in while you stand in the mine
+-- far away. FactoryEvents sends mine players home when it starts.
+function M.inMine(p: Player): boolean
+	local char = p.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
+	return crusher ~= nil and hrp ~= nil and (hrp.Position - crusher.center).Magnitude < 400
+end
+function M.sendHome(p: Player, text: string): boolean
+	if not M.inMine(p) then return false end
+	api.home(p)
+	Net.event("Notice"):FireClient(p, { text = text })
+	return true
+end
+
 -- the Gem Chest's front part (the server's reach check for "GemCrate")
 function M.chestPart(): BasePart? return chest and chest.front or nil end
 
