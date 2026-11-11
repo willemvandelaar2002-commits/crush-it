@@ -201,7 +201,7 @@ return function()
 	check(R.find(loaded,"m1")~=nil,"a bought Mythic survives a full inventory on load")
 	-- chase tiers: rollable, rarer than Legendary, Mythic still the strongest
 	local sec,div,leg,myth2=C.rarity("Secret"),C.rarity("Divine"),C.rarity("Legendary"),C.rarity("Mythic")
-	check(C.oddsFor(sec.types[1])==50000 and C.oddsFor(div.types[1])==500000 and C.oddsFor(leg.types[1])==4000,"chase odds 1 in 50K / 500K, Legendary unchanged")
+	check(C.oddsFor(sec.types[1])==1000000 and math.abs(C.oddsFor(div.types[1])-6666667)<=1 and C.oddsFor(leg.types[1])==4000,"chase odds 1 in 1M / 6.67M per crusher (11 Nov), Legendary unchanged")
 	check(C.Rarities[#C.Rarities]==myth2 and myth2.rank>div.rank and div.rank>sec.rank and sec.rank>leg.rank,"Mythic stays last and on top")
 	-- 6 Nov: Limited (Lucky Weekend): never rolled without the event, about 1 in 5,000 with it,
 	-- as strong as a Secret, normal ownership
