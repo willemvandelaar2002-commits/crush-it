@@ -18,7 +18,7 @@ local function make(class: string, props: { [string]: any }, parent: Instance?):
 end
 
 local gui = make("ScreenGui", { Name = "WhatsNewHud", ResetOnSpawn = false, DisplayOrder = 7, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
-local W, H = 560, 420
+local W, H = 600, 540 -- (11 Nov: room for the big patch's 7 lines)
 local panel = make("Frame", { Name = "WhatsNewPanel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
 	Size = UDim2.fromOffset(W, H), BackgroundColor3 = Color3.fromRGB(40, 48, 84), Visible = false, ZIndex = 5 }, gui)
 make("UICorner", { CornerRadius = UDim.new(0, 16) }, panel)
