@@ -29,6 +29,8 @@ dated line to `docs/Decisions log.md` and update the matching note in
   `/bigroll divine` (a roll with a Secret/Divine: the big roll cinematic),
   Since 2 Nov Studio plays on an in-memory TEST save by default (nothing is
   saved); set ServerStorage attribute `RealData = true` to play on the real save.
+  Since 11 Nov the test save also plays without your game passes (as the creator you own
+  them all; they skipped the tutorial and goals): chat `/passes` or set `StudioPasses = true`.
   screenshot with `screen_capture` camera_position/look_at_position.
 - After a change: a short plain-language list of what changed, then the git block.
 - Roblox knowledge vault (5 Nov: V2): `willemvandelaar2002-commits/roblox-vault` is a copy of "LihFolk Vault V2"

@@ -56,7 +56,17 @@ local function setPass(player: Player, perk: string, owned: boolean)
 	player:SetAttribute(Store.passAttr(perk), if owned then true else nil)
 end
 
-local function checkPasses(player: Player)
+local function checkPasses(player: Player, real: boolean?)
+	-- 11 Nov (Willem: "when I press Play I'm already at goal 5"): you made the game, so you
+	-- own every game pass; the FIRST BUY pass gave a crusher on join (the tutorial skipped
+	-- to step 5) and Auto Collect / Auto Buy / x16 cash raced through the goals. Studio on
+	-- the test save now plays as a new player without passes. Your real passes: chat
+	-- /passes, or ServerStorage attribute StudioPasses = true (or RealData = true).
+	local ss = game:GetService("ServerStorage")
+	if not real and RunService:IsStudio() and ss:GetAttribute("StudioPasses") ~= true and ss:GetAttribute("RealData") ~= true then
+		passChecked[player] = true
+		return
+	end
 	for _, pass in Store.Passes do
 		if pass.gamePassId ~= 0 then
 			-- 5 Nov (vault V2 audit): retry with backoff, so a short Roblox hiccup at
@@ -387,7 +397,7 @@ function Shop.start(gameApi: Api)
 			Net.event("Notice"):FireClient(p, { text = "Testing without passes (Studio): /passes to undo" })
 		end)
 		cmd("PassesCommand", "/passes", function(p)
-			task.spawn(checkPasses, p)
+			task.spawn(checkPasses, p, true)
 		end)
 		local devProduct = Instance.new("BindableFunction")
 		devProduct.Name = "DevProduct"
