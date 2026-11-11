@@ -38,7 +38,7 @@ Store.Passes = {
 	-- yourself (client/GemMine; steering yourself pauses it). Hidden from the shop list: it is sold
 	-- by its board beside the gem platform, where it is useful (vault: sell at the point of need).
 	{ perk = "AutoWalk", gamePassId = 2079272256, price = 49, title = "Auto Walk", desc = "In the Gem Mine you walk to your gems by yourself", color = Color3.fromRGB(255, 90, 230), hidden = true },
-	{ perk = "Lucky", gamePassId = 2041580327, price = 49, title = "Lucky", desc = "2x luck on crusher rolls: Uncommon or better about 30% -> 46% of rolls", color = Color3.fromRGB(255, 200, 50) },
+	{ perk = "Lucky", gamePassId = 2041580327, price = 49, title = "Lucky", desc = "2x luck on crusher rolls: twice the chance of every rarity, from Rare up to Eternal", color = Color3.fromRGB(255, 200, 50) },
 	{ perk = "AutoCollect", gamePassId = 2057934074, price = 69, title = "Auto Collect", desc = "Scrap flies to you, smelts and the cash collects itself", color = Color3.fromRGB(255, 160, 50) },
 	-- 4 Nov (monetization round 2, vault: Price Points "the 299-599 rung was empty"; Willem):
 	-- VIP. Id 0 until Willem creates the pass (hidden in the shop until then).
@@ -51,7 +51,7 @@ Store.Products = {
 	{ id = "CashSmall", productId = 3723657331, price = 19, title = "Cash Pile", desc = "10 minutes of your earnings, right away", color = Color3.fromRGB(80, 200, 110) },
 	-- 4 Nov (monetization round 2; vault: RNG genre "social luck sells", Price Points
 	-- "the moment beats the price"). Id 0 = not created yet (hidden everywhere).
-	{ id = "ServerLuck", productId = 3728462569, price = 79, title = "Server Luck", desc = "2x luck for EVERYONE here, 15 min. Uncommon+ 30% -> 46% of rolls", color = Color3.fromRGB(80, 220, 90) },
+	{ id = "ServerLuck", productId = 3728462569, price = 79, title = "Server Luck", desc = "2x luck for EVERYONE here, 15 min: twice the chance of every rarity", color = Color3.fromRGB(80, 220, 90) },
 	{ id = "TurboNow", productId = 3728462615, price = 29, title = "Instant Turbo", desc = "15 minutes of your strongest TURBO, right away", color = Color3.fromRGB(255, 140, 40) },
 	{ id = "CashMedium", productId = 3723657452, price = 59, title = "Cash Stack", desc = "1 hour of your earnings, right away", color = Color3.fromRGB(60, 180, 90) },
 	{ id = "CashLarge", productId = 3723657672, price = 129, title = "Cash Vault", desc = "4 hours of your earnings, right away", color = Color3.fromRGB(40, 160, 80) },
@@ -66,7 +66,7 @@ Store.Products = {
 	-- Rewards panel "Skip All": every playtime gift unlocks now (not in the shop list)
 	-- Hub Boosts station (Shared/BoostConfig); hidden from the shop list
 	{ id = "BoostCash", productId = 3723657898, price = 19, title = "2x Cash Boost", desc = "15 minutes of double cash", color = Color3.fromRGB(230, 70, 60), hidden = true },
-	{ id = "BoostLuck", productId = 3723657981, price = 19, title = "2x Luck Boost", desc = "15 min of 2x luck: Uncommon or better about 30% -> 46% of rolls (stacks with the Lucky pass)", color = Color3.fromRGB(60, 190, 90), hidden = true },
+	{ id = "BoostLuck", productId = 3723657981, price = 19, title = "2x Luck Boost", desc = "15 min of 2x luck: twice the chance of every rarity (stacks with the Lucky pass)", color = Color3.fromRGB(60, 190, 90), hidden = true },
 	{ id = "BoostSuper", productId = 3723658049, price = 29, title = "Super Boost", desc = "15 minutes of 2x cash and 2x luck", color = Color3.fromRGB(160, 80, 235), hidden = true },
 	-- 30 Oct: welcome-back card multipliers (the card shows these Robux prices until
 	-- the productIds are filled in from the Creator Dashboard; 0 = "SOON")
@@ -224,7 +224,7 @@ end
 if Config.Crushers.Enabled then
 	for _, pass in Store.Passes do
 		if pass.perk == "AutoCrush" then pass.title = "Production Boost" pass.desc = "+25% strike damage. Automatic crushing is free for everyone." end
-		if pass.perk == "Lucky" then pass.desc = "2x luck on every roll: more Rare, Epic and Legendary crushers. Stacks with boosts." end -- 3 Nov: plain words
+		if pass.perk == "Lucky" then pass.desc = "2x luck on every roll: twice the chance of every rarity. Stacks with boosts." end -- 3 Nov: plain words
 		if pass.perk == "AutoCollect" then pass.desc = "Automatically collects and sells your finished scrap." end
 	end
 	for _, product in Store.Products do

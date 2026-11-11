@@ -445,6 +445,11 @@ function W.station(parent,cf,kind)
 		button.Position=UDim2.fromScale(.05,.56) button.Size=UDim2.fromScale(.6,.38)
 		local abutton=W.button(button.Parent,"AutoAction","AUTO",UDim2.fromScale(.68,.6),UDim2.fromScale(.27,.3),"AutoRoll")
 		Style.setButtonColor(abutton,Color3.fromRGB(70,150,255))
+		-- 11 Nov (audit: odds as percentages): a small ODDS button top right opens the ROLL
+		-- ODDS window (client/RollOdds); the heading makes room for it
+		local heading=button.Parent:FindFirstChild("Heading") if heading then heading.Size=UDim2.fromScale(.68,.3) end
+		local obutton=W.button(button.Parent,"OddsAction","ODDS",UDim2.fromScale(.74,.05),UDim2.fromScale(.22,.24),"Odds")
+		Style.setButtonColor(obutton,Color3.fromRGB(255,196,40))
 		local aface,alabel=face,label
 		-- Pedestals in an arc in front of the machine (like the reference): a roll
 		-- fills every unlocked one with an offer; each has a card and a Buy prompt.

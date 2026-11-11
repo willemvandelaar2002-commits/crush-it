@@ -626,17 +626,80 @@ C.FunnelBays = {} -- 2 Nov: replaced by the goals
 C.Goals = { GroupId = 264438399, SkipMinutes = 5, SkipCooldownHours = 24, MinSkipReward = 100 }
 -- "1 in N" odds of rolling a type with base weights (no luck).
 -- 2 Nov: THE roll weights (server roll, roll pedestal odds, Index and upgrade
--- board all use this). luck = Luck upgrade level; lucky = luck multiplier on
--- every non-Common rarity (true = 2: Lucky pass OR 2x Luck boost; 4 = both);
--- bonus = permanent Index luck (0.1 = +10%).
+-- board all use this). luck = Luck upgrade level; lucky = luck multiplier (true = 2;
+-- Lucky pass, boosts, Server Luck, weekend, rebirth and Gem Luck multiply into it);
+-- bonus = permanent Index luck (0.1 = +10%, multiplies in too).
 -- limited: the LUCKY WEEKEND is on, so event rarities (Limited) can roll (C.limitedOn)
-function C.rollWeights(luck,lucky,bonus,limited)
+-- 11 Nov (audit: "2x luck" did almost nothing after Luck ~10, because it only shrank the
+-- Common share): a multiplier now multiplies the chance of EVERY rarity-or-better: x2 =
+-- twice the chance of Legendary or better, of Secret or better, of Eternal, each capped at
+-- 100% (then the rarity below gets less). The Luck upgrade still shapes the base
+-- (C.luckFactor). All multipliers together count up to C.LuckMultCap.
+C.LuckMultCap = 10
+function C.luckMult(lucky,bonus)
 	local mult=if type(lucky)=="number" then lucky elseif lucky then 2 else 1
-	local out={} for i,v in C.Rarities do
-		local base=if v.event then (if limited then v.eventWeight or 0 else 0) else v.weight
-		out[i]=base*C.luckFactor(luck or 0,v.rank)*(if v.rank>0 then mult*(1+(bonus or 0)) else 1)
+	return math.clamp(mult*(1+(bonus or 0)),1,C.LuckMultCap)
+end
+function C.rollWeights(luck,lucky,bonus,limited)
+	local m=C.luckMult(lucky,bonus)
+	local base,total={},0
+	for i,v in C.Rarities do
+		local w=if v.event then (if limited then v.eventWeight or 0 else 0) else v.weight
+		base[i]=w*C.luckFactor(luck or 0,v.rank) total+=base[i]
+	end
+	if m==1 or total<=0 then return base end
+	-- rarities from rare to common; tail = chance of this rank or better
+	local order={} for i in C.Rarities do table.insert(order,i) end
+	table.sort(order,function(a,b) return C.Rarities[a].rank>C.Rarities[b].rank end)
+	local out={} local tail,above=0,0
+	for _,i in order do
+		tail+=base[i]/total
+		local boosted=if C.Rarities[i].rank>0 then math.min(1,tail*m) else 1
+		boosted=math.max(boosted,above)
+		out[i]=boosted-above above=boosted
 	end
 	return out
+end
+-- 11 Nov: the odds of every rarity in percent (they add up to 100), for the ODDS panel
+-- and texts. Only rarities that can roll right now. {name, percent, color, rank}
+function C.oddsTable(luck,lucky,bonus,limited)
+	local w=C.rollWeights(luck,lucky,bonus,limited) local total=0 for _,x in w do total+=x end
+	local out={}
+	for i,r in C.Rarities do if w[i]>0 then table.insert(out,{name=r.name,percent=w[i]/total*100,color=r.color,rank=r.rank,types=#r.types}) end end
+	table.sort(out,function(a,b) return a.rank<b.rank end)
+	return out
+end
+-- the same for a player, from the attributes the server sets every second (CrusherGame send:
+-- RollLuck = Luck level, RollLuckMult = all multipliers but Index, RollLuckBonus = Index luck)
+function C.luckPreviewFor(p,extra)
+	local luck=tonumber(p:GetAttribute("RollLuck")) or 0
+	local mult=tonumber(p:GetAttribute("RollLuckMult")) or 1
+	local bonus=tonumber(p:GetAttribute("RollLuckBonus")) or 0
+	return C.luckPreview(luck,mult,bonus,extra,C.limitedOn())
+end
+-- chance of `rank` or better, 0..1
+function C.chanceAtLeast(rankMin,luck,lucky,bonus,limited)
+	local w=C.rollWeights(luck,lucky,bonus,limited) local total,hit=0,0
+	for i,x in w do total+=x if C.Rarities[i].rank>=rankMin then hit+=x end end
+	return if total>0 then hit/total else 0
+end
+-- 11 Nov: what an extra luck multiplier does for THIS player right now, for the shop and
+-- boost texts: the most common rarity tier that is still under 40% for them.
+-- Returns text like "Legendary or better: 4.1% -> 8.2%" or "your luck is already at the maximum".
+function C.luckPreview(luck,lucky,bonus,extra,limited)
+	local now=C.luckMult(lucky,bonus)
+	local mult=if type(lucky)=="number" then lucky elseif lucky then 2 else 1
+	local after=if type(extra)=="number" then mult*extra else mult*2
+	if C.luckMult(after,bonus)<=now+1e-9 then return "Your luck is already at the maximum (x"..C.LuckMultCap..")" end
+	local pick
+	for _,r in C.Rarities do
+		if r.rank>0 and not r.event and r.weight>0 and C.chanceAtLeast(r.rank,luck,lucky,bonus,limited)<.4 then
+			if not pick or r.rank<pick.rank then pick=r end
+		end
+	end
+	pick=pick or C.rarity("Legendary")
+	local function pct(x) x*=100 return if x>=10 then string.format("%.0f%%",x) elseif x>=1 then string.format("%.1f%%",x) elseif x>=0.01 then string.format("%.2f%%",x) else string.format("%.4f%%",x) end
+	return pick.name.." or better: "..pct(C.chanceAtLeast(pick.rank,luck,lucky,bonus,limited)).." -> "..pct(C.chanceAtLeast(pick.rank,luck,after,bonus,limited))
 end
 -- 6 Nov: is the LUCKY WEEKEND on (so Limited crushers roll)? Same clock as the 2x weekend
 -- luck. Studio: workspace attribute WeekendTest = "active" forces it (as the HUD preview).

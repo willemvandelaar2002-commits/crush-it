@@ -30,9 +30,8 @@ return function()
 			check(C.effectiveOdds(id,luck,2,0,true)==math.max(1,math.floor(total/at*#lim.types+.5)),"Index weekend odds match")
 		end
 	end
-	-- Lucky pass and 2x Luck boost stack: 4x weight on every non-Common rarity
-	local base,both=R.weights(0,1),R.weights(0,4)
-	check(both[1]==base[1] and math.abs(both[2]-4*base[2])<1e-9,"pass + boost = 4x non-Common weight")
+	-- Lucky pass and 2x Luck boost stack: 4x the chance of each rarity-or-better (11 Nov)
+	check(math.abs(C.chanceAtLeast(4,20,4)-4*C.chanceAtLeast(4,20,1))<1e-9,"pass + boost = 4x Legendary-or-better")
 	for _,rarity in C.Rarities do
 		for _,id in rarity.types do check((P.odds(id,20,true,true)>0)==(rarity.name==C.FirstRoll.Rarity),"first roll is the C.FirstRoll rarity only") end
 		local p=P.profile(rarity.name)

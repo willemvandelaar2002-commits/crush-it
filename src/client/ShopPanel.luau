@@ -595,6 +595,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		sub.TextSize = 18
 		sub.TextWrapped = true
 		sub.TextYAlignment = Enum.TextYAlignment.Center
+		sub.Name = "Sub"
 		local b = bigButton(f, "", UDim2.new(0, 12, 1, -56), UDim2.new(1, -24, 0, 44), nil, 10)
 		b.Activated:Connect(function() onBuy(b) end)
 		return b
@@ -653,18 +654,20 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		CashX4 = { benefit = "4x CASH", sub = "4x cash from every crush, forever (up from 2x)", palette = "Cyan" },
 		CashX8 = { benefit = "8x CASH", sub = "8x cash from every crush, forever (up from 4x)", palette = "Pink" },
 		CashX16 = { benefit = "16x CASH", sub = "16x cash from every crush, forever (up from 8x)", palette = "Gold" },
-		Lucky = { benefit = "2x LUCK", sub = "Forever. Uncommon or better: 30% -> 46% of rolls", palette = "Cyan" },
+		Lucky = { benefit = "2x LUCK", sub = "Forever. 2x every rarity", palette = "Cyan" }, -- (11 Nov: the sub is your own odds, luckSub)
 		AutoCollect = { benefit = "AUTO SELL", sub = "Scrap collects and sells itself", palette = "Gold" },
 		VIP = { benefit = "x1.5 CASH", sub = "12 h offline cash and a gold VIP tag", palette = "Pink" },
 	}
+	-- 11 Nov (audit): luck texts show what 2x does for YOU now ("Legendary or better: 4.1% -> 8.2%")
+	local function luckSub(prefix: string): string return prefix .. CrusherConfig.luckPreviewFor(player, 2) end
 	local function boostText(id: string): { benefit: string, sub: string, palette: string }
-		if id == "ServerLuck" then return { benefit = "2x LUCK", sub = "EVERYONE here, " .. Store.ServerLuck.Minutes .. " min. Uncommon+: 30% -> 46%", palette = "Cyan" } end
+		if id == "ServerLuck" then return { benefit = "2x LUCK", sub = luckSub("EVERYONE here, " .. Store.ServerLuck.Minutes .. " min. "), palette = "Cyan" } end
 		if id == "TurboNow" then return { benefit = "TURBO NOW", sub = "Your strongest turbo, " .. Store.TurboNowMinutes .. " min", palette = "Gold" } end
 		local b = BoostConfig.find(id:sub(6))
 		local m = if b then b.minutes else 15
 		if id == "BoostCash" then return { benefit = "2x CASH", sub = "Double cash for you, " .. m .. " min", palette = "Pink" } end
-		if id == "BoostLuck" then return { benefit = "2x LUCK", sub = "For you, " .. m .. " min. Uncommon+: 30% -> 46%", palette = "Cyan" } end
-		if id == "BoostSuper" then return { benefit = "2x BOTH", sub = "2x cash and 2x luck, " .. m .. " min", palette = "Pink" } end
+		if id == "BoostLuck" then return { benefit = "2x LUCK", sub = luckSub(m .. " min. "), palette = "Cyan" } end
+		if id == "BoostSuper" then return { benefit = "2x BOTH", sub = luckSub("2x cash, " .. m .. " min. "), palette = "Pink" } end
 		return { benefit = "", sub = "", palette = "Gold" }
 	end
 	local function passCards(page: ScrollingFrame, order: number)
@@ -675,6 +678,7 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 			if pass.gamePassId == 0 and pass.perk == "AutoBuy" then continue end -- 7 Nov: shows once its pass exists
 			if pass.gamePassId == 0 and Store.isCashLadder(pass.perk) then continue end -- 5 Nov: ladder passes show once created
 			local txt = PASS_TEXT[pass.perk] or { benefit = pass.title, sub = pass.desc, palette = "Gold" }
+			if pass.perk == "Lucky" then txt = { benefit = txt.benefit, sub = luckSub("Forever. "), palette = txt.palette } end
 			local b = benefitCard(g, i, { title = pass.title, benefit = txt.benefit, sub = txt.sub, palette = txt.palette, image = PASS_ICONS[pass.perk] or Icons.Shop }, function(button)
 				if Store.hasPass(player, pass.perk) then return end
 				if pass.gamePassId == 0 then shake(button) end
@@ -689,6 +693,10 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 					local shown = if nextPass then nextPass.perk else Store.topCashPerk(player)
 					local card = b.Parent :: GuiObject
 					card.Visible = shown == pass.perk
+				end
+				if pass.perk == "Lucky" and not Store.hasPass(player, pass.perk) then
+					local sub = (b.Parent :: Instance):FindFirstChild("Sub") :: TextLabel?
+					if sub then sub.Text = luckSub("Forever. ") end
 				end
 				if Store.hasPass(player, pass.perk) then
 					setCaption(b, "OWNED", GREY)
@@ -729,6 +737,10 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 			end
 			local function update()
 				if d then d.Text = "+" .. Format.cash(Store.cashPackAmount(id, 1, (player:GetAttribute("CashRate") :: number?) or 0)) end
+				if id == "ServerLuck" or id == "BoostLuck" or id == "BoostSuper" then
+					local sub = (b.Parent :: Instance):FindFirstChild("Sub") :: TextLabel?
+					if sub then sub.Text = boostText(id).sub end
+				end
 				if product.productId == 0 then setCaption(b, "SOON", GREY)
 				else
 					local price = priceOf("product", product.productId)

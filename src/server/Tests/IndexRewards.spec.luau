@@ -19,8 +19,8 @@ return function()
 	s.seen.NotAType=true table.insert(s.indexClaimed,2) table.insert(s.indexClaimed,"x")
 	local again=R.migrate(d,id).crushers
 	check(M.found(again)==10 and again.seen.NotAType==nil and #again.indexClaimed==2,"migrate keeps seen and claimed, drops junk")
-	local plain,lucky=R.weights(0,false,0),R.weights(0,false,0.1)
-	check(plain[1]==lucky[1] and math.abs(lucky[4]/plain[4]-1.1)<1e-9,"index luck boosts every rarity but Common")
+	-- 11 Nov: Index luck multiplies the chance of every rarity-or-better
+	check(math.abs(C.chanceAtLeast(4,0,false,0.1)/C.chanceAtLeast(4,0,false,0)-1.1)<1e-9,"index luck: +10% Legendary-or-better")
 	local total=0 for _,m in M.List do for _,r in m.rewards do if r.kind=="luck" then total+=r.percent end end end
 	check(total==13 and M.List[#M.List].need<=#C.Types,"13% luck in total, every milestone reachable")
 	return {passed=checks}
