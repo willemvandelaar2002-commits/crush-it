@@ -4,6 +4,7 @@ local C = require(script.Parent.CrusherConfig)
 local Rows = require(script.Parent.CrusherRows)
 local Gems = require(script.Parent.GemConfig)
 local Progression = require(script.Parent.FactoryProgression)
+local Styles = require(script.Parent.PlotStyles)
 local R = {}
 local function copy(v)
 	if type(v) ~= "table" then return v end
@@ -178,6 +179,8 @@ function R.migrate(d, guid)
 		if convert and u.oldFactor then had*=u.oldFactor end
 		s.gemUps[u.id]=math.clamp(had,0,top) end
 	s.gemUpsV=2
+	-- 11 Nov: PLOT STYLES (Shared/PlotStyles): owned ones and the one your plot shows; kept through rebirths
+	s.styles=Styles.clean(s.styles)
 	local owned,ids={},{}
 	-- crate crushers have one fixed tier: copies saved under an older tier follow it
 	local function fixTier(v) local def=C.typeById(v.type) if def and (def.crate or def.gem) and def.rarity and C.rarity(def.rarity) then v.rarity=def.rarity end end
@@ -423,6 +426,23 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if s.gems<cost then return false,"Need "..cost.." Gems." end
 		s.gems-=cost s.gemUps[u.id]=lv+1
 		return true,u.title.." level "..(lv+1).."!",{id=u.id,level=lv+1,cost=cost}
+	elseif action=="SetStyle" then
+		-- 11 Nov: show one of your plot styles (free to switch)
+		local id=type(args.id)=="string" and args.id or "" local st=Styles.ById[id]
+		if not st then return false,"Unknown style." end
+		if not Styles.owns(s.styles,id) then
+			return false,if st.kind=="earned" then "Fill a row with "..string.upper(st.rarity or "").." crushers (or better) to earn this style." else "Buy this style first."
+		end
+		s.styles.active=id
+		return true,st.name.." style on your factory!",id
+	elseif action=="BuyStyle" then
+		-- 11 Nov: special styles for Gems (kept forever, like every style)
+		local id=type(args.id)=="string" and args.id or "" local st=Styles.ById[id]
+		if not st or st.kind~="gem" or not st.price then return false,"This style can't be bought." end
+		if Styles.owns(s.styles,id) then return false,"You already have this style." end
+		if s.gems<st.price then return false,"Need "..st.price.." Gems." end
+		s.gems-=st.price s.styles.owned[id]=true s.styles.active=id
+		return true,st.name.." style! +"..math.floor(st.cash*100+.5).."% cash forever.",id
 	elseif action=="GemCrate" then
 		-- 8 Nov: the Gem Crate: one crusher, rarity by GemConfig.Crate.Odds (shown in full in the shop)
 		if (s.rebirths or 0)<Gems.UnlockRebirths then return false,"The Gem Shop opens after your first rebirth." end
@@ -625,6 +645,15 @@ function R.act(d,session,action,args,now,random,guid,perks)
 end
 -- 3 Nov: would Equip Best change anything? (drives the red "!" on the button).
 -- Runs the real rule, then puts the layout back.
+-- 11 Nov: earned PLOT STYLES you now qualify for (a full row of that rarity or better): owned
+-- from now on; the first one also goes on your plot if it still shows Classic. Returns the new ids.
+function R.earnStyles(d)
+	local new=Styles.newlyEarned(d,Rows.snapshot(d))
+	local s=d.crushers
+	for _,id in new do s.styles.owned[id]=true end
+	if #new>0 and s.styles.active==Styles.Default then s.styles.active=new[#new] end
+	return new
+end
 function R.equipBestHelps(d,perks)
 	local saved=d.crushers.equipped
 	d.crushers.equipped=table.clone(saved)

@@ -537,8 +537,10 @@ function V.sync(plot,level)
 	task.defer(function() if v.level==level then buildKit(plot,level) end end)
 	for _,r in v.records do show(r.model,level>=r.level) end
 	for wl,m in v.walls or {} do show(m,wl==level) end
-	show(v.trim,level>=1)
-	local color=V.TrimColors[math.clamp(level,1,#V.TrimColors)]
+	show(v.trim,level>=1 or plot.stylePalette~=nil)
+	-- 11 Nov: a plot style's palette (server/PlotStyleLook) wins over the level colours
+	local pal=plot.stylePalette
+	local color=if pal then pal.trim else V.TrimColors[math.clamp(level,1,#V.TrimColors)]
 	for _,p in v.trimParts do p.Color=color end
 	-- the fusion wing doorway: hide the left rim (and its lamp) in the gap
 	local open=level>=C.Fusion.PlotLevel
@@ -548,7 +550,7 @@ function V.sync(plot,level)
 	end
 	for _,p in v.trimParts do if p:GetAttribute("LeftDoor") and open then p.Transparency=1 end end
 	-- 31 Oct: floor colour per plot level (C.FloorColors; levels without one keep the authored colour)
-	local want=C.FloorColors[level]
+	local want=if pal then pal.floor else C.FloorColors[level]
 	local floors={}
 	for _,p in Stash.descendants(plot.model) do -- 11 Nov: hidden floors too (they keep the colour when shown)
 		if p:IsA("BasePart") and ((p.Name=="Top" and p.Parent and p.Parent.Name=="Floor") or p.Name=="YardFloor" or p.Name=="FusionFloor") then

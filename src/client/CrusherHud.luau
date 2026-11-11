@@ -203,6 +203,10 @@ function H.start()
      -- 11 Nov: the ODDS button on the roll machine opens the ROLL ODDS window (client/RollOdds)
      local hud=p.PlayerGui:FindFirstChild("RollOddsHud") local open=hud and hud:FindFirstChild("Open")
      if open then (open :: BindableEvent):Fire() end
+    elseif action=="Styles" then
+     -- 11 Nov: OPEN on the PLOT STYLES board opens the styles window (client/PlotStyles)
+     local hud=p.PlayerGui:FindFirstChild("PlotStylesHud") local open=hud and hud:FindFirstChild("Open")
+     if open then (open :: BindableEvent):Fire() end
     elseif action=="TimeSkip" then
      purchase("TimeSkip",{})
     else act(action,{id=v:GetAttribute("UpgradeId")}) end

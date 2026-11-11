@@ -11,6 +11,7 @@ local FRONT=require(RS.Shared.Config).Plots.Front
 local Stages=require(script.Parent.PlotStages)
 local Assets=require(script.Parent.PlotAssets)
 local Stash=require(script.Parent.PlotStash)
+local Styles=require(RS.Shared.PlotStyles)
 -- Coating booth (Willem's Blender model) beside the Coating Lab board, front
 -- toward the entrance. One colour version per plot level; the base one is the
 -- fallback. The board stays the input; the booth is a visual (CoatingFx.client
@@ -128,14 +129,20 @@ function V.create(plot)
 		end
 		lab.button=W.button(lab.content,"ApplyCoating","SELECT A FINISH",UDim2.fromScale(.1,.81),UDim2.fromScale(.8,.16),"ApplyCoating")
 	end
-	plot.progression={yard=yard,accents=accents,upgrade=upgrade,lab=lab,gateParts={},levelText=levelText}
+	-- 11 Nov: the PLOT STYLES board (from FACTORY III, or once you own a style): OPEN shows the
+	-- styles window (client/PlotStyles); the board says what your styles add
+	local style=board("StyleStation",22,15,16,7,Style.Colors.Purple)
+	W.text(style.content,"Heading","PLOT STYLES",UDim2.fromScale(.03,.03),UDim2.fromScale(.94,.22))
+	style.info=W.text(style.content,"Bonus","FILL A ROW WITH LEGENDARY+ TO EARN ONE",UDim2.fromScale(.03,.28),UDim2.fromScale(.94,.23))
+	style.button=W.button(style.content,"Styles","OPEN",UDim2.fromScale(.12,.58),UDim2.fromScale(.76,.33),"Styles")
+	plot.progression={yard=yard,accents=accents,upgrade=upgrade,lab=lab,style=style,gateParts={},levelText=levelText}
 	-- the plot's rear rim opens onto the rear yard
 	for _,p in plot.model:GetDescendants() do if p:IsA("BasePart") and (p.Name=="RimBlock" or p.Name=="RimCorner" or p.Name=="LampPost" or p.Name=="LampLight" or p.Name=="LampCap") and p.Parent and p.Parent.Name=="PlotBorder" then
 		local at=o:PointToObjectSpace(p.Position)
 		if math.abs(at.Z-(plotRear+1))<.2 then p:SetAttribute("RimX",at.X) table.insert(plot.progression.gateParts,p) end
 	end end
 	Stages.create(plot)
-	stashShow(yard,false) stashShow(accents,false) show(upgrade.model,false) show(lab.model,false)
+	stashShow(yard,false) stashShow(accents,false) show(upgrade.model,false) show(lab.model,false) stashShow(style.model,false) style.content.Visible=false
 	upgrade.content.Visible=false if lab.content then lab.content.Visible=false end
 end
 function V.sync(plot,d,quote,now,preview)
@@ -148,6 +155,14 @@ function V.sync(plot,d,quote,now,preview)
 	local boardVisible=d and (level>=1 or P.full(d)) or false
 	Stages.sync(plot,structure)
 	local yardOpen=structure>=2
+	-- 11 Nov: the PLOT STYLES board and its line (what your styles add)
+	local styleOpen=d~=nil and Styles.open(d.crushers)
+	local bonus=if d then Styles.cashBonus(d.crushers.styles) else 0
+	local styleLine=if bonus>0 then "+"..math.floor(bonus*100+.5).."% CASH FROM YOUR STYLES" else "FILL A ROW WITH LEGENDARY+ TO EARN ONE"
+	if v.style and (v.styleOpen~=styleOpen or v.styleLine~=styleLine) then
+		v.styleOpen=styleOpen v.styleLine=styleLine
+		stashShow(v.style.model,styleOpen) v.style.content.Visible=styleOpen v.style.info.Text=styleLine
+	end
 	local signature=tostring(level)..":"..tostring(boardVisible)
 	if v.signature~=signature then
 		v.signature=signature stashShow(v.yard,yardOpen) stashShow(v.accents,expanded)

@@ -26,7 +26,7 @@ local WHITE = Color3.new(1, 1, 1)
 -- Coating Lab comes with Factory III and everything after moved up one level
 local SECTIONS = {
 	{ banks = { "UpperFloor1", "UpperFloor2" }, feature = "CoatingBooth" }, -- 5 Nov: the Coating Lab is back at Factory II
-	{ banks = { "TopFloor1", "TopFloor2" } },
+	{ banks = { "TopFloor1", "TopFloor2" }, feature = "StyleStation" }, -- 11 Nov: FACTORY III opens PLOT STYLES
 	{ banks = { "RearGround1", "RearGround2" }, extra = { "RearYard", "FusionWing" }, feature = "Fuser" },
 	{ banks = { "RearUpper1" } },
 	{ banks = { "RearUpper2" }, feature = "ArchBeam" },

@@ -122,7 +122,7 @@ C.PlotUpgrade = {MaxLevel=5,
 	Adds={12,12,12,6,6},
 	-- what each upgrade adds besides bays (cutscene text) and its accent colour
 	Sections={"UPPER FLOOR","3RD FLOOR","REAR YARD","REAR UPPER LEFT","REAR UPPER RIGHT"},
-	Unlocks={"COATING LAB",nil,"FUSION MACHINE",nil,"MASTER FACTORY LOOK"},
+	Unlocks={"COATING LAB","PLOT STYLES","FUSION MACHINE",nil,"MASTER FACTORY LOOK"}, -- (11 Nov: FACTORY III opens PLOT STYLES)
 	Accents={Color3.fromRGB(80,190,255),Color3.fromRGB(255,222,24),Color3.fromRGB(255,140,40),Color3.fromRGB(205,215,228),Color3.fromRGB(255,210,68)},
 	-- 2 Nov evening (doc: a capped-out player had nothing to buy for hours): much
 	-- higher caps; prices keep rising (x1.65 / x1.38 per level), so it stays a choice

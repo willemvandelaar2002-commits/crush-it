@@ -384,13 +384,37 @@ local function boardText()
 	local pr = sign:FindFirstChild("AutoWalkPrompt") :: ProximityPrompt?
 	if pr then pr.ActionText = if not owned then "Buy Auto Walk" elseif walkOn() then "Turn off" else "Turn on" end
 end
-me:GetAttributeChangedSignal(Store.passAttr("AutoWalk")):Connect(boardText)
-me:GetAttributeChangedSignal("AutoWalkOn"):Connect(boardText)
+-- 11 Nov (Willem): an AUTO WALK button on screen too, only while you are in the mine (above the
+-- hotbar). Owned: ON / OFF, tap to switch. Not owned: its price, tap to buy (the server prompts).
+local Style = require(RS.Shared.Kit.Style)
+local walkGui = Instance.new("ScreenGui")
+walkGui.Name = "AutoWalkHud" walkGui.ResetOnSpawn = false walkGui.DisplayOrder = 4 walkGui.Enabled = false
+walkGui.Parent = me:WaitForChild("PlayerGui")
+local walkBtn = Instance.new("TextButton")
+walkBtn.Name = "AutoWalkButton" walkBtn.AnchorPoint = Vector2.new(0.5, 1) walkBtn.Position = UDim2.new(0.5, 0, 1, -118)
+walkBtn.Size = UDim2.fromOffset(250, 54) walkBtn.TextScaled = true walkBtn.Text = "AUTO WALK"
+walkBtn.Parent = walkGui
+Style.button(walkBtn, Style.GREEN)
+local pad = Instance.new("UIPadding") pad.PaddingTop = UDim.new(0, 8) pad.PaddingBottom = UDim.new(0, 8) pad.PaddingLeft = UDim.new(0, 10) pad.PaddingRight = UDim.new(0, 10) pad.Parent = walkBtn
+walkBtn.Activated:Connect(function() remote:FireServer("autoWalk") end)
+local function buttonText()
+	local owned = Store.hasPass(me, "AutoWalk")
+	local pass = Store.passByPerk("AutoWalk")
+	walkBtn.Text = if not owned then "AUTO WALK  R$ " .. tostring(pass and pass.price or 49)
+		elseif walkOn() then "AUTO WALK: ON" else "AUTO WALK: OFF"
+	Style.setButtonColor(walkBtn, if not owned then Style.Colors.Gold elseif walkOn() then Style.GREEN else Color3.fromRGB(130, 134, 150))
+end
+buttonText()
+local function walkTexts() boardText() buttonText() end
+me:GetAttributeChangedSignal(Store.passAttr("AutoWalk")):Connect(walkTexts)
+me:GetAttributeChangedSignal("AutoWalkOn"):Connect(walkTexts)
 local pausedUntil, walking, heading = 0, false, Vector3.zero
 task.spawn(function()
 	while true do
 		task.wait(0.2)
-		if inMine() then boardText() end
+		local here = inMine()
+		walkGui.Enabled = here
+		if here then boardText() end
 		local char = me.Character
 		local hum = char and char:FindFirstChildOfClass("Humanoid")
 		local root = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
