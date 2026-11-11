@@ -7,7 +7,8 @@ checked"), plus open items from earlier audits and sessions. Tick off here and a
 - [x] 1 Luck multipliers barely worked after Luck ~10 -> now multiply every rarity-or-better (11 Nov)
 - [x] 2 Paid luck for restricted players -> left as is (Willem: luck also works on free rolls)
 - [x] 3 Odds only as "1 in N" -> ROLL ODDS window with percentages (11 Nov)
-- [x] 4 Top rarities stopped being rare -> luckRank 3.5 + much rarer base odds (11 Nov)
+- [x] 4 Top rarities stopped being rare -> luckRank 3.5, much rarer base odds, Eternal halved again and
+      luck multipliers capped at x5 (11 Nov; maxed Eternal 1 in ~82,600)
 - [x] 5 Big roll cinematics too frequent -> no cinematic for owned types (11 Nov); and rarer with 4
 - [ ] 6 **Gems run out of purpose**: mine upgrades max in ~26 min, everything in 2-3 h. The Gem Crate is
       now a real Secret/Divine source (4 made the roll rarer); check whether that is enough or add a
@@ -24,9 +25,7 @@ checked"), plus open items from earlier audits and sessions. Tick off here and a
       target sizes, D1/D7 retention, shop funnel.
 
 ## Willem
-- [ ] Upload the 4 Auto Roller images in `assets/autoroller` (Tab-Exotic, Card-Exotic, Tab-Eternal,
-      Card-Eternal) and send the ids: Exotic and Eternal tabs/cards are grey art + tint until then
-      (the Index already shows the Eternal icons).
+- [x] Exotic / Eternal Auto Roller art uploaded and in the game (11 Nov)
 - [ ] Gem cave models: standing portal ring, a sign board (GEM UPGRADES / AUTO WALK), optional platform
       edge segment.
 - [ ] Save to Roblox after model changes (Mythic templates, Gem Mine meshes, Eternals).
@@ -38,5 +37,5 @@ checked"), plus open items from earlier audits and sessions. Tick off here and a
 - [ ] Haptics (5 Nov QoL #3): `HapticService` pulse on SMASH, golden toy grab, big roll impact.
 - [ ] "Tomorrow: ..." on the daily reward panel (4 Nov R3, D1 hook).
 - [ ] Chat [VIP]/[PLUS] prefixes stop working Feb 2027 (platform chat): overhead tag only.
-- [ ] `/credits` works for the owner in live servers (test cash in the economy analytics).
+- [x] `/credits` is Studio only now (11 Nov; the dev panel replaces it)
 - [ ] Referral: inviter misses the reward if their mailbox write fails (rare, not retried).

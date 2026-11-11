@@ -210,7 +210,7 @@ return function()
 	local totalOn,limOn=0,0 for i,x in on do totalOn+=x if C.Rarities[i]==lim then limOn=x end end
 	for i,x in off do if C.Rarities[i]==lim then check(x==0,"no Limited weight outside the weekend") end end
 	check(math.abs(totalOn/limOn-25001)<1,"Limited: about 1 in 25,000 rolls during the weekend (11 Nov)")
-	check(C.oddsFor(lim.types[1])==15003,"Index: 1 in 15,003 per Limited crusher")
+	check(math.abs(C.oddsFor(lim.types[1])-75003)<=1,"Index: 1 in 75,003 per Limited crusher (11 Nov)")
 	check(C.typeById(lim.types[1]).value==C.typeById(sec.types[1]).value and lim.mult==sec.mult,"Limited as strong as Secret")
 	check(lim.rank>leg.rank and lim.rank<sec.rank,"Limited between Legendary and Secret")
 	do

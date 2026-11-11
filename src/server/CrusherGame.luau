@@ -1106,10 +1106,11 @@ function G.start()
 	require(script.Parent.Settings).start(api) -- 6 Nov: the SETTINGS menu (music, sounds, shake, effects, vibration)
 	require(script.Parent.AutoRoll).start({action=action,session=function(p) return sessions[p] end,getData=Data.get}) -- 7 Nov: AUTO ROLL (free) + AUTO BUY (pass)
 	require(script.Parent.NameTags).start() -- 5 Nov: VIP / PLUS tag above the head
-	-- /credits <amount> (or /cash): test cash, e.g. "/credits 5m". Studio, or the
-	-- place owner in live servers. No amount gives 1M.
+	-- /credits <amount> (or /cash): test cash, e.g. "/credits 5m". No amount gives 1M.
+	-- 11 Nov (Willem: "we have the dev panel now"): Studio only, never in live servers
+	-- (it put test cash into the leaderboard and the economy analytics).
 	local SUFFIX={k=1e3,m=1e6,b=1e9,t=1e12,qa=1e15}
-	local function isAdmin(p) return RunService:IsStudio() or (game.CreatorType==Enum.CreatorType.User and p.UserId==game.CreatorId) end
+	local function isAdmin(_p) return RunService:IsStudio() end
 	local function credits(p,text)
 		if not isAdmin(p) then return end
 		local arg=string.split(text," ")[2]
