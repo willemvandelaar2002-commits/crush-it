@@ -144,7 +144,7 @@ local function refresh()
 		local right = 0
 		for _, n in Style.HudRow do
 			local b = me.PlayerGui:FindFirstChild(n, true)
-			if b and b:IsA("GuiObject") and b.Visible and b.AbsoluteSize.X > 0 and b.AbsolutePosition.Y < 140 then right = math.max(right, b.AbsolutePosition.X + b.AbsoluteSize.X) end
+			if b and b:IsA("GuiObject") and b.Visible and b.AbsoluteSize.X > 0 and b.AbsolutePosition.Y >= 0 and b.AbsolutePosition.X < 200 then -- (not the gear up in the top bar) right = math.max(right, b.AbsolutePosition.X + b.AbsoluteSize.X) end
 		end
 		if right > 0 then chips.Position = UDim2.fromOffset(right - chips.Parent.AbsolutePosition.X + 12, 8) end
 	end

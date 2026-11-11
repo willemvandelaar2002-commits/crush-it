@@ -201,13 +201,14 @@ end)
 close.Activated:Connect(function() Style.setOpen(panel, false) end)
 
 -- running turbo: a tile in the boost row (12 Nov, was a wide chip above the cash)
-local tile, tileTime, tileBadge = Style.timerTile(Instance.new("Folder"), "TurboChip", Color3.fromRGB(255, 140, 30), ART.Icons.Turbo, "x2", 0)
+local tileHolder = Instance.new("Folder")
+local tile, tileTime, tileBadge = Style.timerTile(tileHolder, "TurboChip", Color3.fromRGB(255, 140, 30), ART.Icons.Turbo, "x2", 0)
 local tileIcon = tile:FindFirstChild("Icon", true) :: ImageLabel
 task.spawn(function()
 	while true do
 		task.wait(0.5)
 		local mult, left = T.active(me, workspace:GetServerTimeNow())
-		if tile.Parent and not tile.Parent:IsA("GuiObject") then
+		if not (tile.Parent and tile.Parent:IsA("GuiObject")) then -- (the holder Folder can be collected: parent then is nil)
 			local row = me.PlayerGui:FindFirstChild("ActiveBoosts", true)
 			if row then tile.Parent = row end
 		end
