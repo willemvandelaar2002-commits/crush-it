@@ -95,3 +95,7 @@ Willem picked these two from the retention ideas (the Day 2 gift is close to the
   UPGRADE $20 button and a bobbing hand. It buys at a distance (server/CrusherGame: one Production
   upgrade is allowed away from the board while the tutorial is on that step). X closes it; the
   arrow to the blue board still works. Once per session, only when no window or crate card is up.
+- Tutorial step 6 "Place your crusher": a red frame pulses round the first hotbar tile and a
+  red arrow bobs above it (client/CrusherHotbar), like the reference games' red arrow on the
+  button to press. Hidden while you hold a crusher (the floor trail then leads to the bay).
+  Try-out: if it helps, the same style can go on REWARDS when the first gift is ready.
