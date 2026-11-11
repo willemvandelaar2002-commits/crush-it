@@ -459,23 +459,51 @@ local function buildWorld()
 			return p
 		end
 		local W, D, Hb = 8.4, 5.4, 3.8 -- (a big chest: it is the prize of the mine)
-		local body = cpart("ChestBody", Vector3.new(W, Hb, D), at * CFrame.new(0, Hb / 2 + 0.4, 0), NAVY)
+		-- 11 Nov: Willem's chest model (ReplicatedStorage.GemMineMeshes.GemChest: MeshParts ChestBody,
+		-- ChestGlow (still), ChestLid + LidGlow (turn about the rear hinge, attribute Hinge relative
+		-- to the ground-centre pivot), front -Z). The meshes don't collide; an invisible ChestHitbox
+		-- carries the prompt, the label and the reach check. Without it, the block chest below.
+		local template = Meshes and Meshes:FindFirstChild("GemChest")
+		local hingeLocal = template and template:GetAttribute("Hinge")
+		local body: BasePart
+		local lid: BasePart
+		local hinge: CFrame
+		local lock: BasePart? = nil
+		if template and typeof(hingeLocal) == "CFrame" then
+			local copy = template:Clone()
+			copy:PivotTo(at)
+			for _, d in copy:GetDescendants() do
+				if d:IsA("BasePart") then
+					d.Anchored = true d.CanCollide = false d.CanTouch = false d.CanQuery = false d.CastShadow = d.Name == "ChestBody" or d.Name == "ChestLid"
+					d.Parent = cm
+				end
+			end
+			copy:Destroy()
+			lid = cm:FindFirstChild("ChestLid") :: BasePart
+			hinge = at * hingeLocal
+			body = cpart("ChestHitbox", Vector3.new(W, 4.6, D), at * CFrame.new(0, 2.3, 0), NAVY)
+			body.Transparency = 1
+			body.CanCollide = true body.CanQuery = true
+			label(body, "GEM CHEST", RGB(255, 170, 245), 6.6, Vector2.new(12, 2.8))
+		else
+		body = cpart("ChestBody", Vector3.new(W, Hb, D), at * CFrame.new(0, Hb / 2 + 0.4, 0), NAVY)
 		cpart("ChestFoot", Vector3.new(W + 0.6, 0.4, D + 0.6), at * CFrame.new(0, 0.2, 0), GOLD, Enum.Material.Metal)
 		for _, x in { -W / 2 + 0.6, W / 2 - 0.6 } do
 			cpart("ChestBand", Vector3.new(0.5, Hb + 0.05, D + 0.1), at * CFrame.new(x, Hb / 2 + 0.4, 0), GOLD, Enum.Material.Metal)
 		end
 		-- the lid turns about its back edge (hinge)
-		local hinge = at * CFrame.new(0, Hb + 0.4, D / 2)
-		local lid = cpart("ChestLid", Vector3.new(W, 1.8, D), hinge * CFrame.new(0, 0.9, -D / 2), RGB(60, 50, 120))
+		hinge = at * CFrame.new(0, Hb + 0.4, D / 2)
+		lid = cpart("ChestLid", Vector3.new(W, 1.8, D), hinge * CFrame.new(0, 0.9, -D / 2), RGB(60, 50, 120))
 		local lidBands = {}
 		for _, x in { -W / 2 + 0.6, W / 2 - 0.6 } do
 			table.insert(lidBands, cpart("ChestLidBand", Vector3.new(0.6, 1.85, D + 0.1), hinge * CFrame.new(x, 0.9, -D / 2), GOLD, Enum.Material.Metal))
 		end
-		local lock = cpart("ChestLock", Vector3.new(1.4, 1.4, 0.5), at * CFrame.new(0, Hb + 0.1, -D / 2 - 0.2) * CFrame.Angles(0, 0, math.rad(45)), MAGENTA, Enum.Material.Neon)
+		lock = cpart("ChestLock", Vector3.new(1.4, 1.4, 0.5), at * CFrame.new(0, Hb + 0.1, -D / 2 - 0.2) * CFrame.Angles(0, 0, math.rad(45)), MAGENTA, Enum.Material.Neon)
 		local glow = cpart("ChestGlow", Vector3.new(W - 1, 0.2, D - 1), at * CFrame.new(0, Hb + 0.35, 0), PINK, Enum.Material.Neon)
 		glow.Transparency = 0.4
 		for _, p in cm:GetDescendants() do if p:IsA("BasePart") then p.CanCollide = p.Name == "ChestBody" or p.Name == "ChestFoot" end end
 		label(body, "GEM CHEST", RGB(255, 170, 245), 5.6, Vector2.new(12, 2.8))
+		end
 		local pr = prompt(body, "Open", "Gem Chest")
 		pr.Name = "GemChestPrompt" pr.MaxActivationDistance = 12
 		cm.PrimaryPart = body
@@ -492,7 +520,7 @@ local function buildWorld()
 			Net.event("GemMine"):FireAllClients({ kind = "chestOpen", rarity = item.rarity, by = p.UserId })
 			Net.event("GemMine"):FireClient(p, { kind = "chestReveal", type = item.type, rarity = item.rarity })
 		end)
-		lock.CanQuery = false
+		if lock then lock.CanQuery = false end
 	end
 	crusher = { model = m, center = zc.Position + Vector3.new(0, Mine.Zone.height, 0), ramRest = ram.CFrame,
 		arrive = CFrame.lookAt((portalAt * CFrame.new(0, 3, -6)).Position, zc.Position + Vector3.new(0, 3, 0)) }
