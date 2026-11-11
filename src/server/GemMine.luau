@@ -136,7 +136,7 @@ end
 -- disc) is its base; on it an upright gold ring with a pink rim and a glowing swirl inside, facing
 -- along the CFrame's Z. E on the swirl uses it.
 local PORTAL_R = 5 -- the ring's radius (studs, to the middle of the gold band)
-local function buildPortal(parent: Instance, at: CFrame, title: string, action: string): (Model, TextLabel, ProximityPrompt)
+local function buildPortal(parent: Instance, at: CFrame, title: string, action: string, turn: boolean?): (Model, TextLabel, ProximityPrompt)
 	local m = Instance.new("Model")
 	local baseTop = 1
 	local padT = tpl("TeleporterPad")
@@ -151,7 +151,7 @@ local function buildPortal(parent: Instance, at: CFrame, title: string, action: 
 		local ring = (ringT :: Model):Clone()
 		ring.Name = "Ring"
 		for _, d in ring:GetDescendants() do if d:IsA("BasePart") then d.Anchored = true d.CanCollide = false d.CanTouch = false d.CanQuery = false end end
-		ring:PivotTo(at)
+		ring:PivotTo(if turn then at * CFrame.Angles(0, math.pi, 0) else at) -- (its gold front toward where you come from)
 		ring.Parent = m
 		local pad = Build.block(m, "Pad", Vector3.new(10.8, 0.9, 3.5), at * CFrame.new(0, 0.45, 0), NAVY)
 		pad.Transparency = 1 pad.CanQuery = false
@@ -452,7 +452,7 @@ end
 local function buildTeleporters()
 	for _, plot in api.plots() do
 		local at = plot.origin * CFrame.new(Mine.Teleporter.x, 0, Mine.Teleporter.z) -- (the ring faces along Z: down the road)
-		local m, text, pr = buildPortal(plot.model, at, "GEM MINE", "Teleport")
+		local m, text, pr = buildPortal(plot.model, at, "GEM MINE", "Teleport", true)
 		m.Name = "GemMineTeleporter"
 		m:SetAttribute("PlotIndex", plot.index)
 		pr.Triggered:Connect(function(p) M.enter(p) end)
