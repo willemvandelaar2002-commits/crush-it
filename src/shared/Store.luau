@@ -73,9 +73,10 @@ Store.Products = {
 	{ id = "OfflineX2", productId = 3724354876, price = 32, title = "2x Offline Cash", desc = "Double what you earned while away", color = Color3.fromRGB(70, 150, 255), hidden = true },
 	{ id = "OfflineX5", productId = 3724355041, price = 49, title = "5x Offline Cash", desc = "Five times what you earned while away", color = Color3.fromRGB(255, 190, 40), hidden = true },
 	{ id = "SkipRewards", productId = 3723658147, price = 99, title = "Skip All", desc = "Unlock every playtime gift now", color = Color3.fromRGB(255, 200, 40), hidden = true },
-	-- Shop offers (Shared/OfferConfig, server/Offers). price = 0: not approved
+	-- Shop offers (Shared/OfferConfig, server/Offers). 11 Nov: Starter Pack R$ 49 -> 39 (Willem: many
+	-- open it, few buy). price = 0: not approved
 	-- yet; once a productId is set the shop shows Roblox's own price.
-	{ id = "StarterPack", productId = 3723658249, price = 49, title = "Starter Pack", desc = "Candy Colossus + cash + 2x Cash boost (once)", color = Color3.fromRGB(255, 80, 170), hidden = true },
+	{ id = "StarterPack", productId = 3723658249, price = 39, title = "Starter Pack", desc = "Candy Colossus + cash + 2x Cash boost (once)", color = Color3.fromRGB(255, 80, 170), hidden = true },
 	{ id = "FactoryCrate1", productId = 3723658442, price = 39, title = "Factory Crate", desc = "One random crate crusher (Epic, Legendary or Mythic)", color = Color3.fromRGB(150, 70, 230), hidden = true },
 	-- Mythic crushers (exclusive: never rolled). productId 0 shows SOON.
 	-- Hidden: the Factory Crate and the Prism Mech showroom sell these now; the

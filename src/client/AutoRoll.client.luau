@@ -52,6 +52,9 @@ local ART = {
 		Limited = "rbxassetid://88061051727556",
 		Secret = "rbxassetid://129562125725785",
 		Divine = "rbxassetid://88929238060612",
+		-- 11 Nov: made by assets/autoroller/recolor.py; image ids behind Willem's decals
+		Exotic = "rbxassetid://107569130204201",
+		Eternal = "rbxassetid://81646383026778",
 	} :: { [string]: string },
 	Cards = {
 		Common = "rbxassetid://119036011286012",
@@ -62,6 +65,8 @@ local ART = {
 		Limited = "rbxassetid://127308303068472",
 		Secret = "rbxassetid://108861226241049",
 		Divine = "rbxassetid://122211097534664",
+		Exotic = "rbxassetid://75492140750921",
+		Eternal = "rbxassetid://132590978787626",
 	} :: { [string]: string },
 	BuyOn = "rbxassetid://120604814246237", BuyOff = "rbxassetid://109824145808331",
 }

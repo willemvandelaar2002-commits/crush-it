@@ -442,16 +442,13 @@ local function onBuy(player: Player, id: unknown)
 	Analytics.funnelStep(player, data, 3, "FirstUpgrade")
 end
 
--- /credits <amount> (or /cash) chat command: gives cash for testing. Works in
--- Studio and, in live servers, only for the game's owner (the account that
--- owns the place). Amounts can use k/m/b/t: "/credits 5m".
+-- /credits <amount> (or /cash) chat command: gives cash for testing, in Studio
+-- only. Amounts can use k/m/b/t: "/credits 5m".
 local SUFFIX = { k = 1e3, m = 1e6, b = 1e9, t = 1e12, qa = 1e15 }
 
-local function isAdmin(player: Player): boolean
-	if RunService:IsStudio() then
-		return true
-	end
-	return game.CreatorType == Enum.CreatorType.User and player.UserId == game.CreatorId
+-- 11 Nov: Studio only (the dev panel replaces it; never in live servers)
+local function isAdmin(_player: Player): boolean
+	return RunService:IsStudio()
 end
 
 local function parseAmount(text: string?): number?
