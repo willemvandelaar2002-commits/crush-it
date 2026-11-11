@@ -749,6 +749,7 @@ task.spawn(function()
 	local function calm(): boolean
 		return not Style.hasModal() and gui.Enabled and player:GetAttribute("FactoryEventRunning") ~= true
 			and player:GetAttribute("CutscenePlaying") ~= true
+			and (tonumber(player:GetAttribute("HudStage")) or 0) >= 1 -- 11 Nov: the gift chip shows in the tutorial; the pop-up waits
 	end
 	waited = 0
 	while not calm() and waited < 120 do task.wait(1) waited += 1 end

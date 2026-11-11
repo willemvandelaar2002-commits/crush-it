@@ -6,14 +6,18 @@
 -- 4 Nov (Willem; funnel: 21% left between "tutorial done" and the first goal, right
 -- when ~10 HUD items appeared at once): the rest now arrives in steps with the goals
 -- (state.goal = the goal you are on):
+--   from the start          Rewards (gift chip), event countdown (11 Nov, see below)
 --   goal 1 (tutorial done)  Equip Best / travel row       (helps fill the bays)
---   goal 2                  Rewards (gift chip), SMASH
+--   goal 2                  SMASH
 --   goal 3                  Shop, Index, Boosts, Quests    (starter offer waits for this)
---   goal 5                  Leaderboard, Rebirth, event countdown, Lucky Weekend
+--   goal 5                  Leaderboard, Rebirth, Lucky Weekend
 --   goal 6                  Turbo                          (its goal)
 -- 8 Nov: the R$ 5 deal and the 2x cash button show from C.RobuxButtonsGoal (5); they
 -- read the attribute HudStage that this script sets (their own scripts hide them when
 -- owned, so they are not in BUTTONS).
+-- 11 Nov (Willem's 3 reference games; D1 retention): the next free gift and the next
+-- event count down on screen from the first second, so a new player always sees something
+-- coming (all three references do this). The daily pop-up still waits for the tutorial.
 -- One rule, from the server's state. Returning players (all goals done, or an older
 -- save without goals) see everything at once.
 local Players = game:GetService("Players")
@@ -29,9 +33,10 @@ local playerGui = me:WaitForChild("PlayerGui")
 -- the goal number from which each piece shows (whole ScreenGuis, or single buttons)
 local GUIS: { [string]: number } = {
 	TravelButtons = 1,
-	RewardsHud = 2, FrenzyHud = 2,
+	RewardsHud = 0, EventCountdown = 0,
+	FrenzyHud = 2,
 	ShopHud = 3, BoostsHud = 3, QuestsHud = 3,
-	LeaderboardHud = 5, RebirthHud = 5, EventCountdown = 5, WeekendHud = 5,
+	LeaderboardHud = 5, RebirthHud = 5, WeekendHud = 5,
 	TurboHud = 6,
 }
 local BUTTONS: { [string]: number } = { BookButton = 3 }
