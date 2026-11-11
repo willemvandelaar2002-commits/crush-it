@@ -319,6 +319,9 @@ local card = make("Frame", { Name = "CrateCard", AnchorPoint = Vector2.new(0.5, 
 	BackgroundTransparency = 1, Visible = false, ZIndex = 2 }, gui)
 make("ImageLabel", { Name = "Frame", Image = ART.Frame, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Stretch, ZIndex = 2 }, card)
 local icon = words(card, "🎁", UDim2.fromOffset(22, 30), UDim2.fromOffset(118, 118), 3, 90)
+-- 11 Nov (Willem): the gift is our REWARDS gift picture, not the emoji
+local giftArt = make("ImageLabel", { Name = "GiftArt", Image = require(RS.Shared.Icons).Rewards, Position = UDim2.fromOffset(16, 24), Size = UDim2.fromOffset(130, 130),
+	BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, Visible = false, ZIndex = 3 }, card)
 local fit = Style.phoneFit(card, { scale = 0.8, width = 0.7 })
 local pop = make("UIScale", { Scale = 1 }, card)
 fit.Parent = nil -- (read only: one UIScale per object)
@@ -335,7 +338,7 @@ local remind = button("REMIND ME", 150, 160, rgb(60, 200, 80))
 local ok = button("OK", 318, 110, rgb(64, 140, 255))
 task.spawn(function()
 	while true do
-		if card.Visible then icon.Rotation = math.sin(os.clock() * 2) * 6 end
+		if card.Visible then icon.Rotation = math.sin(os.clock() * 2) * 6 giftArt.Rotation = icon.Rotation end
 		task.wait()
 	end
 end)
@@ -362,7 +365,8 @@ local function show(emoji: string, head: string, a: string, b: string, ask: bool
 		task.wait(1)
 	end
 	ask = ask and canPrompt()
-	icon.Text = emoji title.Text = head line1.Text = a line2.Text = b
+	icon.Text = if emoji == "🎁" then "" else emoji giftArt.Visible = emoji == "🎁"
+	title.Text = head line1.Text = a line2.Text = b
 	line1.TextColor3 = Color3.new(1, 1, 1)
 	remind.Visible = ask
 	ok.Position = if ask then UDim2.fromOffset(318, 112) else UDim2.fromOffset(240, 112)
