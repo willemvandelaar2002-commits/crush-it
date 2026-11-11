@@ -128,6 +128,9 @@ local lastBurst = -100
 local function lookAtCrate(c: Crate, seconds: number): (() -> ())?
 	local cam = Workspace.CurrentCamera
 	if camBusy or Style.hasModal() or me:GetAttribute("CutscenePlaying") == true or cam.CameraType ~= Enum.CameraType.Custom then return nil end
+	-- (11 Nov: not from far away, e.g. the Gem Mine: the plot isn't loaded there)
+	local far = me.Character and me.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if far and (far.Position - c.home.Position).Magnitude > 400 then return nil end
 	camBusy = true
 	me:SetAttribute("CutscenePlaying", true)
 	local Q = K.Camera
