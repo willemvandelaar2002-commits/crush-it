@@ -28,10 +28,10 @@ local gui = make("ScreenGui", { Name = "TurboHud", ResetOnSpawn = false, Display
 -- 11 Nov: Willem's TURBO FUEL design (CrushIt-Turbo-UI-Parts): his frame, one card skin tinted per
 -- tier, a fuel icon per tier and the Instant Turbo strip; every word, price, timer, lock and
 -- button is live UI. Art ids are the images behind his decal uploads; an empty id shows the
--- plain native look instead (the frame and the card skin were still processing on 11 Nov).
+-- plain native look instead.
 local ART = {
-	Frame = "", -- Turbo-Frame (1536 x 896)
-	Card = "", -- Turbo-CardSkin (576 x 768, grey: tinted by a gradient per tier)
+	Frame = "rbxassetid://120165628058516", -- Turbo-Frame (1536 x 896), decal 120819894363932
+	Card = "rbxassetid://115663833639486", -- Turbo-CardSkin (576 x 768, grey: tinted by a gradient per tier), decal 115356428742777
 	Strip = "rbxassetid://104719562894587", -- Turbo-InstantStrip (1280 x 224), decal 109451328643052
 	Icons = {
 		Turbo = "rbxassetid://74419096420919", -- TurboFuel-Icon, decal 78857830608552
