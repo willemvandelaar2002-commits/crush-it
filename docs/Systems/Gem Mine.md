@@ -156,3 +156,4 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
 - client/GemChest: lid + crown turn together about the hinge, OPEN_ANGLE +100 degrees (the old -115 swung the lid
   down into the box). Verified in Studio: lid centre goes 1.4 up / 3.9 back, crown stays on the lid, returns to the
   exact closed pose; key used, reward given (GemCrate unchanged).
+- 11 Nov: players in the Gem Mine (within 400 studs of the mine crusher) are sent home when a factory event reaches Assemble, or when they join it mid-event (GemMine.sendHome from FactoryEvents): their plot isn't streamed in down there, so the event didn't load (Willem). Verified in Studio: teleported home at the end of Announce, event intro loads.
