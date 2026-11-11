@@ -50,7 +50,7 @@ local TINT: { [string]: { Color3 } } = {
 }
 local Icons = require(RS.Shared.Icons)
 local W = 984
-local CARD_W, CARD_H, GAP, CARD_Y = 211, 324, 14, 138
+local CARD_W, CARD_H, GAP, CARD_Y = 211, 312, 14, 134
 -- 4 Nov: the Instant Turbo (Robux) strip under the cards, once its product exists
 local Store = require(RS.Shared.Store)
 local turboNow = Store.productById("TurboNow")
@@ -84,15 +84,15 @@ make("UIGradient", { Rotation = 90, Color = ColorSequence.new(RGB(255, 110, 100)
 Style.feedback(close)
 label(close, "X", UDim2.fromScale(0.15, 0.1), UDim2.fromScale(0.7, 0.8), 3.5).ZIndex = 9
 label(panel, "Boost ALL cash earnings. Only your strongest turbo counts.", UDim2.fromOffset(60, 96), UDim2.new(1, -120, 0, 30), 2.5)
-local message = label(panel, "", UDim2.new(0, 60, 1, -28), UDim2.new(1, -120, 0, 22), 2.5)
+local message = label(panel, "", UDim2.new(0, 90, 1, -48), UDim2.new(1, -180, 0, 22), 2.5)
 message.TextColor3 = RGB(255, 230, 120)
 
 type Card = { buy: TextButton, price: TextLabel, left: TextLabel, lockSlot: Frame, lock: TextLabel, stroke: UIStroke, def: any }
 local cards: { Card } = {}
 if SELL_NOW and turboNow then
 	-- the Instant Turbo strip: art behind, the icon, the words, a separate green price button
-	local strip = make("ImageLabel", { Name = "TurboNow", Position = UDim2.fromOffset(49, CARD_Y + CARD_H + 12), Size = UDim2.new(1, -98, 0, 70),
-		BackgroundTransparency = 1, Image = ART.Strip, ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(160, 64, 1120, 160), SliceScale = 70 / 224, ZIndex = 6 }, panel)
+	local strip = make("ImageLabel", { Name = "TurboNow", Position = UDim2.fromOffset(52, CARD_Y + CARD_H + 10), Size = UDim2.new(1, -104, 0, 68),
+		BackgroundTransparency = 1, Image = ART.Strip, ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(160, 64, 1120, 160), SliceScale = 68 / 224, ZIndex = 6 }, panel)
 	make("ImageLabel", { Image = ART.Icons.Turbo, Position = UDim2.fromOffset(22, -6), Size = UDim2.fromOffset(78, 78), Rotation = -12,
 		BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 8 }, strip)
 	local t1 = label(strip, "INSTANT TURBO", UDim2.fromOffset(120, 6), UDim2.new(1, -380, 0, 34), 3.5)
