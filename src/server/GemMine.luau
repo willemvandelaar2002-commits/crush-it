@@ -43,6 +43,7 @@ type Api = {
 	teleport: (Player, CFrame) -> (),
 	home: (Player) -> (),
 	refreshState: (Player) -> (), -- push CrusherState (gem count etc.)
+	act: (Player, string, any) -> (boolean, string?, any), -- 11 Nov: run a crusher action (the Gem Chest opens with "GemCrate")
 }
 local api: Api
 type Drop = { pos: Vector3, value: number }
@@ -53,6 +54,7 @@ type Crusher = { model: Model, center: Vector3, -- center: the platform's top mi
 local crusher: Crusher
 local root: Folder
 local walkToggle: ((Player) -> ())? = nil -- the AUTO WALK board's action (also the client's button)
+local chest: { model: Model, lid: BasePart, hinge: CFrame, lidRest: CFrame, front: BasePart, busy: boolean }? = nil
 
 local RGB = Color3.fromRGB
 local NAVY, GOLD, MAGENTA, PINK = RGB(38, 34, 78), RGB(255, 196, 40), RGB(225, 60, 210), RGB(255, 140, 235)
@@ -445,10 +447,79 @@ local function buildWorld()
 	walkPrompt.Triggered:Connect(onWalkBoard)
 	local click = Instance.new("ClickDetector") click.MaxActivationDistance = 40 click.Parent = walk
 	click.MouseClick:Connect(onWalkBoard)
+	-- 11 Nov (Willem: "put the chest physically in the cave. then you buy 1 key, and open it with the
+	-- key"): the GEM CHEST beside the GEM UPGRADES board, facing the platform. E with a key opens it
+	-- (rule GemCrate takes the key); keys are bought at GEM UPGRADES (rule GemKey).
+	do
+		local at = portalAt * CFrame.new(21, 0, -9) * CFrame.Angles(0, math.rad(35), 0)
+		local cm = Instance.new("Model") cm.Name = "GemChest"
+		local function cpart(name: string, size: Vector3, cf: CFrame, color: Color3, mat: Enum.Material?): Part
+			local p = Build.block(cm, name, size, cf, color)
+			p.Material = mat or Enum.Material.SmoothPlastic
+			return p
+		end
+		local W, D, Hb = 6.4, 4.2, 3
+		local body = cpart("ChestBody", Vector3.new(W, Hb, D), at * CFrame.new(0, Hb / 2 + 0.4, 0), NAVY)
+		cpart("ChestFoot", Vector3.new(W + 0.6, 0.4, D + 0.6), at * CFrame.new(0, 0.2, 0), GOLD, Enum.Material.Metal)
+		for _, x in { -W / 2 + 0.6, W / 2 - 0.6 } do
+			cpart("ChestBand", Vector3.new(0.5, Hb + 0.05, D + 0.1), at * CFrame.new(x, Hb / 2 + 0.4, 0), GOLD, Enum.Material.Metal)
+		end
+		-- the lid turns about its back edge (hinge)
+		local hinge = at * CFrame.new(0, Hb + 0.4, D / 2)
+		local lid = cpart("ChestLid", Vector3.new(W, 1.4, D), hinge * CFrame.new(0, 0.7, -D / 2), RGB(60, 50, 120))
+		local lidBands = {}
+		for _, x in { -W / 2 + 0.6, W / 2 - 0.6 } do
+			table.insert(lidBands, cpart("ChestLidBand", Vector3.new(0.5, 1.45, D + 0.1), hinge * CFrame.new(x, 0.7, -D / 2), GOLD, Enum.Material.Metal))
+		end
+		local lock = cpart("ChestLock", Vector3.new(1.1, 1.1, 0.5), at * CFrame.new(0, Hb + 0.1, -D / 2 - 0.2) * CFrame.Angles(0, 0, math.rad(45)), MAGENTA, Enum.Material.Neon)
+		local glow = cpart("ChestGlow", Vector3.new(W - 1, 0.2, D - 1), at * CFrame.new(0, Hb + 0.35, 0), PINK, Enum.Material.Neon)
+		glow.Transparency = 0.4
+		for _, p in cm:GetDescendants() do if p:IsA("BasePart") then p.CanCollide = p.Name == "ChestBody" or p.Name == "ChestFoot" end end
+		local weldTo = {} -- lid bands follow the lid
+		for _, b in lidBands do weldTo[b] = lid.CFrame:ToObjectSpace(b.CFrame) end
+		local sparks = Instance.new("ParticleEmitter")
+		sparks.Enabled = false sparks.Rate = 0 sparks.Speed = NumberRange.new(8, 14) sparks.Lifetime = NumberRange.new(0.6, 1.1)
+		sparks.SpreadAngle = Vector2.new(35, 35) sparks.LightEmission = 1 sparks.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		sparks.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.7), NumberSequenceKeypoint.new(1, 0) })
+		sparks.Color = ColorSequence.new(PINK, CYAN) sparks.Acceleration = Vector3.new(0, -12, 0)
+		local sAtt = Instance.new("Attachment") sAtt.CFrame = CFrame.new(0, 0.2, 0) * CFrame.Angles(0, 0, 0) sAtt.Parent = glow
+		sparks.Parent = sAtt
+		label(body, "GEM CHEST", RGB(255, 170, 245), 4.6, Vector2.new(10, 2.4))
+		local pr = prompt(body, "Open", "Gem Chest")
+		pr.Name = "GemChestPrompt" pr.MaxActivationDistance = 12
+		cm.PrimaryPart = body
+		cm.Parent = root
+		chest = { model = cm, lid = lid, hinge = hinge, lidRest = lid.CFrame, front = body, busy = false }
+		local c = chest :: any
+		pr.Triggered:Connect(function(p)
+			local ok = api.act(p, "GemCrate", {})
+			if not ok or c.busy then return end
+			c.busy = true
+			-- open the lid, burst, close again (rare and short, so tweened here)
+			local t0 = os.clock()
+			sparks:Emit(40)
+			while true do
+				local t = os.clock() - t0
+				local a = if t < 0.25 then t / 0.25 elseif t < 1.6 then 1 elseif t < 2 then 1 - (t - 1.6) / 0.4 else 0
+				local open = c.hinge * CFrame.Angles(math.rad(-105) * (1 - (1 - a) ^ 2), 0, 0) * c.hinge:ToObjectSpace(c.lidRest)
+				lid.CFrame = open
+				for b, rel in weldTo do b.CFrame = open * rel end
+				if t >= 2 then break end
+				task.wait()
+			end
+			lid.CFrame = c.lidRest
+			for b, rel in weldTo do b.CFrame = c.lidRest * rel end
+			c.busy = false
+		end)
+		lock.CanQuery = false
+	end
 	crusher = { model = m, center = zc.Position + Vector3.new(0, Mine.Zone.height, 0), ramRest = ram.CFrame,
 		arrive = CFrame.lookAt((portalAt * CFrame.new(0, 3, -6)).Position, zc.Position + Vector3.new(0, 3, 0)) }
 	root.Parent = workspace
 end
+
+-- the Gem Chest's front part (the server's reach check for "GemCrate")
+function M.chestPart(): BasePart? return chest and chest.front or nil end
 
 -- the teleporter on every plot (front left, inside the entrance)
 local function buildTeleporters()

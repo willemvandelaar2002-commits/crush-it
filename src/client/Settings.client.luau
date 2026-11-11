@@ -60,25 +60,32 @@ applyVolumes()
 -- the panel -------------------------------------------------------------------------
 local gui = make("ScreenGui", { Name = "SettingsHud", ResetOnSpawn = false, DisplayOrder = 6, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
 local button = Style.iconButton(gui, { name = "SettingsButton", icon = "⚙️", label = "SETTINGS", a = C(110, 170, 255), b = C(40, 80, 200) })
--- 6 Nov (Willem): on phones the gear sits top right, next to Mega Crusher (icon only);
--- on bigger screens it ends the top-left row
+-- 6 Nov (Willem): on phones the gear sits top right, next to Mega Crusher (icon only).
+-- 11 Nov (Willem: "make the settings button smaller and put it somewhere else ... not block in
+-- roblox"): everywhere a small gear (no label) at the right end of Roblox's top bar, inside the
+-- area Roblox leaves free for games (GuiService.TopbarInset), so it never covers Roblox's own
+-- buttons or the player list below the bar. Phones: as before (Mega Crusher sits left of it).
+local GuiService = game:GetService("GuiService")
 local function place()
 	local label = button:FindFirstChild("Label") :: TextLabel?
-	if Style.compact() then
-		local size = Style.PhoneHud.size
-		button:SetAttribute("HudSlot", nil)
-		button.AnchorPoint = Vector2.new(1, 0)
-		button.Size = UDim2.fromOffset(size, size)
-		local tile = button:FindFirstChild("Tile") :: Frame
-		tile.Size = UDim2.fromOffset(size, size)
-		if label then label.Visible = false end
-		button.Position = UDim2.new(1, -8, 0, Style.topRightY(size))
+	local size = if Style.compact() then Style.PhoneHud.size else 40
+	button:SetAttribute("HudSlot", nil)
+	button.AnchorPoint = Vector2.new(1, 0)
+	button.Size = UDim2.fromOffset(size, size)
+	local tile = button:FindFirstChild("Tile") :: Frame
+	tile.Size = UDim2.fromOffset(size, size)
+	tile.Rotation = 0
+	if label then label.Visible = false end
+	local area = GuiService.TopbarInset
+	local insetY = GuiService:GetGuiInset().Y
+	if not Style.compact() and area.Width > size + 16 and area.Height >= size - 4 then
+		-- in the free part of the top bar, at its right end (ScreenGui space starts under the bar)
+		button.Position = UDim2.fromOffset(area.Max.X - 8, area.Min.Y - insetY + math.floor((area.Height - size) / 2))
 	else
-		button.AnchorPoint = Vector2.new(0, 0)
-		if label then label.Visible = true end
-		Style.placeAfterHudRow(button)
+		button.Position = UDim2.new(1, -8, 0, Style.topRightY(size))
 	end
 end
+GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(place)
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(place)
 task.spawn(function() while true do place() task.wait(2) end end) -- the row changes as buttons come and go
 -- (the HUD appears step by step in the tutorial: show the gear with the Shop button)

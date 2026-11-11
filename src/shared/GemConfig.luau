@@ -92,7 +92,8 @@ G.Mine = {
 
 -- The Gem Crate: one crusher per open, rarity by these chances (they add up to 1)
 G.Crate = {
-	Cost = 750, -- 10 Nov: the mine pays ~30-540 Gems a minute (25 before the mine)
+	Cost = 750, -- 10 Nov: the mine pays ~30-540 Gems a minute (25 before the mine). 11 Nov: the price of a KEY
+	MaxKeys = 99, -- keys you can hold
 	Odds = {
 		{ rarity = "Legendary", chance = 0.60 },
 		{ rarity = "Exotic", chance = 0.30 },

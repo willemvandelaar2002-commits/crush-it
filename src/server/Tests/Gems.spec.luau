@@ -36,12 +36,15 @@ return function()
 	s.gemUps.Rolls = G.upgrade("Rolls").max
 	check(not act(d, "GemUpgrade", { id = "Rolls" }) and s.gemUps.Rolls == G.upgrade("Rolls").max, "no level past the max")
 
-	-- the crate: charges Gems, adds a crusher of an odds rarity
+	-- the chest (11 Nov): a key costs the crate's Gems; the chest takes a key and adds a crusher of an odds rarity
 	before = s.gems local owned = #s.owned
+	check(not act(d, "GemCrate") and #s.owned == owned, "no key: the chest stays shut")
+	check(act(d, "GemKey") and s.gems == before - G.Crate.Cost and s.gemKeys == 1, "a key costs the crate's Gems")
 	local ok, _, item = act(d, "GemCrate", {}, function() return 0.99 end)
-	check(ok and s.gems == before - G.Crate.Cost and #s.owned == owned + 1 and item.rarity == "Divine", "a 0.99 roll is the Divine slot")
+	check(ok and s.gemKeys == 0 and s.gems == before - G.Crate.Cost and #s.owned == owned + 1 and item.rarity == "Divine", "the key opens it; a 0.99 roll is the Divine slot")
 	s.gems = G.Crate.Cost - 1
-	check(not act(d, "GemCrate") and #s.owned == owned + 1, "not enough Gems: nothing happens")
+	check(not act(d, "GemKey") and s.gemKeys == 0, "not enough Gems: no key")
+	check(not act(d, "GemCrate") and #s.owned == owned + 1, "no key left: nothing happens")
 
 	-- 9 Nov: no bay trickle any more
 	local e = R.migrate({ cash = 10 }, id) e.crushers.bays = 3

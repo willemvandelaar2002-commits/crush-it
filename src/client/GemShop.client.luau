@@ -121,10 +121,11 @@ crate.BackgroundTransparency = 1
 local crateStroke = crate:FindFirstChildOfClass("UIStroke") if crateStroke then crateStroke.Enabled = false end
 make("ImageLabel", { Name = "CardArt", Image = G.Art.Card, BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Stretch,
 	Position = UDim2.fromOffset(-10, -10), Size = UDim2.new(1, 20, 1, 20), ZIndex = 6 }, crate)
-words(crate, "GEM CRATE", UDim2.fromOffset(30, 26), UDim2.new(1, -60, 0, 38), 34, 3.5)
+-- 11 Nov (Willem): the crate is a real GEM CHEST in the mine now; here you buy its KEY
+words(crate, "GEM CHEST KEY", UDim2.fromOffset(30, 26), UDim2.new(1, -60, 0, 38), 34, 3.5)
 local crateArt = make("ImageLabel", { Image = G.Art.Crate, Position = UDim2.new(0.5, -62, 0, 54), Size = UDim2.fromOffset(124, 124), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 8 }, crate)
 Style.floatArt(crateArt, { gate = panel, bob = 2.5, tilt = 0, period = 3.2 })
-words(crate, "One crusher per crate. Chances:", UDim2.fromOffset(30, 176), UDim2.new(1, -60, 0, 20), 17, 2)
+words(crate, "Opens the GEM CHEST in the mine once. Chances:", UDim2.fromOffset(30, 176), UDim2.new(1, -60, 0, 20), 17, 2)
 for i, o in G.Crate.Odds do
 	local r = C.rarity(o.rarity)
 	local row = make("Frame", { Position = UDim2.fromOffset(32, 198 + (i - 1) * 27), Size = UDim2.new(1, -64, 0, 24), BackgroundColor3 = INK, BackgroundTransparency = 0.25, ZIndex = 7 }, crate)
@@ -136,15 +137,15 @@ for i, o in G.Crate.Odds do
 	local c = words(row, (if pct == math.floor(pct) then string.format("%d", pct) else string.format("%.1f", pct)) .. "%", UDim2.new(0.6, 0, 0, 2), UDim2.new(0.4, -12, 1, -4), 20, 2)
 	c.TextXAlignment = Enum.TextXAlignment.Right
 end
-local open, openText = button(crate, "OPEN  " .. G.Crate.Cost, UDim2.new(0, 30, 1, -76), UDim2.new(1, -60, 0, 50), Style.GREEN, 30, true)
--- what came out: the new crusher's name in its rarity colour over the crate for 4 s
+local open, openText = button(crate, "BUY KEY  " .. G.Crate.Cost, UDim2.new(0, 30, 1, -76), UDim2.new(1, -60, 0, 50), Style.GREEN, 30, true)
+-- how many keys you have (over the art)
 local result = words(crate, "", UDim2.fromOffset(24, 146), UDim2.new(1, -48, 0, 30), 26, 3)
 result.ZIndex = 12
+result.TextColor3 = RGB(150, 255, 130)
 local waitingFor: { [string]: boolean }? = nil
 local resultToken = 0
 open.Activated:Connect(function()
-	waitingFor = {}
-	Net.event("CrusherAction"):FireServer("GemCrate", {})
+	Net.event("CrusherAction"):FireServer("GemKey", {})
 end)
 
 -- right: permanent upgrades
@@ -201,7 +202,9 @@ local function refresh()
 	end
 	earnText.TextColor3 = if gems < cheapest then RGB(255, 236, 90) else Color3.new(1, 1, 1)
 	Style.setButtonColor(open, if canOpen then Style.GREEN else RGB(120, 124, 140))
-	openText.Text = "OPEN  " .. G.Crate.Cost
+	openText.Text = "BUY KEY  " .. G.Crate.Cost
+	local keys = tonumber(me:GetAttribute("GemKeys")) or 0
+	result.Text = if keys > 0 then "YOU HAVE " .. keys .. " KEY" .. (if keys == 1 then "" else "S") else ""
 	for _, u in G.Upgrades do
 		local r = rows[u.id]
 		local level = (last and last.gemUps and last.gemUps[u.id]) or 0
@@ -250,6 +253,7 @@ Net.event("CrusherState").OnClientEvent:Connect(function(v)
 	refresh()
 end)
 me:GetAttributeChangedSignal("Gems"):Connect(refresh)
+me:GetAttributeChangedSignal("GemKeys"):Connect(refresh)
 -- 9 Nov (vault: animate gains toward the counter): "+N" pops off the GEMS button
 -- whenever Gems come in (rebirth, the per-minute trickle), so players learn the source
 local TweenService = game:GetService("TweenService")

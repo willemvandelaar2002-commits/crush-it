@@ -414,6 +414,16 @@ local function buttonText()
 end
 buttonText()
 local function walkTexts() boardText() buttonText() end
+-- 11 Nov: the GEM CHEST's prompt says how many keys you have
+local function chestText()
+	local mine = workspace:FindFirstChild("GemMine")
+	local pr = mine and mine:FindFirstChild("GemChestPrompt", true) :: ProximityPrompt?
+	if not pr then return end
+	local keys = tonumber(me:GetAttribute("GemKeys")) or 0
+	pr.ActionText = if keys > 0 then "Open (" .. keys .. " key" .. (if keys == 1 then "" else "s") .. ")" else "Needs a key"
+	pr.ObjectText = if keys > 0 then "Gem Chest" else "Keys: GEM UPGRADES"
+end
+me:GetAttributeChangedSignal("GemKeys"):Connect(chestText)
 me:GetAttributeChangedSignal(Store.passAttr("AutoWalk")):Connect(walkTexts)
 me:GetAttributeChangedSignal("AutoWalkOn"):Connect(walkTexts)
 local pausedUntil, walking, heading = 0, false, Vector3.zero
@@ -422,7 +432,7 @@ task.spawn(function()
 		task.wait(0.2)
 		local here = inMine()
 		walkGui.Enabled = here
-		if here then boardText() end
+		if here then boardText() chestText() end
 		local char = me.Character
 		local hum = char and char:FindFirstChildOfClass("Humanoid")
 		local root = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?

@@ -310,6 +310,7 @@ local function send(p,message,result)
 	p:SetAttribute("CashRate",cps(p,d)) p:SetAttribute("AutoOn",true) p:SetAttribute("GoldenRush",d.goldenRush) p:SetAttribute("Rebirths",s.rebirths or 0)
 	-- 11 Nov: your roll luck, for the odds panel and the luck texts in the shop (C.luckPreviewFor)
 	do local pk=perks(p) p:SetAttribute("RollLuck",s.upgrades.Luck or 0) p:SetAttribute("RollLuckMult",pk.lucky) p:SetAttribute("RollLuckBonus",pk.indexLuck or 0) end
+	p:SetAttribute("GemKeys",s.gemKeys or 0) -- 11 Nov: Gem Chest keys
 	p:SetAttribute("Gems",math.floor(s.gems or 0)) p:SetAttribute("GemRate",if (s.rebirths or 0)>=Gems.UnlockRebirths then Gems.minePerMinute(s) else 0) -- 9 Nov: the Gem Mine's rate
 	local goalHave,goalNeed=nil,nil
 	if s.goal and C.Goals2[s.goal] then goalHave,goalNeed=goalCount(d,C.Goals2[s.goal]) end
@@ -871,9 +872,9 @@ local function action(p,name,args)
 		if st and st.price then Analytics.gems(p,"Style:"..tostring(result),"Shop",-st.price,d.crushers.gems) end
 	end
 	if ok and name=="SetStyle" then Analytics.custom(p,"StyleEquipped",1,tostring(result)) end
+	if ok and name=="GemKey" then Analytics.gems(p,"GemKey","Shop",-Gems.Crate.Cost,d.crushers.gems) end
 	if ok and name=="GemCrate" and type(result)=="table" then
 		Analytics.custom(p,"GemCrate",1,result.rarity)
-		Analytics.gems(p,"GemCrate","Shop",-Gems.Crate.Cost,d.crushers.gems)
 		local r=C.rarity(result.rarity)
 		if r and r.rank>=4.25 then Net.event("RarePull"):FireAllClients({text=p.DisplayName.." opened a "..string.upper(result.rarity).." "..C.typeById(result.type).name.." from the Gem Crate!",userId=p.UserId,color=r.color}) end
 	end
@@ -974,6 +975,7 @@ function G.start()
 		teleport=function(p,cf) local char=p.Character if char then G.safeTeleport(p,char,cf) end end,
 		home=function(p) local ctx=sessions[p] local char=p.Character if ctx and char then G.safeTeleport(p,char,Plots.spawnFor(ctx.plot)) end end,
 		refreshState=function(p) send(p) end,
+		act=function(p,name,args) return action(p,name,args) end,
 	})
 	for _,plot in Plots.all() do
 		for name,station in plot.stations do if station.prompt then station.prompt.Triggered:Connect(function(p)
@@ -1036,9 +1038,10 @@ function G.start()
 		elseif name=="UpgradePlot" then target=ctx.plot.progression.upgrade.part
 		elseif name=="Fuse" or name=="CollectFusion" then target=ctx.plot.stages and ctx.plot.stages.fuserPart reach=26
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
+		elseif name=="GemCrate" then target=GemMine.chestPart() reach=16 -- 11 Nov: the GEM CHEST in the mine
 		elseif name=="TrashMany" then target=ctx.plot.stations.Trash and ctx.plot.stations.Trash.part reach=40
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
-		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" and name~="Rebuild" and name~="FillRow" and name~="SkipTutorial" and name~="GemUpgrade" and name~="GemCrate" and name~="SetStyle" and name~="BuyStyle" then
+		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" and name~="Rebuild" and name~="FillRow" and name~="SkipTutorial" and name~="GemUpgrade" and name~="GemKey" and name~="SetStyle" and name~="BuyStyle" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end
