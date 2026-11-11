@@ -35,11 +35,14 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
 - **Private gems:** only you see your gems (client-rendered in `workspace.MyGems`). Pick up by walking over them;
   the magnet pulls them in from 5 studs. The server checks every pickup (distance <= magnet + 6 slack, max 30
   per second) and refuses the rest (vault: server-validated batched collection).
-- **Upgrades** (Gem Shop, listed first; kept through rebirths):
-  - Crush Speed: -0.25 s per level, max 4 (1 s), 60 Gems x1.6 per level.
-  - More Gems: +1 gem per crush, max 2 (3 per crush), 180 / 720.
-  - Gem Value: +50% per level, max 2, 240 / 960.
-  - Gem Magnet: +3 studs, max 5 (20 studs), 45 Gems x1.6 per level.
+- **Upgrades** (Gem Shop, listed first; kept through rebirths). 11 Nov (Willem: "the numbers should go higher and then
+  the value lower. a max of 2 seems very low for more gems"): more, smaller levels, the same totals at the max and about
+  the same Gems to get there; old levels convert once (x5, the magnet x3; `gemUpsV` 2, tested on an old save):
+  - Crush Speed: -0.05 s per level, max 20 (1 s), 6 Gems x1.15 per level (613 to max).
+  - More Gems: +0.2 gems per crush, max 10 (+2), 16 Gems x1.35 (874 to max). The fraction is the chance of one more
+    gem in a crush (level 3 = 1.6 gems on average).
+  - Gem Value: +10% per level, max 10 (x2), 22 Gems x1.35 (1,202 to max).
+  - Gem Magnet: +1 stud per level, max 15 (20 studs), 10 Gems x1.2 (720 to max).
   - Everything maxed and awakened: 540 Gems a minute (the spec keeps it under 750).
   - A purchase takes effect at once (`GemMine.refresh`).
 - 10 Nov: Gem prices are x3 the pre-mine prices (base 30 a minute, was 10): Gem Crate 750, Cash/Luck 45, Head Start
@@ -82,12 +85,12 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   is full. Left as is: gems are destroyed instead of pooled (at most 60, fine).
 - **Upgrade caps grow with rebirths (11 Nov, Willem: "if the vault says that yes"; vault Progression and Pacing: each
   rebirth should bring something new to aim for, every category capped on its own):** every 5 rebirths raises the max
-  of More Gems, Gem Value and Gem Magnet by 1, at most +2 (rebirth 10): More Gems 2 -> 4 (5 a crush), Gem Value
-  2 -> 4 (x3), Magnet 5 -> 7 (26 studs, still under 3/4 of the platform radius). Crush Speed stays at 4 (1 s).
+  of More Gems and Gem Value by 5 levels (+1 gem, +50%) and Gem Magnet by 3 (+3 studs), at most twice (rebirth 10):
+  More Gems 10 -> 20 (5 a crush), Gem Value 10 -> 20 (x3), Magnet 15 -> 21 (26 studs). Crush Speed stays at 20 (1 s).
   `GemConfig.RebirthCap`, `G.maxLevel(u, rebirths)`; the server checks the level against your rebirths; old saves
-  keep levels up to the highest possible max. The Gem Shop shows "Level 2 / 3" and, once maxed, "(+1 at rebirth 10)".
-  Worst case at rebirth 10, all maxed and awake: 1,350 Gems a minute (was 540); the extra levels cost 11.5k-61k
-  Gems (More Gems, Gem Value; growth x4) and 470-750 (Magnet). Spec: 8 new checks.
+  keep levels up to the highest possible max. The Gem Shop shows "Level 10 / 15" and, once maxed, "(+1 at rebirth 10)".
+  Worst case at rebirth 10, all maxed and awake: 1,350 Gems a minute (was 540); the extra levels cost about 17.5k
+  (More Gems) and 24k (Gem Value) Gems in all, 1.5k for the magnet. Spec: 8 new checks.
 - **AUTO WALK (11 Nov, Willem; game pass 2079272256, R$ 49, `Store` perk AutoWalk, hidden from the shop list):** in the
   mine you walk to your nearest waiting gem by yourself, gem after gem (`Humanoid:MoveTo`, client/GemMine). Steering
   yourself pauses it for a second (seen as walking another way than Auto Walk sent you; this game has no standard

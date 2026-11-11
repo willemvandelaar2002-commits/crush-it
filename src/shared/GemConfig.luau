@@ -97,10 +97,15 @@ G.Crate = {
 -- base * growth ^ level.
 G.Upgrades = {
 	-- 9 Nov: GEM MINE upgrades (group "mine", listed first): what your Gem Crusher makes
-	{ id = "MineSpeed", group = "mine", title = "Crush Speed", line = "Crushes 0.25 s faster", per = 0.25, max = 4, base = 60, growth = 1.6 },
-	{ id = "MineDrops", group = "mine", title = "More Gems", line = "+1 gem per crush", per = 1, max = 2, base = 180, growth = 4, rebirthBonus = true },
-	{ id = "MineValue", group = "mine", title = "Gem Value", line = "Gems worth +50%", per = 0.5, max = 2, base = 240, growth = 4, rebirthBonus = true },
-	{ id = "Magnet", group = "mine", title = "Gem Magnet", line = "Pick up from 3 studs further", per = 3, max = 5, base = 45, growth = 1.6, rebirthBonus = true },
+	-- 11 Nov (Willem: "the numbers should go higher and then the value lower. a max of 2 seems very
+	-- low for more gems"): more, smaller levels. Same totals at the max as before (1 s crushes,
+	-- +2 gems a crush, x2 value, 20-stud magnet) and about the same Gems to get there; old levels
+	-- are converted once (x5, the magnet x3: CrusherRules migrate, gemUpsV 2). More Gems adds 0.2
+	-- of a gem a level: the fraction is the chance of one more gem per crush.
+	{ id = "MineSpeed", group = "mine", title = "Crush Speed", line = "Crushes 0.05 s faster", per = 0.05, max = 20, base = 6, growth = 1.15, oldFactor = 5 },
+	{ id = "MineDrops", group = "mine", title = "More Gems", line = "+0.2 gems per crush", per = 0.2, max = 10, base = 16, growth = 1.35, rebirthBonus = 5, oldFactor = 5 },
+	{ id = "MineValue", group = "mine", title = "Gem Value", line = "Gems worth +10%", per = 0.1, max = 10, base = 22, growth = 1.35, rebirthBonus = 5, oldFactor = 5 },
+	{ id = "Magnet", group = "mine", title = "Gem Magnet", line = "Pick up from 1 stud further", per = 1, max = 15, base = 10, growth = 1.2, rebirthBonus = 3, oldFactor = 3 },
 	{ id = "Cash", title = "Gem Cash", line = "+10% cash per level", per = 0.10, max = 10, base = 45, growth = 1.5 },
 	{ id = "Luck", title = "Gem Luck", line = "+10% luck per level", per = 0.10, max = 10, base = 45, growth = 1.5 },
 	-- 9 Nov (rebirth data: 170 players at rebirth 1, 66 at rebirth 2: starting over is where
@@ -121,19 +126,23 @@ function G.upgrade(id: string): any
 end
 -- 11 Nov (Willem: "do maxes increase with rebirth level?"; vault Progression and Pacing: each rebirth
 -- should bring a new source to aim for, every category capped on its own): every 5 rebirths
--- raises the max of More Gems, Gem Value and Gem Magnet by 1, at most +2 (rebirth 10). Crush
--- Speed stays at its max (1 s). Worst case: 5 gems x 3 value x1.5 awake a second = 1,350 a minute.
+-- raises the max of More Gems, Gem Value (+5 levels each: +1 gem, +50%) and Gem Magnet (+3 levels),
+-- at most twice (rebirth 10). Crush Speed stays at its max (1 s). Worst case: 5 gems x 3 value
+-- x1.5 awake a second = 1,350 a minute.
 G.RebirthCap = { every = 5, most = 2 }
-function G.capBonus(u: any, rebirths: number?): number
-	if not u.rebirthBonus then return 0 end
+function G.capSteps(rebirths: number?): number
 	return math.min(G.RebirthCap.most, math.floor((rebirths or 0) / G.RebirthCap.every))
 end
+function G.capBonus(u: any, rebirths: number?): number
+	if not u.rebirthBonus then return 0 end
+	return G.capSteps(rebirths) * u.rebirthBonus
+end
 function G.maxLevel(u: any, rebirths: number?): number return u.max + G.capBonus(u, rebirths) end
-function G.absoluteMax(u: any): number return u.max + (if u.rebirthBonus then G.RebirthCap.most else 0) end
+function G.absoluteMax(u: any): number return u.max + (if u.rebirthBonus then G.RebirthCap.most * u.rebirthBonus else 0) end
 -- the rebirth count that raises this upgrade's max next (nil when it can't go higher)
 function G.nextCapRebirth(u: any, rebirths: number?): number?
-	if not u.rebirthBonus or G.capBonus(u, rebirths) >= G.RebirthCap.most then return nil end
-	return (G.capBonus(u, rebirths) + 1) * G.RebirthCap.every
+	if not u.rebirthBonus or G.capSteps(rebirths) >= G.RebirthCap.most then return nil end
+	return (G.capSteps(rebirths) + 1) * G.RebirthCap.every
 end
 function G.cost(id: string, level: number, rebirths: number?): number?
 	local u = G.upgrade(id)
@@ -149,13 +158,19 @@ function G.headStart(s: any): number return (s.gemUps and s.gemUps.HeadStart) or
 function G.nestEgg(s: any): number return 0.01 * ((s.gemUps and s.gemUps.NestEgg) or 0) end
 -- 9 Nov: the Gem Mine numbers for a save
 local function lv(s: any, id: string): number return (s.gemUps and s.gemUps[id]) or 0 end
-function G.mineCrushSeconds(s: any): number return G.Mine.CrushSeconds - 0.25 * lv(s, "MineSpeed") end
-function G.mineDrops(s: any): number return G.Mine.Drops + lv(s, "MineDrops") end
+local function per(id: string): number return G.upgrade(id).per end
+function G.mineCrushSeconds(s: any): number return G.Mine.CrushSeconds - per("MineSpeed") * lv(s, "MineSpeed") end
+-- gems a crush on average (a fraction is the chance of one more: G.dropsNow rolls it)
+function G.mineDrops(s: any): number return G.Mine.Drops + per("MineDrops") * lv(s, "MineDrops") end
+function G.dropsNow(s: any, roll: number): number
+	local d = G.mineDrops(s) + 1e-9
+	return math.floor(d) + (if roll < d - math.floor(d) then 1 else 0)
+end
 function G.mineAwake(s: any): boolean return (s.rebirths or 0) >= G.Mine.AwakenRebirths end
 function G.mineValue(s: any): number
-	return G.Mine.Value * (1 + 0.5 * lv(s, "MineValue")) * (if G.mineAwake(s) then G.Mine.AwakenValue else 1)
+	return G.Mine.Value * (1 + per("MineValue") * lv(s, "MineValue")) * (if G.mineAwake(s) then G.Mine.AwakenValue else 1)
 end
-function G.mineMagnet(s: any): number return G.Mine.Magnet + 3 * lv(s, "Magnet") end
+function G.mineMagnet(s: any): number return G.Mine.Magnet + per("Magnet") * lv(s, "Magnet") end
 -- Gems a minute if you pick everything up
 function G.minePerMinute(s: any): number return G.mineDrops(s) * G.mineValue(s) * 60 / G.mineCrushSeconds(s) end
 
