@@ -27,13 +27,21 @@ local NAVY = C(26, 28, 62)
 local FRAME_ART = "rbxassetid://76782318106485" -- Willem's RollOdds-Frame (decal 103893088785478)
 local BANNER_ART = "rbxassetid://96273670425822" -- Willem's RollOdds-LuckBanner (decal 117596574851226)
 local SRC_W = 1024 -- the art's source width
-local W = 640
-local K = W / SRC_W -- art scale (header, dice and corners keep their proportions)
+-- 12 Nov (phone test: the tall window fit a phone at 0.33 scale, text ~5 px): on phones the
+-- window is wide and short: the luck strip with the notes beside it, the rarities in two
+-- columns with bigger text (~0.5 scale, rows ~14 px)
+local PHONE = Style.compact()
+local ART_W = 640 -- the art keeps the size it has on PC (corners, dice, banner)
+local W = if PHONE then 1200 else ART_W
+local K = ART_W / SRC_W -- art scale (header, dice and corners keep their proportions)
 local HEADER = math.floor(185 * K) -- the purple header strip in the frame art
-local BANNER_H = math.floor(194 * (W - 52) / SRC_W)
-local ROW, GAP = 46, 6
-local TOP = HEADER + 16 + BANNER_H + 10 + 26 + 8 + 38 + 8 -- first row
-local FOOT = 100
+local BW = ART_W - 52 -- the luck strip's width
+local BANNER_H = math.floor(194 * BW / SRC_W)
+local F = if PHONE then 1.25 else 1 -- row text size
+local ROW, GAP = if PHONE then 56 else 46, 6
+local TOP = if PHONE then HEADER + 16 + BANNER_H + 12 + 38 + 8 else HEADER + 16 + BANNER_H + 10 + 26 + 8 + 38 + 8 -- first row
+local FOOT = if PHONE then 24 else 100
+local COLW = if PHONE then math.floor((W - 52 - 16) / 2) else W - 52 -- one column of rows
 
 -- a brighter colour per rarity for the row (Willem's design); others use the rarity colour
 local ROW_COLOR: { [string]: Color3 } = {
@@ -78,7 +86,8 @@ local function oneIn(percent: number): string
 end
 
 local rows = 0 for _, r in CC.Rarities do if r.weight > 0 or r.event then rows += 1 end end
-local function heightFor(n: number): number return TOP + n * (ROW + GAP) - GAP + FOOT end
+local function perCol(n: number): number return if PHONE then math.ceil(n / 2) else n end
+local function heightFor(n: number): number return TOP + perCol(n) * (ROW + GAP) - GAP + FOOT end
 
 local gui = make("ScreenGui", { Name = "RollOddsHud", ResetOnSpawn = false, DisplayOrder = 7, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
 local openEvent = make("BindableEvent", { Name = "Open" }, gui)
@@ -90,7 +99,7 @@ local fallbackStroke = stroke(panel, 5)
 local art = make("ImageLabel", { Name = "FrameArt", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = FRAME_ART,
 	-- (Roblox stored the 1024 x 1260 upload at 832 x 1024; the slice is in those pixels. The
 	-- left slice takes the whole dice, so it never stretches; only the plain body grows.)
-	ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(187, 189, 760, 944), SliceScale = W / 832, ZIndex = 5 }, panel)
+	ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(187, 189, 760, 944), SliceScale = ART_W / 832, ZIndex = 5 }, panel)
 local fallbackHeader = make("Frame", { Name = "PlainHeader", Position = UDim2.fromOffset(10, 10), Size = UDim2.new(1, -20, 0, HEADER - 14),
 	BackgroundColor3 = C(150, 60, 235), ZIndex = 5 }, panel)
 corner(fallbackHeader, 10)
@@ -114,7 +123,7 @@ Style.feedback(close)
 text(close, "X", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), 40, 3.5, 9)
 
 -- YOUR LUCK strip (a status, not a button)
-local banner = make("ImageLabel", { Name = "LuckBanner", Position = UDim2.fromOffset(26, HEADER + 16), Size = UDim2.new(1, -52, 0, BANNER_H),
+local banner = make("ImageLabel", { Name = "LuckBanner", Position = UDim2.fromOffset(26, HEADER + 16), Size = UDim2.fromOffset(BW, BANNER_H),
 	BackgroundColor3 = C(40, 160, 60), BackgroundTransparency = 1, Image = BANNER_ART, ScaleType = Enum.ScaleType.Stretch, ZIndex = 6 }, panel)
 local function bannerLoaded()
 	banner.BackgroundTransparency = if banner.IsLoaded then 1 else 0
@@ -132,7 +141,7 @@ task.spawn(function()
 end)
 make("ImageLabel", { Name = "Clover", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0, 46, 0.5, -2), Size = UDim2.fromOffset(BANNER_H + 4, BANNER_H + 4),
 	BackgroundTransparency = 1, Image = Icons.Lucky, ScaleType = Enum.ScaleType.Fit, ZIndex = 8, Rotation = -8 }, banner)
-local bw = W - 52
+local bw = BW
 text(banner, "YOUR LUCK", UDim2.fromOffset(98, 12), UDim2.fromOffset(200, 36), 30, 3.5).TextXAlignment = Enum.TextXAlignment.Left
 local lvPill = make("Frame", { Position = UDim2.fromOffset(100, 52), Size = UDim2.fromOffset(150, 28), BackgroundColor3 = C(22, 92, 40), ZIndex = 7 }, banner)
 corner(lvPill, 14) stroke(lvPill, 2, C(10, 50, 22))
@@ -145,23 +154,36 @@ local liveDot = make("Frame", { AnchorPoint = Vector2.new(0, 0.5), Position = UD
 corner(liveDot, 8) stroke(liveDot, 2)
 local liveText = text(livePill, "LIVE", UDim2.fromOffset(32, 0), UDim2.new(1, -38, 1, 0), 22, 2.5)
 
-local sub = text(panel, "Per pedestal  ·  includes your current luck", UDim2.fromOffset(30, HEADER + 16 + BANNER_H + 10), UDim2.new(1, -60, 0, 26), 21, 2)
+local sub = text(panel, "Per pedestal  ·  includes your current luck", if PHONE then UDim2.fromOffset(26 + BW + 24, HEADER + 22) else UDim2.fromOffset(30, HEADER + 16 + BANNER_H + 10),
+	if PHONE then UDim2.new(1, -(26 + BW + 24 + 26), 0, 30) else UDim2.new(1, -60, 0, 26), if PHONE then 26 else 21, 2)
 sub.TextColor3 = C(222, 210, 255)
 
 -- column heads
 local COLS = { { "RARITY", 0.04, 0.33 }, { "CHANCE", 0.38, 0.30 }, { "≈ 1 IN", 0.68, 0.21 }, { "TYPES", 0.89, 0.10 } }
-local heads = make("Frame", { Position = UDim2.fromOffset(26, TOP - 46), Size = UDim2.new(1, -52, 0, 38), BackgroundColor3 = C(78, 52, 168), ZIndex = 6 }, panel)
-corner(heads, 10) stroke(heads, 2.5)
-make("UIGradient", { Rotation = 90, Color = ColorSequence.new(C(120, 84, 220), C(70, 44, 150)) }, heads)
-for _, h in COLS do
-	local l = text(heads, h[1], UDim2.fromScale(h[2], 0), UDim2.fromScale(h[3], 1), 22, 2.5)
-	l.TextXAlignment = if h[1] == "RARITY" then Enum.TextXAlignment.Left else Enum.TextXAlignment.Center
+for c = 1, (if PHONE then 2 else 1) do
+	local heads = make("Frame", { Position = UDim2.fromOffset(26 + (c - 1) * (COLW + 16), TOP - 46), Size = UDim2.fromOffset(COLW, 38), BackgroundColor3 = C(78, 52, 168), ZIndex = 6 }, panel)
+	corner(heads, 10) stroke(heads, 2.5)
+	make("UIGradient", { Rotation = 90, Color = ColorSequence.new(C(120, 84, 220), C(70, 44, 150)) }, heads)
+	for _, h in COLS do
+		local l = text(heads, h[1], UDim2.fromScale(h[2], 0), UDim2.fromScale(h[3], 1), math.floor(22 * F), 2.5)
+		l.TextXAlignment = if h[1] == "RARITY" then Enum.TextXAlignment.Left else Enum.TextXAlignment.Center
+	end
 end
-local list = make("Frame", { Position = UDim2.fromOffset(26, TOP), Size = UDim2.new(1, -52, 0, rows * (ROW + GAP)), BackgroundTransparency = 1, ZIndex = 6 }, panel)
-make("UIListLayout", { Padding = UDim.new(0, GAP), SortOrder = Enum.SortOrder.LayoutOrder }, list)
+local list = make("Frame", { Position = UDim2.fromOffset(26, TOP), Size = UDim2.new(1, -52, 0, perCol(rows) * (ROW + GAP)), BackgroundTransparency = 1, ZIndex = 6 }, panel)
+local grid: UIGridLayout? = nil
+if PHONE then
+	-- two columns, filled top to bottom (Common.. down the left, the rarest on the right)
+	grid = make("UIGridLayout", { CellSize = UDim2.fromOffset(COLW, ROW), CellPadding = UDim2.fromOffset(16, GAP), SortOrder = Enum.SortOrder.LayoutOrder,
+		FillDirection = Enum.FillDirection.Vertical, FillDirectionMaxCells = perCol(rows) }, list)
+else
+	make("UIListLayout", { Padding = UDim.new(0, GAP), SortOrder = Enum.SortOrder.LayoutOrder }, list)
+end
 
-local footer = text(panel, "Updates automatically with your luck", UDim2.new(0, 40, 1, -FOOT + 4), UDim2.new(1, -80, 0, 26), 22, 2.5)
-local note = text(panel, "Each type shares its rarity's chance · rounded, may not add up to exactly 100%", UDim2.new(0, 40, 1, -FOOT + 32), UDim2.new(1, -80, 0, 20), 16, 1.5)
+local footer = text(panel, "Updates automatically with your luck", if PHONE then UDim2.fromOffset(26 + BW + 24, HEADER + 58) else UDim2.new(0, 40, 1, -FOOT + 4),
+	if PHONE then UDim2.new(1, -(26 + BW + 24 + 26), 0, 30) else UDim2.new(1, -80, 0, 26), if PHONE then 26 else 22, 2.5)
+local note = text(panel, "Each type shares its rarity's chance · rounded, may not add up to exactly 100%", if PHONE then UDim2.fromOffset(26 + BW + 24, HEADER + 94) else UDim2.new(0, 40, 1, -FOOT + 32),
+	if PHONE then UDim2.new(1, -(26 + BW + 24 + 26), 0, 44) else UDim2.new(1, -80, 0, 20), if PHONE then 20 else 16, 1.5)
+if PHONE then note.TextWrapped = true end
 note.TextColor3 = C(196, 184, 240)
 
 type Row = { frame: Frame, grad: UIGradient, edge: Frame, gem: Frame, name: TextLabel, chance: TextLabel, oneIn: TextLabel, count: TextLabel }
@@ -177,10 +199,10 @@ local function rowAt(i: number): Row
 	local gem = make("Frame", { Name = "Gem", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0, 30, 0.5, 0), Size = UDim2.fromOffset(16, 16), Rotation = 45, ZIndex = 8 }, f)
 	corner(gem, 3) stroke(gem, 2.5)
 	local r: Row = { frame = f, grad = grad, edge = edge, gem = gem,
-		name = text(f, "", UDim2.new(COLS[1][2], 26, 0, 0), UDim2.new(COLS[1][3], -20, 1, 0), 24, 3),
-		chance = text(f, "", UDim2.fromScale(COLS[2][2], 0), UDim2.fromScale(COLS[2][3], 1), 22, 2.5),
-		oneIn = text(f, "", UDim2.fromScale(COLS[3][2], 0), UDim2.fromScale(COLS[3][3], 1), 22, 2.5),
-		count = text(f, "", UDim2.fromScale(COLS[4][2], 0), UDim2.fromScale(COLS[4][3], 1), 22, 2.5) }
+		name = text(f, "", UDim2.new(COLS[1][2], 26, 0, 0), UDim2.new(COLS[1][3], -20, 1, 0), math.floor(24 * F), 3),
+		chance = text(f, "", UDim2.fromScale(COLS[2][2], 0), UDim2.fromScale(COLS[2][3], 1), math.floor(22 * F), 2.5),
+		oneIn = text(f, "", UDim2.fromScale(COLS[3][2], 0), UDim2.fromScale(COLS[3][3], 1), math.floor(22 * F), 2.5),
+		count = text(f, "", UDim2.fromScale(COLS[4][2], 0), UDim2.fromScale(COLS[4][3], 1), math.floor(22 * F), 2.5) }
 	r.name.TextXAlignment = Enum.TextXAlignment.Left
 	pool[i] = r
 	return r
@@ -211,7 +233,8 @@ local function refresh()
 	for i = #odds + 1, #pool do pool[i].frame.Visible = false end
 	-- the window fits the rarities that can roll right now (Common can drop to 0% with big luck)
 	panel.Size = UDim2.fromOffset(W, heightFor(#odds))
-	list.Size = UDim2.new(1, -52, 0, #odds * (ROW + GAP))
+	list.Size = UDim2.new(1, -52, 0, perCol(#odds) * (ROW + GAP))
+	if grid then grid.FillDirectionMaxCells = perCol(#odds) end
 	-- the luck strip
 	local m = CC.luckMult(mult, bonus)
 	local mText = "x" .. (string.format("%.2f", m):gsub("%.?0+$", ""))

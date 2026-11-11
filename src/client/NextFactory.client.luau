@@ -48,16 +48,18 @@ local function place()
 	local s = if Style.compact() then 0.8 else 1
 	scale.Scale = s
 	local origin = gui.AbsolutePosition
+	if Style.compact() or cash.AnchorPoint.Y == 0 then
+		-- 12 Nov (phone test): above the cash it sat under the left button column: on phones
+		-- it goes right of the cash amount, on the cash line (left of the hotbar). Tablets
+		-- (cash top left) too: under Friend Boost the boost chips cover it.
+		pill.AnchorPoint = Vector2.new(0, 0.5)
+		pill.Position = UDim2.fromOffset(cash.AbsolutePosition.X + (cash :: any).TextBounds.X + 10 - origin.X, cash.AbsolutePosition.Y + cash.AbsoluteSize.Y / 2 - origin.Y)
+		return true
+	end
+	pill.AnchorPoint = Vector2.new(0, 0)
 	local top = cash.AbsolutePosition.Y
 	if icon and icon.AbsoluteSize.Y > 0 then top = math.min(top, icon.AbsolutePosition.Y) end
-	if cash.AnchorPoint.Y == 0 then
-		-- tablets: cash sits top left, Friend Boost under it; go under that
-		local row = hud:FindFirstChild("FriendBoost") :: GuiObject?
-		local y = if row then row.AbsolutePosition.Y + row.AbsoluteSize.Y + 8 else cash.AbsolutePosition.Y + cash.AbsoluteSize.Y + 40
-		pill.Position = UDim2.fromOffset(12, y - origin.Y)
-	else
-		pill.Position = UDim2.fromOffset(12, top - origin.Y - H * s - 8)
-	end
+	pill.Position = UDim2.fromOffset(12, top - origin.Y - H * s - 8)
 	return true
 end
 
@@ -95,7 +97,7 @@ Net.event("CrusherState").OnClientEvent:Connect(function(v: any)
 	text.Text = if p >= 1 then name .. " READY!" elseif p >= 0.75 then "ALMOST THERE!  " .. pct .. "%" else name .. "  " .. pct .. "%"
 	paint(p)
 	fill.Size = UDim2.new(math.max(p, 0.08), 0, 1, 0)
-	if not pill.Visible then pill.Visible = place() end
+	pill.Visible = place() -- (every update: the cash amount gets wider)
 	local tier = math.floor(p * 4)
 	if lv ~= level then level = lv shownTier = tier
 	elseif tier > shownTier then shownTier = tier pop() end
