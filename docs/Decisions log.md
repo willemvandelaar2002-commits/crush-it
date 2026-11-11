@@ -503,3 +503,4 @@
 - 2026-11-11: Tutorial step 6 (place your crusher): red pulsing frame + bobbing red arrow on the hotbar tile (Willem: try it on the hotbar first). Verified in Studio Play.
 - 2026-11-11: Mystery Crate card shows our REWARDS gift picture (Icons.Rewards) instead of the 🎁 emoji (Willem). The 'opened' and 'factory never stops' cards keep their emoji.
 - 2026-11-11: Studio Play on the test save starts as a real new player: no game passes (the creator owns all of them; FIRST BUY's crusher skipped tutorial steps 1-4 and Auto Collect/Auto Buy/x16 cash raced to goal 5). /passes or ServerStorage StudioPasses = true (or RealData) gives them back.
+- 2026-11-11: Funnel (Willem: 22 bought FACTORY II, 2 bought FACTORY III): the 4 quiet goals in between are steps 20-23 (Fill 18, Coat, Upgrades 20, Fill 24); Factory III-VI move to 24-27. Read the dashboard from the next update on; older numbers at 20+ mean the old steps.
