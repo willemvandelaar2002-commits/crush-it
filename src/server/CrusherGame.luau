@@ -31,6 +31,9 @@ local Catalog=require(script.Parent.CatalogCrushers)
 local Friend=require(script.Parent.FriendBoost)
 local Tools=require(script.Parent.CrusherTools)
 local Feel=require(script.Parent.CrusherFeedbackServer)
+local Stash=require(script.Parent.PlotStash)
+local MotionServer=require(script.Parent.CrusherMotionServer) -- 11 Nov: strikes play on the clients
+local Motion=require(game:GetService("ReplicatedStorage").Shared.CrusherMotion)
 local Goals=require(script.Parent.GoalsReward)
 local IndexRewards=require(RS.Shared.IndexRewards)
 local G={}
@@ -103,6 +106,9 @@ local function partsLook(model,mode)
 		p.CanQuery=mode=="built" and p:GetAttribute("BaseQ")==true
 		p.CastShadow=mode=="built"
 	end end
+	-- 11 Nov (audit 7): hidden floors, bays and signs leave the Workspace, so clients
+	-- don't load them (server/PlotStash); built and ghost ones are in the Workspace
+	Stash.set(model,mode~="hidden")
 end
 -- The floor model a bay belongs to: upper floor (tier 2) or Factory III top floor (tier 3).
 local function floorFor(plot,i)
@@ -463,6 +469,7 @@ local function buildBay(p,i,item)
 	ctx.visuals[i]={id=item.id,model=built.model,ram=built.ram,rest=built.ram.CFrame,
 		base=CFrame.new(o.Position.X,bed.Position.Y+bed.Size.Y/2,o.Position.Z)*(o-o.Position),input=nil,tier=t.input,rarity=item.rarity,
 		clearance=built.ram.Position.Y-built.ram.Size.Y/2-(bed.Position.Y+bed.Size.Y/2),bedWidth=math.min(bed.Size.X,bed.Size.Z)}
+	Motion.tagRam(built.model,built.ram)
 	Feel.track(ctx.visuals[i],t.id)
 end
 local function reconcile(p)
@@ -893,13 +900,11 @@ local function visualEvent(p,event)
 				Objects.setSquash(input,v.base,event.fraction) input:SetAttribute("SquashFraction",event.fraction)
 			end
 		end)
-		if v.catalog then Catalog.strike(v,event) return end
-		if v.special then Special.strike(v,event) return end
+		-- 11 Nov (audit 8): the motion plays on the clients near this factory (CrusherMotion)
+		local impactAt=workspace:GetServerTimeNow()+timing.hit
+		if v.catalog or v.special then MotionServer.strike(v,event,impactAt) return end
 		local height=(if v.input then v.input:GetAttribute("Height") else Config.Objects[v.objectIndex or v.tier].height)*event.fraction
-		local down=CFrame.new(v.rest.Position.X,v.base.Position.Y+height+v.ram.Size.Y/2,v.rest.Position.Z)*(v.rest-v.rest.Position)
-		local model=v.model
-		Tween:Create(v.ram,TweenInfo.new(timing.hit,Enum.EasingStyle.Quad,Enum.EasingDirection.In),{CFrame=down}):Play()
-		task.delay(timing.retract,function() if model.Parent and v.ram.Parent then Tween:Create(v.ram,TweenInfo.new(timing.up,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{CFrame=v.rest}):Play() end end)
+		MotionServer.strike(v,event,impactAt,v.base.Position.Y+height+v.ram.Size.Y/2)
 	end
 end
 function G.start()
@@ -1059,7 +1064,7 @@ function G.start()
 			end
 			if now-lastSend>=1 then send(p) Analytics.cashBalance(p,d.cash) end
 		end end
-		Feel.flush(now)
+		Feel.flush(now) MotionServer.flush(now)
 		if now-lastSend>=1 then lastSend=now end if now-lastAuto>=C.AutoCollectInterval then lastAuto=now end
 	end)
 	local api={getData=Data.get,whenLoaded=Data.whenLoaded,save=Data.saveNow,canSave=Data.canSave,sync=function(p) send(p) end,
@@ -1229,13 +1234,10 @@ function G.start()
 				local v=Special.build(bay.origin,tostring(arg))
 				if not v then return "template or metadata missing: "..tostring(arg) end
 				local old=ctx.visuals[1] if old then old.model:Destroy() end
-				v.model.Name="EquippedCrusher" v.model:SetAttribute("Preview",true) v.model.Parent=bay.model
+				v.model.Name="EquippedCrusher" v.model:SetAttribute("Preview",true) v.model:SetAttribute("MotionLoop",2) v.model.Parent=bay.model
 				local t=item and C.typeById(item.type)
 				v.id=item and item.id or "preview" v.tier=t and t.input or 1 v.rarity="Preview"
 				ctx.visuals[1]=v
-				task.spawn(function()
-					while v.model.Parent do Special.strike(v,{cycle=1.8,completed=true}) task.wait(2) end
-				end)
 				send(p,"Preview: "..tostring(arg).." in bay 1 (dev)") return "ok"
 			-- 9 Nov: fill every open bay (Willem: "fill all rows"). "rows": one rarity per row,
 			-- so the row bonuses switch on; "specials": the heaviest models everywhere (lag test);

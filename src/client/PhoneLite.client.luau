@@ -6,13 +6,17 @@
 --   * screen post effects off: Bloom, SunRays, DepthOfField (full-screen passes)
 --   * the Atmosphere's glare and haze lowered (less fill per pixel)
 --   * every particle emitter in the world at half its rate
+--   * 11 Nov (audit 9): crusher models cast no shadows (a full Factory VI of special
+--     crushers is ~440k triangles, drawn again for the shadow map)
 -- Everything is local to this player; the server's settings stay as they are.
 -- 6 Nov: the EFFECTS setting (client/Settings) can switch it on or off at any time, so
 -- everything it changes is remembered and put back when it switches off.
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local RS = game:GetService("ReplicatedStorage")
+local Tags = game:GetService("CollectionService")
 local Style = require(RS.Shared.Kit.Style)
+local CRUSHER_TAG = require(RS.Shared.CrusherFeedback).Tag -- every equipped crusher model
 
 local me = Players.LocalPlayer
 local active = false
@@ -69,12 +73,30 @@ local function particles(e: Instance)
 	end
 end
 
+-- crusher shadows: off while lite, the authored value kept in an attribute
+local function noShadow(p: Instance)
+	if active and p:IsA("BasePart") and p.CastShadow and p:GetAttribute("LiteShadow") == nil then
+		p:SetAttribute("LiteShadow", true)
+		p.CastShadow = false
+	end
+end
+local function crusher(model: Instance)
+	for _, p in model:GetDescendants() do noShadow(p) end
+end
+Tags:GetInstanceAddedSignal(CRUSHER_TAG):Connect(function(model)
+	crusher(model)
+	-- parts can arrive after the model (streaming) or be added by effects
+	local c = model.DescendantAdded:Connect(noShadow)
+	model.Destroying:Connect(function() c:Disconnect() end)
+end)
+
 local function apply()
 	if active then return end
 	active = true
 	me:SetAttribute("LiteGraphics", true) -- other client scripts can read this
 	for _, e in Lighting:GetChildren() do post(e) end
 	for _, e in workspace:GetDescendants() do particles(e) end
+	for _, m in Tags:GetTagged(CRUSHER_TAG) do crusher(m) end
 end
 
 local function revert()
@@ -85,6 +107,11 @@ local function revert()
 	table.clear(switchedOff)
 	for a, o in atmo do if a.Parent then a.Glare = o.glare a.Haze = o.haze end end
 	table.clear(atmo)
+	for _, m in Tags:GetTagged(CRUSHER_TAG) do
+		for _, p in m:GetDescendants() do
+			if p:IsA("BasePart") and p:GetAttribute("LiteShadow") then p.CastShadow = true p:SetAttribute("LiteShadow", nil) end
+		end
+	end
 	for _, e in workspace:GetDescendants() do
 		if e:IsA("ParticleEmitter") then
 			local base = e:GetAttribute("LiteBaseRate")
