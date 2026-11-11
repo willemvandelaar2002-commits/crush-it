@@ -98,7 +98,6 @@ local function artLoaded()
 	fallbackStroke.Enabled = not ok
 	fallbackHeader.Visible = not ok
 end
-art:GetPropertyChangedSignal("IsLoaded"):Connect(artLoaded)
 artLoaded()
 Style.modal(panel)
 
@@ -119,8 +118,16 @@ local function bannerLoaded()
 	banner.BackgroundTransparency = if banner.IsLoaded then 1 else 0
 end
 corner(banner, 14)
-banner:GetPropertyChangedSignal("IsLoaded"):Connect(bannerLoaded)
 bannerLoaded()
+-- load the art now (IsLoaded has no reliable change signal): switch the plain panels off when it's in
+task.spawn(function()
+	pcall(function() game:GetService("ContentProvider"):PreloadAsync({ art, banner }) end)
+	for _ = 1, 60 do
+		artLoaded() bannerLoaded()
+		if art.IsLoaded and banner.IsLoaded then break end
+		task.wait(1)
+	end
+end)
 make("ImageLabel", { Name = "Clover", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0, 46, 0.5, -2), Size = UDim2.fromOffset(BANNER_H + 4, BANNER_H + 4),
 	BackgroundTransparency = 1, Image = Icons.Lucky, ScaleType = Enum.ScaleType.Fit, ZIndex = 8, Rotation = -8 }, banner)
 local bw = W - 52
