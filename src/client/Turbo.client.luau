@@ -122,7 +122,10 @@ for i, t in T.List do
 	local skin = make(if ART.Card ~= "" then "ImageLabel" else "Frame", { Name = "Skin", Size = UDim2.fromScale(1, 1), BackgroundTransparency = if ART.Card ~= "" then 1 else 0,
 		BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 6 }, card)
 	if ART.Card ~= "" then
-		(skin :: ImageLabel).Image = ART.Card (skin :: ImageLabel).ScaleType = Enum.ScaleType.Stretch (skin :: ImageLabel).ImageColor3 = Color3.new(1, 1, 1)
+		local img = skin :: ImageLabel
+		img.Image = ART.Card
+		img.ScaleType = Enum.ScaleType.Stretch
+		img.ImageColor3 = Color3.new(1, 1, 1)
 	end
 	make("UICorner", { CornerRadius = UDim.new(0, 16) }, skin)
 	make("UIGradient", { Rotation = 90, Color = grad }, skin)
