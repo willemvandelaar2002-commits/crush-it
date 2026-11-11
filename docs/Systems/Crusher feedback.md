@@ -191,3 +191,6 @@ new crusher / bay change). client/GameSounds reads CrusherState changes; Auto Co
 31 Oct: the collect coins and the bin counter tick were removed (Willem: annoying); selling still ka-chings.
 
 - 31 Oct: a flattened toy is kept as CrushedInput for C.CrushedLinger (0.6 s) under the next toy, so fast crushers no longer look like they flicker. Output unchanged.
+
+- 11 Nov (audit 8): crusher motion plays on the clients. At build the server tags each crusher model with how it moves (Shared.CrusherMotion: MotionKind groups/rig/ram, MotionDown/MotionSize per moving part, ModelStreamingMode Atomic). Per strike, server/CrusherMotionServer sends one small event (model, impact time, cycle, finishing stroke, ram height) to players within 320 studs, batched every 0.08 s; client/CrusherMotion tweens locally (skips crushers over 300 studs from the camera, catches up when late, skips when over 0.45 s late) so contact lands on the impact time like the sound and squash. The Prism showroom and the dev Eternal preview have MotionLoop and strike on each client by themselves. Server parts no longer move. Catalog/Special .strike still play on the server for the specs.
+- 11 Nov (audit 9): in lite mode (Style.lite) crusher models (tag ActiveCrusher) cast no shadows (client/PhoneLite, restored when lite switches off).

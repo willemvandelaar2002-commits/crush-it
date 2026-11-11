@@ -332,6 +332,19 @@ end
 Net.event("PlotUpgraded").OnClientEvent:Connect(function(info)
 	if type(info) ~= "table" or type(info.level) ~= "number" then return end
 	task.wait(.15) -- let the new section's parts replicate first
+	-- 11 Nov: hidden sections wait in the server's stash (server/PlotStash) and come back
+	-- with the upgrade, so they can arrive a little after this event: wait for them (2 s max)
+	local def = SECTIONS[info.level]
+	local deadline = os.clock() + 2
+	while def and os.clock() < deadline do
+		local plot = plotModel()
+		local banks = plot and plot:FindFirstChild("WorkshopBanks")
+		local ready = banks ~= nil
+		for _, n in def.banks do if not (banks and banks:FindFirstChild(n)) then ready = false end end
+		for _, n in def.extra or {} do if not (plot and plot:FindFirstChild(n, true)) then ready = false end end
+		if ready then task.wait(.25) break end -- and a moment for the rest of their parts
+		task.wait(.1)
+	end
 	local ok, err = pcall(play, info)
 	if not ok then warn("[PlotUpgradeCutscene] " .. tostring(err)) finish() end
 end)

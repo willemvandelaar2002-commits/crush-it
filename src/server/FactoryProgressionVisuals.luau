@@ -10,6 +10,7 @@ local World=require(RS.Shared.Config).World
 local FRONT=require(RS.Shared.Config).Plots.Front
 local Stages=require(script.Parent.PlotStages)
 local Assets=require(script.Parent.PlotAssets)
+local Stash=require(script.Parent.PlotStash)
 -- Coating booth (Willem's Blender model) beside the Coating Lab board, front
 -- toward the entrance. One colour version per plot level; the base one is the
 -- fallback. The board stays the input; the booth is a visual (CoatingFx.client
@@ -30,6 +31,9 @@ local function show(model,visible)
 		p.CanCollide=visible and p:GetAttribute("ProgressC") p.CanQuery=visible and p:GetAttribute("ProgressQ")
 	end end
 end
+-- 11 Nov (audit 7): the rear yard and the accents (plain geometry) leave the Workspace
+-- while hidden, so clients don't load them (server/PlotStash)
+local function stashShow(model,visible) show(model,visible) Stash.set(model,visible) end
 function V.create(plot)
 	local root=Instance.new("Model") root.Name="FactoryProgression" root.Parent=plot.model
 	local o=plot.origin
@@ -131,7 +135,7 @@ function V.create(plot)
 		if math.abs(at.Z-(plotRear+1))<.2 then p:SetAttribute("RimX",at.X) table.insert(plot.progression.gateParts,p) end
 	end end
 	Stages.create(plot)
-	show(yard,false) show(accents,false) show(upgrade.model,false) show(lab.model,false)
+	stashShow(yard,false) stashShow(accents,false) show(upgrade.model,false) show(lab.model,false)
 	upgrade.content.Visible=false if lab.content then lab.content.Visible=false end
 end
 function V.sync(plot,d,quote,now,preview)
@@ -146,7 +150,7 @@ function V.sync(plot,d,quote,now,preview)
 	local yardOpen=structure>=2
 	local signature=tostring(level)..":"..tostring(boardVisible)
 	if v.signature~=signature then
-		v.signature=signature show(v.yard,yardOpen) show(v.accents,expanded)
+		v.signature=signature stashShow(v.yard,yardOpen) stashShow(v.accents,expanded)
 		show(v.upgrade.model,boardVisible) v.upgrade.content.Visible=boardVisible
 		-- booth colour follows the plot level (orange, silver, gold versions)
 		local want=if v.lab.booth then boothName(math.max(structure,1)) else nil

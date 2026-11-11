@@ -242,3 +242,5 @@ the bed width.
 - 31 Oct: road posts only where a ray down hits visible plot floor (no posts on the sand behind a small plot); the trim kit is built a moment after the level change (task.defer) so newly shown floors count.
 
 - 31 Oct: board frames follow their board panel (hidden when the panel is Transparency 1, e.g. the NEW FLOOR signs when that floor is not next).
+
+- 11 Nov (audit 7): hidden plot parts leave the Workspace. server/PlotStash moves a hidden model to ServerStorage.PlotStash and puts it back under its own parent when shown; used by PlotStages (stage props, walls, trim), FactoryProgressionVisuals (rear yard, upgraded trim) and CrusherGame partsLook (hidden floors, bays, floor signs, parapets; ghost and built stay). Code that needs hidden parts too (floor colours, board frames) uses PlotStash.descendants. Clients see it like streaming out and in; the upgrade cutscene waits up to 2 s for the new section. Empty plot 7,321 -> 2,710 instances; Workspace on a fresh server 49,200 -> 21,600.

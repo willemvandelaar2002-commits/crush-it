@@ -112,16 +112,9 @@ function Showroom.start()
 		local ok, v = pcall(build, plot)
 		if not ok then warn("[PrismShowroom] " .. tostring(v)) elseif v then table.insert(shown, v) end
 	end
-	-- demo strokes, staggered per plot so they don't all hit together
-	for i, v in shown do
-		task.spawn(function()
-			task.wait(i * 0.6)
-			while v.model.Parent do
-				Special.strike(v, { cycle = 1.8, completed = true })
-				task.wait(O.Showroom.demoEvery)
-			end
-		end)
-	end
+	-- demo strokes: 11 Nov, played by each client nearby on its own (CrusherMotion
+	-- MotionLoop), so nothing is sent over the network for them
+	for _, v in shown do v.model:SetAttribute("MotionLoop", O.Showroom.demoEvery) end
 end
 
 return Showroom

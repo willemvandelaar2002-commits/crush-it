@@ -13,11 +13,17 @@ checked"), plus open items from earlier audits and sessions. Tick off here and a
 - [ ] 6 **Gems run out of purpose**: mine upgrades max in ~26 min, everything in 2-3 h. The Gem Crate is
       now a real Secret/Divine source (4 made the roll rarer); check whether that is enough or add a
       lasting sink (crate-only crushers or coatings, a cosmetic, a repeatable upgrade). Hold Gem Yield.
-- [ ] 7 **Every client loads all six plots in full** (114k instances, 2,782 invisible parts per empty
-      plot): build later stages when reached, unowned plots as a shell, then a smaller streaming radius.
-- [ ] 8 **Crusher motion from the server** (~90 kbps per full factory): one strike event per bay, motion
-      on each client.
-- [ ] 9 `CastShadow` off on crusher meshes with `Style.lite()` (442k triangles in a full Factory VI).
+- [x] 7 Every client loaded all six plots in full -> hidden floors, bays, stages, rear yard and trim
+      wait in ServerStorage (server/PlotStash) until shown: empty plot 7,321 -> 2,710 instances, Workspace
+      on a fresh server 49,200 -> 21,600 (11 Nov). Streaming radius kept at 1024 (vault: keep; it can't
+      be set by script). Unowned plots as a bare shell: not done (they show the base factory).
+- [x] 8 Crusher motion from the server -> one small strike event per strike to players within 320
+      studs, motion played on each client (Shared.CrusherMotion); Prism showroom loops locally (11 Nov).
+      Full factory of 60 specials: server send 20-65 kbps (was ~90, peaks 200).
+- [ ] 8b What is left of that traffic is mostly the toys: every crush makes a new toy model (~35
+      instances/s) and its squash changes sizes on the server (~190 changes/s). Next: toys and squash
+      on the client too.
+- [x] 9 Crusher models cast no shadows in lite mode (phones, low graphics, EFFECTS Low) (11 Nov).
 - [ ] 10 **Real pacing**: dashboard `ReachedFactory` / `RebirthMinutes`; if first rebirths are under an
       hour, raise `Rebirth.Growth` a little.
 - [ ] 11 **Nothing new after rebirth 10**: milestones at 15/20/25 (a look, a bay skin, a title).

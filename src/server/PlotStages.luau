@@ -12,6 +12,7 @@ local FRONT=require(RS.Shared.Config).Plots.Front -- plot entrance edge (plot-lo
 local W=require(script.Parent.Kit.CrusherWorkshop)
 local Build=require(script.Parent.Kit.Build)
 local Assets=require(script.Parent.PlotAssets)
+local Stash=require(script.Parent.PlotStash)
 -- Blender props (ServerStorage.PlotAssets, see PlotAssets.luau) per plot level,
 -- plot-local x/z and the way the front faces (yaw: 0 = toward the entrance).
 -- Ones that replace a code-built prop list it as `replaces`.
@@ -49,6 +50,8 @@ local function show(model,visible)
 		elseif p:IsA("Light") then p.Enabled=visible
 		elseif p:IsA("ProximityPrompt") then p.Enabled=visible end
 	end
+	-- 11 Nov (audit 7): hidden stages leave the Workspace, so clients don't load them
+	Stash.set(model,visible)
 end
 V.show=show
 
@@ -462,7 +465,8 @@ local function buildKit(plot,level)
 	local kit=Instance.new("Model") kit.Name="TrimKit" kit.Parent=plot.model
 	plot.stages.kit=kit
 	-- frames: just in front of each board's face, a little larger than the panel
-	for _,p in plot.model:GetDescendants() do
+	-- (11 Nov: also boards in hidden, stashed models, so their frame is there when they show)
+	for _,p in Stash.descendants(plot.model) do
 		if p:IsA("BasePart") and p.Name=="Panel" and p.Parent and BOARDS[p.Parent.Name] then
 			local casing=p.Parent:FindFirstChild("PanelCasing")
 			local w=math.max(p.Size.X,casing and casing.Size.X or 0)+1 local h=math.max(p.Size.Y,casing and casing.Size.Y or 0)+1
@@ -546,7 +550,7 @@ function V.sync(plot,level)
 	-- 31 Oct: floor colour per plot level (C.FloorColors; levels without one keep the authored colour)
 	local want=C.FloorColors[level]
 	local floors={}
-	for _,p in plot.model:GetDescendants() do
+	for _,p in Stash.descendants(plot.model) do -- 11 Nov: hidden floors too (they keep the colour when shown)
 		if p:IsA("BasePart") and ((p.Name=="Top" and p.Parent and p.Parent.Name=="Floor") or p.Name=="YardFloor" or p.Name=="FusionFloor") then
 			if p:GetAttribute("FloorColor")==nil then p:SetAttribute("FloorColor",p.Color) end
 			p.Color=want or p:GetAttribute("FloorColor")
