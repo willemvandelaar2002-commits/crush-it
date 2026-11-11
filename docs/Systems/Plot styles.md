@@ -1,6 +1,7 @@
 # Plot styles (plan, 11 Nov 2026)
 
-Status: **plan, not built yet.** Agreed with Willem on 11 Nov after the funnel (Factory II -> III 19%,
+Status: **built 11 Nov (step 1): earned styles as palette recolours, the PLOT STYLES board, the
+window, cash bonus.** Gem styles wait for Willem's designs. Agreed with Willem on 11 Nov after the funnel (Factory II -> III 19%,
 III -> IV 18%): no extra guide; Factory III gets its own reward, and gems get a lasting purpose.
 Willem designs the styles (Legendary and up, plus special ones).
 
@@ -25,8 +26,10 @@ players see it when they walk past. Styles are kept forever (through rebirths).
 - Proposed Gem prices for special styles: 15,000 / 30,000 / 60,000 (about 40 min, 1.5 h and 3 h of a
   maxed Gem Mine). Gems so far only have upgrades worth ~59,600 in total, so this doubles what
   there is to spend them on and keeps going as Willem adds styles.
-- Open: should earned styles give a small permanent bonus (e.g. +2% cash each), or stay looks only?
-  Special (gem) styles stay looks only either way.
+- Every style you own adds cash forever (they add up; Willem: "more expensive give higher cash"):
+  Legendary +2%, Exotic +3%, Secret +4%, Divine +6%, Eternal +8% (all five: +23%). Gem styles:
+  +2% / +3% / +5% for 15,000 / 30,000 / 60,000 Gems. It multiplies income like the other cash
+  boosts (CrusherGame perks).
 
 ## What a style changes (what Willem designs per style)
 
@@ -55,6 +58,19 @@ style can ship with only a palette and gain its models later.
 - The plot's style shows to everyone (it is the plot itself); a small "LEGENDARY PLOT" plate by the
   entrance names it.
 - Analytics: StyleEarned, StyleBought, StyleEquipped.
+
+## As built (11 Nov)
+
+- `Shared/PlotStyles` (list, palettes, cash, earning check), `CrusherRules` (save `crushers.styles`,
+  `SetStyle`, `BuyStyle`, `R.earnStyles`), `server/PlotStyleLook` (recolours floor tops, trim,
+  rim blocks/corners, lamp posts/caps/lights; PlotStages.sync reads `plot.stylePalette`),
+  `client/PlotStyles` (the window), the PLOT STYLES board in `FactoryProgressionVisuals` at
+  plot-local (15.5, 15) beside the road (OPEN = CrusherHud action "Styles").
+- Earning is checked every second in `send`; a new style is announced server-wide and goes on
+  your plot if it still showed Classic. Earning counts from FACTORY III, or once you own a style.
+- The FACTORY III cutscene spotlights the board ("PLOT STYLES").
+- Spec: `Tests/PlotStyles.spec` (24 checks). Tested in Play: a Legendary and an Exotic row earned
+  both, Exotic went on the plot, switching works, a style you don't own is refused.
 
 ## Order
 

@@ -32,6 +32,8 @@ local Friend=require(script.Parent.FriendBoost)
 local Tools=require(script.Parent.CrusherTools)
 local Feel=require(script.Parent.CrusherFeedbackServer)
 local Stash=require(script.Parent.PlotStash)
+local Styles=require(game:GetService("ReplicatedStorage").Shared.PlotStyles) -- 11 Nov: plot styles
+local StyleLook=require(script.Parent.PlotStyleLook)
 local MotionServer=require(script.Parent.CrusherMotionServer) -- 11 Nov: strikes play on the clients
 local Motion=require(game:GetService("ReplicatedStorage").Shared.CrusherMotion)
 local Goals=require(script.Parent.GoalsReward)
@@ -74,7 +76,8 @@ local function perks(p)
 			*(function() local d=Data.get(p) return if d then Gems.luckMult(d.crushers) else 1 end)(), -- 8 Nov: Gem Luck
 		mult=Store.cashPassMult(p)*(if Store.hasPass(p,"VIP") then Store.Vip.Mult else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now))
 			*(function() local d=Data.get(p) return C.rebirthMult(d and d.crushers.rebirths or 0) end)() -- 2 Nov evening: rebirth bonus
-			*(function() local d=Data.get(p) return if d then Gems.cashMult(d.crushers) else 1 end)(), -- 8 Nov: Gem Cash
+			*(function() local d=Data.get(p) return if d then Gems.cashMult(d.crushers) else 1 end)() -- 8 Nov: Gem Cash
+			*(function() local d=Data.get(p) return if d then Styles.cashMult(d.crushers) else 1 end)(), -- 11 Nov: plot styles you own
 		indexLuck=(function() local d=Data.get(p) return if d then IndexRewards.luck(d.crushers) else 0 end)(),
 		limited=C.limitedOn()} -- 6 Nov: Limited (Lucky Weekend) crushers roll while the weekend is on
 end
@@ -268,6 +271,16 @@ end
 local function send(p,message,result)
 	local d=Data.get(p) local ctx=sessions[p] if not d or not ctx then return end
 	local s=d.crushers
+	-- 11 Nov: PLOT STYLES. A full row of Legendary or better (from FACTORY III) earns that style.
+	for _,id in Rules.earnStyles(d) do
+		local st=Styles.ById[id]
+		Analytics.custom(p,"StyleEarned",1,id)
+		Net.event("RarePull"):FireAllClients({text=p.DisplayName.." earned the "..st.name.." PLOT STYLE!",userId=p.UserId,color=(st.palette and st.palette.trim) or Color3.new(1,1,1)})
+		message=st.name.." PLOT STYLE earned! +"..math.floor(st.cash*100+.5).."% cash forever. Change it at the STYLE board."
+	end
+	if ctx.plot.styleId~=s.styles.active then StyleLook.apply(ctx.plot,s.styles.active) end
+	local ownedStyles={} for id in s.styles.owned do table.insert(ownedStyles,id) end
+	p:SetAttribute("PlotStyle",s.styles.active) p:SetAttribute("StylesOwned",table.concat(ownedStyles,","))
 	local rowState=Rows.snapshot(d)
 	-- A first purchase (or spin prize) can make another visible offer of the
 	-- same type known. Keep its badge honest without rebuilding the model.
@@ -852,6 +865,12 @@ local function action(p,name,args)
 		Analytics.gems(p,"GemUpgrade:"..tostring(result.id),"Shop",-(result.cost or 0),d.crushers.gems)
 		GemMine.refresh(p) -- 10 Nov: a mine upgrade (speed, magnet...) applies at once
 	end
+	if ok and name=="BuyStyle" then
+		local st=Styles.ById[result]
+		Analytics.custom(p,"StyleBought",1,tostring(result))
+		if st and st.price then Analytics.gems(p,"Style:"..tostring(result),"Shop",-st.price,d.crushers.gems) end
+	end
+	if ok and name=="SetStyle" then Analytics.custom(p,"StyleEquipped",1,tostring(result)) end
 	if ok and name=="GemCrate" and type(result)=="table" then
 		Analytics.custom(p,"GemCrate",1,result.rarity)
 		Analytics.gems(p,"GemCrate","Shop",-Gems.Crate.Cost,d.crushers.gems)
@@ -990,6 +1009,7 @@ function G.start()
 			if ctx.plot.progression and ctx.plot.progression.levelText then ctx.plot.progression.levelText.Text="" end ctx.rollToken=nil
 			for i in ctx.plot.stations.Roll.pedestals do clearOffer(ctx.plot,i) end ctx.plot.pedestalCount=nil pedestalLook(ctx.plot,C.StartPedestals,false)
 			for i,bay in ctx.plot.bays do bayLook(bay,"locked") bay.label.name.Text="LOCKED" bay.label.rarity.Text="" bay.label.stats.Text="" bay.label.line.Text="" bay.label.scope.Text="BAY "..i Workshop.clearPurchase(bay.buy) bay.part.Color=Workshop.Blue bay.buy.Visible=false bay.manage.Visible=false bay.max.Visible=false end end
+			StyleLook.apply(ctx.plot,Styles.Default) -- (11 Nov: a free plot shows Classic)
 			floorLook(ctx.plot,0) RowVisuals.sync(ctx.plot,nil) ProgressVisuals.sync(ctx.plot,nil,nil,0,"") for i,bay in ctx.plot.bays do if floorFor(ctx.plot,i) then bay.hidden=true bay.shown=nil partsLook(bay.model,"hidden") end end
 		sessions[p]=nil
 	end)
@@ -1018,7 +1038,7 @@ function G.start()
 		elseif name=="QuoteCoating" or name=="ApplyCoating" then target=ctx.plot.progression.lab.part
 		elseif name=="TrashMany" then target=ctx.plot.stations.Trash and ctx.plot.stations.Trash.part reach=40
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
-		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" and name~="Rebuild" and name~="FillRow" and name~="SkipTutorial" and name~="GemUpgrade" and name~="GemCrate" then
+		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" and name~="Rebuild" and name~="FillRow" and name~="SkipTutorial" and name~="GemUpgrade" and name~="GemCrate" and name~="SetStyle" and name~="BuyStyle" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end

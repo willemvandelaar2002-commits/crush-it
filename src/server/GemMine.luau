@@ -52,6 +52,7 @@ type Crusher = { model: Model, center: Vector3, -- center: the platform's top mi
 	 ramRest: CFrame, arrive: CFrame }
 local crusher: Crusher
 local root: Folder
+local walkToggle: ((Player) -> ())? = nil -- the AUTO WALK board's action (also the client's button)
 
 local RGB = Color3.fromRGB
 local NAVY, GOLD, MAGENTA, PINK = RGB(38, 34, 78), RGB(255, 196, 40), RGB(225, 60, 210), RGB(255, 140, 235)
@@ -438,6 +439,7 @@ local function buildWorld()
 			MarketplaceService:PromptGamePassPurchase(p, pass.gamePassId)
 		end
 	end
+	walkToggle = onWalkBoard
 	local walkPrompt = prompt(walk, "Auto Walk", "Gem Mine")
 	walkPrompt.Name = "AutoWalkPrompt"
 	walkPrompt.Triggered:Connect(onWalkBoard)
@@ -565,7 +567,8 @@ function M.start(a: Api)
 	buildWorld()
 	buildTeleporters()
 	Net.event("GemMine").OnServerEvent:Connect(function(p, kind, arg)
-		if kind == "collect" then collect(p, arg) elseif kind == "sync" then M.refresh(p) end
+		if kind == "collect" then collect(p, arg) elseif kind == "sync" then M.refresh(p)
+		elseif kind == "autoWalk" and walkToggle then walkToggle(p) end -- (11 Nov: the on-screen button)
 	end)
 	Players.PlayerRemoving:Connect(function(p) states[p] = nil end)
 	local acc = 0

@@ -128,3 +128,6 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   UpgradeSign / AutoWalkSign, front text on the panel, back text on an invisible board behind the frame). The platform
   edge is twelve 30-degree arcs (two plain ones toward the portal) instead of the gold cylinder; the crystal clusters
   moved out to radius 41.4. All props are non-colliding. Without the templates the old code-built look is used.
+- **AUTO WALK button (11 Nov, Willem):** while you are in the mine an AUTO WALK button sits above the hotbar
+  (client/GemMine): owned = ON / OFF (tap to switch), not owned = BUY AUTO WALK (the server prompts the pass). It
+  does the same as the board (remote GemMine "autoWalk"); the board stays.
