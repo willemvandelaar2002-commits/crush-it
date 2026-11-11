@@ -1,5 +1,7 @@
 # Crush It
 
+11 Nov Plot styles (plan, not built): Factory III opens a Style board; earned styles from a full row of Legendary and up, special styles for Gems, designs by Willem. See [[Systems/Plot styles]].
+
 10 Nov Gem Mine: a teleporter on every plot (rebirth 1) to a shared mine where one big Gem Crusher
 crushes everyone's private gems into a zone you pick them up from; yours awakens at rebirth 5. All Gems come from here. See [[Systems/Gem Mine]].
 
