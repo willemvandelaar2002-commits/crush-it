@@ -39,7 +39,7 @@ local function place()
 	if game:GetService("UserInputService").TouchEnabled or Style.compact() then
 		-- 1 Nov: on touch screens the jump button sits bottom-right and the hotbar bottom
 		-- centre: top right, just under the travel buttons
-		chip.Size = UDim2.fromOffset(118, 36)
+		chip.Size = if Style.compact() then UDim2.fromOffset(118, 36) else UDim2.fromOffset(160, 48) -- (tablets: bigger)
 		-- 12 Nov (phone test): at y 100 it sat on the SMASH button: go just left of SMASH
 		local fz = player.PlayerGui:FindFirstChild("FrenzyHud") :: ScreenGui?
 		local smash = fz and fz:FindFirstChild("Smash", true) :: GuiObject?
