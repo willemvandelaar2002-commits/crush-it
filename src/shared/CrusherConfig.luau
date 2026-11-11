@@ -112,7 +112,10 @@ C.StartBays = C.Layout.Wings*C.Layout.PerWing -- ground floor: 12 bays
 C.PlotUpgrade = {MaxLevel=5,
 	-- 2 Nov evening: every factory = 10x its first new bay (no hand-set exceptions):
 	-- ~$39K, $2.2M, $87M, $3.5B, $22B (was $39K, $5M, $452M, $167B, $1.33T)
-	Costs={math.floor(C.BayCosts[C.StartBays+1]*10),math.floor(C.BayCosts[C.TopFirst]*10),math.floor(C.BayCosts[C.RearFirst]*10),
+	-- 11 Nov (funnel: only 19% of Factory II owners buy III and 18% of III owners buy IV; those
+	-- two steps were 60x and 40x the step before): Factory III and IV at 4.6x their first new
+	-- bay, ~$1.0M and ~$40M (were $2.2M and $87M)
+	Costs={math.floor(C.BayCosts[C.StartBays+1]*10),math.floor(C.BayCosts[C.TopFirst]*4.6),math.floor(C.BayCosts[C.RearFirst]*4.6),
 		math.floor(C.BayCosts[C.RearFirst+12]*10),math.floor(C.BayCosts[C.RearFirst+18]*10)},
 	Names={"FACTORY II","FACTORY III","FACTORY IV","FACTORY V","FACTORY VI"},
 	Titles={"UPPER FLOOR","REINFORCED WORKSHOP","FUSION WORKSHOP","ADVANCED FACTORY","MASTER FACTORY"},

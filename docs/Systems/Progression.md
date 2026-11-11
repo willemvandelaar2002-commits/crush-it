@@ -71,7 +71,7 @@ to your own press whenever you're more than 40 studs from it. Hidden otherwise.
 - **TURBO pump** (server/Turbo, client/Turbo, Shared/TurboConfig; a station on every plot by the Production board): cash-bought income multipliers, price = seconds of your income: TURBO x2 5 min (90 s), MEGA x3 10 min (360 s, Factory II), HYPER x5 15 min (1080 s, Factory III), ULTRA x8 15 min (2160 s, Factory IV); the price ignores turbo, frenzy and the 2x Cash boost. The strongest running turbo counts; time stacks to 60 min; saved across rejoins. A chip shows the running turbo.
 - **Free-gift countdown** under the REWARDS button ("FREE RARE CRUSHER 4:12"); tap it to open Rewards.
 - **Rare-roll banner**: anyone rolling a Legendary or better is announced to the whole server (client/RarePull).
-- **Prices and caps**: bays x1.36 each all the way (no blend back to x1.45); factories 10x their first new bay: $39K / $2.2M / $87M / $3.5B / $22B. Caps start 20/40, then 30/60, 40/80, 55/110, 70/140, 90/180 (factory upgrade / crusher level); Luck keeps 20-60.
+- **Prices and caps**: bays x1.36 each all the way (no blend back to x1.45); factories 10x their first new bay: $39K / $2.2M / $87M / $3.5B / $22B (11 Nov: Factory III and IV 4.6x, ~$1.0M and ~$40M, after the funnel showed 81% churn on both). Caps start 20/40, then 30/60, 40/80, 55/110, 70/140, 90/180 (factory upgrade / crusher level); Luck keeps 20-60.
 - Goals v4 (20): Frenzy after Bay3, Golden after Fill5, Turbo after Fill6.
 
 ## 2 Nov evening (2): merge, Coating Lab earlier, rebirth
