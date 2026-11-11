@@ -572,6 +572,10 @@ Net.event("BigRoll").OnClientEvent:Connect(function(msg: any)
 	-- everyone: the light pillar over that pedestal from the moment it lands
 	task.delay(math.max(0, msg.revealAt - now()), function() pillar(msg.at, color, C.BigRoll.PillarSeconds) end)
 	if msg.userId == me.UserId and not playing then
+		-- 11 Nov: not while you are far from your plot (in the Gem Mine with Auto Roll on): the
+		-- plot isn't loaded there, the camera would fly into nothing. Auto Roll's notice tells you.
+		local root = me.Character and me.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if root and (root.Position - msg.at.Position).Magnitude > 400 then return end
 		task.spawn(cinematic, msg)
 	end
 end)

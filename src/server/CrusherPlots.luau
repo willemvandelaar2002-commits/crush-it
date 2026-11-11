@@ -240,10 +240,11 @@ function P.create(root,Plots)
   W.conveyor(decor,(o*CFrame.new(-72.5,1.4,6)).Position,bend,4,o.Position.Y)
   W.conveyor(decor,bend,(o*CFrame.new(-63,10,51)).Position,4,o.Position.Y)
   -- Toy bricks round the plaza, clear of paths, stations and stairs.
-  -- (the ones by the entrance follow the front edge: e = front-92)
+  -- (the ones by the entrance follow the front edge: e = front-92; 11 Nov: the green 1x1 at
+  -- (30,66) removed, it sat inside roll pedestal 1)
   local red=Color3.fromRGB(230,69,77) local orange=Color3.fromRGB(255,140,40) local e=front-92
   for _,b in {{12,87+e,2,2,red,0},{15,89.5+e,2,1,W.Yellow,.4},{-12,87+e,2,2,W.Green,0},{-14,89.5+e,1,1,W.Blue,-.3},
-   {-36,62,2,2,W.Yellow,.3},{36,60,2,2,W.Blue,-.4},{30,66,1,1,W.Green,.6},{-14,70,2,2,W.Blue,.2},
+   {-36,62,2,2,W.Yellow,.3},{36,60,2,2,W.Blue,-.4},{-14,70,2,2,W.Blue,.2},
    {22,72,2,1,orange,0},{-70,88+e,2,2,red,-.1},{71,86+e,2,2,W.Green,.1},{68,89+e,1,1,W.Yellow,0}} do
    W.brick(decor,o*CFrame.new(b[1],0,b[2])*CFrame.Angles(0,b[6],0),b[3],b[4],b[5])
   end

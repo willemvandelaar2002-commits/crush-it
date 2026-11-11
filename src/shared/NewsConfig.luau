@@ -5,15 +5,16 @@
 -- the lines with every update; numbers stated plainly.
 local M = {}
 
-M.Version = 5
-M.Title = "What's New"
+M.Version = 6 -- 11 Nov: the big patch (Gem Mine, Exotic + Eternal, Auto Roll, Mystery Crate, plot styles)
+M.Title = "BIG UPDATE!"
 M.Lines = {
-	"LUCKY WEEKEND: every Saturday and Sunday, 2x luck on rolls for everyone!",
-	"Daily rewards: see tomorrow's prize right after you claim today's.",
-	"After Factory II, small goals guide you all the way to your first REBIRTH.",
-	"NEW CODES in Rewards > CODES: CRUSHIT, LUCKYROLL, REBIRTH, FREECRUSHER and PHONEUPDATE!",
-	"REBIRTH from Factory IV: keep all your crushers, x1.5 cash and +25% luck each time.",
-	"Bad luck? After 200 rolls without one, a Legendary is guaranteed.",
+	"THE GEM MINE: a whole new world! Collect Gems, buy upgrades and open the GEM CHEST with keys. Opens at Rebirth 1 + Factory IV.",
+	"2 NEW RARITIES: Exotic and ETERNAL. 12 new crushers to find!",
+	"AUTO ROLL: press AUTO at the roll machine, pick your targets and let it roll.",
+	"MYSTERY CRATE: a free crusher every day, up to SECRET!",
+	"LUCKY WEEKEND crushers: 3 limited crushers, only on Saturday and Sunday.",
+	"PLOT STYLES from Factory III: new looks for your factory with a cash bonus.",
+	"Factory III and IV are cheaper, new Mythic models, SETTINGS menu, and lots of fixes.",
 }
 
 return M
