@@ -390,19 +390,27 @@ local Style = require(RS.Shared.Kit.Style)
 local walkGui = Instance.new("ScreenGui")
 walkGui.Name = "AutoWalkHud" walkGui.ResetOnSpawn = false walkGui.DisplayOrder = 4 walkGui.Enabled = false
 walkGui.Parent = me:WaitForChild("PlayerGui")
-local walkBtn = Instance.new("TextButton")
-walkBtn.Name = "AutoWalkButton" walkBtn.AnchorPoint = Vector2.new(0.5, 1) walkBtn.Position = UDim2.new(0.5, 0, 1, -118)
-walkBtn.Size = UDim2.fromOffset(250, 54) walkBtn.TextScaled = true walkBtn.Text = "AUTO WALK"
+-- (11 Nov, Willem: "use one of the design pictures"): the AUTO ROLL button's art (client/AutoRoll:
+-- green when on, the other one when off), smaller, with the words on top
+local WALK_ART = { Off = "rbxassetid://118340677613688", On = "rbxassetid://111686894944891" }
+local walkBtn = Instance.new("ImageButton")
+walkBtn.Name = "AutoWalkButton" walkBtn.AnchorPoint = Vector2.new(0.5, 1) walkBtn.Position = UDim2.new(0.5, 0, 1, -112)
+walkBtn.Size = UDim2.fromOffset(164, 70) walkBtn.BackgroundTransparency = 1 walkBtn.Image = WALK_ART.Off
+walkBtn.ImageRectOffset = Vector2.new(36, 138) walkBtn.ImageRectSize = Vector2.new(951, 405) walkBtn.ScaleType = Enum.ScaleType.Stretch
 walkBtn.Parent = walkGui
-Style.button(walkBtn, Style.GREEN)
-local pad = Instance.new("UIPadding") pad.PaddingTop = UDim.new(0, 8) pad.PaddingBottom = UDim.new(0, 8) pad.PaddingLeft = UDim.new(0, 10) pad.PaddingRight = UDim.new(0, 10) pad.Parent = walkBtn
+Style.feedback(walkBtn)
+Style.phoneFit(walkBtn, { scale = 0.7, anchor = Vector2.new(0.5, 1), position = UDim2.new(0.5, 0, 1, -96) })
+local walkWords = Instance.new("TextLabel")
+walkWords.BackgroundTransparency = 1 walkWords.Position = UDim2.fromScale(0.08, 0.14) walkWords.Size = UDim2.fromScale(0.84, 0.7)
+walkWords.TextScaled = true walkWords.ZIndex = 3 walkWords.Parent = walkBtn
+Style.text(walkWords, 3)
+local wordsMax = Instance.new("UITextSizeConstraint") wordsMax.MaxTextSize = 30 wordsMax.Parent = walkWords
 walkBtn.Activated:Connect(function() remote:FireServer("autoWalk") end)
 local function buttonText()
 	local owned = Store.hasPass(me, "AutoWalk")
 	-- (no "R$" here: the Robux-icon helper and a scaled button text keep re-laying each other out)
-	walkBtn.Text = if not owned then "BUY AUTO WALK"
-		elseif walkOn() then "AUTO WALK: ON" else "AUTO WALK: OFF"
-	Style.setButtonColor(walkBtn, if not owned then Style.Colors.Gold elseif walkOn() then Style.GREEN else Color3.fromRGB(130, 134, 150))
+	walkWords.Text = if not owned then "AUTO WALK\nBUY" elseif walkOn() then "AUTO WALK\nON" else "AUTO WALK\nOFF"
+	walkBtn.Image = if owned and walkOn() then WALK_ART.On else WALK_ART.Off
 end
 buttonText()
 local function walkTexts() boardText() buttonText() end

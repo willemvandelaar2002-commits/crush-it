@@ -232,13 +232,15 @@ function V.create(plot)
 	end
 	for x=-half+4,half-4,8 do if math.abs(x)>9 then bolt(x,front-1) end end
 	for z=rear+5,front-5,8 do for _,x in {-half+1,half-1} do
-		if not (x<0 and z>47 and z<75) then bolt(x,z) end -- left gap is the fusion wing's doorway
+		local cw=C.CoatingWing
+		if not (x<0 and z>47 and z<75) and not (x>0 and z>cw.z0+3 and z<cw.z1-3) then bolt(x,z) end -- the fusion wing's (left) and the Coating wing's (right) doorways
 	end end
 	for _,p in plot.model:GetDescendants() do
 		if p:IsA("BasePart") and p.Name=="LampPost" and p.Parent and p.Parent.Name=="PlotBorder" then
 			local at=o:PointToObjectSpace(p.Position)
 			local collar=W.part(trim,"LampCollar",V3(1.6,.6,1.6),o*CFrame.new(at.X,at.Y-p.Size.Y/2+.3,at.Z),Yellow)
 			collar:SetAttribute("LeftDoor",at.X<0 and at.Z>47 and at.Z<75)
+			collar:SetAttribute("RightDoor",at.X>0 and at.Z>C.CoatingWing.z0+3 and at.Z<C.CoatingWing.z1-3)
 			table.insert(trimParts,collar)
 		end
 	end
@@ -289,7 +291,7 @@ function V.create(plot)
 		cylinder(s3,"UtilityPipe",z1-z0,.9,o*CFrame.new(x,.75,(z0+z1)/2)*ALONG_Z,Cyan,false)
 		for z=z0+2,z1-2,8 do W.part(s3,"PipeBracket",V3(1.3,1.3,.5),o*CFrame.new(x,.65,z),Orange) end
 	end
-	pipe(half-2.4,-26,FRONT-6) pipe(-half+2.4,76,FRONT-6)
+	pipe(half-2.4,-26,C.CoatingWing.z0+2) pipe(half-2.4,C.CoatingWing.z1-2,FRONT-6) pipe(-half+2.4,76,FRONT-6) -- (11 Nov: not across the Coating doorway)
 	-- the left rim opens into the fusion wing
 	local door={}
 	for _,p in plot.model:GetDescendants() do
@@ -441,7 +443,7 @@ function V.create(plot)
 		end
 		local wx=half+.6
 		local backZ=if level>=2 then yardBack+1 else rear+1
-		run(wx,backZ,front-2)
+		run(wx,backZ,C.CoatingWing.z0+3) run(wx,C.CoatingWing.z1-3,front-2) -- (11 Nov: the Coating wing's doorway)
 		if level>=2 then run(-wx,backZ,46) run(-wx,76,front-2) -- doorway to the fusion wing
 		else run(-wx,backZ,front-2) end
 		show(m,false)
@@ -549,6 +551,7 @@ function V.sync(plot,level)
 		p.Transparency=if open then 1 else p:GetAttribute("DoorT") p.CanCollide=not open and p:GetAttribute("DoorC") p.CanQuery=not open and p:GetAttribute("DoorQ")
 	end
 	for _,p in v.trimParts do if p:GetAttribute("LeftDoor") and open then p.Transparency=1 end end
+	for _,p in v.trimParts do if p:GetAttribute("RightDoor") and level>=0 then p.Transparency=1 end end -- (the Coating doorway; trim shows from Factory II, like the lab)
 	-- 31 Oct: floor colour per plot level (C.FloorColors; levels without one keep the authored colour)
 	local want=if pal then pal.floor else C.FloorColors[level]
 	local floors={}

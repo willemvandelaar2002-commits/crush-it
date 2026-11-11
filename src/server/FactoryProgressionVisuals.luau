@@ -16,7 +16,9 @@ local Styles=require(RS.Shared.PlotStyles)
 -- toward the entrance. One colour version per plot level; the base one is the
 -- fallback. The board stays the input; the booth is a visual (CoatingFx.client
 -- plays its animation after a confirmed coating).
-local BOOTH_AT=CFrame.new(34,0,27)*CFrame.Angles(0,math.pi,0) -- LookVector = +Z (28 Oct: from 42,19 nearer the walkway/front)
+-- 11 Nov: in the Coating wing outside the right rim (C.CoatingWing), front toward the plot (-X)
+local CW=C.CoatingWing
+local BOOTH_AT=CFrame.new(78+CW.width*.62,0,(CW.z0+CW.z1)/2)*CFrame.Angles(0,math.pi/2,0)
 local BOOTH_VERSIONS={"CoatingMachine","CoatingMachine_Plot3Orange","CoatingMachine_Plot4Silver","CoatingMachine_Plot5Gold"}
 local function boothName(level)
 	for i=math.clamp(level,1,#BOOTH_VERSIONS),1,-1 do
@@ -99,6 +101,29 @@ function V.create(plot)
 	if boothVersion then
 		local m=Instance.new("Model") m.Name="CoatingLab" m.Parent=root
 		lab={model=m}
+		-- 11 Nov: the Coating wing (like the fusion wing on the left): island, studded floor, rim, lamps
+		local wing=Instance.new("Model") wing.Name="CoatingWing" wing.Parent=m
+		local wx0,wx1,wz0,wz1=half-.5,half+CW.width,CW.z0,CW.z1
+		local wcx,wcz,ww,wd=(wx0+wx1)/2,(wz0+wz1)/2,wx1-wx0,wz1-wz0
+		Build.island(wing,o*CFrame.new(wcx,0,wcz),ww,wd,World.SeaY,
+			{dirt=Color3.fromRGB(25,43,73),stone=Color3.fromRGB(46,84,156),stoneDark=Color3.fromRGB(25,43,73)},{rng=Random.new(53),curb=false,rocks=false})
+		local wf=W.part(wing,"CoatingFloor",Vector3.new(ww,2,wd),o*CFrame.new(wcx,-1,wcz),platform,true)
+		Style.studs(wf)
+		local purple=Color3.fromRGB(150,80,235)
+		local function wrim(a,b,fixed,alongX)
+			local len=b-a local n=math.max(1,math.floor(len/6+.5)) local seg=len/n
+			for i=0,n-1 do
+				local mid=a+seg*(i+.5)
+				local pos=if alongX then CFrame.new(mid,.8,fixed) else CFrame.new(fixed,.8,mid)
+				local block=W.part(wing,"RimBlock",if alongX then Vector3.new(seg-.2,1.6,2) else Vector3.new(2,1.6,seg-.2),o*pos,if i%2==0 then W.Blue else purple,true)
+				Style.materialStuds(block,true,{Enum.NormalId.Top},2)
+			end
+		end
+		wrim(wx0,wx1-2,wz0+1,true) wrim(wx0,wx1-2,wz1-1,true) wrim(wz0+2,wz1-2,wx1-1,false)
+		for _,z in {wz0+1,wz1-1} do
+			W.part(wing,"RimCorner",Vector3.new(2.6,2.2,2.6),o*CFrame.new(wx1-1,1.1,z),W.Navy,true)
+			W.lamp(wing,o*CFrame.new(wx1-1,2.2,z),2.2)
+		end
 		lab.booth=Assets.place(boothVersion,m,plot.origin*BOOTH_AT,{inset=.8,scale=C.CoatingBoothScale})
 	end
 	if lab and lab.booth then
@@ -135,14 +160,21 @@ function V.create(plot)
 	W.text(style.content,"Heading","PLOT STYLES",UDim2.fromScale(.03,.03),UDim2.fromScale(.94,.22))
 	style.info=W.text(style.content,"Bonus","FILL A ROW WITH LEGENDARY+ TO EARN ONE",UDim2.fromScale(.03,.28),UDim2.fromScale(.94,.23))
 	style.button=W.button(style.content,"Styles","OPEN",UDim2.fromScale(.12,.58),UDim2.fromScale(.76,.33),"Styles")
-	plot.progression={yard=yard,accents=accents,upgrade=upgrade,lab=lab,style=style,gateParts={},levelText=levelText}
+	plot.progression={yard=yard,accents=accents,upgrade=upgrade,lab=lab,style=style,gateParts={},coatDoor={},levelText=levelText}
+	-- 11 Nov: the right rim opens into the Coating wing (with the lab)
+	for _,p in plot.model:GetDescendants() do
+		if p:IsA("BasePart") and p.Parent and p.Parent.Name=="PlotBorder" then
+			local at=o:PointToObjectSpace(p.Position)
+			if at.X>half-3 and at.Z>CW.z0+3 and at.Z<CW.z1-3 then table.insert(plot.progression.coatDoor,p) end
+		end
+	end
 	-- the plot's rear rim opens onto the rear yard
 	for _,p in plot.model:GetDescendants() do if p:IsA("BasePart") and (p.Name=="RimBlock" or p.Name=="RimCorner" or p.Name=="LampPost" or p.Name=="LampLight" or p.Name=="LampCap") and p.Parent and p.Parent.Name=="PlotBorder" then
 		local at=o:PointToObjectSpace(p.Position)
 		if math.abs(at.Z-(plotRear+1))<.2 then p:SetAttribute("RimX",at.X) table.insert(plot.progression.gateParts,p) end
 	end end
 	Stages.create(plot)
-	stashShow(yard,false) stashShow(accents,false) show(upgrade.model,false) show(lab.model,false) stashShow(style.model,false) style.content.Visible=false
+	stashShow(yard,false) stashShow(accents,false) show(upgrade.model,false) stashShow(lab.model,false) stashShow(style.model,false) style.content.Visible=false
 	upgrade.content.Visible=false if lab.content then lab.content.Visible=false end
 end
 function V.sync(plot,d,quote,now,preview)
@@ -176,7 +208,11 @@ function V.sync(plot,d,quote,now,preview)
 		end
 		-- (2 Nov evening: the Coating Lab comes with Factory II)
 		local labOpen=level>=C.CoatingPlotLevel
-		show(v.lab.model,labOpen)
+		stashShow(v.lab.model,labOpen)
+		for _,part in v.coatDoor or {} do
+			if part:GetAttribute("CoatT")==nil then part:SetAttribute("CoatT",part.Transparency) part:SetAttribute("CoatC",part.CanCollide) end
+			part.Transparency=if labOpen then 1 else part:GetAttribute("CoatT") part.CanCollide=not labOpen and part:GetAttribute("CoatC") part.CanQuery=not labOpen
+		end
 		if v.lab.content then v.lab.content.Visible=labOpen end
 		if v.lab.prompt then v.lab.prompt.Enabled=labOpen end
 		for _,part in v.gateParts do
