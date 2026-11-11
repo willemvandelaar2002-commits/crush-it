@@ -307,7 +307,7 @@ local function send(p,message,result)
 		for k=1,math.min(#C.TutorialSteps,(s.tutorial or 1)-1) do Analytics.funnelStep(p,d.onboarding,k+1,C.FunnelNames[k+1]) end
 		-- 2 Nov: goals done (steps 10..), only once the tutorial is done so steps stay in order
 		if (s.tutorial or 1)>#C.TutorialSteps and s.goal then
-			for k=1,math.min(C.MainGoals,s.goal-1) do local step=#C.TutorialSteps+1+k Analytics.funnelStep(p,d.onboarding,step,C.FunnelNames[step]) end
+			for k=1,math.min(C.FunnelGoals,s.goal-1) do local step=#C.TutorialSteps+1+k Analytics.funnelStep(p,d.onboarding,step,C.FunnelNames[step]) end
 		end
 	end
 	Rules.markSeen(s) -- Index: remember every type this save has owned
@@ -835,9 +835,9 @@ local function action(p,name,args)
 	if d.cash~=cashBefore then Analytics.cash(p,ACTION_SKU[name] or name,if name=="Buy" then "Shop" else "Gameplay",cashBefore,d.cash) end
 	-- onboarding funnel: the first plot upgrade comes after the tutorial steps
 	if ok and d.onboarding and name=="UpgradePlot" and Progression.level(d)>levelBefore then
-		-- one step per plot upgrade from Factory III on (Factory II is the last goal), in order
+		-- one step per plot upgrade from Factory III on (the funnel goals end before it), in order
 		for lv=math.max(2,levelBefore+1),Progression.level(d) do
-			local step=#C.TutorialSteps+C.MainGoals+lv-1 Analytics.funnelStep(p,d.onboarding,step,C.FunnelNames[step])
+			local step=#C.TutorialSteps+C.FunnelGoals+lv-1 Analytics.funnelStep(p,d.onboarding,step,C.FunnelNames[step])
 		end
 	end
 	-- 3 Nov (vault audit: "time per step logged"): minutes played when each factory

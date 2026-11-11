@@ -647,7 +647,17 @@ C.FunnelNames = {
 }
 -- the funnel has the main goals only (quiet goals after Factory II are not steps)
 C.MainGoals = 0 for _,g in C.Goals2 do if not g.quiet then C.MainGoals+=1 end end
-for i=1,C.MainGoals do table.insert(C.FunnelNames,string.format("%02d Goal: %s",9+i,C.Goals2[i].title)) end
+-- 11 Nov (Willem: 22 bought FACTORY II, 2 bought FACTORY III, nothing in between): the quiet
+-- goals between FACTORY II and FACTORY III are funnel steps too (Fill 18, Coat, Upgrades 20,
+-- Fill 24). From this version step 20 = "Goal: Fill 18 bays" and FACTORY III is step 24
+-- (was 20). C.FunnelGoals = how many goals (from the first) are funnel steps.
+C.FunnelGoals = C.MainGoals
+for i,g in C.Goals2 do if g.id=="Factory3" then C.FunnelGoals=i-1 break end end
+for i=1,C.FunnelGoals do
+	local g=C.Goals2[i]
+	local title=if g.check=="upgrades" and g.quiet then g.title.." ("..g.n..")" else g.title
+	table.insert(C.FunnelNames,string.format("%02d Goal: %s",9+i,title))
+end
 for _,name in {"Factory III","Factory IV","Factory V","Factory VI"} do table.insert(C.FunnelNames,string.format("%02d Bought %s",#C.FunnelNames+1,name)) end
 C.FunnelBays = {} -- 2 Nov: replaced by the goals
 -- Goals board on the plot (reference style): like/favorite, join the group, and

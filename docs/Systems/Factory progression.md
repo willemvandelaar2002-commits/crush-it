@@ -404,3 +404,6 @@ bays 61-72 go to the inventory (none lost), crusher levels and upgrade caps stay
 Gem milestones: R1 Gem Mine, R5 Awakened Gem Crusher. Dev panel Plot row ends at 5.
 
 - 11 Nov (Willem): the Coating booth moved out of the plot into its own **Coating wing** outside the right rim (like the fusion wing on the left, nearer the stairs: plot-local z 30-64, `C.CoatingWing`), front toward the plot. The right rim opens into it (doorway z 33-61; rim parts, trim collars, wall runs and the low pipe leave a gap) and the wing shows with the lab (Factory II), stashed before that.
+- 11 Nov: Funnel now: 01-09 tutorial, 10-19 the main goals (19 = Buy FACTORY II), 20-23 the quiet goals
+  before FACTORY III (Fill 18 bays, Coat a crusher, Upgrade your factory (20), Fill all 24 bays),
+  24-27 Bought Factory III / IV / V / VI (C.FunnelGoals). Old data: step 20 meant "Bought Factory III".
