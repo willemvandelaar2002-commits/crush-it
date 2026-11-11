@@ -1,0 +1,117 @@
+TASK: REPLACE THE GEM CHEST VISUAL WITH THIS LOW-POLY MODEL
+11 November 2026 — art handoff, not a repository patch.
+
+Read CLAUDE.md and docs/Home.md first. This pack was grounded against the
+current src/server/GemMine.luau, src/client/GemMine.client.luau and
+src/shared/GemConfig.luau on 11 November. Keep key economy, rewards, odds,
+cooldowns, security, server reach checks and the layout as they are.
+
+IMPORT
+Import FBX/GemChest.fbx as GemChest under ReplicatedStorage.GemMineMeshes.
+Use GLB/GemChest.glb only as the alternate import; do not place both copies.
+Preserve all four meshes and UVs; do not merge the lid into the body.
+Normalize the importer scale uniformly, not by stretching separate axes.
+The source uses nominal stud units but earlier Blender imports sometimes
+needed unit corrections. Verify dimensions before staging the template.
+
+PARTS
+ChestBody (1,882 triangles): stationary body, interior gems, gold bands, handles.
+ChestLid (828): rounded lid including its fixed gold/cyan decoration.
+ChestGlow (52): stationary magenta front gem and base glow channel.
+LidGlow (102): moving magenta crystal crown.
+Total: 2,864 triangles. No high-resolution source mesh is hidden in this pack.
+
+PALETTE / MATERIALS
+Textures/GemChest_Color.png, GemChest_Metalness.png and GemChest_Roughness.png
+are shared 256x256 atlas maps, using the same navy/gold/magenta/cyan palette
+as the cave props. Keep imported MeshPart.Color white when using the colour
+map, so you do not tint gold and cyan purple. There is no normal map needed
+for these deliberately faceted low-poly shapes.
+There are two material variants in Blender: ordinary and mild emissive.
+The preview emission is only a render shader; do not expect that to become
+an animated Roblox glow automatically. ChestGlow and LidGlow are isolated
+so you may apply a magenta Neon treatment or restrained local lighting and
+the existing particles. If replacing their material with plain Neon, their
+flat neon colour will intentionally replace the palette shading. The body
+and lid should retain their SurfaceAppearance. No particle/light objects,
+UI, text or reward logic are included in the FBX/GLB.
+
+SIZE / AXES / PIVOTS
+Main body W=8.4, D=5.4; full closed bounds include handles, clasp and crown:
+9.28 wide x 7.47 tall x 6.46 deep. Ground is source Z=0.
+Root: ground centre of the closed chest, not the bounding-box centre.
+SOURCE axes: Blender X right, +Y toward the FRONT, Z up. Front +Y is
+intentional, giving Roblox front -Z under the usual conversion below.
+Nominal conversion: Blender (x,y,z) -> Roblox (x,z,-y).
+Do not apply that conversion twice if the importer already did it.
+Check the big front magenta clasp faces the platform at the existing yaw.
+
+Both ChestLid and LidGlow are authored around the SAME rear hinge:
+Blender (0,-2.70,4.26); nominal Roblox (0,4.26,2.70).
+The root and the stationary meshes are at source ground-centre origin.
+FBX/GLB round trips preserve matching lid origins, but Studio may recenter
+MeshParts. Restore Model pivots/PivotOffset or use the hinge-relative CFrame
+method rather than trusting automatically generated part centres.
+Use Model-manifest.json for exact bounds and source pivots.
+
+CONNECT TO THE EXISTING CHEST
+The current builder is the GemChest section in src/server/GemMine.luau.
+It currently makes ChestBody/Foot/Band, ChestLid/Bands/Lock/Glow stand-ins.
+Replace those VISIBLE stand-ins with one template clone. Do not leave the
+old coloured blocks visible through or around the imported chest.
+Keep its existing placement expression:
+portalAt * CFrame.new(21,0,-9) * CFrame.Angles(0,math.rad(35),0).
+Keep runtime model name GemChest, GemChestPrompt and the interaction flow.
+
+Retain or create ONE invisible interaction/collision proxy approximately at
+the original body centre (local 0,2.3,0). Existing chest.front / M.chestPart()
+must return that valid nearby BasePart for the GemCrate reach check.
+Keep prompt action Open, max distance 12, and client-side key text refresh
+from GemMine.client.luau. Preserve api.act(player,"GemCrate",{}) and its
+existing server rewards/key validation. Do not replace it with client rewards.
+All four decorative meshes may be anchored and CanCollide=false; use the
+invisible static proxy for interaction/collision instead of a convex mesh
+hull that fills the hollow interior. Lid/crown must not collide with players.
+
+ANIMATION
+Stationary group: ChestBody + ChestGlow.
+Moving group: ChestLid + LidGlow (including the crown, NOT only ChestLid).
+Keep the existing brief open / hold / close timing and emission event.
+For each moving part, record the rest transform relative to the world hinge;
+each animation step applies hinge * openingRotation * that saved relative
+transform. Restore both moving parts exactly on completion. A grouped Model
+with an authored hinge pivot is also fine. Do not let the crown float in place.
+
+IMPORTANT: the authored geometry was tested opening UPWARD at POSITIVE
+local-X rotation to about +100 degrees. The present stand-in code uses
+math.rad(-105). Do not reuse that sign blindly after import: verify the
+front edge rises and the hinge stays at the back. In the documented nominal
+axis conversion, positive Roblox local-X raises the front (-Z) edge.
+If the importer changes yaw/axes, use the physically correct hinge axis/sign.
+The closed and open renders show the intended poses. The source is saved
+CLOSED; the open pose is a preview only. Leave a little clearance behind the
+chest for the open lid, and check it does not hit the upgrade board/portal.
+
+Keep the existing spark emitter as a separate runtime effect, positioned
+inside the well near its opening. Do not parent the emitter to a moving
+visual unless you deliberately want it to follow the lid. Optional small
+pink/cyan bursts and a brief glow are enough; do not add constant heavy VFX.
+The chest has a hollow well and seven visible low-poly treasure gems inside.
+
+LABEL
+Keep GEM CHEST as a native BillboardGui, not a texture. Adjust its offset
+after importing so it clears the 7.47-stud crystal crown. Anchoring the label
+to the interaction proxy keeps it stable as the lid opens.
+
+VERIFY AND SAVE
+Run relevant existing checks and Studio Play. Confirm textures for another
+player, ground fit, scale/yaw, the hollow interior when open, lid and crown
+following one hinge, no floating trim, no blocked movement, existing prompt
+and key/no-key behaviour, correct rewards, and return to exactly the closed
+pose after repeated opens. These imports are place-file templates, not Rojo
+source, so save/publish the place after integration. Update docs/Systems/Gem
+Mine.md and the dated decisions log with the actual verified status.
+
+Pack validation covers Blender closed component meshes, UVs/materials,
+triangle budget, hollow upper well, opening direction and FBX/GLB reimport.
+It is NOT a Studio integration or purchase/reward test.

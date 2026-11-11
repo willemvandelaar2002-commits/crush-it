@@ -145,3 +145,14 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   result (GemMine remote kinds chestOpen / chestReveal); the "Gem Chest: ..." notice is skipped and the server-wide
   announcement (Exotic+) waits 3.4 s. The lid turns about the chest's Hinge attribute: Willem's chest model needs a
   separate lid part (named Lid or ChestLid) and its hinge edge. Checked in Play: a Legendary reveal, all restored after.
+
+## 11 Nov: Willem's Gem Chest model (assets/gem-chest)
+- Template `ReplicatedStorage.GemMineMeshes.GemChest` (place file, not in Git): MeshParts ChestBody, ChestGlow (still),
+  ChestLid + LidGlow (move), scaled to studs (9.28 x 7.47 x 6.46), front -Z, ground-centre pivot, attribute
+  `Hinge` = CFrame(0, 4.26, 2.70) relative to the pivot (the rear hinge). Mesh colours white (SurfaceAppearance).
+- server/GemMine clones it at the old spot (portalAt * (21,0,-9), 35 degrees). Meshes don't collide; an invisible
+  `ChestHitbox` (8.4 x 4.6 x 5.4) collides and carries GemChestPrompt, the GEM CHEST label (6.6 up, clears the crown)
+  and the reach check (M.chestPart). Without the template the old block chest is built.
+- client/GemChest: lid + crown turn together about the hinge, OPEN_ANGLE +100 degrees (the old -115 swung the lid
+  down into the box). Verified in Studio: lid centre goes 1.4 up / 3.9 back, crown stays on the lid, returns to the
+  exact closed pose; key used, reward given (GemCrate unchanged).

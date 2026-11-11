@@ -1,0 +1,144 @@
+{
+  "date": "2026-11-11",
+  "model": "GemChest",
+  "sourceAxes": "Blender X right, Y FRONT, Z up. Front is +Y intentionally.",
+  "nominalBlenderToRoblox": "(x,y,z) -> (x,z,-y); final importer orientation/scale must be checked in Studio.",
+  "pivotMeaning": "Root at ground centre of the closed chest.",
+  "hingeBlender": [
+    0.0,
+    -2.700000047683716,
+    4.260000228881836
+  ],
+  "hingeRobloxNominal": [
+    0,
+    4.26,
+    2.7
+  ],
+  "frontRobloxNominal": [
+    0,
+    0,
+    -1
+  ],
+  "openingPositiveXDegrees": 100,
+  "containsText": false,
+  "containsRuntimeEffects": false,
+  "textureSize": 256,
+  "parts": [
+    {
+      "name": "ChestBody",
+      "triangles": 1882,
+      "boundsBlender": [
+        [
+          -4.639999866485596,
+          -3.0,
+          0.0
+        ],
+        [
+          4.639999866485596,
+          3.119999885559082,
+          4.579999923706055
+        ]
+      ],
+      "originBlender": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "movesWithLid": false
+    },
+    {
+      "name": "ChestLid",
+      "triangles": 828,
+      "boundsBlender": [
+        [
+          -4.360000133514404,
+          -3.1500000953674316,
+          4.010000228881836
+        ],
+        [
+          4.360000133514404,
+          2.799999952316284,
+          6.430000305175781
+        ]
+      ],
+      "originBlender": [
+        0.0,
+        -2.700000047683716,
+        4.260000228881836
+      ],
+      "movesWithLid": true
+    },
+    {
+      "name": "ChestGlow",
+      "triangles": 52,
+      "boundsBlender": [
+        [
+          -2.200000047683716,
+          2.9875001907348633,
+          0.23000000417232513
+        ],
+        [
+          2.200000047683716,
+          3.31000018119812,
+          4.25
+        ]
+      ],
+      "originBlender": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "movesWithLid": false
+    },
+    {
+      "name": "LidGlow",
+      "triangles": 102,
+      "boundsBlender": [
+        [
+          -1.1245100498199463,
+          -0.46200013160705566,
+          5.972137928009033
+        ],
+        [
+          1.1245100498199463,
+          0.46200013160705566,
+          7.472499847412109
+        ]
+      ],
+      "originBlender": [
+        0.0,
+        -2.700000047683716,
+        4.260000228881836
+      ],
+      "movesWithLid": true
+    }
+  ],
+  "triangles": 2864,
+  "boundsBlender": [
+    [
+      -4.639999866485596,
+      -3.1500000953674316,
+      0.0
+    ],
+    [
+      4.639999866485596,
+      3.31000018119812,
+      7.472499847412109
+    ]
+  ],
+  "textureMaps": {
+    "ColorMap": "Textures/GemChest_Color.png",
+    "MetalnessMap": "Textures/GemChest_Metalness.png",
+    "RoughnessMap": "Textures/GemChest_Roughness.png"
+  },
+  "exports": {
+    "FBX/GemChest.fbx": {
+      "sha256": "4cc929947cec818574c693f8809b1d543b7a35cdd2f7b9c27c1c59e2dbfd7335",
+      "bytes": 98604
+    },
+    "GLB/GemChest.glb": {
+      "sha256": "e291158c68cb8d38a39203330308313c077785a9111b0ba491904ddff73291be",
+      "bytes": 220448
+    }
+  }
+}

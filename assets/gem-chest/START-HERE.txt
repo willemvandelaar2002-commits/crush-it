@@ -1,0 +1,30 @@
+CRUSH IT — GEM CHEST MODEL
+11 November 2026
+
+Give this entire ZIP to Claude. You do NOT need to use Blender yourself.
+
+MAIN IMPORT FILE: FBX/GemChest.fbx
+Backup import format: GLB/GemChest.glb
+Editable source: Blender/GemChest.blend
+Actual model previews: Previews/GemChest-Closed.png and GemChest-Open.png
+
+The chest has 2,864 triangles TOTAL and four meshes:
+ChestBody — stationary hollow body, gold trim, handles and interior gems.
+ChestLid — separate rounded lid with gold straps and cyan shoulder jewels.
+ChestGlow — stationary magenta front clasp and base light strip.
+LidGlow — the magenta crystal crown; moves together with ChestLid.
+
+Colour, roughness and metalness maps are small 256 x 256 shared palette maps,
+packed into the Blender source and included separately under Textures.
+The FBX embeds colour textures where supported. Use SurfaceAppearance maps
+when importing if the importer does not wire them automatically.
+
+Closed size is approximately 9.28 wide x 7.47 high x 6.46 deep nominal studs.
+Scale uniformly if necessary. The main body remains 8.4 wide and 5.4 deep,
+matching the current chest; the details project slightly beyond it.
+The root pivot is at ground centre. Lid and LidGlow share a rear hinge pivot.
+
+This is an actual authored Blender model, not concept art or an AI statue.
+The lid is rig-separated but no runtime script is installed by this package.
+Claude needs to import it, reconnect the existing opening animation and test
+it in Studio. Full instructions are in CLAUDE-HANDOFF.txt.
