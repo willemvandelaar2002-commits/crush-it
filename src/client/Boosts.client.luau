@@ -115,7 +115,7 @@ end
 -- 1 Nov: on tablets cash + friend boost sit top-left (CashHud), so the chips go under them
 local tabletY = if game:GetService("UserInputService").TouchEnabled then 236 else 190
 local chips = make("Frame", { Name = "ActiveBoosts", Position = UDim2.new(0, 12, 0, tabletY), Size = UDim2.fromOffset(4 * (Style.TileSize + 8), 2 * (Style.TileSize + 26)), BackgroundTransparency = 1 }, gui)
-Style.phoneFit(chips, { scale = 0.65, position = UDim2.new(0, 12 + math.floor(Style.PhoneHud.size * 1.15) + 12, 0, 8) }) -- 30 Oct: under cash + friend boost on phones; 6 Nov: right of the phone button column (Willem's new phone layout)
+Style.phoneFit(chips, { scale = 0.8, position = UDim2.new(0, 12 + math.floor(Style.PhoneHud.size * 1.15) + 12, 0, 8) }) -- 30 Oct: under cash + friend boost on phones; 6 Nov: right of the phone button column (Willem's new phone layout)
 -- 12 Nov (Willem: the wide "2x Cash 9:48" chips blocked the screen): small icon tiles in a
 -- row, the time under each (Style.timerTile); the weekend, Server Luck and TURBO join it
 make("UIListLayout", { Padding = UDim.new(0, 8), FillDirection = Enum.FillDirection.Horizontal, Wraps = true, SortOrder = Enum.SortOrder.LayoutOrder }, chips)
@@ -138,6 +138,15 @@ local function refresh()
 		if c.b.id == "Luck" or c.b.id == "Super" then
 			c.desc.Text = (if c.b.id == "Super" then "2x cash. " else "") .. require(game:GetService("ReplicatedStorage").Shared.CrusherConfig).luckPreviewFor(me, 2)
 		end
+	end
+	-- phones: right of the left button column (it can be two buttons wide)
+	if Style.compact() then
+		local right = 0
+		for _, n in Style.HudRow do
+			local b = me.PlayerGui:FindFirstChild(n, true)
+			if b and b:IsA("GuiObject") and b.Visible and b.AbsoluteSize.X > 0 and b.AbsolutePosition.Y < 140 then right = math.max(right, b.AbsolutePosition.X + b.AbsoluteSize.X) end
+		end
+		if right > 0 then chips.Position = UDim2.fromOffset(right - chips.Parent.AbsolutePosition.X + 12, 8) end
 	end
 	for id, t in chipFor do
 		local left = ((me:GetAttribute(B.attr(id)) :: number?) or 0) - now
