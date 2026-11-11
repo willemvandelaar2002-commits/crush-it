@@ -47,10 +47,11 @@ function G.nextMilestone(rebirths: number): any
 end
 G.Emoji = "💎"
 G.UnlockRebirths = 1 -- the Gem Mine and the Gem Shop open after this many rebirths
--- 11 Nov (Willem: "minimum plot 3 and rebirth 1"): the Gem MINE also needs FACTORY III (plot level 2)
--- in the current run; the Gem Shop opens at rebirth 1 as before.
-G.UnlockPlot = 2
-G.UnlockText = "REBIRTH 1 + FACTORY III"
+-- 11 Nov (Willem: "minimum plot 3 and rebirth 1 ... the one where you get that plot upgrade and the
+-- back is visible"): the Gem MINE also needs FACTORY IV (plot level 3, the rear yard) in the current
+-- run; its portal stands in the rear yard. The Gem Shop opens at rebirth 1 as before.
+G.UnlockPlot = 3
+G.UnlockText = "REBIRTH 1 + FACTORY IV"
 function G.mineOpen(s: any): boolean
 	return (s.rebirths or 0) >= G.UnlockRebirths and (s.plotLevel or 0) >= G.UnlockPlot
 end
@@ -84,7 +85,7 @@ G.Mine = {
 	AwakenRebirths = 5, AwakenValue = 1.5,
 	CollectSlack = 6, -- server distance tolerance (studs) over the magnet radius
 	CollectPerSecond = 30, -- most pickups the server accepts per second
-	Teleporter = { x = -40, z = 96 }, -- plot-local spot (front left, inside the entrance)
+	Teleporter = { x = 0, z = -108 }, -- plot-local spot: 11 Nov, the rear yard road (Factory IV), facing the front
 	-- 10 Nov: the mine's own song (Willem makes it in Suno and uploads it); 0 = keep the normal music
 	Music = 129703295050685, MusicVolume = 0.3, -- Willem's Suno song (10 Nov)
 }

@@ -397,12 +397,14 @@ end
 -- the teleporter on every plot (front left, inside the entrance)
 local function buildTeleporters()
 	for _, plot in api.plots() do
-		local at = plot.origin * CFrame.new(Mine.Teleporter.x, 0, Mine.Teleporter.z)
+		local at = plot.origin * CFrame.new(Mine.Teleporter.x, 0, Mine.Teleporter.z) -- (the ring faces along Z: down the road)
 		local m, text, pr = buildPortal(plot.model, at, "GEM MINE", "Teleport")
 		m.Name = "GemMineTeleporter"
 		m:SetAttribute("PlotIndex", plot.index)
 		pr.Triggered:Connect(function(p) M.enter(p) end)
-		plot.gemTeleporter = { text = text, prompt = pr }
+		-- 11 Nov: it stands in the rear yard, so it only shows once the owner has FACTORY IV
+		m.Parent = nil
+		plot.gemTeleporter = { text = text, prompt = pr, model = m, home = plot.model }
 	end
 end
 
@@ -435,6 +437,8 @@ function M.refresh(p: Player)
 	local s = d.crushers
 	local tp = plot and plot.gemTeleporter
 	if tp then
+		local yard = (s.plotLevel or 0) >= Gems.UnlockPlot
+		tp.model.Parent = if yard then tp.home else nil
 		tp.text.Text = if unlocked(d) then "GEM MINE" else "GEM MINE\n" .. Gems.UnlockText .. " TO UNLOCK"
 	end
 	p:SetAttribute("GemMagnet", Gems.mineMagnet(s))

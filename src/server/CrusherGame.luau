@@ -841,10 +841,10 @@ local function action(p,name,args)
 	end
 	if ok and name=="UpgradePlot" and Progression.level(d)>levelBefore then
 		Net.event("PlotUpgraded"):FireClient(p,upgradeSummary(levelBefore,Progression.level(d)))
-		-- 11 Nov: the Gem Mine needs FACTORY III (and rebirth 1): reaching it opens the portal
+		-- 11 Nov: the Gem Mine needs FACTORY IV (and rebirth 1): its portal appears in the rear yard
 		GemMine.refresh(p)
 		if Gems.mineOpen(d.crushers) and levelBefore<Gems.UnlockPlot then
-			Net.event("Notice"):FireClient(p,{text="The GEM MINE is open! Take the portal on your plot."})
+			Net.event("Notice"):FireClient(p,{text="The GEM MINE is open! Its portal is in your rear yard."})
 		end
 	end
 	ctx.justRolled=ok and name=="Roll" or nil
