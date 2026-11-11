@@ -49,3 +49,7 @@ in Studio: check on a real phone.
   Roblox's top bar when its right end is free (GuiService.TopbarInset), else just under it. The goal in the top
   bar stays left of them.
 - Studio: /nopasses (play as if you own no passes, this session) and /passes (back to your real passes).
+- 11 Nov (Willem: "make the settings button smaller and put it somewhere else ... not block in roblox"): on PC the
+  gear is a small 40 px icon (no label) at the right end of Roblox's top bar, inside GuiService.TopbarInset (the part
+  Roblox leaves free for games), so it never covers Roblox's buttons or the player list below the bar. Phones: as
+  before (top right in the bar, Mega Crusher left of it).

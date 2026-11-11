@@ -458,7 +458,7 @@ local function buildWorld()
 			p.Material = mat or Enum.Material.SmoothPlastic
 			return p
 		end
-		local W, D, Hb = 6.4, 4.2, 3
+		local W, D, Hb = 8.4, 5.4, 3.8 -- (a big chest: it is the prize of the mine)
 		local body = cpart("ChestBody", Vector3.new(W, Hb, D), at * CFrame.new(0, Hb / 2 + 0.4, 0), NAVY)
 		cpart("ChestFoot", Vector3.new(W + 0.6, 0.4, D + 0.6), at * CFrame.new(0, 0.2, 0), GOLD, Enum.Material.Metal)
 		for _, x in { -W / 2 + 0.6, W / 2 - 0.6 } do
@@ -466,12 +466,12 @@ local function buildWorld()
 		end
 		-- the lid turns about its back edge (hinge)
 		local hinge = at * CFrame.new(0, Hb + 0.4, D / 2)
-		local lid = cpart("ChestLid", Vector3.new(W, 1.4, D), hinge * CFrame.new(0, 0.7, -D / 2), RGB(60, 50, 120))
+		local lid = cpart("ChestLid", Vector3.new(W, 1.8, D), hinge * CFrame.new(0, 0.9, -D / 2), RGB(60, 50, 120))
 		local lidBands = {}
 		for _, x in { -W / 2 + 0.6, W / 2 - 0.6 } do
-			table.insert(lidBands, cpart("ChestLidBand", Vector3.new(0.5, 1.45, D + 0.1), hinge * CFrame.new(x, 0.7, -D / 2), GOLD, Enum.Material.Metal))
+			table.insert(lidBands, cpart("ChestLidBand", Vector3.new(0.6, 1.85, D + 0.1), hinge * CFrame.new(x, 0.9, -D / 2), GOLD, Enum.Material.Metal))
 		end
-		local lock = cpart("ChestLock", Vector3.new(1.1, 1.1, 0.5), at * CFrame.new(0, Hb + 0.1, -D / 2 - 0.2) * CFrame.Angles(0, 0, math.rad(45)), MAGENTA, Enum.Material.Neon)
+		local lock = cpart("ChestLock", Vector3.new(1.4, 1.4, 0.5), at * CFrame.new(0, Hb + 0.1, -D / 2 - 0.2) * CFrame.Angles(0, 0, math.rad(45)), MAGENTA, Enum.Material.Neon)
 		local glow = cpart("ChestGlow", Vector3.new(W - 1, 0.2, D - 1), at * CFrame.new(0, Hb + 0.35, 0), PINK, Enum.Material.Neon)
 		glow.Transparency = 0.4
 		for _, p in cm:GetDescendants() do if p:IsA("BasePart") then p.CanCollide = p.Name == "ChestBody" or p.Name == "ChestFoot" end end
@@ -484,7 +484,7 @@ local function buildWorld()
 		sparks.Color = ColorSequence.new(PINK, CYAN) sparks.Acceleration = Vector3.new(0, -12, 0)
 		local sAtt = Instance.new("Attachment") sAtt.CFrame = CFrame.new(0, 0.2, 0) * CFrame.Angles(0, 0, 0) sAtt.Parent = glow
 		sparks.Parent = sAtt
-		label(body, "GEM CHEST", RGB(255, 170, 245), 4.6, Vector2.new(10, 2.4))
+		label(body, "GEM CHEST", RGB(255, 170, 245), 5.6, Vector2.new(12, 2.8))
 		local pr = prompt(body, "Open", "Gem Chest")
 		pr.Name = "GemChestPrompt" pr.MaxActivationDistance = 12
 		cm.PrimaryPart = body
