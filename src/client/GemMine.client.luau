@@ -369,7 +369,7 @@ end
 -- the board's text, for you: the price, or ON / OFF
 local function boardText()
 	local mine = workspace:FindFirstChild("GemMine")
-	local sign = mine and mine:FindFirstChild("AutoWalkSign")
+	local sign = mine and mine:FindFirstChild("AutoWalkSign", true) -- (11 Nov: inside the AutoWalkSignBoard model)
 	if not sign then return end
 	local owned = Store.hasPass(me, "AutoWalk")
 	local pass = Store.passByPerk("AutoWalk")

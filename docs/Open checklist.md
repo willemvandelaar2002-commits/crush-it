@@ -20,9 +20,9 @@ checked"), plus open items from earlier audits and sessions. Tick off here and a
 - [x] 8 Crusher motion from the server -> one small strike event per strike to players within 320
       studs, motion played on each client (Shared.CrusherMotion); Prism showroom loops locally (11 Nov).
       Full factory of 60 specials: server send 20-65 kbps (was ~90, peaks 200).
-- [ ] 8b What is left of that traffic is mostly the toys: every crush makes a new toy model (~35
-      instances/s) and its squash changes sizes on the server (~190 changes/s). Next: toys and squash
-      on the client too.
+- [x] 8b Toys and squash on the clients too: the server only sets one Toy attribute per new toy and
+      sends how flat it is with the strike (11 Nov). Full factory of 60 specials: server send 15-32 kbps,
+      about the same as 1 crusher (13-25).
 - [x] 9 Crusher models cast no shadows in lite mode (phones, low graphics, EFFECTS Low) (11 Nov).
 - [ ] 10 **Real pacing**: dashboard `ReachedFactory` / `RebirthMinutes`; if first rebirths are under an
       hour, raise `Rebirth.Growth` a little.
@@ -32,9 +32,9 @@ checked"), plus open items from earlier audits and sessions. Tick off here and a
 
 ## Willem
 - [x] Exotic / Eternal Auto Roller art uploaded and in the game (11 Nov)
-- [ ] Gem cave models: standing portal ring, a sign board (GEM UPGRADES / AUTO WALK), optional platform
-      edge segment.
-- [ ] Save to Roblox after model changes (Mythic templates, Gem Mine meshes, Eternals).
+- [x] Gem cave models: portal ring, sign board, platform edge in the game (11 Nov)
+- [ ] **Save to Roblox** now: the gem cave props were resized and moved into
+      ReplicatedStorage.GemMineMeshes (also covers Mythic templates, Gem Mine meshes, Eternals).
 - [ ] Delete `ServerStorage.OldMythicMeshes` once happy with the new Mythics.
 - [ ] Test the Gem Mine with two players (private gems, one shared crusher).
 

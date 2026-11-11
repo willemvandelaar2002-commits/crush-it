@@ -119,3 +119,12 @@ come from here (no rebirth payout, no bay trickle). Numbers: `GemConfig.Mine` an
   In the mine it fades in and the normal/event music pauses; it resumes when you leave. It is in the Music volume
   group in Settings. The song: Willem's Suno track, rbxassetid://129703295050685 (2:44, loops; tested 10 Nov:
   plays in the mine at 0.3, the normal music pauses and resumes at home).
+
+- **Willem's gem cave props (11 Nov):** GemPortalRing, GemSignBoard, GemPlatformEdgeSegment and GemPlatformEdgePlain
+  in ReplicatedStorage.GemMineMeshes (imported at 100x: scaled to 0.01, pivots set to the authored ground centre, front
+  -Z; the rim's pivot is the platform centre). The portal (mine and rear yards) is the ring with its own base, an
+  invisible flat Pad collider, the existing Swirl/SwirlCore (7.9 across, centred 5.85 up), prompt and labels; on the
+  plots the ring is turned so its gold front faces the road. Both boards are GemSignBoard clones (Panel renamed
+  UpgradeSign / AutoWalkSign, front text on the panel, back text on an invisible board behind the frame). The platform
+  edge is twelve 30-degree arcs (two plain ones toward the portal) instead of the gold cylinder; the crystal clusters
+  moved out to radius 41.4. All props are non-colliding. Without the templates the old code-built look is used.

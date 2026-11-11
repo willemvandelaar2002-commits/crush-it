@@ -136,11 +136,26 @@ end
 -- disc) is its base; on it an upright gold ring with a pink rim and a glowing swirl inside, facing
 -- along the CFrame's Z. E on the swirl uses it.
 local PORTAL_R = 5 -- the ring's radius (studs, to the middle of the gold band)
-local function buildPortal(parent: Instance, at: CFrame, title: string, action: string): (Model, TextLabel, ProximityPrompt)
+local function buildPortal(parent: Instance, at: CFrame, title: string, action: string, turn: boolean?): (Model, TextLabel, ProximityPrompt)
 	local m = Instance.new("Model")
 	local baseTop = 1
 	local padT = tpl("TeleporterPad")
-	if padT and padT:IsA("BasePart") then
+	-- 11 Nov: Willem's GemPortalRing (ReplicatedStorage.GemMineMeshes: ground-centre pivot, front -Z,
+	-- own base 0.9 high, opening 8 across centred 5.85 up). Its meshes don't collide (a box round
+	-- the ring would close the hole); an invisible flat pad under the base carries you.
+	local ringT = tpl("GemPortalRing")
+	local hasRing = ringT ~= nil and ringT:IsA("Model")
+	local centre = at * CFrame.new(0, 5.85, -0.3)
+	local radius = 3.95 + 0.8 -- (the swirl below is radius * 2 - 1.6 = 7.9 across)
+	if hasRing then
+		local ring = (ringT :: Model):Clone()
+		ring.Name = "Ring"
+		for _, d in ring:GetDescendants() do if d:IsA("BasePart") then d.Anchored = true d.CanCollide = false d.CanTouch = false d.CanQuery = false end end
+		ring:PivotTo(if turn then at * CFrame.Angles(0, math.pi, 0) else at) -- (its gold front toward where you come from)
+		ring.Parent = m
+		local pad = Build.block(m, "Pad", Vector3.new(10.8, 0.9, 3.5), at * CFrame.new(0, 0.45, 0), NAVY)
+		pad.Transparency = 1 pad.CanQuery = false
+	elseif padT and padT:IsA("BasePart") then
 		local pad = padT:Clone()
 		pad.Name = "Pad" pad.Anchored = true
 		pad:PivotTo(at * CFrame.new(0, pad.Size.Y / 2, 0))
@@ -152,10 +167,10 @@ local function buildPortal(parent: Instance, at: CFrame, title: string, action: 
 		local rim = Build.block(m, "PadRim", Vector3.new(1.05, 9, 9), at * CFrame.new(0, 0.52, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
 		rim.Shape = Enum.PartType.Cylinder rim.Material = Enum.Material.Neon
 	end
-	local centre = at * CFrame.new(0, baseTop + PORTAL_R + 0.6, 0)
-	-- the ring: 24 gold blocks round a circle, a pink neon band just inside
-	local n = 24
-	local len = 2 * math.pi * PORTAL_R / n * 1.12
+	if not hasRing then centre = at * CFrame.new(0, baseTop + PORTAL_R + 0.6, 0) radius = PORTAL_R end
+	-- (stand-in without Willem's ring) 24 gold blocks round a circle, a pink neon band just inside
+	local n = if hasRing then 0 else 24
+	local len = 2 * math.pi * PORTAL_R / 24 * 1.12
 	for i = 1, n do
 		local a = (i - 0.5) / n * math.pi * 2
 		local seg = centre * CFrame.Angles(0, 0, a) * CFrame.new(0, PORTAL_R, 0)
@@ -165,15 +180,15 @@ local function buildPortal(parent: Instance, at: CFrame, title: string, action: 
 		inner.Material = Enum.Material.Neon inner.CanCollide = false
 	end
 	-- gems on the ring: one at the top, two at the sides
-	for _, ang in { 0, 90, -90 } do
+	for _, ang in (if hasRing then {} else { 0, 90, -90 }) do
 		local gem = Build.block(m, "RingGem", Vector3.new(1.3, 1.3, 1.3), centre * CFrame.Angles(0, 0, math.rad(ang)) * CFrame.new(0, PORTAL_R + 0.4, 0) * CFrame.Angles(math.rad(45), 0, math.rad(45)), CYAN)
 		gem.Material = Enum.Material.Neon gem.CanCollide = false
 	end
 	-- the swirl (a thin disc facing along Z) with sparkles drawn into it
-	local swirl = Build.block(m, "Swirl", Vector3.new(0.3, PORTAL_R * 2 - 1.6, PORTAL_R * 2 - 1.6), centre * CFrame.Angles(0, math.rad(90), 0), PINK)
+	local swirl = Build.block(m, "Swirl", Vector3.new(0.3, radius * 2 - 1.6, radius * 2 - 1.6), centre * CFrame.Angles(0, math.rad(90), 0), PINK)
 	swirl.Shape = Enum.PartType.Cylinder swirl.Material = Enum.Material.ForceField swirl.Transparency = 0.05
 	swirl.CanCollide = false swirl.CastShadow = false
-	local core = Build.block(m, "SwirlCore", Vector3.new(0.2, PORTAL_R * 2 - 1.7, PORTAL_R * 2 - 1.7), centre * CFrame.Angles(0, math.rad(90), 0), RGB(120, 40, 170))
+	local core = Build.block(m, "SwirlCore", Vector3.new(0.2, radius * 2 - 1.7, radius * 2 - 1.7), centre * CFrame.Angles(0, math.rad(90), 0), RGB(120, 40, 170))
 	core.Shape = Enum.PartType.Cylinder core.Material = Enum.Material.Neon core.Transparency = 0.35
 	core.CanCollide = false core.CastShadow = false
 	local pe = Instance.new("ParticleEmitter")
@@ -184,7 +199,7 @@ local function buildPortal(parent: Instance, at: CFrame, title: string, action: 
 	pe.Texture = "rbxasset://textures/particles/sparkles_main.dds" pe.Rotation = NumberRange.new(0, 360) pe.RotSpeed = NumberRange.new(-180, 180)
 	pe.Parent = core
 	local light = Instance.new("PointLight") light.Range = 18 light.Brightness = 1.6 light.Color = RGB(255, 150, 240) light.Shadows = false light.Parent = core
-	local text = label(swirl, title, RGB(255, 170, 245), PORTAL_R + 2.6, Vector2.new(14, 3))
+	local text = label(swirl, title, RGB(255, 170, 245), if hasRing then 8.2 else PORTAL_R + 2.6, Vector2.new(14, 3))
 	local pr = prompt(swirl, action, "Gem Mine")
 	m.PrimaryPart = swirl
 	m.Parent = parent
@@ -280,8 +295,26 @@ local function buildWorld()
 	-- platform in the front"): your gems land on it. Raised, gold trim, a glowing ring.
 	local zc = o * Mine.Zone.center
 	local zr = Mine.Zone.radius
-	local trim = Build.block(root, "ZoneTrim", Vector3.new(Mine.Zone.height, zr * 2 + 2, zr * 2 + 2), zc * CFrame.new(0, Mine.Zone.height / 2, 0) * CFrame.Angles(0, 0, math.rad(90)), GOLD)
-	trim.Shape = Enum.PartType.Cylinder trim.Material = Enum.Material.Metal
+	-- 11 Nov: Willem's rim, twelve 30-degree arcs (GemPlatformEdgeSegment, plain ones facing the
+	-- portal), pivot at the platform's ground centre, made for radius 38; else a gold cylinder
+	local segT, plainT = tpl("GemPlatformEdgeSegment"), tpl("GemPlatformEdgePlain")
+	local hasRim = segT ~= nil and segT:IsA("Model")
+	if hasRim then
+		local rim = Instance.new("Model") rim.Name = "ZoneEdge"
+		local k = zr / 38 -- (uniform, if the platform radius ever changes)
+		for i = 0, 11 do
+			local t = if (i == 0 or i == 11) and plainT and plainT:IsA("Model") then plainT else segT
+			local s = (t :: Model):Clone()
+			for _, d in s:GetDescendants() do if d:IsA("BasePart") then d.Anchored = true d.CanCollide = false d.CanTouch = false d.CanQuery = false end end
+			if k ~= 1 then s:ScaleTo(s:GetScale() * k) end
+			s:PivotTo(zc * CFrame.Angles(0, (i + 0.5) * math.pi / 6, 0))
+			s.Parent = rim
+		end
+		rim.Parent = root
+	else
+		local trim = Build.block(root, "ZoneTrim", Vector3.new(Mine.Zone.height, zr * 2 + 2, zr * 2 + 2), zc * CFrame.new(0, Mine.Zone.height / 2, 0) * CFrame.Angles(0, 0, math.rad(90)), GOLD)
+		trim.Shape = Enum.PartType.Cylinder trim.Material = Enum.Material.Metal
+	end
 	local ring = Build.block(root, "ZoneRim", Vector3.new(Mine.Zone.height + 0.1, zr * 2 + 0.8, zr * 2 + 0.8), zc * CFrame.new(0, Mine.Zone.height / 2 + 0.03, 0) * CFrame.Angles(0, 0, math.rad(90)), MAGENTA)
 	ring.Shape = Enum.PartType.Cylinder ring.Material = Enum.Material.Neon deco(ring)
 	local top = Build.block(root, "Zone", Vector3.new(Mine.Zone.height + 0.2, zr * 2, zr * 2), zc * CFrame.new(0, Mine.Zone.height / 2 + 0.05, 0) * CFrame.Angles(0, 0, math.rad(90)), RGB(78, 46, 132))
@@ -294,7 +327,7 @@ local function buildWorld()
 	-- small crystals around the platform edge, leaving the front (to the portal) open
 	for i = 1, 14 do
 		local a = math.rad(-120 + (i - 1) * 18.5)
-		local at = zc * CFrame.Angles(0, a, 0) * CFrame.new(0, 0, -(zr + 2.2))
+		local at = zc * CFrame.Angles(0, a, 0) * CFrame.new(0, 0, -(zr + (if hasRim then 3.4 else 2.2))) -- (outside the rim)
 		clone(if i % 3 == 0 then "CrystalClusterLarge" else "CrystalClusterSmall", 1.1 + rng:NextNumber() * 0.5, at * CFrame.Angles(0, rng:NextNumber(0, 6.28), 0), false)
 	end
 	-- sparkles over the platform (one emitter)
@@ -322,12 +355,32 @@ local function buildWorld()
 	light(portal.PrimaryPart :: BasePart, 10, 30, RGB(255, 170, 240))
 	-- the Gem Shop sign beside the portal: a navy board with a gold frame and a gem on top
 	local signAt = portalAt * CFrame.new(11, 0, -2) * CFrame.Angles(0, math.rad(20), 0)
-	for _, x in { -2.6, 2.6 } do Build.block(root, "SignPost", Vector3.new(0.6, 6, 0.6), signAt * CFrame.new(x, 3, 0), GOLD).Material = Enum.Material.Metal end
-	local frame = Build.block(root, "SignFrame", Vector3.new(6, 4, 0.5), signAt * CFrame.new(0, 5, 0), GOLD)
-	frame.Material = Enum.Material.Metal
-	local shop = Build.block(root, "UpgradeSign", Vector3.new(5.2, 3.2, 0.6), signAt * CFrame.new(0, 5, 0), NAVY)
+	-- 11 Nov: Willem's GemSignBoard for both boards (blank Panel 5.16 x 3.12, front -Z; the frame
+	-- covers the panel's back, so the back text sits on an invisible board on the frame's back)
+	local boardT = tpl("GemSignBoard")
+	local hasBoard = boardT ~= nil and boardT:IsA("Model") and boardT:FindFirstChild("Panel") ~= nil
+	local function board(at: CFrame, name: string, frameName: string, postName: string): (BasePart, BasePart?)
+		if hasBoard then
+			local s = (boardT :: Model):Clone()
+			s.Name = name .. "Board"
+			for _, d in s:GetDescendants() do if d:IsA("BasePart") then d.Anchored = true d.CanCollide = false d.CanTouch = false d.CanQuery = false end end
+			s:PivotTo(at)
+			s.Parent = root
+			local panel = s:FindFirstChild("Panel") :: BasePart
+			panel.Name = name panel.CanQuery = true -- (prompt and click)
+			local rel = at:ToObjectSpace(panel.CFrame)
+			local back = Build.block(s, name .. "Back", Vector3.new(panel.Size.X, panel.Size.Y, 0.05), at * CFrame.new(rel.X, rel.Y, 0.7), NAVY)
+			back.Transparency = 1 deco(back)
+			return panel, back
+		end
+		for _, x in { -2.6, 2.6 } do Build.block(root, postName, Vector3.new(0.6, 6, 0.6), at * CFrame.new(x, 3, 0), GOLD).Material = Enum.Material.Metal end
+		local frame = Build.block(root, frameName, Vector3.new(6, 4, 0.5), at * CFrame.new(0, 5, 0), GOLD)
+		frame.Material = Enum.Material.Metal
+		return Build.block(root, name, Vector3.new(5.2, 3.2, 0.6), at * CFrame.new(0, 5, 0), NAVY), nil
+	end
+	local shop, shopBack = board(signAt, "UpgradeSign", "SignFrame", "SignPost")
 	local signGem = tpl("GemPickup")
-	if signGem and signGem:IsA("BasePart") then
+	if signGem and signGem:IsA("BasePart") and not hasBoard then
 		local g = signGem:Clone() g.Anchored = true g.Size *= 2.2 deco(g)
 		g.CFrame = signAt * CFrame.new(0, 8.2, 0) g.Parent = root
 	end
@@ -341,6 +394,7 @@ local function buildWorld()
 		t.Text = "GEM\nUPGRADES" t.TextScaled = true t.Font = Enum.Font.FredokaOne t.TextColor3 = RGB(255, 236, 120)
 		local st = Instance.new("UIStroke") st.Thickness = 5 st.Color = RGB(40, 20, 60) st.Parent = t
 		t.Parent = sg
+		if face == Enum.NormalId.Back and shopBack then sg.Adornee = shopBack end
 		sg.Parent = shop
 	end
 	prompt(shop, "Upgrades", "Gem Shop").Triggered:Connect(function(p)
@@ -351,12 +405,11 @@ local function buildWorld()
 	-- on and off (attribute AutoWalkOn). Each player's own text (price / ON / OFF) is set on
 	-- their screen (client/GemMine), the board says what it does.
 	local walkAt = portalAt * CFrame.new(-11, 0, -2) * CFrame.Angles(0, math.rad(-20), 0)
-	for _, x in { -2.6, 2.6 } do Build.block(root, "WalkPost", Vector3.new(0.6, 6, 0.6), walkAt * CFrame.new(x, 3, 0), GOLD).Material = Enum.Material.Metal end
-	local wframe = Build.block(root, "WalkFrame", Vector3.new(6, 4, 0.5), walkAt * CFrame.new(0, 5, 0), GOLD)
-	wframe.Material = Enum.Material.Metal
-	local walk = Build.block(root, "AutoWalkSign", Vector3.new(5.2, 3.2, 0.6), walkAt * CFrame.new(0, 5, 0), NAVY)
-	local shoe = Build.block(root, "WalkGem", Vector3.new(1.4, 1.4, 1.4), walkAt * CFrame.new(0, 7.8, 0) * CFrame.Angles(math.rad(45), 0, math.rad(45)), MAGENTA)
-	shoe.Material = Enum.Material.Neon deco(shoe)
+	local walk, walkBack = board(walkAt, "AutoWalkSign", "WalkFrame", "WalkPost")
+	if not hasBoard then
+		local shoe = Build.block(root, "WalkGem", Vector3.new(1.4, 1.4, 1.4), walkAt * CFrame.new(0, 7.8, 0) * CFrame.Angles(math.rad(45), 0, math.rad(45)), MAGENTA)
+		shoe.Material = Enum.Material.Neon deco(shoe)
+	end
 	for _, face in { Enum.NormalId.Back, Enum.NormalId.Front } do
 		local sg = Instance.new("SurfaceGui")
 		sg.Name = "AutoWalkGui" sg.Face = face sg.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud sg.PixelsPerStud = 60
@@ -371,6 +424,7 @@ local function buildWorld()
 		sub.Text = "walks to your gems" sub.TextScaled = true sub.Font = Enum.Font.FredokaOne sub.TextColor3 = RGB(255, 236, 120)
 		local st2 = Instance.new("UIStroke") st2.Thickness = 4 st2.Color = RGB(40, 20, 60) st2.Parent = sub
 		sub.Parent = sg
+		if face == Enum.NormalId.Back and walkBack then sg.Adornee = walkBack end
 		sg.Parent = walk
 	end
 	local function onWalkBoard(p: Player)
@@ -398,7 +452,7 @@ end
 local function buildTeleporters()
 	for _, plot in api.plots() do
 		local at = plot.origin * CFrame.new(Mine.Teleporter.x, 0, Mine.Teleporter.z) -- (the ring faces along Z: down the road)
-		local m, text, pr = buildPortal(plot.model, at, "GEM MINE", "Teleport")
+		local m, text, pr = buildPortal(plot.model, at, "GEM MINE", "Teleport", true)
 		m.Name = "GemMineTeleporter"
 		m:SetAttribute("PlotIndex", plot.index)
 		pr.Triggered:Connect(function(p) M.enter(p) end)
