@@ -39,7 +39,16 @@ local function place()
 	if game:GetService("UserInputService").TouchEnabled or Style.compact() then
 		-- 1 Nov: on touch screens the jump button sits bottom-right and the hotbar bottom
 		-- centre: top right, just under the travel buttons
-		chip.AnchorPoint = Vector2.new(1, 0) chip.Position = UDim2.new(1, -10, 0, 100) chip.Size = UDim2.fromOffset(150, 46)
+		chip.Size = UDim2.fromOffset(118, 36)
+		-- 12 Nov (phone test): at y 100 it sat on the SMASH button: go just left of SMASH
+		local fz = player.PlayerGui:FindFirstChild("FrenzyHud") :: ScreenGui?
+		local smash = fz and fz:FindFirstChild("Smash", true) :: GuiObject?
+		if fz and smash and smash.AbsoluteSize.X > 0 and fz.Enabled then
+			chip.AnchorPoint = Vector2.new(1, 0.5)
+			chip.Position = UDim2.fromOffset(smash.AbsolutePosition.X - gui.AbsolutePosition.X - 8, smash.AbsolutePosition.Y - gui.AbsolutePosition.Y + smash.AbsoluteSize.Y / 2)
+		else
+			chip.AnchorPoint = Vector2.new(1, 0) chip.Position = UDim2.new(1, -10, 0, 100)
+		end
 	else
 		chip.AnchorPoint = Vector2.new(1, 1) chip.Size = UDim2.fromOffset(200, 58)
 		-- 12 Nov: the 2X CASH / pass offers stack sits bottom right on PC: go just above it
