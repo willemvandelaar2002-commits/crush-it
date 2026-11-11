@@ -117,6 +117,8 @@ local function refresh()
 		r.count.Text = tostring(o.types)
 	end
 	for i = #odds + 1, #pool do pool[i].frame.Visible = false end
+	-- the window fits the rarities that can roll right now (Common can drop to 0% with big luck)
+	panel.Size = UDim2.fromOffset(W, 196 + #odds * (ROW + 4))
 	local m = CC.luckMult(mult, bonus)
 	footer.Text = string.format("Luck Lv %d  ·  luck x%s%s", luck, (string.format("%.2f", m):gsub("%.?0+$", "")),
 		if m >= CC.LuckMultCap - 1e-9 then " (the maximum)" else "")
