@@ -876,7 +876,8 @@ local function action(p,name,args)
 	if ok and name=="GemCrate" and type(result)=="table" then
 		Analytics.custom(p,"GemCrate",1,result.rarity)
 		local r=C.rarity(result.rarity)
-		if r and r.rank>=4.25 then Net.event("RarePull"):FireAllClients({text=p.DisplayName.." opened a "..string.upper(result.rarity).." "..C.typeById(result.type).name.." from the Gem Crate!",userId=p.UserId,color=r.color}) end
+		-- (after the chest's reveal has shown it to the opener)
+		if r and r.rank>=4.25 then task.delay(3.4,function() Net.event("RarePull"):FireAllClients({text=p.DisplayName.." opened a "..string.upper(result.rarity).." "..C.typeById(result.type).name.." from the GEM CHEST!",userId=p.UserId,color=r.color}) end) end
 	end
 	if ok and name=="UpgradePlot" and Progression.level(d)>levelBefore then
 		Net.event("PlotUpgraded"):FireClient(p,upgradeSummary(levelBefore,Progression.level(d)))
@@ -887,7 +888,8 @@ local function action(p,name,args)
 		end
 	end
 	ctx.justRolled=ok and name=="Roll" or nil
-	send(p,if ok and name=="Roll" then nil else message,if name=="Buy" or name=="Fuse" or name=="CollectFusion" or name=="ApplyCoating" then result else nil) ctx.justRolled=nil ctx.justDiscovered=nil
+	-- (11 Nov: the Gem Chest's prize is shown by its reveal, not a notice)
+	send(p,if ok and (name=="Roll" or name=="GemCrate") then nil else message,if name=="Buy" or name=="Fuse" or name=="CollectFusion" or name=="ApplyCoating" then result else nil) ctx.justRolled=nil ctx.justDiscovered=nil
 	return ok,message,result
 end
 -- the toy a crusher of this rarity crushes (C.RarityObjects), as a Config.Objects index

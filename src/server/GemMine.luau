@@ -475,41 +475,22 @@ local function buildWorld()
 		local glow = cpart("ChestGlow", Vector3.new(W - 1, 0.2, D - 1), at * CFrame.new(0, Hb + 0.35, 0), PINK, Enum.Material.Neon)
 		glow.Transparency = 0.4
 		for _, p in cm:GetDescendants() do if p:IsA("BasePart") then p.CanCollide = p.Name == "ChestBody" or p.Name == "ChestFoot" end end
-		local weldTo = {} -- lid bands follow the lid
-		for _, b in lidBands do weldTo[b] = lid.CFrame:ToObjectSpace(b.CFrame) end
-		local sparks = Instance.new("ParticleEmitter")
-		sparks.Enabled = false sparks.Rate = 0 sparks.Speed = NumberRange.new(8, 14) sparks.Lifetime = NumberRange.new(0.6, 1.1)
-		sparks.SpreadAngle = Vector2.new(35, 35) sparks.LightEmission = 1 sparks.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-		sparks.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.7), NumberSequenceKeypoint.new(1, 0) })
-		sparks.Color = ColorSequence.new(PINK, CYAN) sparks.Acceleration = Vector3.new(0, -12, 0)
-		local sAtt = Instance.new("Attachment") sAtt.CFrame = CFrame.new(0, 0.2, 0) * CFrame.Angles(0, 0, 0) sAtt.Parent = glow
-		sparks.Parent = sAtt
 		label(body, "GEM CHEST", RGB(255, 170, 245), 5.6, Vector2.new(12, 2.8))
 		local pr = prompt(body, "Open", "Gem Chest")
 		pr.Name = "GemChestPrompt" pr.MaxActivationDistance = 12
 		cm.PrimaryPart = body
+		cm.ModelStreamingMode = Enum.ModelStreamingMode.Atomic -- (the lid arrives with the box)
 		cm.Parent = root
 		chest = { model = cm, lid = lid, hinge = hinge, lidRest = lid.CFrame, front = body, busy = false }
-		local c = chest :: any
+		-- the hinge for the clients' lid animation (client/GemMine plays the opening and the reveal)
+		cm:SetAttribute("Hinge", hinge)
 		pr.Triggered:Connect(function(p)
-			local ok = api.act(p, "GemCrate", {})
-			if not ok or c.busy then return end
-			c.busy = true
-			-- open the lid, burst, close again (rare and short, so tweened here)
-			local t0 = os.clock()
-			sparks:Emit(40)
-			while true do
-				local t = os.clock() - t0
-				local a = if t < 0.25 then t / 0.25 elseif t < 1.6 then 1 elseif t < 2 then 1 - (t - 1.6) / 0.4 else 0
-				local open = c.hinge * CFrame.Angles(math.rad(-105) * (1 - (1 - a) ^ 2), 0, 0) * c.hinge:ToObjectSpace(c.lidRest)
-				lid.CFrame = open
-				for b, rel in weldTo do b.CFrame = open * rel end
-				if t >= 2 then break end
-				task.wait()
-			end
-			lid.CFrame = c.lidRest
-			for b, rel in weldTo do b.CFrame = c.lidRest * rel end
-			c.busy = false
+			local ok, _, item = api.act(p, "GemCrate", {})
+			if not ok or type(item) ~= "table" then return end
+			-- 11 Nov (Willem: "make the chest reveal more special"): everyone near sees the lid fly
+			-- open and a beam in the prize's colour; the opener gets the full reveal on screen
+			Net.event("GemMine"):FireAllClients({ kind = "chestOpen", rarity = item.rarity, by = p.UserId })
+			Net.event("GemMine"):FireClient(p, { kind = "chestReveal", type = item.type, rarity = item.rarity })
 		end)
 		lock.CanQuery = false
 	end
