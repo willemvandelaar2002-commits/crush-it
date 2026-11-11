@@ -1174,6 +1174,7 @@ function G.start()
 				while C.TutorialSteps[s.tutorial] do Rules.tutorialAdvance(d,C.TutorialSteps[s.tutorial].id) end
 				s.goal=math.max(s.goal or 1,C.MainGoals+1)
 				s.plotLevel=level s.bays=math.max(s.bays,C.bayCapacity(level))
+				GemMine.refresh(p) -- (11 Nov: the Gem Mine portal shows from Factory IV)
 				ctx.bays={} reconcile(p) send(p,"Plot level "..level.." (dev)") return "ok"
 			elseif what=="Skip" then
 				while C.TutorialSteps[s.tutorial] do Rules.tutorialAdvance(d,C.TutorialSteps[s.tutorial].id) end
