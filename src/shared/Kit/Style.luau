@@ -766,6 +766,29 @@ function Style.image(parent: Instance, image: string, props: { [string]: any }?)
 	return img
 end
 
+-- 12 Nov (Willem, a reference game's phone screen: "we have a lot blocking the screen,
+-- like the 2x 10 min"): a running timer as a small square tile (icon on a coloured tile,
+-- a short badge like "2x" in the corner, the time under it) instead of a wide text chip.
+-- Tiles sit in a horizontal row (BoostsHud.ActiveBoosts). Returns tile, time label, badge.
+Style.TileSize = 56
+function Style.timerTile(parent: Instance, name: string, color: Color3, image: string, badge: string?, order: number?): (Frame, TextLabel, TextLabel)
+	local S = Style.TileSize
+	local tile = child("Frame", { Name = name, Size = UDim2.fromOffset(S, S + 20), BackgroundTransparency = 1, LayoutOrder = order or 0, Visible = false }, parent)
+	local sq = child("Frame", { Name = "Square", Size = UDim2.fromOffset(S, S), BackgroundColor3 = color }, tile)
+	child("UICorner", { CornerRadius = UDim.new(0, 10) }, sq)
+	child("UIStroke", { Thickness = 2.5, Color = Style.Colors.Ink, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, sq)
+	child("UIGradient", { Rotation = 90, Color = ColorSequence.new(Style.lighten(color, 0.2), Style.darken(color, 0.3)) }, sq)
+	Style.image(sq, image, { Size = UDim2.fromScale(0.8, 0.8), ZIndex = 2 })
+	local b = child("TextLabel", { Name = "Badge", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 6, 0, -6), Size = UDim2.fromOffset(34, 20),
+		BackgroundTransparency = 1, TextScaled = true, Text = badge or "", ZIndex = 4 }, sq)
+	Style.text(b, 2.5)
+	b.TextColor3 = Color3.fromRGB(255, 236, 90)
+	local t = child("TextLabel", { Name = "Time", Position = UDim2.new(0, -6, 0, S + 1), Size = UDim2.new(1, 12, 0, 18),
+		BackgroundTransparency = 1, TextScaled = true, Text = "", ZIndex = 3 }, tile)
+	Style.text(t, 2.5)
+	return tile, t, b
+end
+
 -- Big chunky icon button (Destroy a Vault's SHOP / INDEX / REWARDS): a tilted
 -- gradient tile with a large emoji, an outlined label overlapping its bottom
 -- edge and a red "!" badge (hidden; show it with badge.Visible = true).

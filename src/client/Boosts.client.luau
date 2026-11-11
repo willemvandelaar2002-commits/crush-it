@@ -114,16 +114,14 @@ end
 -- Active boost chips (left side, under the menu buttons) ------------------------------------
 -- 1 Nov: on tablets cash + friend boost sit top-left (CashHud), so the chips go under them
 local tabletY = if game:GetService("UserInputService").TouchEnabled then 236 else 190
-local chips = make("Frame", { Name = "ActiveBoosts", Position = UDim2.new(0, 12, 0, tabletY), Size = UDim2.fromOffset(170, 160), BackgroundTransparency = 1 }, gui)
+local chips = make("Frame", { Name = "ActiveBoosts", Position = UDim2.new(0, 12, 0, tabletY), Size = UDim2.fromOffset(4 * (Style.TileSize + 8), 2 * (Style.TileSize + 26)), BackgroundTransparency = 1 }, gui)
 Style.phoneFit(chips, { scale = 0.65, position = UDim2.new(0, 12 + math.floor(Style.PhoneHud.size * 1.15) + 12, 0, 8) }) -- 30 Oct: under cash + friend boost on phones; 6 Nov: right of the phone button column (Willem's new phone layout)
-make("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, chips)
+-- 12 Nov (Willem: the wide "2x Cash 9:48" chips blocked the screen): small icon tiles in a
+-- row, the time under each (Style.timerTile); the weekend, Server Luck and TURBO join it
+make("UIListLayout", { Padding = UDim.new(0, 8), FillDirection = Enum.FillDirection.Horizontal, Wraps = true, SortOrder = Enum.SortOrder.LayoutOrder }, chips)
 local chipFor: { [string]: TextLabel } = {}
 for i, b in B.List do
-	local c = make("Frame", { Name = b.id, LayoutOrder = i, Size = UDim2.fromOffset(170, 40), BackgroundColor3 = b.color, Visible = false }, chips)
-	corner(c, 8) stroke(c, 3) shade(c, b.color)
-	make("ImageLabel", { Image = (Icons :: any)[b.icon] or Icons.Cash, BackgroundTransparency = 1, Position = UDim2.fromOffset(4, 3), Size = UDim2.fromOffset(34, 34), ZIndex = 2 }, c)
-	local t = label(c, "", UDim2.fromOffset(42, 5), UDim2.new(1, -48, 1, -10), 2.5)
-	t.ZIndex = 3 t.TextXAlignment = Enum.TextXAlignment.Left
+	local _, t = Style.timerTile(chips, b.id, b.color, (Icons :: any)[b.icon] or Icons.Cash, if b.id == "Super" then "2x2" else "2x", i)
 	chipFor[b.id] = t
 end
 
@@ -144,7 +142,7 @@ local function refresh()
 	for id, t in chipFor do
 		local left = ((me:GetAttribute(B.attr(id)) :: number?) or 0) - now
 		t.Parent.Visible = left > 0
-		if left > 0 then t.Text = B.find(id).title .. "  " .. clock(left) end
+		if left > 0 then t.Text = clock(left) end
 	end
 end
 
