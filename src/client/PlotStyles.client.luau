@@ -10,6 +10,7 @@ local Config = require(RS.Shared.Config)
 if not Config.Crushers.Enabled then return end
 local Style = require(RS.Shared.Kit.Style)
 local Styles = require(RS.Shared.PlotStyles)
+if not Styles.UiEnabled then return end
 local Net = require(RS.Shared.Net)
 
 local me = Players.LocalPlayer

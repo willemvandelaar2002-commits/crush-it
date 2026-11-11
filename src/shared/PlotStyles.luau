@@ -9,6 +9,8 @@
 local C = require(script.Parent.CrusherConfig)
 
 local S = {}
+-- Keep the board as a coming-soon preview until the styles screen is ready.
+S.UiEnabled = false
 local RGB = Color3.fromRGB
 
 export type Style = {

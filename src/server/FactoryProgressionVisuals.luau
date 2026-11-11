@@ -154,12 +154,15 @@ function V.create(plot)
 		end
 		lab.button=W.button(lab.content,"ApplyCoating","SELECT A FINISH",UDim2.fromScale(.1,.81),UDim2.fromScale(.8,.16),"ApplyCoating")
 	end
-	-- 11 Nov: the PLOT STYLES board (from FACTORY III, or once you own a style): OPEN shows the
-	-- styles window (client/PlotStyles); the board says what your styles add
+	-- The board stays visible as a preview while the styles screen is unfinished.
 	local style=board("StyleStation",15.5,15,15,7,Style.Colors.Purple) -- (beside the road, clear of the Coating booth)
 	W.text(style.content,"Heading","PLOT STYLES",UDim2.fromScale(.03,.03),UDim2.fromScale(.94,.22))
 	style.info=W.text(style.content,"Bonus","FILL A ROW WITH LEGENDARY+ TO EARN ONE",UDim2.fromScale(.03,.28),UDim2.fromScale(.94,.23))
-	style.button=W.button(style.content,"Styles","OPEN",UDim2.fromScale(.12,.58),UDim2.fromScale(.76,.33),"Styles")
+	style.button=W.button(style.content,"Styles",if Styles.UiEnabled then "OPEN" else "COMING SOON",UDim2.fromScale(.12,.58),UDim2.fromScale(.76,.33),if Styles.UiEnabled then "Styles" else nil)
+	if not Styles.UiEnabled then
+		style.button.Active=false style.button.Interactable=false style.button.Selectable=false
+		Style.setButtonColor(style.button,Color3.fromRGB(110,112,130))
+	end
 	plot.progression={yard=yard,accents=accents,upgrade=upgrade,lab=lab,style=style,gateParts={},coatDoor={},levelText=levelText}
 	-- 11 Nov: the right rim opens into the Coating wing (with the lab)
 	for _,p in plot.model:GetDescendants() do
