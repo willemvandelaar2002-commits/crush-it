@@ -495,3 +495,4 @@
 - 2026-11-11: Gem Crate became a GEM CHEST in the mine: buy a key at GEM UPGRADES (750 Gems), open the chest with E (same odds). Settings gear: small icon in the top bar's free right end on PC (phones as before).
 - 2026-11-11: Gem Chest reveal (camera, shake and glow in the rarity colour, lid + beam, the crusher on a sunburst). TURBO FUEL window in Willem's new design (frame, tinted card skin, fuel icons, Instant strip; all text live).
 - 2026-11-11: Gem Chest uses Willem's low-poly model (2,864 tris): lid and crystal crown on one rear hinge, invisible hitbox for prompt/collision/reach; lid now opens upward (+100 degrees, the old -115 swung it down). Key/reward rules unchanged. Verified in Studio.
+- 2026-11-11: Factory event start sends Gem Mine players back to their factory (the event didn't load in the cave).
