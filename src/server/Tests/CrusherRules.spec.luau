@@ -44,6 +44,9 @@ return function()
 	check(yield.value>speed.value and yield.damage==speed.damage and yield.cycle==speed.cycle,"yield is distinct")
 	local w0,w20=R.weights(0,false),R.weights(20,false) local sum0,sum20=0,0 for _,w in w0 do sum0+=w end for _,w in w20 do sum20+=w end
 	check(w20[5]/sum20>w0[5]/sum0,"luck improves rare probability")
+	-- 11 Nov: the Luck upgrade helps Secret / Divine / Eternal like an Epic (luckRank 3.5), and they stay rare
+	for _,name in {"Secret","Divine","Eternal"} do check(C.rarity(name).luckRank==3.5,name.." luckRank 3.5") end
+	check(1/C.chanceAtLeast(6.5,50,3.5)>50000 and 1/C.chanceAtLeast(5,25,1.25)>10000,"Eternal rarer than 1 in 50,000 at rebirth 10; Secret+ rarer than 1 in 10,000 at rebirth 1")
 	-- 11 Nov: a luck multiplier multiplies the chance of every rarity-or-better, at any Luck level
 	for _,lv in {0,10,40} do for _,rank in {4,5,6.5} do
 		local plain,two=C.chanceAtLeast(rank,lv,1),C.chanceAtLeast(rank,lv,2)
@@ -198,7 +201,7 @@ return function()
 	check(R.find(loaded,"m1")~=nil,"a bought Mythic survives a full inventory on load")
 	-- chase tiers: rollable, rarer than Legendary, Mythic still the strongest
 	local sec,div,leg,myth2=C.rarity("Secret"),C.rarity("Divine"),C.rarity("Legendary"),C.rarity("Mythic")
-	check(C.oddsFor(sec.types[1])==50000 and C.oddsFor(div.types[1])==500000 and C.oddsFor(leg.types[1])==4000,"chase odds 1 in 50K / 500K, Legendary unchanged")
+	check(C.oddsFor(sec.types[1])==1000000 and math.abs(C.oddsFor(div.types[1])-6666667)<=1 and C.oddsFor(leg.types[1])==4000,"chase odds 1 in 1M / 6.67M per crusher (11 Nov), Legendary unchanged")
 	check(C.Rarities[#C.Rarities]==myth2 and myth2.rank>div.rank and div.rank>sec.rank and sec.rank>leg.rank,"Mythic stays last and on top")
 	-- 6 Nov: Limited (Lucky Weekend): never rolled without the event, about 1 in 5,000 with it,
 	-- as strong as a Secret, normal ownership
@@ -206,7 +209,7 @@ return function()
 	local off,on=R.weights(0,1,0,false),R.weights(0,1,0,true)
 	local totalOn,limOn=0,0 for i,x in on do totalOn+=x if C.Rarities[i]==lim then limOn=x end end
 	for i,x in off do if C.Rarities[i]==lim then check(x==0,"no Limited weight outside the weekend") end end
-	check(math.abs(totalOn/limOn-5001)<1,"Limited: about 1 in 5,000 rolls during the weekend")
+	check(math.abs(totalOn/limOn-25001)<1,"Limited: about 1 in 25,000 rolls during the weekend (11 Nov)")
 	check(C.oddsFor(lim.types[1])==15003,"Index: 1 in 15,003 per Limited crusher")
 	check(C.typeById(lim.types[1]).value==C.typeById(sec.types[1]).value and lim.mult==sec.mult,"Limited as strong as Secret")
 	check(lim.rank>leg.rank and lim.rank<sec.rank,"Limited between Legendary and Secret")

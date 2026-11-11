@@ -62,3 +62,29 @@ Kit/Analytics `cash(player, sku, tx, before, after)` logs every cash change with
   below, with a rounding note. Updates while a boost, Server Luck or the weekend starts or ends.
 - Paid luck for players where paid random items are restricted: left as is (Willem: the luck also works
   on rolling, which is free).
+
+## 11 Nov: the chase tiers stay rare (audit finding 4)
+Willem: "top rarities stop being rare ... either increase the odds or bring luck down". Both:
+- `luckRank = 3.5` on Secret, Divine, Eternal (and the weekend's Limited): `C.luckFactor` uses it instead
+  of the rank, so the Luck upgrade helps them about as much as an Epic. Before, luck grew fastest for the
+  highest ranks (Luck 60 made an Eternal 1 in ~580 per pedestal).
+- Much smaller base weights (Common took the difference): Secret .0004 (1 in 250,000; each of 4 crushers
+  1 in 1,000,000), Divine .00006 (1 in 1,666,667; each 1 in 6,666,667), Eternal .000015 (1 in 6,666,667;
+  each of 6 1 in 40,000,000). Limited (weekend) eventWeight .004 (1 in 25,000).
+- Per pedestal now (checked in Studio with the real roll):
+
+| Player | Legendary+ | Secret+ | Divine+ | Eternal |
+|---|---|---|---|---|
+| fresh (Luck 10) | 1 in 46 | 1 in 28,544 | 1 in 180,777 | 1 in 903,887 |
+| rebirth 1 (Luck 25, x1.25) | 1 in 17 | 1 in 11,868 | 1 in 75,164 | 1 in 375,819 |
+| rebirth 3 (Luck 30, x1.75) | 1 in 10 | 1 in 7,284 | 1 in 46,133 | 1 in 230,664 |
+| rebirth 3 + Lucky pass (x3.5) | 1 in 5 | 1 in 3,642 | 1 in 23,066 | 1 in 115,332 |
+| rebirth 10 (Luck 50, x3.5) | 1 in 3 | 1 in 2,250 | 1 in 14,250 | 1 in 71,248 |
+| everything maxed (Luck 60, x10) | 1 in 1 | 1 in 652 | 1 in 4,130 | 1 in 20,651 |
+
+  With Auto Roll (about 12,000-14,000 pedestals an hour at 5-6 pedestals) a rebirth-10 player gets about
+  6 Secrets and 1 Divine an hour and an Eternal every ~5 hours; at rebirth 1 a Secret about every hour.
+  The Gem Crate (Secret 8%, Divine 2%) is now a real way to get them, which gives Gems more purpose.
+- Owned chase crushers keep working; nothing is taken away. The big roll's counter shows the new base odds.
+- Big roll cinematic (11 Nov, Willem): only for a type this save has never owned (`crushers.seen`); an owned
+  one is revealed like any roll. The server-wide announcement and the Divine/Eternal aftershock stay.
