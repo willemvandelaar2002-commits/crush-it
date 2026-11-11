@@ -131,7 +131,7 @@ function V.create(plot)
 	end
 	-- 11 Nov: the PLOT STYLES board (from FACTORY III, or once you own a style): OPEN shows the
 	-- styles window (client/PlotStyles); the board says what your styles add
-	local style=board("StyleStation",22,15,16,7,Style.Colors.Purple)
+	local style=board("StyleStation",15.5,15,15,7,Style.Colors.Purple) -- (beside the road, clear of the Coating booth)
 	W.text(style.content,"Heading","PLOT STYLES",UDim2.fromScale(.03,.03),UDim2.fromScale(.94,.22))
 	style.info=W.text(style.content,"Bonus","FILL A ROW WITH LEGENDARY+ TO EARN ONE",UDim2.fromScale(.03,.28),UDim2.fromScale(.94,.23))
 	style.button=W.button(style.content,"Styles","OPEN",UDim2.fromScale(.12,.58),UDim2.fromScale(.76,.33),"Styles")
