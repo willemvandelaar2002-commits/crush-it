@@ -19,7 +19,7 @@ gui.Name = "EventCountdown" gui.ResetOnSpawn = false gui.DisplayOrder = 3
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local chip = Instance.new("Frame")
-chip.Name = "Countdown" chip.BackgroundColor3 = C(110, 40, 190) chip.Visible = false chip.Parent = gui
+chip.Name = "Countdown" chip.BackgroundColor3 = Color3.new(1, 1, 1) chip.Visible = false chip.Parent = gui
 local corner = Instance.new("UICorner") corner.CornerRadius = UDim.new(0, 10) corner.Parent = chip
 local stroke = Instance.new("UIStroke") stroke.Thickness = 3 stroke.Color = Style.Colors.Ink stroke.Parent = chip
 local grad = Instance.new("UIGradient") grad.Rotation = 90 grad.Parent = chip
@@ -48,7 +48,7 @@ place()
 workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(place)
 
 local function paint(look: any, soon: boolean)
-	local a: Color3 = if soon then C(255, 200, 40) else look.accent
+	local a: Color3 = if soon then C(255, 200, 40) else (look.chip or look.accent)
 	grad.Color = ColorSequence.new(Style.lighten(a, 0.25), Style.darken(a, 0.35))
 	time.TextColor3 = if soon then Color3.new(1, 1, 1) else C(255, 230, 90)
 end

@@ -1050,7 +1050,11 @@ function G.start()
 		elseif name=="GemCrate" then target=GemMine.chestPart() reach=16 -- 11 Nov: the GEM CHEST in the mine
 		elseif name=="TrashMany" then target=ctx.plot.stations.Trash and ctx.plot.stations.Trash.part reach=40
 		elseif ctx.plot.stations[name] then target=ctx.plot.stations[name].part end
-		if name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" and name~="Rebuild" and name~="FillRow" and name~="SkipTutorial" and name~="GemUpgrade" and name~="GemKey" and name~="SetStyle" and name~="BuyStyle" then
+		-- 11 Nov: the first factory upgrade is bought from a pop-up (client/FirstUpgrade), not at
+		-- the board: one Production upgrade from anywhere while the tutorial is on that step
+		local step=C.TutorialSteps[d.crushers.tutorial]
+		local popupUpgrade=name=="Upgrade" and step~=nil and step.id=="Upgrade" and C.Upgrades[args.id]~=nil and C.Upgrades[args.id].group=="Production"
+		if not popupUpgrade and name~="Equip" and name~="Unequip" and name~="Recycle" and name~="RecycleDuplicates" and name~="EquipBest" and name~="Rebirth" and name~="Rebuild" and name~="FillRow" and name~="SkipTutorial" and name~="GemUpgrade" and name~="GemKey" and name~="SetStyle" and name~="BuyStyle" then
 			local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 			if not target or not root or (root.Position-target.Position).Magnitude>reach then send(p,"Walk closer to your station or bay control.") return end
 		end
