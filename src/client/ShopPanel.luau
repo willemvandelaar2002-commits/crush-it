@@ -921,6 +921,8 @@ function Panel.build(gui: ScreenGui, deps: { notice: (string) -> (), buyPass: (s
 		refreshAll()
 	end)
 	player:GetAttributeChangedSignal("Tier"):Connect(refreshAll)
+	-- 11 Nov: the luck cards show your own odds; they follow your luck
+	for _, a in { "RollLuck", "RollLuckMult", "RollLuckBonus" } do player:GetAttributeChangedSignal(a):Connect(refreshAll) end
 	refreshAll()
 	offerAction:FireServer("State")
 
