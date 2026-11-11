@@ -108,7 +108,9 @@ local function burst(event,now)
 end
 
 local function capture(event,now)
-	local input=event.input
+	-- 11 Nov: each client builds its own toy (client/CrusherMotion), the model's ProductionInput
+	local input=event.input or (event.model and event.model:FindFirstChild("ProductionInput"))
+	event.input=input
 	if now>=event.impactAt or not input or not input:IsA("Model") or not input.Parent then return nil end
 	if math.abs((input:GetAttribute("SquashFraction") or 1)-event.before)>.001 then return nil end
 	local parts={}

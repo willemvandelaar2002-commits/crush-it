@@ -14,7 +14,8 @@ local remote=Net.event(Motion.Remote)
 -- contact height (press rams only)
 function S.strike(v,event,impactAt,y)
 	if #queue>=F.MaxServerQueue then return end
-	table.insert(queue,{model=v.model,position=v.base.Position,t=impactAt,c=event.cycle,k=if event.completed then 1 else nil,y=y})
+	-- f: how flat the toy is after this strike (the clients squash their own toy, 8b)
+	table.insert(queue,{model=v.model,position=v.base.Position,t=impactAt,c=event.cycle,k=if event.completed then 1 else nil,y=y,f=event.fraction})
 end
 function S.flush(now)
 	if now-lastFlush<F.BatchInterval then return end lastFlush=now
@@ -27,7 +28,7 @@ function S.flush(now)
 			local out={}
 			for _,e in list do
 				local d=e.position-root.Position
-				if e.model.Parent and d:Dot(d)<=reach then table.insert(out,{m=e.model,t=e.t,c=e.c,k=e.k,y=e.y}) end
+				if e.model.Parent and d:Dot(d)<=reach then table.insert(out,{m=e.model,t=e.t,c=e.c,k=e.k,y=e.y,f=e.f}) end
 			end
 			if #out>0 then remote:FireClient(player,out) end
 		end

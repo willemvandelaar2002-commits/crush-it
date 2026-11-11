@@ -876,34 +876,37 @@ local function objectFor(rarity)
 	local list=C.RarityObjects[rarity] or C.RarityObjects.Common
 	return objectIndex[list[rng:NextInteger(1,#list)]] or 1
 end
+-- a toy's size before fitting it to the bed (built once per toy, off the map)
+local toySizes={}
+local function toySize(index)
+	local s=toySizes[index]
+	if not s then
+		local m=Objects.build(index,CFrame.new(0,-2000,0),"Normal")
+		local _,size=m:GetBoundingBox() m:Destroy()
+		s=size toySizes[index]=s
+	end
+	return s
+end
 local function visualEvent(p,event)
 	local v=sessions[p].visuals[event.bay] if not v then return end
 	if event.kind=="Input" then
-		-- 31 Oct: the flattened toy stays on the bed a moment under the new one
-		-- (fast crushers swapped them in ~0.1 s and it read as flickering)
-		if v.input then
-			local old=v.input old.Name="CrushedInput"
-			if (old:GetAttribute("SquashFraction") or 1)<1 then task.delay(C.CrushedLinger,function() if old.Parent then old:Destroy() end end) else old:Destroy() end
-		end
+		-- 11 Nov (audit 8b): the toy on the bed is built by each client (client/CrusherMotion),
+		-- not here: a new toy model per crush and its squash were most of the factory's
+		-- network traffic. The server picks the toy and its size and says so in one
+		-- attribute, Toy = "number:toy index:scale"; the bed position is ToyBase.
 		v.objectIndex=objectFor(v.rarity)
-		v.input=Objects.build(v.objectIndex,v.base,"Normal") v.input.Name="ProductionInput" v.input.Parent=v.model
-		local _,size=v.input:GetBoundingBox()
+		local size=toySize(v.objectIndex)
 		local scale=math.min(1,v.clearance*.9/size.Y,v.bedWidth/(math.max(size.X,size.Z)*1.1)) -- big toys (rarer crushers) fill more of the bed
-		Objects.scale(v.input,v.base,scale) v.input:SetAttribute("Height",size.Y*scale)
-		v.input:SetAttribute("SquashFraction",1) v.inputFraction=1
+		v.toyHeight=size.Y*scale v.inputFraction=1 v.toySeq=(v.toySeq or 0)+1
+		if v.model:GetAttribute("ToyBase")==nil then v.model:SetAttribute("ToyBase",v.base) end
+		v.model:SetAttribute("Toy",string.format("%d:%d:%.4f",v.toySeq,v.objectIndex,scale))
 	else
 		local before=v.inputFraction or 1 v.inputFraction=event.fraction
-		local timing=Feel.strike(v,event,before) local input=v.input
-		-- The authoritative display catches up at contact, never before the ram.
-		task.delay(timing.hit,function()
-			if v.model.Parent and input and input.Parent and v.input==input then
-				Objects.setSquash(input,v.base,event.fraction) input:SetAttribute("SquashFraction",event.fraction)
-			end
-		end)
-		-- 11 Nov (audit 8): the motion plays on the clients near this factory (CrusherMotion)
+		local timing=Feel.strike(v,event,before)
+		-- 11 Nov (audit 8): the motion and the squash play on the clients near this factory
 		local impactAt=workspace:GetServerTimeNow()+timing.hit
 		if v.catalog or v.special then MotionServer.strike(v,event,impactAt) return end
-		local height=(if v.input then v.input:GetAttribute("Height") else Config.Objects[v.objectIndex or v.tier].height)*event.fraction
+		local height=(v.toyHeight or Config.Objects[v.objectIndex or v.tier].height)*event.fraction
 		MotionServer.strike(v,event,impactAt,v.base.Position.Y+height+v.ram.Size.Y/2)
 	end
 end

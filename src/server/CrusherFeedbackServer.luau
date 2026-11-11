@@ -15,7 +15,8 @@ function S.strike(v,event,before)
 	local timing=F.timing(event.cycle,v.special~=nil)
 	v.feedbackSequence=(v.feedbackSequence or 0)+1
 	if #queue<F.MaxServerQueue then table.insert(queue,{
-		model=v.model,input=v.input,base=v.base,position=v.base.Position,
+		model=v.model,base=v.base, -- (11 Nov: no input, each client has its own toy)
+		position=v.base.Position,
 		impactAt=workspace:GetServerTimeNow()+timing.hit,sequence=v.feedbackSequence,
 		fraction=event.fraction,before=before,completed=event.completed,typeId=v.model:GetAttribute("FeedbackType"),
 	}) end
