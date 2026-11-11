@@ -159,6 +159,9 @@ local function reveal(typeId: string, rarity: string)
 	local walk = hum and hum.WalkSpeed
 	if hum then hum.WalkSpeed = 0 end
 	me:SetAttribute("CutscenePlaying", true)
+	-- the chest's own "GEM CHEST" label would sit over the prize: hidden meanwhile
+	local tags: { BillboardGui } = {}
+	if m then for _, b in m:GetDescendants() do if b:IsA("BillboardGui") and b.Enabled then b.Enabled = false table.insert(tags, b) end end end
 	-- 1. the camera turns to the chest (its front is the lock side, -Z of the body)
 	local camFrom = cam.CFrame
 	if body then
@@ -227,6 +230,7 @@ local function reveal(typeId: string, rarity: string)
 	cam.CameraType = Enum.CameraType.Custom
 	if hum and walk then hum.WalkSpeed = walk end
 	me:SetAttribute("CutscenePlaying", nil)
+	for _, b in tags do if b.Parent then b.Enabled = true end end
 	showing = false
 end
 
