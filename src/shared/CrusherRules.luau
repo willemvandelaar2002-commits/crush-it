@@ -284,11 +284,13 @@ local function act(d,session,action,args,now,random,guid,perks)
 		-- pity: one pedestal is a guaranteed Legendary once the counter is full
 		local pitySlot=if not first and (s.pity or 0)+1>=C.Pity.Rolls then math.min(count,math.floor(random()*count)+1) else nil
 		for i=1,count do
-			local rarity=if first then C.rarity(C.FirstRoll.Rarity) else C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky,perks and perks.indexLuck,perks and perks.limited),random)]
+			-- (11 Nov: with 2 starting pedestals only the first one is the cheap first-roll Rare)
+			local firstSlot=first and i==1
+			local rarity=if firstSlot then C.rarity(C.FirstRoll.Rarity) else C.Rarities[choose(R.weights(s.upgrades.Luck,perks and perks.lucky,perks and perks.indexLuck,perks and perks.limited),random)]
 			if i==pitySlot and rarity.rank<C.Pity.MinRank then rarity=C.rarity(C.Pity.Rarity) end
-			local mod=if first then C.Modifiers[1] else C.Modifiers[choose(weights,random)]
+			local mod=if firstSlot then C.Modifiers[1] else C.Modifiers[choose(weights,random)]
 			offers[i]={type=rarity.types[math.min(#rarity.types,math.floor(random()*#rarity.types)+1)],rarity=rarity.name,modifier=mod.name,level=1}
-			if first then offers[i].price=math.max(0,math.min(C.FirstRoll.Price,math.floor(d.cash))) end
+			if firstSlot then offers[i].price=math.max(0,math.min(C.FirstRoll.Price,math.floor(d.cash))) end
 		end
 		session.offers=offers session.nextRoll=now+math.max(1,C.rollSeconds()-Gems.rollCut(s)) s.rolls+=1 -- 8 Nov: Quick Rolls (Gem upgrade)
 		if not first then s.pity=math.min((s.pity or 0)+1,C.Pity.Rolls) end

@@ -150,7 +150,7 @@ return function()
 		local pool=C.rarityOf(v[1]).types
 		profile.crushers.rolls=1 -- past the plain-Common first roll
 		local draws={v[3],.1,(table.find(pool,v[1])-.5)/#pool} local index=0
-		local result,_,rolled=R.act(profile,{},"Roll",{},0,function() index+=1 return draws[index] end,id,{})
+		local result,_,rolled=R.act(profile,{},"Roll",{},0,function() index+=1 return draws[index] or .5 end,id,{}) -- (2 pedestals: the 2nd draws more)
 		check(result and rolled[1].type==v[1],"special is reachable through authoritative collection rolls")
 	end
 	-- Forty real, reachable definitions; model additions must not silently

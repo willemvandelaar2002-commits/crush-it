@@ -41,6 +41,12 @@ function Analytics.funnelStep(player: Player, data: any, step: number, name: str
 	safe("funnelStep", function()
 		AnalyticsService:LogOnboardingFunnelStepEvent(player, step, name)
 	end)
+	-- 11 Nov: how long the step took (seconds since the step before, capped at 30 min; a
+	-- player who left and came back counts as 1800), so slow steps show next to the churn
+	local now = os.time()
+	local took = math.clamp(now - (data.funnelAt or now), 0, 1800)
+	data.funnelAt = now
+	if step > 1 then Analytics.custom(player, "FunnelStepSeconds", took, string.format("%02d", step)) end
 	if DEBUG then
 		print(`[Analytics] {player.Name} funnel {step} {name}`)
 	end

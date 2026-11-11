@@ -45,3 +45,5 @@ checked"), plus open items from earlier audits and sessions. Tick off here and a
 - [ ] Chat [VIP]/[PLUS] prefixes stop working Feb 2027 (platform chat): overhead tag only.
 - [x] `/credits` is Studio only now (11 Nov; the dev panel replaces it)
 - [ ] Referral: inviter misses the reward if their mailbox write fails (rare, not retried).
+
+- [ ] After a few days: read FunnelStepSeconds per step (slow vs quitting), MysteryCrateOpenedLate (do players come back for it), and the new funnel; then decide on step 8 (factory upgrade board) and on looks.

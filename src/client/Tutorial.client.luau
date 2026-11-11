@@ -376,6 +376,8 @@ end
 -- (reward text, colour)
 local function goalReward(g: any): (string, Color3)
 	local r = g.reward
+	if r.bay and r.crusher then return "FREE " .. string.upper(r.crusher) .. " + BAY", GREEN end
+	if r.bay then return "FREE BAY", GREEN end
 	if r.cash then return "+" .. Format.cash(goalCash(r)), GREEN end
 	if r.boost then return "2x " .. string.upper(r.boost) .. " " .. r.minutes .. " MIN", Color3.fromRGB(90, 210, 255) end
 	local rarity = C.rarity(r.crusher)
