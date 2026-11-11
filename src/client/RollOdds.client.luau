@@ -88,7 +88,9 @@ local panel = make("Frame", { Name = "RollOddsPanel", AnchorPoint = Vector2.new(
 corner(panel, 14)
 local fallbackStroke = stroke(panel, 5)
 local art = make("ImageLabel", { Name = "FrameArt", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = FRAME_ART,
-	ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(88, 232, 936, 1162), SliceScale = K, ZIndex = 5 }, panel)
+	-- (Roblox stored the 1024 x 1260 upload at 832 x 1024; the slice is in those pixels. The
+	-- left slice takes the whole dice, so it never stretches; only the plain body grows.)
+	ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(187, 189, 760, 944), SliceScale = W / 832, ZIndex = 5 }, panel)
 local fallbackHeader = make("Frame", { Name = "PlainHeader", Position = UDim2.fromOffset(10, 10), Size = UDim2.new(1, -20, 0, HEADER - 14),
 	BackgroundColor3 = C(150, 60, 235), ZIndex = 5 }, panel)
 corner(fallbackHeader, 10)
