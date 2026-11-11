@@ -37,12 +37,15 @@ local function tier(rarity: string): number
 end
 
 -- the lid and its bands turn about the hinge (attribute Hinge); rest poses kept per part
+-- (11 Nov: Willem's model: ChestLid + LidGlow; ChestHitbox is the invisible box facing the platform)
 local rests: { [BasePart]: CFrame } = {}
+-- (11 Nov: positive = the front edge rises; -115 swung the lid down into the box)
+local OPEN_ANGLE = math.rad(100)
 local opening = false
 local function lidParts(m: Model): { BasePart }
 	local out = {}
 	for _, p in m:GetChildren() do
-		if p:IsA("BasePart") and (p.Name == "ChestLid" or p.Name == "ChestLidBand" or p.Name == "Lid") then
+		if p:IsA("BasePart") and (p.Name == "ChestLid" or p.Name == "ChestLidBand" or p.Name == "Lid" or p.Name == "LidGlow") then
 			rests[p] = rests[p] or p.CFrame
 			table.insert(out, p)
 		end
@@ -60,7 +63,7 @@ end
 local function openChest(rarity: string, hold: number)
 	local m = chestModel()
 	if not m or opening then return end
-	local body = m:FindFirstChild("ChestBody") :: BasePart?
+	local body = (m:FindFirstChild("ChestHitbox") or m:FindFirstChild("ChestBody")) :: BasePart?
 	if not body then return end
 	opening = true
 	local r = C.rarity(rarity)
@@ -91,17 +94,17 @@ local function openChest(rarity: string, hold: number)
 		local t0 = os.clock()
 		while os.clock() - t0 < 0.3 do
 			local a = (os.clock() - t0) / 0.3
-			setLid(m, parts, math.rad(-115) * (1 - (1 - a) ^ 3))
+			setLid(m, parts, OPEN_ANGLE * (1 - (1 - a) ^ 3))
 			task.wait()
 		end
-		setLid(m, parts, math.rad(-115))
+		setLid(m, parts, OPEN_ANGLE)
 		task.wait(hold)
 		TweenService:Create(beam, TweenInfo.new(0.6), { Transparency = 1 }):Play()
 		TweenService:Create(light, TweenInfo.new(0.6), { Brightness = 0 }):Play()
 		t0 = os.clock()
 		while os.clock() - t0 < 0.4 do
 			local a = (os.clock() - t0) / 0.4
-			setLid(m, parts, math.rad(-115) * (1 - a * a))
+			setLid(m, parts, OPEN_ANGLE * (1 - a * a))
 			task.wait()
 		end
 		setLid(m, parts, 0)
@@ -149,7 +152,7 @@ local function reveal(typeId: string, rarity: string)
 	if showing then return end
 	showing = true
 	local m = chestModel()
-	local body = m and m:FindFirstChild("ChestBody") :: BasePart?
+	local body = m and (m:FindFirstChild("ChestHitbox") or m:FindFirstChild("ChestBody")) :: BasePart?
 	local r = C.rarity(rarity)
 	local color = r and r.color or Color3.fromRGB(255, 120, 230)
 	local k = tier(rarity)
@@ -175,7 +178,7 @@ local function reveal(typeId: string, rarity: string)
 	if m then
 		for _, p in m:GetChildren() do
 			if p:IsA("BasePart") then saved[p] = { cf = p.CFrame, color = p.Color } end
-			if p:IsA("BasePart") and (p.Name == "ChestGlow" or p.Name == "ChestLock") then table.insert(glowParts, p) end
+			if p:IsA("BasePart") and (p.Name == "ChestGlow" or p.Name == "ChestLock" or p.Name == "LidGlow") then table.insert(glowParts, p) end
 		end
 	end
 	sound(Config.Sounds.Roll, 0.6, 0.8)
@@ -225,7 +228,7 @@ local function reveal(typeId: string, rarity: string)
 	task.wait(0.5)
 	spin = false
 	gui.Enabled = false
-	for p, s in saved do if p.Parent and p.Name ~= "ChestLid" and p.Name ~= "ChestLidBand" then p.Color = s.color end end
+	for p, s in saved do if p.Parent and p.Name ~= "ChestLid" and p.Name ~= "ChestLidBand" and p.Name ~= "LidGlow" then p.Color = s.color end end
 	for _, p in glowParts do if saved[p] then p.Color = saved[p].color end end
 	cam.CameraType = Enum.CameraType.Custom
 	if hum and walk then hum.WalkSpeed = walk end
