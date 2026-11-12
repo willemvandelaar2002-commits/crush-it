@@ -746,16 +746,21 @@ task.spawn(function()
 	local waited = 0
 	while not state and waited < 30 do task.wait(1) waited += 1 end
 	task.wait(4) -- let the welcome-back card (offline cash) open first
+	-- 12 Nov (Willem: too many pop-ups at the start): not in a new player's first session
+	-- (they joined in the tutorial): the ! on REWARDS shows day 1 is ready
+	if state and type(state.tutorial) == "number" and state.tutorial <= #Config.Crushers.TutorialSteps then return end
 	local function calm(): boolean
 		return not Style.hasModal() and gui.Enabled and player:GetAttribute("FactoryEventRunning") ~= true
 			and player:GetAttribute("CutscenePlaying") ~= true
 			and (tonumber(player:GetAttribute("HudStage")) or 0) >= 1 -- 11 Nov: the gift chip shows in the tutorial; the pop-up waits
+			and Style.popCalm()
 	end
 	waited = 0
 	while not calm() and waited < 120 do task.wait(1) waited += 1 end
 	task.wait(0.8) -- (a window that just closed gets a moment before the next one)
 	if not calm() or not state or not state.daily or not state.daily.canClaim then return end
 	showTab("Daily")
+	Style.markPop()
 	Style.setOpen(panel, true)
 	refresh()
 end)

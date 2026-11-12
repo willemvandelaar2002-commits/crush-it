@@ -164,7 +164,8 @@ local function drop(m: Model, c: Crate)
 	m:PivotTo(c.home)
 	local ground = c.home.Position
 	-- (the refill right after an opening stays in the normal view: one zoom is enough)
-	local mine = m:GetAttribute("Owner") == me.UserId and os.clock() - lastBurst > 12
+	-- (12 Nov: not during the tutorial: it just lands, the card comes later)
+	local mine = m:GetAttribute("Owner") == me.UserId and os.clock() - lastBurst > 12 and (tonumber(me:GetAttribute("HudStage")) or 0) >= 1
 	if mine then -- (wait a little for a goal celebration / window to finish, so you see it)
 		local cam = Workspace.CurrentCamera
 		for _ = 1, 40 do
@@ -368,14 +369,17 @@ local function hide()
 	t:Play()
 	t.Completed:Once(function() card.Visible = false end)
 end
-local function show(emoji: string, head: string, a: string, b: string, ask: boolean)
+local function show(emoji: string, head: string, a: string, b: string, ask: boolean, gated: boolean?)
 	-- (wait while another window or the come-back card is up)
 	local come = me.PlayerGui:FindFirstChild("ComeBackHud")
-	for _ = 1, 60 do
+	for _ = 1, if gated then 900 else 60 do
 		local busy = Style.hasModal() or (come ~= nil and (come:FindFirstChild("ComeBack") :: GuiObject?) ~= nil and (come:FindFirstChild("ComeBack") :: GuiObject).Visible)
+			or (gated and not Style.popCalm())
 		if not busy then break end
 		task.wait(1)
 	end
+	if gated and not Style.popCalm() then return end
+	Style.markPop()
 	ask = ask and canPrompt()
 	icon.Text = if emoji == "🎁" then "" else emoji giftArt.Visible = emoji == "🎁"
 	title.Text = head line1.Text = a line2.Text = b
@@ -400,7 +404,7 @@ Net.event("Crate").OnClientEvent:Connect(function(msg: any)
 	if type(msg) ~= "table" then return end
 	if msg.arrived then
 		task.delay(K.Drop.Warn + K.Drop.Fall + K.Camera.Move * 2 + K.Camera.Hold + 2.5, function() -- after it landed and the camera is back
-			show("🎁", "A MYSTERY CRATE ARRIVED!", "It opens in " .. K.FirstHours .. " hours", "Free crusher inside, up to SECRET!", true)
+			show("🎁", "A MYSTERY CRATE ARRIVED!", "It opens in " .. K.FirstHours .. " hours", "Free crusher inside, up to SECRET!", true, true)
 		end)
 	elseif type(msg.opened) == "table" then
 		local o = msg.opened
@@ -424,5 +428,5 @@ task.spawn(function()
 	local at = tonumber(me:GetAttribute("CrateReadyAt")) or 0
 	local left = at - Workspace:GetServerTimeNow()
 	local crateLine = if left > 0 then "Mystery Crate opens in " .. timeLeft(left) else "Your Mystery Crate is READY to open!"
-	show("🏭", "YOUR FACTORY NEVER STOPS", "Earns up to " .. Format.cash(most) .. " while you're away", crateLine, true)
+	show("🏭", "YOUR FACTORY NEVER STOPS", "Earns up to " .. Format.cash(most) .. " while you're away", crateLine, true, true)
 end)

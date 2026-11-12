@@ -53,10 +53,11 @@ Net.event("WhatsNew").OnClientEvent:Connect(function(news: any)
 	if type(news) ~= "table" or type(news.lines) ~= "table" then return end
 	-- the pop-up gate: never over another menu, an event, or straight after a reveal
 	local waited = 0
-	while (Style.hasModal() or me:GetAttribute("FactoryEventRunning") == true) and waited < 300 do
+	while not Style.popCalm() and waited < 300 do
 		task.wait(1) waited += 1
 	end
-	if Style.hasModal() then return end -- still busy after 5 min: next join
+	if not Style.popCalm() then return end -- still busy after 5 min: next join
+	Style.markPop()
 	for _, c in list:GetChildren() do if c:IsA("TextLabel") then c:Destroy() end end
 	title.Text = news.title or "What's New"
 	for i, line in news.lines do
