@@ -61,20 +61,10 @@ end
 -- weekend and Server Luck / Divine luck show as small chips in the active-boost list on
 -- the left (BoostsHud.ActiveBoosts), like a boost.
 local chipBox: Frame? = nil
-local function makeChip(name: string, color: Color3, order: number): (Frame, TextLabel)
-	local c = Instance.new("Frame")
-	c.Name = name c.LayoutOrder = order c.Size = UDim2.fromOffset(170, 40) c.BackgroundColor3 = color c.Visible = false
-	local cr = Instance.new("UICorner") cr.CornerRadius = UDim.new(0, 8) cr.Parent = c
-	local st = Instance.new("UIStroke") st.Thickness = 3 st.Color = INK st.ApplyStrokeMode = Enum.ApplyStrokeMode.Border st.Parent = c
-	local icon = Instance.new("ImageLabel") icon.Image = ART.Clover icon.BackgroundTransparency = 1
-	icon.Position = UDim2.fromOffset(2, 1) icon.Size = UDim2.fromOffset(38, 38) icon.ZIndex = 2 icon.Parent = c
-	local t = Instance.new("TextLabel") t.BackgroundTransparency = 1 t.TextScaled = true t.TextXAlignment = Enum.TextXAlignment.Left
-	t.Position = UDim2.fromOffset(42, 5) t.Size = UDim2.new(1, -48, 1, -10) t.ZIndex = 3 t.Parent = c
-	Style.text(t, 2.5)
-	return c, t
-end
-local weekendChip, weekendChipText = makeChip("WeekendChip", C(235, 170, 30), -2)
-local luckChip, luckChipText = makeChip("ServerLuckChip", C(60, 190, 90), -1)
+-- 12 Nov: small icon tiles (Style.timerTile) like the boosts, not wide chips
+local holder = Instance.new("Folder") -- (until the boost row exists)
+local weekendChip, weekendChipText, weekendBadge = Style.timerTile(holder, "WeekendChip", C(235, 170, 30), ART.Clover, nil, -2)
+local luckChip, luckChipText, luckBadge = Style.timerTile(holder, "ServerLuckChip", C(60, 190, 90), ART.Clover, "x2", -1)
 local function chipsHome(): Frame?
 	if chipBox and chipBox.Parent then return chipBox end
 	local box = me.PlayerGui:FindFirstChild("ActiveBoosts", true)
@@ -140,13 +130,13 @@ task.spawn(function()
 		local phone = Style.compact()
 		if phone and chipsHome() then
 			weekendChip.Visible = pill.Visible and active == true
-			if weekendChip.Visible and left then weekendChipText.Text = W.Luck .. "x LUCK  " .. span(left) end
+			if weekendChip.Visible and left then weekendBadge.Text = W.Luck .. "x" weekendChipText.Text = span(left) end
 			luckChip.Visible = luck.Visible
 			if luck.Visible then
 				local luckLeft = ((workspace:GetAttribute("ServerLuckEnds") :: number?) or 0) - now
 				local shockLeft = ((workspace:GetAttribute("AftershockEnds") :: number?) or 0) - now
-				luckChipText.Text = if luckLeft > 0 then "x2 SERVER  " .. string.format("%d:%02d", math.floor(luckLeft) // 60, math.floor(luckLeft) % 60)
-					else "+" .. math.floor((((workspace:GetAttribute("AftershockLuck") :: number?) or 1) - 1) * 100 + 0.5) .. "% LUCK  " .. math.ceil(shockLeft) .. "s"
+				luckBadge.Text = if luckLeft > 0 then "x2" else "+" .. math.floor((((workspace:GetAttribute("AftershockLuck") :: number?) or 1) - 1) * 100 + 0.5) .. "%"
+				luckChipText.Text = if luckLeft > 0 then string.format("%d:%02d", math.floor(luckLeft) // 60, math.floor(luckLeft) % 60) else math.ceil(shockLeft) .. "s"
 			end
 			pill.Visible = false
 			luck.Visible = false

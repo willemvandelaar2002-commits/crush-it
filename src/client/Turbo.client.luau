@@ -200,21 +200,25 @@ Net.event("CrusherOpen").OnClientEvent:Connect(function(kind: any)
 end)
 close.Activated:Connect(function() Style.setOpen(panel, false) end)
 
--- running turbo chip, bottom left above the cash
-local chip = make("Frame", { Name = "TurboChip", AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 12, 1, -150), Size = UDim2.fromOffset(170, 40),
-	BackgroundColor3 = Color3.fromRGB(255, 140, 30), Visible = false, ZIndex = 4 }, gui)
-make("UICorner", { CornerRadius = UDim.new(0, 10) }, chip)
-make("UIStroke", { Thickness = 3, Color = INK, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, chip)
-local chipText = label(chip, "", UDim2.fromOffset(8, 4), UDim2.new(1, -16, 1, -8), 2.5)
-chipText.ZIndex = 5
-Style.phoneFit(chip, { scale = 0.75 })
+-- running turbo: a tile in the boost row (12 Nov, was a wide chip above the cash)
+local tileHolder = Instance.new("Folder")
+local tile, tileTime, tileBadge = Style.timerTile(tileHolder, "TurboChip", Color3.fromRGB(255, 140, 30), ART.Icons.Turbo, "x2", 0)
+local tileIcon = tile:FindFirstChild("Icon", true) :: ImageLabel
 task.spawn(function()
 	while true do
 		task.wait(0.5)
 		local mult, left = T.active(me, workspace:GetServerTimeNow())
-		chip.Visible = mult > 1
+		if not (tile.Parent and tile.Parent:IsA("GuiObject")) then -- (the holder Folder can be collected: parent then is nil)
+			local row = me.PlayerGui:FindFirstChild("ActiveBoosts", true)
+			if row then tile.Parent = row end
+		end
+		tile.Visible = mult > 1
 		if mult > 1 then
-			chipText.Text = string.format("TURBO x%d  %d:%02d", mult, left // 60, left % 60)
+			tileBadge.Text = "x" .. mult
+			tileTime.Text = string.format("%d:%02d", left // 60, left % 60)
+			local best = T.List[1]
+			for _, t in T.List do if t.mult == mult then best = t end end
+			tileIcon.Image = (ART.Icons :: any)[best.id] or ART.Icons.Turbo
 		end
 		if panel.Visible then paint() end
 	end
