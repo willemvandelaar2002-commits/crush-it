@@ -516,7 +516,10 @@ function Style.hudSlotPosition(slot: number): (number, number, number)
 	local step = P.size + 14 + P.gap
 	local v = workspace.CurrentCamera.ViewportSize
 	local inset = game:GetService("GuiService"):GetGuiInset().Y
-	local perCol = math.max(1, math.floor((v.Y - inset - P.bottom - 8) / step))
+	-- 12 Nov (Willem on his phone: "I can barely move, too many in a row towards the bottom"):
+	-- at most 3 buttons per column (Index, Shop, Rewards), then a second column from the top
+	-- (Rebirth next to Index), so the column stays clear of the thumbstick
+	local perCol = math.clamp(math.floor((v.Y - inset - P.bottom - 8) / step), 1, 3)
 	local col, row = slot // perCol, slot % perCol
 	return 12 + col * (math.floor(P.size * 1.15) + 8), 8 + row * step, P.size
 end

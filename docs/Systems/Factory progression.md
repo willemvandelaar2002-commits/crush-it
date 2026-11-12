@@ -408,7 +408,7 @@ Gem milestones: R1 Gem Mine, R5 Awakened Gem Crusher. Dev panel Plot row ends at
   before FACTORY III (Fill 18 bays, Coat a crusher, Upgrade your factory (20), Fill all 24 bays),
   24-27 Bought Factory III / IV / V / VI (C.FunnelGoals). Old data: step 20 meant "Bought Factory III".
 - 12 Nov (Willem: "I'm almost there" / "let me just do this one more"): from FACTORY II on a small bar sits above
-  the cash (client/NextFactory): "FACTORY III 62%". The bays of the current factory count for 75%, the cash for the
+  the cash (client/NextFactory, REMOVED 12 Nov at Willem's request): "FACTORY III 62%". The bays of the current factory count for 75%, the cash for the
   next factory the last 25% (only once every bay is full, so it never goes back); 75%+ "ALMOST THERE!" (gold),
   100% "FACTORY III READY!" (green, pulsing outline); each 25% step pops it once. Works for every next factory.
   Fill 18 bays (halfway to FACTORY III) now pays a 2x CASH boost for 10 minutes (was 120 s of income): the wait

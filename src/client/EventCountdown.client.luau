@@ -50,7 +50,8 @@ while true do
 	if state then
 		local phase = state:GetAttribute("Phase")
 		local left = ((state:GetAttribute("PhaseEnds") :: number?) or 0) - workspace:GetServerTimeNow()
-		local show = phase == "Idle" and left > 0
+		-- 12 Nov (Willem): not on phones, Rebirth sits up there now
+		local show = phase == "Idle" and left > 0 and not Style.compact()
 		tile.Visible = show
 		if show then
 			local look = E.variant(state:GetAttribute("Variant") :: string?)
