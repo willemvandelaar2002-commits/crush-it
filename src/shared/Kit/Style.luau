@@ -612,10 +612,13 @@ end
 Style.PopGap = 75
 local lastPop = -1e9
 function Style.markPop() lastPop = os.clock() end
+local hudSince: number? = nil
 function Style.popCalm(): boolean
 	local me = game:GetService("Players").LocalPlayer
+	local hud = (tonumber(me:GetAttribute("HudStage")) or 0) >= 1 -- (the tutorial is done)
+	if hud and not hudSince then hudSince = os.clock() end
 	return activePanel == nil and os.clock() - lastPop >= Style.PopGap
-		and (tonumber(me:GetAttribute("HudStage")) or 0) >= 1 -- (the tutorial is done)
+		and hud and os.clock() - (hudSince or os.clock()) >= 25 -- (and not straight after it / the join)
 		and me:GetAttribute("CutscenePlaying") ~= true and me:GetAttribute("FactoryEventRunning") ~= true
 end
 
