@@ -85,7 +85,7 @@ buy.Activated:Connect(function()
 end)
 
 local function calm(): boolean
-	return not shown and me:GetAttribute("AutoOfferShown") ~= true and tutorialDone and os.clock() - joinedAt > 240 and not Style.hasModal()
+	return not shown and me:GetAttribute("AutoOfferShown") ~= true and tutorialDone and os.clock() - joinedAt > 240 and Style.popCalm()
 		and me:GetAttribute("CutscenePlaying") ~= true and me:GetAttribute("FactoryEventRunning") ~= true
 end
 
@@ -100,6 +100,7 @@ local function offer(ids: { string }, head: string, body: string, image: string,
 	if not product then return end
 	shown = true
 	me:SetAttribute("AutoOfferShown", true)
+	Style.markPop()
 	current = product
 	title.Text = head
 	desc.Text = body

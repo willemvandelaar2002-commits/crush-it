@@ -135,10 +135,11 @@ task.spawn(function()
 		if me:GetAttribute("FeedbackAsked") == true then return end
 		-- 8 Nov: right after the plot upgrade (once its cutscene is over), else after a while
 		local happy = upgradedAt ~= nil and os.clock() - upgradedAt >= F.AskAfterUpgradeSeconds
-		local calm = tutorialDone and (happy or os.clock() - joined >= F.AskAfterMinutes * 60) and not Style.hasModal()
+		local calm = tutorialDone and (happy or os.clock() - joined >= F.AskAfterMinutes * 60) and Style.popCalm()
 			and me:GetAttribute("CutscenePlaying") ~= true and me:GetAttribute("FactoryEventRunning") ~= true
 		if calm and me:GetAttribute("FeedbackAsked") == false then
 			remote:FireServer("Shown")
+			Style.markPop()
 			open()
 			return
 		end
