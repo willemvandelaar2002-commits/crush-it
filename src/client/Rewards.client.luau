@@ -111,17 +111,18 @@ Style.placeHudButton(button, 2)
 -- the HUD, so a close prize is always visible ("FREE RARE CRUSHER 4:12")
 local giftChip = make("TextButton", { Name = "GiftCountdown", AnchorPoint = Vector2.new(0.5, 0), Size = UDim2.fromOffset(150, 40),
 	BackgroundColor3 = C(150, 60, 230), Text = "", AutoButtonColor = false, Visible = false, ZIndex = 3 }, gui)
-make("UICorner", { CornerRadius = UDim.new(0, 10) }, giftChip)
 make("UIStroke", { Thickness = 2.5, Color = Style.Colors.Ink, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, giftChip)
-local giftTop = make("TextLabel", { Size = UDim2.new(1, -8, 0.5, 0), Position = UDim2.fromOffset(4, 2), BackgroundTransparency = 1, TextScaled = true, Text = "", ZIndex = 4 }, giftChip)
-Style.text(giftTop, 2)
-local giftTime = make("TextLabel", { Size = UDim2.new(1, -8, 0.5, -2), Position = UDim2.new(0, 4, 0.5, 0), BackgroundTransparency = 1, TextScaled = true, Text = "", ZIndex = 4 }, giftChip)
+-- 12 Nov (Willem, reference game: less blocking the screen): just a small time pill under
+-- REWARDS (the colour says what it is: rarity colour for a crusher gift); "FREE RARE CRUSHER"
+-- shows in the Rewards window
+make("UICorner", { CornerRadius = UDim.new(1, 0) }, giftChip)
+local giftTime = make("TextLabel", { Size = UDim2.new(1, -10, 1, -6), Position = UDim2.fromOffset(5, 3), BackgroundTransparency = 1, TextScaled = true, Text = "", ZIndex = 4 }, giftChip)
 Style.text(giftTime, 2)
 giftTime.TextColor3 = C(255, 230, 90)
 local function placeGiftChip()
 	Style.placeHudButton(button, 2)
 	local compact = Style.compact()
-	giftChip.Size = if compact then UDim2.fromOffset(100, 32) else UDim2.fromOffset(150, 40)
+	giftChip.Size = if compact then UDim2.fromOffset(56, 22) else UDim2.fromOffset(84, 26)
 	if compact then
 		-- 6 Nov: the phone buttons are a column: the chip goes to the right of REWARDS
 		giftChip.AnchorPoint = Vector2.new(0, 0.5)
@@ -631,10 +632,9 @@ local function refresh()
 	end
 	giftChip.Visible = nextGift ~= nil and not panel.Visible
 	if nextGift then
-		giftTop.Text = if nextGift.kind == "crusher" then "FREE " .. string.upper(nextGift.rarity) .. " CRUSHER" else "FREE CASH GIFT"
-		giftTop.TextColor3 = if nextGift.kind == "crusher" then colorFor(nextGift) else CASH
-		giftTime.Text = if nextLeft <= 0 then "READY! TAP" else clock(nextLeft)
-		giftChip.BackgroundColor3 = if nextLeft <= 0 then C(60, 190, 70) else C(70, 40, 120)
+		giftTime.Text = if nextLeft <= 0 then "READY!" else clock(nextLeft)
+		giftTime.TextColor3 = if nextLeft <= 0 then Color3.new(1, 1, 1) else C(255, 230, 90)
+		giftChip.BackgroundColor3 = if nextLeft <= 0 then C(60, 190, 70) elseif nextGift.kind == "crusher" then Style.darken(colorFor(nextGift), 0.25) else C(70, 40, 120)
 	end
 	for i, r in Config.Rewards.Playtime do
 		local left = r.minutes * 60 - played

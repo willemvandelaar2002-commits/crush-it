@@ -314,28 +314,40 @@ Tags:GetInstanceAddedSignal("MysteryCrate"):Connect(function(m) task.spawn(sign,
 
 -- the card ---------------------------------------------------------------------------
 local gui = make("ScreenGui", { Name = "CrateHud", ResetOnSpawn = false, DisplayOrder = 40, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, me:WaitForChild("PlayerGui"))
-local ART = { Frame = "rbxassetid://133183009079484" } -- Willem's come-back frame (4 Nov)
-local card = make("Frame", { Name = "CrateCard", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -24), Size = UDim2.fromOffset(460, 178),
-	BackgroundTransparency = 1, Visible = false, ZIndex = 2 }, gui)
-make("ImageLabel", { Name = "Frame", Image = ART.Frame, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Stretch, ZIndex = 2 }, card)
-local icon = words(card, "🎁", UDim2.fromOffset(22, 30), UDim2.fromOffset(118, 118), 3, 90)
+-- 12 Nov (Willem, a reference game: "a lot blocking the screen"): a slim strip above the
+-- hotbar instead of the big framed card. Tap it to close; it also goes away by itself.
+-- REMIND ME (notification opt-in) stays as a small button on the right.
+local W, H = 430, 84
+local card = make("TextButton", { Name = "CrateCard", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -110), Size = UDim2.fromOffset(W, H),
+	BackgroundColor3 = rgb(30, 24, 70), BackgroundTransparency = 0.08, Text = "", AutoButtonColor = false, Visible = false, ZIndex = 2 }, gui)
+make("UICorner", { CornerRadius = UDim.new(0, 14) }, card)
+make("UIStroke", { Thickness = 3, Color = rgb(255, 200, 60), ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, card)
+make("UIGradient", { Rotation = 90, Color = ColorSequence.new(rgb(90, 60, 190), rgb(36, 24, 90)) }, card)
+local icon = words(card, "🎁", UDim2.fromOffset(10, 8), UDim2.fromOffset(68, 68), 3, 60)
 -- 11 Nov (Willem): the gift is our REWARDS gift picture, not the emoji
-local giftArt = make("ImageLabel", { Name = "GiftArt", Image = require(RS.Shared.Icons).Rewards, Position = UDim2.fromOffset(16, 24), Size = UDim2.fromOffset(130, 130),
+local giftArt = make("ImageLabel", { Name = "GiftArt", Image = require(RS.Shared.Icons).Rewards, Position = UDim2.fromOffset(6, 4), Size = UDim2.fromOffset(76, 76),
 	BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, Visible = false, ZIndex = 3 }, card)
-local fit = Style.phoneFit(card, { scale = 0.8, width = 0.7 })
+local fit = Style.phoneFit(card, { scale = 0.8, width = 0.62 })
 local pop = make("UIScale", { Scale = 1 }, card)
 fit.Parent = nil -- (read only: one UIScale per object)
-local title = words(card, "", UDim2.fromOffset(150, 14), UDim2.fromOffset(292, 30), 3, 28, rgb(120, 220, 255))
-local line1 = words(card, "", UDim2.fromOffset(150, 46), UDim2.fromOffset(292, 32), 3, 26)
-local line2 = words(card, "", UDim2.fromOffset(150, 78), UDim2.fromOffset(292, 24), 3, 20, rgb(255, 225, 120))
-local function button(text: string, x: number, w: number, color: Color3): TextButton
-	local b = make("TextButton", { Text = "", Position = UDim2.fromOffset(x, 112), Size = UDim2.fromOffset(w, 50), ZIndex = 3 }, card)
-	Style.button(b, color)
-	words(b, text, UDim2.fromOffset(8, 8), UDim2.new(1, -16, 1, -16), 4, 28)
-	return b
+local title = words(card, "", UDim2.fromOffset(88, 6), UDim2.new(1, -96, 0, 26), 3, 24, rgb(120, 220, 255))
+local line1 = words(card, "", UDim2.fromOffset(88, 34), UDim2.new(1, -96, 0, 22), 3, 20)
+local line2 = words(card, "", UDim2.fromOffset(88, 58), UDim2.new(1, -96, 0, 18), 3, 16, rgb(255, 225, 120))
+for _, l in { title, line1, line2 } do l.TextXAlignment = Enum.TextXAlignment.Left end
+local remind = make("TextButton", { Text = "", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -10, 0.5, 0), Size = UDim2.fromOffset(108, 40), ZIndex = 4 }, card)
+Style.button(remind, rgb(60, 200, 80))
+words(remind, "REMIND ME", UDim2.fromOffset(6, 6), UDim2.new(1, -12, 1, -12), 5, 20)
+local ok = card -- (tap the strip to close it)
+-- above the hotbar (it moves with the screen)
+local function place()
+	local hb = me.PlayerGui:FindFirstChild("CrusherHotbar")
+	local bar = hb and hb:FindFirstChild("Bar") :: GuiObject?
+	if bar and bar.Visible and bar.AbsoluteSize.Y > 0 then
+		card.Position = UDim2.fromOffset(gui.AbsoluteSize.X / 2, bar.AbsolutePosition.Y - gui.AbsolutePosition.Y - 10)
+	else
+		card.Position = UDim2.new(0.5, 0, 1, -110)
+	end
 end
-local remind = button("REMIND ME", 150, 160, rgb(60, 200, 80))
-local ok = button("OK", 318, 110, rgb(64, 140, 255))
 task.spawn(function()
 	while true do
 		if card.Visible then icon.Rotation = math.sin(os.clock() * 2) * 6 giftArt.Rotation = icon.Rotation end
@@ -369,7 +381,8 @@ local function show(emoji: string, head: string, a: string, b: string, ask: bool
 	title.Text = head line1.Text = a line2.Text = b
 	line1.TextColor3 = Color3.new(1, 1, 1)
 	remind.Visible = ask
-	ok.Position = if ask then UDim2.fromOffset(318, 112) else UDim2.fromOffset(240, 112)
+	for _, l in { title, line1, line2 } do l.Size = UDim2.new(1, if ask then -214 else -96, 0, l.Size.Y.Offset) end
+	place()
 	card.Visible = true
 	pop.Scale = 0.7 * fit.Scale
 	TweenService:Create(pop, TweenInfo.new(0.3, Enum.EasingStyle.Back), { Scale = fit.Scale }):Play()
