@@ -33,9 +33,10 @@ local playerGui = me:WaitForChild("PlayerGui")
 -- the goal number from which each piece shows (whole ScreenGuis, or single buttons)
 local GUIS: { [string]: number } = {
 	TravelButtons = 1,
-	RewardsHud = 0, EventCountdown = 0,
+	RewardsHud = 0,
 	FrenzyHud = 2,
-	ShopHud = 3, BoostsHud = 3, QuestsHud = 3,
+	ShopHud = 3, QuestsHud = 3,
+	BoostsHud = 0, -- 12 Nov: holds the timer row, where the event tile sits (from the start); boosts only show while running
 	LeaderboardHud = 5, RebirthHud = 5, WeekendHud = 5,
 	TurboHud = 6,
 }
