@@ -283,6 +283,9 @@ local function act(d,session,action,args,now,random,guid,perks)
 		local count=R.pedestalCount(s)
 		-- pity: one pedestal is a guaranteed Legendary once the counter is full
 		local pitySlot=if not first and (s.pity or 0)+1>=C.Pity.Rolls then math.min(count,math.floor(random()*count)+1) else nil
+		-- 12 Nov: the first roll after the tutorial: every pedestal free, you take one
+		-- (also when the tutorial was skipped before its roll)
+		local free=s.freeBuy==true
 		for i=1,count do
 			-- (11 Nov: with 2 starting pedestals only the first one is the cheap first-roll Rare)
 			local firstSlot=first and i==1
@@ -291,6 +294,7 @@ local function act(d,session,action,args,now,random,guid,perks)
 			local mod=if firstSlot then C.Modifiers[1] else C.Modifiers[choose(weights,random)]
 			offers[i]={type=rarity.types[math.min(#rarity.types,math.floor(random()*#rarity.types)+1)],rarity=rarity.name,modifier=mod.name,level=1}
 			if firstSlot then offers[i].price=math.max(0,math.min(C.FirstRoll.Price,math.floor(d.cash))) end
+			if free then offers[i].price=0 offers[i].free=true end
 		end
 		session.offers=offers session.nextRoll=now+math.max(1,C.rollSeconds()-Gems.rollCut(s)) s.rolls+=1 -- 8 Nov: Quick Rolls (Gem upgrade)
 		if not first then s.pity=math.min((s.pity or 0)+1,C.Pity.Rolls) end
@@ -305,6 +309,10 @@ local function act(d,session,action,args,now,random,guid,perks)
 		if not pay(price) then return false,"Need $"..price..". Collect and sell scrap first." end
 		local item={id=guid(),type=offer.type,rarity=offer.rarity,modifier=offer.modifier,level=1}
 		table.insert(s.owned,item) session.offers[slot]=false session.lastRoll=item.id
+		if offer.free then -- the free pick is used: the other pedestals cost their normal price again
+			s.freeBuy=nil
+			for _,o in session.offers do if type(o)=="table" then o.price=nil o.free=nil end end
+		end
 		local r=C.rarity(item.rarity) if r and r.rank>=C.Pity.MinRank then s.pity=0 end
 		return true,"Bought "..C.typeById(item.type).name.."!",item
 	elseif action=="Equip" then
@@ -614,7 +622,12 @@ function R.tutorialAdvance(d,id)
 	local s=d.crushers local step=C.TutorialSteps[s.tutorial]
 	if not step or step.id~=id then return false end
 	s.tutorial+=1 d.cash=C.money(d.cash+step.reward)
-	if s.tutorial>#C.TutorialSteps then d.cash=C.money(d.cash+C.TutorialBonus) end
+	if s.tutorial>#C.TutorialSteps then
+		d.cash=C.money(d.cash+C.TutorialBonus)
+		-- 12 Nov (funnel: Fill 3 bays lost 24%, the first time you save up alone): the next
+		-- roll's crushers are free until you take one (Roll/Buy below)
+		s.freeBuy=true
+	end
 	return true
 end
 -- 5 Nov (vault V2 lihfolk-tutorial: "skip after the first step, with a confirm; a skip

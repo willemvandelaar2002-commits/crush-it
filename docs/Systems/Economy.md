@@ -107,3 +107,8 @@ one below. Common 69.9585. Limited unchanged. Per pedestal (checked in Studio wi
 Earlier maxed Eternal for comparison: ~1 in 580 (old model, before today), ~1 in 59 (first x10 tail model),
 ~1 in 20,600 (first "rare again"), ~1 in 82,600 (the misread). With Auto Roll (~12,000-14,000 pedestals an
 hour) a maxed player gets about 2-3 Eternals an hour, a rebirth-10 player one about every 1.5 hours.
+
+## 12 Nov: an easier first half hour (funnel: the "Fill N bays" goals lost 16-24%, waiting for money)
+- STARTER BOOST (BoostConfig `B.Starter`, server/Boosts): 2x cash for the first 30 minutes of play. It starts when the tutorial is done and only counts down while you are in the game (`d.starterLeft`, seconds left; attribute `Boost_Starter`). It shows as a "2x" timer tile in the boost row. Saves from before it that are still in the first factory with no rebirth get the full 30 minutes; everyone further along gets none. It stacks with the 2x Cash boost and the passes.
+- Bays 13-24 (Factory II's upper floor) cost 35% less (`C.UpperFloorDiscount`), the same as bays 3-12. FACTORY II keeps its price (`C.Factory2Base`, the old bay 13 cost x10); Factory III and up are unchanged.
+- FREE FIRST PICK: finishing the tutorial sets `d.crushers.freeBuy`; the next roll's pedestals all say FREE ("Take FREE") until you take one, then the others go back to their price. It fills bay 3 straight away.

@@ -92,6 +92,12 @@ return function()
 	for i=2,#C.TutorialSteps do R.tutorialAdvance(t,C.TutorialSteps[i].id) end
 	local total=C.TutorialBonus for _,st in C.TutorialSteps do total+=st.reward end
 	check(t.crushers.tutorial==#C.TutorialSteps+1 and t.cash==cash0+total,"finishing pays every step and the bonus once")
+	-- 12 Nov: the roll after the tutorial is free until you take one crusher
+	check(t.crushers.freeBuy==true,"finishing the tutorial grants the free pick")
+	t.crushers.rolls=1 local ts={} local _,_,fo=act(t,ts,"Roll")
+	check(#fo>=2 and fo[1].free and C.offerPrice(fo[1])==0 and fo[2].free,"every pedestal of that roll is free")
+	local tc=t.cash check(act(t,ts,"Buy",{slot=1},C.RollSeconds) and t.cash==tc,"the free pick costs nothing")
+	check(t.crushers.freeBuy==nil and not fo[2].free and C.offerPrice(fo[2])>0,"after the free pick the rest cost their price again")
 	local old=fresh() old.crushers.bays=3 old.crushers.rolls=4 table.insert(old.crushers.owned,{id=id(),type="Steel",rarity="Common",modifier="Standard",level=1})
 	R.tutorialCatchUp(old) check(old.crushers.tutorial==6 and C.TutorialSteps[6].id=="Equip","catch-up skips steps already done, stops at the first open one")
 	d=R.migrate({cash=0},id) s={} d.crushers.tutorial=#C.TutorialSteps+1 d.crushers.available=0 -- ledger checks below without tutorial rewards (fresh saves start with C.StarterScrap)
@@ -165,7 +171,7 @@ return function()
 		for position,typeId in r.types do
 			check(not seen[typeId] and C.typeById(typeId)~=nil,"unique real type in each roll pool") seen[typeId]=true
 			local profile=fresh() profile.crushers.rolls=1 local context={} local values={(cumulative+r.weight/2)/total,.1,(position-.5)/#r.types} local n=0
-			local ok,_,result=R.act(profile,context,"Roll",{},0,function() n+=1 return values[n] end,id,{})
+			local ok,_,result=R.act(profile,context,"Roll",{},0,function() n+=1 return values[n] or .1 end,id,{}) -- (2 pedestals draw more numbers)
 			check(ok and result[1].type==typeId and result[1].rarity==r.name,"every catalogue entry is rollable")
 			profile.cash=1e9
 			local bought,_,item=R.act(profile,context,"Buy",{slot=1},context.nextRoll,math.random,id,{})
@@ -217,7 +223,7 @@ return function()
 		local index=0 for i,r in C.Rarities do if r==lim then index=i end end
 		local before=0 for i=1,index-1 do before+=on[i] end
 		local profile=fresh() profile.crushers.rolls=1 local context={} local values={(before+limOn/2)/totalOn,.1,.5} local n=0
-		local ok,_,result=R.act(profile,context,"Roll",{},0,function() n+=1 return values[n] end,id,{limited=true})
+		local ok,_,result=R.act(profile,context,"Roll",{},0,function() n+=1 return values[n] or .1 end,id,{limited=true})
 		check(ok and result[1].rarity=="Limited","Limited rolls during the weekend")
 		profile.cash=1e9
 		local bought,_,item=R.act(profile,context,"Buy",{slot=1},context.nextRoll,math.random,id,{})

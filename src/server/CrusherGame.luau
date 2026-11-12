@@ -74,7 +74,7 @@ local function perks(p)
 			*ServerLuck.mult() -- 4 Nov: someone bought Server Luck (x2 for the whole server)
 			*(function() local d=Data.get(p) return C.rebirthLuck(d and d.crushers.rebirths or 0) end)()
 			*(function() local d=Data.get(p) return if d then Gems.luckMult(d.crushers) else 1 end)(), -- 8 Nov: Gem Luck
-		mult=Store.cashPassMult(p)*(if Store.hasPass(p,"VIP") then Store.Vip.Mult else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now))
+		mult=Store.cashPassMult(p)*(if Store.hasPass(p,"VIP") then Store.Vip.Mult else 1)*(if Boost.active(p,"Cash",now) then 2 else 1)*(if Boost.starter(p,now) then 2 else 1)*Friend.mult(p)*(Turbo.active(p,now))
 			*(function() local d=Data.get(p) return C.rebirthMult(d and d.crushers.rebirths or 0) end)() -- 2 Nov evening: rebirth bonus
 			*(function() local d=Data.get(p) return if d then Gems.cashMult(d.crushers) else 1 end)() -- 8 Nov: Gem Cash
 			*(function() local d=Data.get(p) return if d then Styles.cashMult(d.crushers) else 1 end)(), -- 11 Nov: plot styles you own
@@ -762,8 +762,8 @@ local function rollShow(p,offers)
 					local perMin=d and Rules.stats(d,{type=item.type,rarity=item.rarity,modifier=item.modifier,level=1},perks(p)).cps*60 or 0
 					local name=C.typeById(item.type).name
 					card(ped,name,item.rarity..(if item.modifier~="Standard" then " · "..item.modifier else "")..(if unowned then " · UNOWNED" else ""),RollLook.oddsText(odds),
-						Format.cash(perMin).."/min",Format.cash(C.offerPrice(item)),r.color:Lerp(Color3.new(1,1,1),.15))
-					ped.prompt.ActionText="Buy "..Format.cash(C.offerPrice(item)) ped.prompt.ObjectText=name ped.prompt.Enabled=true
+						Format.cash(perMin).."/min",if item.free then "FREE" else Format.cash(C.offerPrice(item)),r.color:Lerp(Color3.new(1,1,1),.15))
+					ped.prompt.ActionText=if item.free then "Take FREE" else "Buy "..Format.cash(C.offerPrice(item)) ped.prompt.ObjectText=name ped.prompt.Enabled=true
 				end)
 			end
 			return
@@ -799,6 +799,7 @@ local function action(p,name,args)
 	local cashBefore=d.cash
 	local offer=if name=="Buy" and type(args)=="table" and type(args.slot)=="number" then ctx.offers and ctx.offers[args.slot] else nil
 	local newType=offer and not inIndex(d.crushers,offer.type)
+	local wasFree=offer and offer.free==true -- 12 Nov: the free first pick (Rules clears the flag)
 	local ok,message,result
 	local levelBefore=Progression.level(d) local baysBefore=C.bayCapacity(levelBefore)
 	-- coating: the crusher chosen on the coating screen (args.item), or the held one (old board)
@@ -830,6 +831,16 @@ local function action(p,name,args)
 		flash(ctx.plot,ped.top,Color3.fromRGB(120,255,140)) clearOffer(ctx.plot,args.slot)
 		card(ped,"BOUGHT!","","","","",Color3.fromRGB(120,255,140))
 		task.delay(1.5,function() if ped.card.name.Text=="BOUGHT!" then card(ped,"","","","","") end end)
+		-- 12 Nov: after the free pick the other pedestals go back to their real prices
+		if wasFree and ctx.offers then
+			for i,o in ctx.offers do
+				local other=ctx.plot.stations.Roll.pedestals[i]
+				if i~=args.slot and type(o)=="table" and other and other.prompt.Enabled then
+					other.card.price.Text=Format.cash(C.offerPrice(o))
+					other.prompt.ActionText="Buy "..Format.cash(C.offerPrice(o))
+				end
+			end
+		end
 	end
 	if ok then reconcile(p) end
 	if d.cash~=cashBefore then Analytics.cash(p,ACTION_SKU[name] or name,if name=="Buy" then "Shop" else "Gameplay",cashBefore,d.cash) end
@@ -1123,7 +1134,7 @@ function G.start()
 		addCash=function(p,n,sku,tx) local d=Data.get(p) if d then local before=d.cash d.cash=C.money(d.cash+n) if sku then Analytics.cash(p,sku,tx or "Gameplay",before,d.cash) end send(p) end end,
 		cashPerSecond=function(p) local d=Data.get(p) return if d then cps(p,d) else 0 end,
 		-- the short-lived part of the cash multiplier (2x Cash boost), for Turbo prices
-		shortBoost=function(p) return if Boost.active(p,"Cash",workspace:GetServerTimeNow()) then 2 else 1 end,
+		shortBoost=function(p) local now=workspace:GetServerTimeNow() return (if Boost.active(p,"Cash",now) then 2 else 1)*(if Boost.starter(p,now) then 2 else 1) end,
 		eventPlot=function(p) local ctx=sessions[p] return if ctx then ctx.plot else nil end,
 		eventFleet=function(p)
 			local d=Data.get(p) if not d then return nil end

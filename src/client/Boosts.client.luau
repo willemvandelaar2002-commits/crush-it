@@ -124,6 +124,11 @@ for i, b in B.List do
 	local _, t = Style.timerTile(chips, b.id, b.color, (Icons :: any)[b.icon] or Icons.Cash, if b.id == "Super" then "2x2" else "2x", i)
 	chipFor[b.id] = t
 end
+-- 12 Nov: the STARTER BOOST (2x cash for your first 30 minutes of play) gets a tile too
+do
+	local _, t = Style.timerTile(chips, B.Starter.id, B.Starter.color, (Icons :: any)[B.Starter.icon] or Icons.Cash, "2x", 0)
+	chipFor[B.Starter.id] = t
+end
 
 local function refresh()
 	local now = Workspace:GetServerTimeNow()

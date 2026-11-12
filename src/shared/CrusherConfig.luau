@@ -102,6 +102,11 @@ end
 -- 11 Nov (funnel: every "Fill N bays" goal lost 12-18% of players): bays 3-12 (the ground
 -- floor) cost 35% less. Bay 13 and up, and so FACTORY II's price, stay the same.
 for i=3,12 do C.BayCosts[i]=math.floor(C.BayCosts[i]*0.65) end
+-- 12 Nov (funnel: Fill 18 lost 50%, the FACTORY II -> III stretch): bays 13-24 (Factory II's
+-- upper floor) also 35% less. FACTORY II itself keeps its price (Factory2Base below).
+C.Factory2Base=C.BayCosts[13]
+C.UpperFloorDiscount=0.65
+for i=13,24 do C.BayCosts[i]=math.floor(C.BayCosts[i]*C.UpperFloorDiscount) end
 -- Caps[n] = upgrade caps from plot level n on: factory/roll upgrades (global)
 -- and each crusher's level. Below plot level 1 the base MaxGlobal/MaxLevel apply.
 -- 2 Nov (Willem): the starting factory is only the ground floor (C.StartBays =
@@ -118,7 +123,7 @@ C.PlotUpgrade = {MaxLevel=5,
 	-- 11 Nov (funnel: only 19% of Factory II owners buy III and 18% of III owners buy IV; those
 	-- two steps were 60x and 40x the step before): Factory III and IV at 4.6x their first new
 	-- bay, ~$1.0M and ~$40M (were $2.2M and $87M)
-	Costs={math.floor(C.BayCosts[C.StartBays+1]*10),math.floor(C.BayCosts[C.TopFirst]*4.6),math.floor(C.BayCosts[C.RearFirst]*4.6),
+	Costs={math.floor(C.Factory2Base*10),math.floor(C.BayCosts[C.TopFirst]*4.6),math.floor(C.BayCosts[C.RearFirst]*4.6),
 		math.floor(C.BayCosts[C.RearFirst+12]*10),math.floor(C.BayCosts[C.RearFirst+18]*10)},
 	Names={"FACTORY II","FACTORY III","FACTORY IV","FACTORY V","FACTORY VI"},
 	Titles={"UPPER FLOOR","REINFORCED WORKSHOP","FUSION WORKSHOP","ADVANCED FACTORY","MASTER FACTORY"},
